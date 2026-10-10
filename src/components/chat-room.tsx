@@ -9,7 +9,9 @@ import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { playTin, primeTin } from "@/lib/notify-sound";
-import { RocketIcon, BlockedIcon } from "@/components/icons";
+import { RocketIcon, BlockedIcon, MicIcon } from "@/components/icons";
+import { ProgressRing } from "@/components/progress-ring";
+import { useVoiceRecorder } from "@/lib/voice-recorder";
 import { useDismiss } from "@/components/use-dismiss";
 import { useUnread } from "@/components/unread-provider";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
@@ -42,6 +44,8 @@ interface Msg {
   edited?: boolean;
   deleted?: boolean;
   pending?: boolean;
+  /** qabul qiluvchi o'qigan vaqt (✓✓) */
+  readAt?: number | null;
   replyTo?: ReplyPreview | null;
   reactions?: Reactions;
   file?: ChatFile | null;
@@ -200,6 +204,10 @@ export function ChatRoom({
   const [uploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
   const [uploadName, setUploadName] = useState("");
+  // tanlangan faylning mahalliy ko'rinishi (yuborishdan oldin ko'rib chiqish uchun)
+  const [localFile, setLocalFile] = useState<{ name: string; type: string; size: number; url: string } | null>(null);
+  // eski yuklash natijasi bekor qilingan/almashtirilgan faylga yozilib qolmasin
+  const pickSeq = useRef(0);
 
   const [editing, setEditing] = useState<{ id: string } | null>(null);
   const [replyingTo, setReplyingTo] = useState<ReplyPreview | null>(null);
@@ -315,6 +323,8 @@ export function ChatRoom({
           applyDelete(data.messageId, new Date(data.updatedAt).getTime());
         } else if (data.type === "read" && data.by !== meId) {
           setPeerRead(true);
+          const now = Date.now();
+          setMessages((prev) => prev.map((x) => (x.mine && !x.readAt && !x.pending ? { ...x, readAt: now } : x)));
         }
       } catch {
         /* ignore */
@@ -376,6 +386,22 @@ export function ChatRoom({
     }
   }, [messages]);
 
+  function clearLocalFile() {
+    setLocalFile((prev) => {
+      if (prev?.url) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }
+
+  function cancelAttachment() {
+    pickSeq.current++;
+    setAttachment(null);
+    setUploading(false);
+    setUploadName("");
+    clearLocalFile();
+  }
+
+  /** Fayl tanlanganda — darhol yuborilmaydi: yuklanadi va ko'rib chiqish uchun ko'rsatiladi. */
   async function onPickFile(file: File) {
     setErr(null);
     setMenu(null);
@@ -383,20 +409,38 @@ export function ChatRoom({
       setErr("Fayl 100MB dan katta");
       return;
     }
+    const seq = ++pickSeq.current;
+    clearLocalFile();
+    setLocalFile({
+      name: file.name,
+      type: file.type || "application/octet-stream",
+      size: file.size,
+      url: URL.createObjectURL(file),
+    });
     setUploading(true);
     setUploadPct(0);
     setUploadName(file.name);
     setAttachment(null);
     try {
-      const prepared = await prepareChatFile(file, conversationId, setUploadPct);
-      setAttachment(prepared);
+      const prepared = await prepareChatFile(file, conversationId, (p) => {
+        if (seq === pickSeq.current) setUploadPct(p);
+      });
+      if (seq === pickSeq.current) setAttachment(prepared);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Fayl yuklanmadi");
+      if (seq === pickSeq.current) {
+        setErr(e instanceof Error ? e.message : "Fayl yuklanmadi");
+        clearLocalFile();
+      }
     } finally {
-      setUploading(false);
+      if (seq === pickSeq.current) setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
+
+  const voice = useVoiceRecorder(
+    (file) => onPickFile(file),
+    (msg) => setErr(msg),
+  );
 
   function startEdit(m: Msg) {
     setEditing({ id: m.id });
@@ -526,9 +570,13 @@ export function ChatRoom({
     if (uploading) return;
 
     const sentFile = attachment;
+    const sentLocal = localFile;
     const replyTo = replyingTo;
     setText("");
     setAttachment(null);
+    // mahalliy ko'rinish yuborilayotgan pufakchada qoladi; server javobi kelgach almashadi
+    setLocalFile(null);
+    if (sentLocal?.url) setTimeout(() => URL.revokeObjectURL(sentLocal.url), 60_000);
     setReplyingTo(null);
     setPeerRead(false);
 
@@ -545,7 +593,7 @@ export function ChatRoom({
         pending: true,
         replyTo,
         file: sentFile
-          ? { name: sentFile.name, type: sentFile.type, size: sentFile.size, url: "" }
+          ? { name: sentFile.name, type: sentFile.type, size: sentFile.size, url: sentLocal?.url ?? "" }
           : null,
       },
     ]);
@@ -923,7 +971,7 @@ export function ChatRoom({
                       >
                         {m.edited && "tahrirlangan · "}
                         {fmtTime(m.createdAt)}
-                        {m.mine && m.id === lastMineId && peerRead ? " · o'qildi" : ""}
+                        {m.mine && <ReadTicks pending={!!m.pending} read={!!m.readAt || (m.id === lastMineId && peerRead)} />}
                       </div>
                     </div>
 
@@ -994,38 +1042,30 @@ export function ChatRoom({
               </div>
             )}
 
-            {(uploading || attachment) && !editing && (
-              <div className="mb-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-zinc-300">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="min-w-0 truncate">
-                    📎 {attachment?.name ?? uploadName}
-                    {attachment && ` · ${humanSize(attachment.size)}`}
-                  </span>
+            {/* tanlangan fayl / ovozli xabar — yuborishdan oldin ko'rib chiqish */}
+            {localFile && !editing && (
+              <div className="mb-2 flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
+                <div className="relative min-w-0 flex-1">
+                  <ChatFileView file={localFile} mine={false} />
+                  {uploading && (
+                    <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/45">
+                      <ProgressRing pct={uploadPct} size={46} />
+                    </span>
+                  )}
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1 text-right">
                   <button
                     type="button"
-                    onClick={() => {
-                      setAttachment(null);
-                      setUploading(false);
-                      setUploadName("");
-                    }}
-                    className="shrink-0 text-zinc-500 hover:text-white"
+                    onClick={cancelAttachment}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-zinc-300 hover:bg-white/20 hover:text-white"
+                    aria-label="Bekor qilish"
                   >
                     ✕
                   </button>
+                  <span className="text-[11px] text-zinc-500">
+                    {uploading ? `${uploadPct}%` : humanSize(localFile.size)}
+                  </span>
                 </div>
-                {uploading && (
-                  <div className="mt-1.5">
-                    <div className="h-1.5 overflow-hidden rounded bg-white/10">
-                      <div
-                        className="h-full rounded bg-indigo-500 transition-all"
-                        style={{ width: `${uploadPct}%` }}
-                      />
-                    </div>
-                    <div className="mt-1 text-[10px] text-zinc-500">
-                      {uploadPct}% yuklandi
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -1050,7 +1090,16 @@ export function ChatRoom({
                   {uploading ? "…" : "📎"}
                 </button>
               )}
-              <textarea
+              {voice.recording ? (
+                <div className="flex min-h-[42px] flex-1 items-center gap-2.5 rounded-xl border border-red-400/30 bg-red-500/10 px-3 text-sm text-zinc-200">
+                  <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
+                  <span className="tabular-nums">
+                    {Math.floor(voice.seconds / 60)}:{String(voice.seconds % 60).padStart(2, "0")}
+                  </span>
+                  <span className="truncate text-xs text-zinc-400">Qo&apos;yib yuboring — tayyor</span>
+                </div>
+              ) : (
+                <textarea
                 className="input max-h-32 min-h-[42px] resize-none bg-white/[0.03]"
                 placeholder={editing ? "Yangi matn…" : "Xabar yozing…"}
                 rows={1}
@@ -1063,14 +1112,37 @@ export function ChatRoom({
                   }
                 }}
               />
-              <button
-                className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
-                disabled={!canSend}
-                aria-label={editing ? "Saqlash" : "Yuborish"}
-                title={editing ? "Saqlash" : "Yuborish"}
-              >
-                {editing ? "✓" : <RocketIcon />}
-              </button>
+              )}
+              {!editing && !text.trim() && !attachment && !uploading ? (
+                // matn yo'q — Telegramdagidek mikrofon: bosib turib yozasiz, qo'yib yuborsangiz tayyor
+                <button
+                  type="button"
+                  className={`btn-primary flex h-[42px] w-[42px] shrink-0 touch-none select-none items-center justify-center !p-0 ${
+                    voice.recording ? "scale-110 !bg-red-500 !bg-none" : ""
+                  }`}
+                  aria-label="Ovozli xabar (bosib turing)"
+                  title="Ovozli xabar — bosib turing"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+                    voice.start();
+                  }}
+                  onPointerUp={() => voice.stop()}
+                  onPointerCancel={() => voice.cancel()}
+                  onContextMenu={(e) => e.preventDefault()}
+                >
+                  <MicIcon />
+                </button>
+              ) : (
+                <button
+                  className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+                  disabled={!canSend}
+                  aria-label={editing ? "Saqlash" : "Yuborish"}
+                  title={editing ? "Saqlash" : "Yuborish"}
+                >
+                  {editing ? "✓" : <RocketIcon />}
+                </button>
+              )}
             </form>
               </>
             )}
@@ -1165,5 +1237,32 @@ export function ChatRoom({
         />
       )}
     </div>
+  );
+}
+
+/** Telegramdagidek: soat — yuborilmoqda, ✓ — yetkazildi, ✓✓ — o'qildi. */
+function ReadTicks({ pending, read }: { pending: boolean; read: boolean }) {
+  if (pending) {
+    return (
+      <svg viewBox="0 0 16 16" className="ml-1 inline h-3 w-3 align-[-2px]" fill="none" stroke="currentColor" strokeWidth={1.6} aria-label="yuborilmoqda">
+        <circle cx="8" cy="8" r="6" />
+        <path d="M8 5v3.2l2 1.3" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg
+      viewBox="0 0 20 12"
+      className={`ml-1 inline h-3 w-[18px] align-[-1px] ${read ? "text-sky-300" : ""}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-label={read ? "o'qildi" : "yetkazildi"}
+    >
+      <path d="M1.5 6.5 5 10l6.5-8" />
+      {read && <path d="M8.5 9.2 9.3 10l6.5-8" />}
+    </svg>
   );
 }
