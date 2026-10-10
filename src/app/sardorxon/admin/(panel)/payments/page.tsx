@@ -5,6 +5,7 @@ import { formatSom } from "@/lib/wallet";
 import { shortDateTime } from "@/lib/date";
 import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
+import { expireStaleClickTopups } from "@/lib/wallet-pending";
 
 const TYPE_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -24,6 +25,7 @@ export default async function AdminPayments({
   searchParams: Promise<{ q?: string }>;
 }) {
   const q = cleanQuery((await searchParams).q);
+  await expireStaleClickTopups();
   const txns = await db.walletTransaction.findMany({
     where: q
       ? { OR: [{ user: userSearchWhere(q) }, ...(idPrefixWhere(q) ? [idPrefixWhere(q)!] : [])] }

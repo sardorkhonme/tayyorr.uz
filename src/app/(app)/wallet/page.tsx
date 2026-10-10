@@ -12,6 +12,7 @@ import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
 import { WalletCode } from "@/components/wallet-code";
 import { shortDateTime } from "@/lib/date";
+import { expireStaleClickTopups, HIDE_UNFINISHED_TOPUPS } from "@/lib/wallet-pending";
 
 
 const TXN_LABEL: Record<string, string> = {
@@ -46,13 +47,15 @@ export default async function WalletPage({
   const restriction = await getRestriction(userId);
 
   const walletCode = await ensureWalletCode(userId);
+  await expireStaleClickTopups(userId);
   const [user, txns, payouts] = await Promise.all([
     db.user.findUnique({
       where: { id: userId },
       select: { balance: true, starBalance: true, login: true, role: true },
     }),
     db.walletTransaction.findMany({
-      where: { userId },
+      // tugallanmagan Click to'lovi tarixda ko'rinmaydi — to'langach yoki xatolik bo'lgach chiqadi
+      where: { userId, ...HIDE_UNFINISHED_TOPUPS },
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
@@ -170,6 +173,7 @@ export default async function WalletPage({
           <ul className="flex flex-col gap-2">
             {txns.map((tx) => {
               const reversed = !!tx.reversedAt;
+              const failed = tx.status === "FAILED" && !reversed;
               const out = reversed || OUTFLOW.has(tx.type);
               return (
                 <li key={tx.id}>
@@ -190,6 +194,11 @@ export default async function WalletPage({
                           BEKOR QILINGAN
                         </span>
                       )}
+                      {failed && (
+                        <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-red-400">
+                          XATOLIK
+                        </span>
+                      )}
                     </div>
                     <div className="mt-0.5 text-xs text-zinc-500">
                       {shortDateTime(tx.createdAt)}
@@ -198,7 +207,7 @@ export default async function WalletPage({
                   </div>
                   <div
                     className={`text-sm font-semibold ${
-                      reversed
+                      reversed || failed
                         ? "text-red-400 line-through"
                         : out
                           ? "text-zinc-300"

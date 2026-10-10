@@ -726,7 +726,9 @@ class _TxnRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final out = txn.reversed || kOutflowTypes.contains(txn.type);
-    final amountColor = txn.reversed ? WebC.red : (out ? WebC.zinc300 : WebC.emerald);
+    final failed = txn.status == 'FAILED' && !txn.reversed;
+    final struck = txn.reversed || failed;
+    final amountColor = struck ? WebC.red : (out ? WebC.zinc300 : WebC.emerald);
     return WebCard(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       onTap: () => _showReceipt(context, txn),
@@ -744,6 +746,7 @@ class _TxnRow extends StatelessWidget {
                         style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
                     if (txn.method == 'DEMO') _tag('DEMO', const Color(0xFFFCD34D), const Color(0xFFF59E0B)),
                     if (txn.reversed) _tag('BEKOR QILINGAN', const Color(0xFFF87171), const Color(0xFFEF4444)),
+                    if (failed) _tag('XATOLIK', const Color(0xFFF87171), const Color(0xFFEF4444)),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -761,7 +764,7 @@ class _TxnRow extends StatelessWidget {
               color: amountColor,
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              decoration: txn.reversed ? TextDecoration.lineThrough : null,
+              decoration: struck ? TextDecoration.lineThrough : null,
               decorationColor: amountColor,
             ),
           ),
@@ -787,7 +790,7 @@ void _showReceipt(BuildContext context, WalletTransactionModel txn) {
           ? 'Bekor qilingan'
           : switch (txn.status) {
               'PENDING' => 'Kutilmoqda',
-              'FAILED' => 'Muvaffaqiyatsiz',
+              'FAILED' => "Xatolik — to'lov amalga oshmadi",
               'CANCELLED' => 'Bekor qilingan',
               _ => 'Bajarildi',
             }

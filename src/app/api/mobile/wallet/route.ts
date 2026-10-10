@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { ensureWalletCode } from "@/lib/wallet";
+import { expireStaleClickTopups, HIDE_UNFINISHED_TOPUPS } from "@/lib/wallet-pending";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -12,6 +13,7 @@ export async function GET(req: Request) {
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
 
+  await expireStaleClickTopups(auth.userId);
   const [user, walletCode, txns, payouts] = await Promise.all([
     db.user.findUnique({
       where: { id: auth.userId },
@@ -19,7 +21,8 @@ export async function GET(req: Request) {
     }),
     ensureWalletCode(auth.userId),
     db.walletTransaction.findMany({
-      where: { userId: auth.userId },
+      // tugallanmagan Click to'lovi tarixda ko'rinmaydi (web bilan bir xil)
+      where: { userId: auth.userId, ...HIDE_UNFINISHED_TOPUPS },
       orderBy: { createdAt: "desc" },
       take: 30,
     }),
