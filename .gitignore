@@ -11,3 +11,7 @@ yarn-error.log*
 .env*.local
 next-env.d.ts
 /prisma/migrations/dev.db*
+
+# Firebase server kaliti (maxfiy)
+firebase-key.json
+*-firebase-adminsdk-*.json

@@ -99,19 +99,7 @@ class MessageNotifier {
         id: c.id.hashCode & 0x7fffffff,
         title: title,
         body: body,
-        notificationDetails: NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channel.id,
-            _channel.name,
-            channelDescription: _channel.description,
-            importance: Importance.high,
-            priority: Priority.high,
-            sound: _channel.sound,
-            color: const Color(0xFF6366F1),
-            category: AndroidNotificationCategory.message,
-            styleInformation: BigTextStyleInformation(body),
-          ),
-        ),
+        notificationDetails: _details(body),
         payload: jsonEncode({
           'id': c.id,
           'otherId': c.other.id,
@@ -131,8 +119,68 @@ class MessageNotifier {
     if (kIsWeb || !_ready) return;
     try {
       await _plugin.cancel(id: conversationId.hashCode & 0x7fffffff);
+      // FCM (ilova yopiq paytda) kelganlari — tag = suhbat id'si, id = 0
+      await _plugin.cancel(id: 0, tag: conversationId);
     } catch (_) {}
   }
+
+  /// Push (FCM) orqali kelgan xabar — ilova ochiq paytda ko'rsatish.
+  Future<void> showRemote({
+    required String conversationId,
+    required String title,
+    required String body,
+    required Map<String, dynamic> data,
+  }) async {
+    if (kIsWeb) return;
+    await init();
+    if (!_ready) return;
+    try {
+      await _plugin.show(
+        id: conversationId.hashCode & 0x7fffffff,
+        title: title,
+        body: body,
+        notificationDetails: _details(body),
+        payload: jsonEncode({
+          'id': conversationId,
+          'otherId': data['otherId'],
+          'name': data['name'] ?? title,
+          'login': data['login'],
+          'image': data['image'],
+          'support': data['support'] == '1',
+        }),
+      );
+    } catch (e) {
+      debugPrint('bildirishnoma ko\'rsatilmadi: $e');
+    }
+  }
+
+  /// FCM bildirishnomasi bosilganda (data maydonlari bilan).
+  void openFromData(Map<String, dynamic> data) {
+    final id = data['conversationId'] as String?;
+    if (id == null) return;
+    _openFromPayload(jsonEncode({
+      'id': id,
+      'otherId': data['otherId'] ?? '',
+      'name': data['name'] ?? '',
+      'login': data['login'],
+      'image': data['image'],
+      'support': data['support'] == '1',
+    }));
+  }
+
+  NotificationDetails _details(String body) => NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          sound: _channel.sound,
+          color: const Color(0xFF6366F1),
+          category: AndroidNotificationCategory.message,
+          styleInformation: BigTextStyleInformation(body),
+        ),
+      );
 
   void _openFromPayload(String? payload) {
     if (payload == null) return;
@@ -146,8 +194,8 @@ class MessageNotifier {
           other: ChatOtherUser(
             id: d['otherId'] as String,
             name: d['name'] as String? ?? '',
-            login: d['login'] as String?,
-            image: d['image'] as String?,
+            login: (d['login'] as String?)?.isEmpty ?? true ? null : d['login'] as String?,
+            image: (d['image'] as String?)?.isEmpty ?? true ? null : d['image'] as String?,
             isSupport: d['support'] == true,
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/notifications/message_notifier.dart';
+import '../../core/notifications/push_service.dart';
 import '../../core/unread_counter.dart';
 import '../../widgets/aurora_background.dart';
 import '../auth/bloc/auth_bloc.dart';
@@ -56,7 +57,7 @@ class _HomeShellViewState extends State<_HomeShellView> with WidgetsBindingObser
     UnreadCounter.instance.refresh();
     // har 10 soniyada — yangi xabar kelsa bildirishnoma va "tin"
     _unreadTimer = Timer.periodic(const Duration(seconds: 10), (_) => UnreadCounter.instance.refresh());
-    MessageNotifier.instance.requestPermission();
+    MessageNotifier.instance.requestPermission().then((_) => PushService.instance.register());
   }
 
   @override

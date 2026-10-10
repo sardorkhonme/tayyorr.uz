@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "206777863976",
+    "project_id": "tayyorr-uz",
+    "storage_bucket": "tayyorr-uz.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206777863976:android:512d752cb48e0aac854a1d",
+        "android_client_info": {
+          "package_name": "uz.tayyorr.tayyorr_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206777863976-nqr6j6flilktv8nkpnc681r15gu3ohgb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX29gUqWdDCXE-7OYAa15tzoM4CgxIDP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206777863976-nqr6j6flilktv8nkpnc681r15gu3ohgb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

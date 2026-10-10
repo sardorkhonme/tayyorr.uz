@@ -171,6 +171,7 @@ model User {
   contractsSent     Contract[]          @relation("ContractsSent")
   contractsGot      Contract[]          @relation("ContractsGot")
   pushSubscriptions PushSubscription[]
+  deviceTokens      DeviceToken[]
   payoutRequests    PayoutRequest[]
   reactions         MessageReaction[]
   activityLogs      ActivityLog[]
@@ -407,6 +408,19 @@ model PushSubscription {
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Mobil ilova (FCM) push tokeni — ilova yopiq bo'lsa ham xabar yetkazish uchun.
+model DeviceToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String   @default("android")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }

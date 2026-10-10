@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../features/messages/data/messages_repository.dart';
 import 'notifications/message_notifier.dart';
+import 'notifications/push_service.dart';
 
 /// Barcha suhbatlardagi o'qilmagan xabarlar soni — saytdagi menyuda
 /// "Xabarlar" yonidagi nishon va menyu tugmasidagi nuqta uchun.
@@ -32,7 +33,11 @@ class UnreadCounter extends ValueNotifier<int> {
         for (final c in list) {
           final grew = c.unread > (prev[c.id] ?? 0);
           // ochiq turgan suhbatga kelgan xabar uchun chat o'zi "tin" chaladi
-          if (grew && c.lastMessageMine != true && MessageNotifier.instance.activeConversationId != c.id) {
+          // FCM ishlasa bildirishnomani u yuboradi — bu yerda takrorlamaymiz
+          if (!PushService.instance.active &&
+              grew &&
+              c.lastMessageMine != true &&
+              MessageNotifier.instance.activeConversationId != c.id) {
             MessageNotifier.instance.showMessage(c);
           }
         }
