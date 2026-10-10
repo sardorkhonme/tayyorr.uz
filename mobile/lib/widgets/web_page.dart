@@ -13,7 +13,11 @@ class WebPage extends StatelessWidget {
     this.onRefresh,
     this.gap = 0,
     this.bottom,
+    this.background = true,
   });
+
+  /// `false` — bosh qobiq ichidagi bo'lim (fonni qobiq beradi).
+  final bool background;
 
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
@@ -44,12 +48,11 @@ class WebPage extends StatelessWidget {
     if (onRefresh != null) {
       scroll = RefreshIndicator(onRefresh: onRefresh!, color: AppColors.indigo, edgeOffset: 80, child: scroll);
     }
-    return AuroraBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: scroll,
-        bottomNavigationBar: bottom,
-      ),
+    final page = Scaffold(
+      backgroundColor: Colors.transparent,
+      body: scroll,
+      bottomNavigationBar: bottom,
     );
+    return background ? AuroraBackground(child: page) : page;
   }
 }

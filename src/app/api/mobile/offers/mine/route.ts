@@ -43,6 +43,7 @@ export async function GET(req: Request) {
       price: o.price,
       message: o.message,
       status: o.status,
+      starsSpent: o.starsSpent,
       createdAt: o.createdAt.toISOString(),
       order: {
         id: o.order.id,

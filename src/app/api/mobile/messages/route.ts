@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
+import { getSupportUserId } from "@/lib/support";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -26,6 +27,11 @@ export async function GET(req: Request) {
     },
   });
 
+  const supportId = await getSupportUserId();
+  const blockedMeBy = new Set(
+    (await db.block.findMany({ where: { blockedId: me }, select: { blockerId: true } })).map((r) => r.blockerId),
+  );
+
   const withMeta = await Promise.all(
     convs.map(async (c) => {
       const other = c.userAId === me ? c.userB : c.userA;
@@ -40,7 +46,9 @@ export async function GET(req: Request) {
           name: other.name ?? other.login ?? "Foydalanuvchi",
           login: other.login,
           image: other.avatarUrl ?? other.image ?? null,
+          isSupport: other.id === supportId,
         },
+        blockedMe: blockedMeBy.has(other.id) && other.id !== supportId,
         lastMessage: last
           ? { body: last.body, createdAt: last.createdAt.toISOString(), mine: last.senderId === me }
           : null,
@@ -49,6 +57,12 @@ export async function GET(req: Request) {
       };
     }),
   );
+
+  // webdagidek: support suhbati doim eng tepada
+  withMeta.sort((a, b) => {
+    if (a.other.isSupport !== b.other.isSupport) return a.other.isSupport ? -1 : 1;
+    return b.lastMessageAt.localeCompare(a.lastMessageAt);
+  });
 
   return mobileJson({ conversations: withMeta });
 }

@@ -12,6 +12,7 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
+import '../../../widgets/web_ui.dart';
 import '../../dashboard/data/order_model.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../public_profile/presentation/public_profile_screen.dart';
@@ -125,64 +126,67 @@ class _ChatViewState extends State<_ChatView> {
                       order: state.activeContracts[_contractIndex % state.activeContracts.length],
                       total: state.activeContracts.length,
                       index: _contractIndex % state.activeContracts.length,
-                      onCycle: () => setState(
-                        () => _contractIndex = (_contractIndex + 1) % state.activeContracts.length,
-                      ),
+                      onCycle: () =>
+                          setState(() => _contractIndex = (_contractIndex + 1) % state.activeContracts.length),
                     ),
                   Expanded(
-                    child: Builder(builder: (context) {
-                      if (state.status == ChatStatus.loading && state.messages.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                          child: Column(
-                            children: const [
-                              SBubble(widthFraction: 0.4),
-                              SizedBox(height: 10),
-                              SBubble(widthFraction: 0.5, mine: true),
-                              SizedBox(height: 10),
-                              SBubble(widthFraction: 0.6),
-                              SizedBox(height: 10),
-                              SBubble(widthFraction: 0.4, mine: true),
-                              SizedBox(height: 10),
-                              SBubble(widthFraction: 0.35),
-                            ],
-                          ),
-                        );
-                      }
-                      if (state.status == ChatStatus.failure && state.messages.isEmpty) {
-                        return Center(
-                          child: Text(state.error ?? 'Xatolik', style: const TextStyle(color: AppColors.textMuted)),
-                        );
-                      }
-                      if (state.blockedMe && !other.isSupport) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
+                    child: Builder(
+                      builder: (context) {
+                        if (state.status == ChatStatus.loading && state.messages.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                            child: Column(
+                              children: const [
+                                SBubble(widthFraction: 0.4),
+                                SizedBox(height: 10),
+                                SBubble(widthFraction: 0.5, mine: true),
+                                SizedBox(height: 10),
+                                SBubble(widthFraction: 0.6),
+                                SizedBox(height: 10),
+                                SBubble(widthFraction: 0.4, mine: true),
+                                SizedBox(height: 10),
+                                SBubble(widthFraction: 0.35),
+                              ],
+                            ),
+                          );
+                        }
+                        if (state.status == ChatStatus.failure && state.messages.isEmpty) {
+                          return Center(
+                            child: Text(state.error ?? 'Xatolik', style: const TextStyle(color: AppColors.textMuted)),
+                          );
+                        }
+                        if (state.blockedMe && !other.isSupport) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text(
+                                'Bu foydalanuvchi sizni bloklagan — xabar yoza olmaysiz.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: AppColors.textMuted),
+                              ),
+                            ),
+                          );
+                        }
+                        if (state.messages.isEmpty) {
+                          return const Center(
                             child: Text(
-                              'Bu foydalanuvchi sizni bloklagan — xabar yoza olmaysiz.',
-                              textAlign: TextAlign.center,
+                              'Xabar yozing — suhbat shu yerdan boshlanadi',
                               style: TextStyle(color: AppColors.textMuted),
                             ),
+                          );
+                        }
+                        return ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                          itemCount: state.messages.length,
+                          itemBuilder: (context, i) => _MessageBubble(
+                            message: state.messages[i],
+                            hasActiveContract: state.activeContracts.isNotEmpty,
+                            pinnedOrderId: state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
                           ),
                         );
-                      }
-                      if (state.messages.isEmpty) {
-                        return const Center(
-                          child: Text('Xabar yozing — suhbat shu yerdan boshlanadi',
-                              style: TextStyle(color: AppColors.textMuted)),
-                        );
-                      }
-                      return ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                        itemCount: state.messages.length,
-                        itemBuilder: (context, i) => _MessageBubble(
-                          message: state.messages[i],
-                          hasActiveContract: state.activeContracts.isNotEmpty,
-                          pinnedOrderId: state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
-                        ),
-                      );
-                    }),
+                      },
+                    ),
                   ),
                   if (state.replyTo != null) _ReplyBanner(message: state.replyTo!),
                   if (!state.blockedMe && !state.blockedByMe)
@@ -227,57 +231,119 @@ class _ChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final online = other.lastSeenAt != null && DateTime.now().difference(other.lastSeenAt!).inMinutes < 2;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 6, 10, 10),
+    // Saytdagi chat-room sarlavhasi: ‹ matnli tugma, 36px avatar, ism,
+    // holat nuqtasi va 32x32 chegarali ⋮ tugma; pastda nozik chiziq.
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: WebC.headerBar,
+        border: Border(bottom: BorderSide(color: WebC.border)),
+      ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          ),
           GestureDetector(
-            onTap: other.isSupport
-                ? null
-                : () => Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: other.id))),
-            child: Row(
-              children: [
-                UserAvatar(imageUrl: other.image, initial: _initial(other.name), size: 36),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(other.name,
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).pop(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text('‹', style: TextStyle(color: WebC.zinc400, fontSize: 26, height: 1)),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: other.isSupport
+                  ? null
+                  : () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: other.id))),
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: WebC.border),
+                    ),
+                    child: UserAvatar(imageUrl: other.image, initial: _initial(other.name), size: 36),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          other.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
-                      if (other.isSupport)
-                        const Text("Qo'llab-quvvatlash", style: TextStyle(color: AppColors.emerald, fontSize: 11.5))
-                      else
-                        Text(_presence(other.lastSeenAt),
-                            style: TextStyle(
-                                color: online ? AppColors.emerald : AppColors.textMuted, fontSize: 11.5)),
-                    ],
+                          style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 2),
+                        if (other.isSupport)
+                          Text("Qo'llab-quvvatlash", style: TextStyle(color: WebC.emerald, fontSize: 12))
+                        else
+                          Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: online ? WebC.emerald : WebC.zinc600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  _presence(other.lastSeenAt),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: online ? WebC.emerald : WebC.zinc500, fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           if (!other.isSupport)
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
+              padding: EdgeInsets.zero,
               color: AppColors.surface,
               onSelected: (value) => _onMenuSelect(context, value),
               itemBuilder: (context) => [
-                PopupMenuItem(value: 'report', child: Text('Shikoyat qilish', style: TextStyle(color: AppColors.textPrimary))),
+                PopupMenuItem(
+                  value: 'report',
+                  child: Text('Shikoyat qilish', style: TextStyle(color: AppColors.textPrimary)),
+                ),
                 PopupMenuItem(
                   value: 'block',
-                  child: Text(blockedByMe ? 'Blokdan chiqarish' : 'Bloklash',
-                      style: TextStyle(color: AppColors.textPrimary)),
+                  child: Text(
+                    blockedByMe ? 'Blokdan chiqarish' : 'Bloklash',
+                    style: TextStyle(color: AppColors.textPrimary),
+                  ),
                 ),
-                const PopupMenuItem(value: 'delete', child: Text("Suhbatni o'chirish", style: TextStyle(color: AppColors.red))),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text("Suhbatni o'chirish", style: TextStyle(color: AppColors.red)),
+                ),
               ],
+              child: Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: WebC.border),
+                  color: WebC.fill5,
+                ),
+                child: Text('⋮', style: TextStyle(color: WebC.zinc300, fontSize: 16, height: 1)),
+              ),
             ),
         ],
       ),
@@ -329,10 +395,15 @@ Future<void> _showReportDialog(BuildContext context, {String? messageId}) async 
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Shikoyat qilish', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(
+              'Shikoyat qilish',
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 4),
-            const Text('Nima sodir bo\'lganini yozing (kamida 10 belgi).',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+            const Text(
+              'Nima sodir bo\'lganini yozing (kamida 10 belgi).',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+            ),
             const SizedBox(height: 14),
             AppTextField(label: 'Shikoyat matni', controller: text, maxLines: 4),
             const SizedBox(height: 16),
@@ -344,9 +415,7 @@ Future<void> _showReportDialog(BuildContext context, {String? messageId}) async 
                   Navigator.of(sheetContext).pop();
                   final ok = await cubit.report(text.text.trim(), messageId: messageId);
                   if (ok && sheetContext.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Shikoyat yuborildi')),
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Shikoyat yuborildi')));
                   }
                 },
                 child: const Text('Yuborish'),
@@ -376,8 +445,8 @@ class _PinnedContractCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
       child: GestureDetector(
-        onTap: () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: order.id))),
+        onTap: () =>
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: order.id))),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: BackdropFilter(
@@ -397,10 +466,12 @@ class _PinnedContractCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(order.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
+                        Text(
+                          order.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
+                        ),
                         Text(
                           '${kOrderTypeLabel[order.type] ?? order.type} · ${kOrderStatusLabel[order.status] ?? order.status}'
                           '${total > 1 ? " · ${index + 1}/$total" : ""}',
@@ -445,9 +516,14 @@ class _ReplyBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Javob berilmoqda', style: TextStyle(color: AppColors.indigo, fontSize: 11, fontWeight: FontWeight.w700)),
+                const Text(
+                  'Javob berilmoqda',
+                  style: TextStyle(color: AppColors.indigo, fontSize: 11, fontWeight: FontWeight.w700),
+                ),
                 Text(
-                  message.deleted ? "o'chirilgan xabar" : (message.body.isNotEmpty ? message.body : (message.file?.name ?? 'xabar')),
+                  message.deleted
+                      ? "o'chirilgan xabar"
+                      : (message.body.isNotEmpty ? message.body : (message.file?.name ?? 'xabar')),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
@@ -537,10 +613,12 @@ class _MessageBubble extends StatelessWidget {
                 title: const Text("O'chirish", style: TextStyle(color: AppColors.red)),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
-                  final ok = await confirmDialog(context,
-                      title: "O'chirilsinmi?",
-                      message: "Xabar ikkala tomondan ham o'chiriladi.",
-                      confirmLabel: "Ha, o'chirish");
+                  final ok = await confirmDialog(
+                    context,
+                    title: "O'chirilsinmi?",
+                    message: "Xabar ikkala tomondan ham o'chiriladi.",
+                    confirmLabel: "Ha, o'chirish",
+                  );
                   if (ok == true) cubit.deleteMessage(message.id);
                 },
               ),
@@ -578,7 +656,10 @@ class _MessageBubble extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Xabarni tahrirlash', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+              Text(
+                'Xabarni tahrirlash',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 14),
               AppTextField(label: 'Xabar', controller: controller, maxLines: 4),
               const SizedBox(height: 16),
@@ -631,10 +712,13 @@ class _MessageBubble extends StatelessWidget {
                 Divider(color: mine ? Colors.white24 : AppColors.cardBorder, height: 1),
                 const SizedBox(height: 8),
                 GestureDetector(
-                  onTap: () => Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: pinnedOrderId!))),
-                  child: Text('Buyurtmani ko\'rish ›',
-                      style: TextStyle(color: bubbleTextColor, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: pinnedOrderId!))),
+                  child: Text(
+                    'Buyurtmani ko\'rish ›',
+                    style: TextStyle(color: bubbleTextColor, fontSize: 12.5, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             ],
@@ -643,68 +727,101 @@ class _MessageBubble extends StatelessWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: () => _openMenu(context),
-      child: Align(
-        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
-        child: Column(
-          crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 3),
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.74),
+    // Saytdagidek: pufakcha eni 86% gacha, 16px burchak; yonida 28x28 ⋮
+    // tugma (meniki — chapda, boshqaniki — o'ngda), vaqt o'ng tomonda.
+    final timeColor = mine ? const Color(0xFFC7D2FE) : WebC.zinc500;
+    final menuBtn = message.deleted
+        ? const SizedBox(width: 28)
+        : GestureDetector(
+            onTap: () => _openMenu(context),
+            child: Container(
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: mine ? AppColors.indigo : AppColors.tint(0.06),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(mine ? 16 : 4),
-                  bottomRight: Radius.circular(mine ? 4 : 16),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.isLight
+                      ? Colors.black.withValues(alpha: 0.15)
+                      : Colors.white.withValues(alpha: 0.15),
                 ),
+                color: WebC.fill10,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Text('⋮', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1)),
+            ),
+          );
+    final bubble = GestureDetector(
+      onLongPress: () => _openMenu(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: mine ? const Color(0xFF4F39F6) : WebC.fill5,
+          borderRadius: BorderRadius.circular(16),
+          border: mine ? null : Border.all(color: WebC.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (message.replyTo != null) _ReplyQuote(reply: message.replyTo!, mine: mine),
+            if (message.file != null) _FileAttachment(file: message.file!),
+            if (!message.deleted && message.body.isNotEmpty) ...[
+              if (message.file != null) const SizedBox(height: 6),
+              Text(
+                message.body,
+                style: TextStyle(color: mine ? Colors.white : WebC.zinc200, fontSize: 14, height: 1.45),
+              ),
+            ],
+            if (message.deleted)
+              Text(
+                "o'chirilgan xabar",
+                style: TextStyle(color: timeColor, fontStyle: FontStyle.italic, fontSize: 14),
+              ),
+            const SizedBox(height: 2),
+            Text(
+              '${message.edited && !message.deleted ? 'tahrirlangan · ' : ''}${_time(message.createdAtDate)}',
+              textAlign: TextAlign.right,
+              style: TextStyle(color: timeColor, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          LayoutBuilder(
+            builder: (context, c) {
+              return Row(
+                mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (mine) ...[menuBtn, const SizedBox(width: 6)],
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: c.maxWidth * 0.86 - 34),
+                    child: IntrinsicWidth(child: bubble),
+                  ),
+                  if (!mine) ...[const SizedBox(width: 6), menuBtn],
+                ],
+              );
+            },
+          ),
+          if (message.reactions.like > 0 || message.reactions.dislike > 0)
+            Padding(
+              padding: EdgeInsets.only(top: 4, left: mine ? 0 : 4, right: mine ? 34 : 0),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (message.replyTo != null) _ReplyQuote(reply: message.replyTo!),
-                  if (message.file != null) _FileAttachment(file: message.file!),
-                  if (!message.deleted && message.body.isNotEmpty) ...[
-                    if (message.file != null) const SizedBox(height: 6),
-                    Text(message.body, style: TextStyle(color: bubbleTextColor, fontSize: 14, height: 1.35)),
-                  ],
-                  if (message.deleted)
-                    Text("o'chirilgan xabar",
-                        style: TextStyle(color: bubbleTextColor.withValues(alpha: 0.6), fontStyle: FontStyle.italic, fontSize: 14)),
-                  const SizedBox(height: 3),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (message.edited && !message.deleted) ...[
-                        Text('tahrirlangan · ',
-                            style: TextStyle(color: bubbleTextColor.withValues(alpha: 0.55), fontSize: 9.5)),
-                      ],
-                      Text(_time(message.createdAtDate),
-                          style: TextStyle(color: bubbleTextColor.withValues(alpha: 0.65), fontSize: 10)),
-                    ],
-                  ),
+                  if (message.reactions.like > 0) _ReactionCountPill(icon: '👍', count: message.reactions.like),
+                  if (message.reactions.like > 0 && message.reactions.dislike > 0) const SizedBox(width: 6),
+                  if (message.reactions.dislike > 0) _ReactionCountPill(icon: '👎', count: message.reactions.dislike),
                 ],
               ),
             ),
-            if (message.reactions.like > 0 || message.reactions.dislike > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 2, bottom: 2),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (message.reactions.like > 0) _ReactionCountPill(icon: '👍', count: message.reactions.like),
-                    if (message.reactions.like > 0 && message.reactions.dislike > 0) const SizedBox(width: 6),
-                    if (message.reactions.dislike > 0) _ReactionCountPill(icon: '👎', count: message.reactions.dislike),
-                  ],
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -717,24 +834,23 @@ class _MessageBubble extends StatelessWidget {
 }
 
 class _ReplyQuote extends StatelessWidget {
-  const _ReplyQuote({required this.reply});
+  const _ReplyQuote({required this.reply, required this.mine});
   final ReplyPreviewModel reply;
+  final bool mine;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(8),
-        border: const Border(left: BorderSide(color: Colors.white38, width: 2)),
+        border: Border(left: BorderSide(color: mine ? const Color(0xFFA5B4FC) : WebC.indigo, width: 2)),
       ),
       child: Text(
         reply.deleted ? "o'chirilgan xabar" : reply.text,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: Colors.white70, fontSize: 12),
+        style: TextStyle(color: mine ? const Color(0xFFC7D2FE) : WebC.zinc400, fontSize: 12),
       ),
     );
   }
@@ -751,8 +867,13 @@ class _FileAttachment extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
           onTap: () => launchUrl(Uri.parse(file.url), mode: LaunchMode.externalApplication),
-          child: Image.network(file.url, fit: BoxFit.cover, height: 160, width: double.infinity,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+          child: Image.network(
+            file.url,
+            fit: BoxFit.cover,
+            height: 160,
+            width: double.infinity,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
         ),
       );
     }
@@ -772,8 +893,12 @@ class _FileAttachment extends StatelessWidget {
             const Icon(Icons.insert_drive_file_rounded, size: 20, color: Colors.white70),
             const SizedBox(width: 8),
             Flexible(
-              child: Text(file.name,
-                  maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 12.5)),
+              child: Text(
+                file.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white, fontSize: 12.5),
+              ),
             ),
           ],
         ),
@@ -832,81 +957,108 @@ class _Composer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Saytdagi suzuvchi yozish paneli: 16px burchakli shisha konteyner,
+    // ichida 42x42 📎, matn maydoni va 42x42 gradient yuborish tugmasi.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: AppColors.tint(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.cardBorder),
-                ),
-                child: busy
-                    ? const Padding(
-                        padding: EdgeInsets.all(11),
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textMuted),
-                      )
-                    : IconButton(
-                        onPressed: onAttach,
-                        icon: Icon(Icons.attach_file_rounded, size: 20, color: AppColors.textSecondary),
-                      ),
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.isLight
+                  ? Colors.white.withValues(alpha: 0.85)
+                  : const Color(0xFF0B0B12).withValues(alpha: 0.80),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.isLight ? Colors.black.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.15),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  constraints: const BoxConstraints(maxHeight: 120),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.tint(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.cardBorder),
-                  ),
-                  child: TextField(
-                    controller: controller,
-                    minLines: 1,
-                    maxLines: 5,
-                    textCapitalization: TextCapitalization.sentences,
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      border: InputBorder.none,
-                      hintText: 'Xabar yozing...',
-                      hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                GestureDetector(
+                  onTap: onAttach,
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: WebC.fill5,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: WebC.border),
                     ),
-                    onSubmitted: (_) => onSend(),
+                    child: busy
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: WebC.zinc400),
+                          )
+                        : const Text('📎', style: TextStyle(fontSize: 16)),
                   ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 42, maxHeight: 140),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.isLight
+                          ? Colors.black.withValues(alpha: 0.03)
+                          : Colors.white.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(11.2),
+                      border: Border.all(color: WebC.border),
+                    ),
+                    child: TextField(
+                      controller: controller,
+                      minLines: 1,
+                      maxLines: 5,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: TextStyle(color: WebC.white, fontSize: 14, height: 1.5),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        isCollapsed: true,
+                        contentPadding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        filled: false,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        hintText: 'Xabar yozing...',
+                        hintStyle: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.5),
+                      ),
+                      onSubmitted: (_) => onSend(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller,
+                  builder: (context, v, child) => Opacity(opacity: v.text.trim().isEmpty ? 0.5 : 1, child: child),
+                  child: GestureDetector(
+                    onTap: onSend,
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                        ),
+                      ),
+                      child: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          Material(
-            color: AppColors.indigo,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: onSend,
-              child: const Padding(
-                padding: EdgeInsets.all(11),
-                child: Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 20),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

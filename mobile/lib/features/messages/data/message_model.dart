@@ -177,7 +177,9 @@ class ConversationModel {
   final String? lastMessageBody;
   final bool? lastMessageMine;
   final DateTime lastMessageAt;
+  final DateTime? lastMessageCreatedAt;
   final int unread;
+  final bool blockedMe;
 
   const ConversationModel({
     required this.id,
@@ -185,7 +187,9 @@ class ConversationModel {
     this.lastMessageBody,
     this.lastMessageMine,
     required this.lastMessageAt,
+    this.lastMessageCreatedAt,
     required this.unread,
+    this.blockedMe = false,
   });
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
@@ -196,7 +200,9 @@ class ConversationModel {
       lastMessageBody: last?['body'] as String?,
       lastMessageMine: last?['mine'] as bool?,
       lastMessageAt: DateTime.parse(json['lastMessageAt'] as String),
+      lastMessageCreatedAt: last?['createdAt'] != null ? DateTime.parse(last!['createdAt'] as String) : null,
       unread: (json['unread'] as num?)?.toInt() ?? 0,
+      blockedMe: json['blockedMe'] as bool? ?? false,
     );
   }
 }

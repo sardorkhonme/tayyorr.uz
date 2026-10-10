@@ -32,6 +32,7 @@ class OfferModel {
   final int price;
   final String? message;
   final String status; // PENDING | ACCEPTED | REJECTED | WITHDRAWN
+  final int starsSpent;
   final DateTime createdAt;
   final OfferOrderModel order;
 
@@ -40,6 +41,7 @@ class OfferModel {
     required this.price,
     this.message,
     required this.status,
+    this.starsSpent = 2,
     required this.createdAt,
     required this.order,
   });
@@ -50,6 +52,7 @@ class OfferModel {
       price: (json['price'] as num).toInt(),
       message: json['message'] as String?,
       status: json['status'] as String,
+      starsSpent: (json['starsSpent'] as num?)?.toInt() ?? 2,
       createdAt: DateTime.parse(json['createdAt'] as String),
       order: OfferOrderModel.fromJson(json['order'] as Map<String, dynamic>),
     );
