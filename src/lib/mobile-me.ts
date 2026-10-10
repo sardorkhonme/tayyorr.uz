@@ -18,9 +18,11 @@ export const ME_SELECT = {
   isAvailable: true,
   createdAt: true,
   theme: true,
+  birthDate: true,
 } as const;
 
 type MeUser = {
+  birthDate?: Date | null;
   id: string;
   login: string | null;
   name: string | null;
@@ -60,6 +62,7 @@ export function serializeMe(u: MeUser) {
     isAvailable: u.isAvailable,
     createdAt: u.createdAt.toISOString(),
     theme: u.theme === "light" ? "light" : "dark",
+    birthDate: u.birthDate ? u.birthDate.toISOString().slice(0, 10) : null,
     needsOnboarding: !(u.role && u.login),
   };
 }

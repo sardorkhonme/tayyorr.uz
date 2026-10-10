@@ -28,6 +28,7 @@ export default async function ProfilePage() {
       role: true,
       about: true,
       avatarUrl: true,
+      birthDate: true,
     },
   });
   if (!user) return null;
@@ -49,6 +50,7 @@ export default async function ProfilePage() {
           lastName: user.lastName ?? "",
           about: user.about ?? "",
           avatarUrl: user.avatarUrl ?? "",
+          birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : "",
         }}
       />
 

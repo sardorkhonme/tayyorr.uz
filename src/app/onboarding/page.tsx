@@ -8,20 +8,9 @@ import { AvatarUpload } from "@/components/avatar-upload";
 import { AuthShell } from "@/components/auth-shell";
 import { PasswordInput } from "@/components/password-input";
 import { TermsGate } from "@/components/terms-gate";
+import { BirthDateSelect, birthPartsToIso } from "@/components/birth-date-select";
 
 type Role = "ORDERER" | "PREPARER";
-
-const MONTHS = [
-  "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
-  "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr",
-];
-const THIS_YEAR = new Date().getFullYear();
-// 10 yoshdan 100 yoshgacha
-const YEARS = Array.from({ length: 91 }, (_, i) => THIS_YEAR - 10 - i);
-
-function daysIn(year: number, month: number) {
-  return new Date(year || 2000, month || 1, 0).getDate();
-}
 
 function OnboardingInner() {
   const router = useRouter();
@@ -89,7 +78,7 @@ function OnboardingInner() {
           role,
           ...form,
           avatarUrl,
-          birthDate: `${birth.y}-${birth.m.padStart(2, "0")}-${birth.d.padStart(2, "0")}`,
+          birthDate: birthPartsToIso(birth),
           acceptTerms: true,
         }),
       });
@@ -165,59 +154,7 @@ function OnboardingInner() {
 
         <div>
           <label className="label">Tug&apos;ilgan sana</label>
-          <div className="grid grid-cols-[1fr_1.6fr_1.2fr] gap-2">
-            <select
-              className="input"
-              required
-              value={birth.d}
-              onChange={(e) => setBirth((b) => ({ ...b, d: e.target.value }))}
-            >
-              <option value="">Kun</option>
-              {Array.from({ length: daysIn(Number(birth.y), Number(birth.m)) }, (_, i) => (
-                <option key={i + 1} value={String(i + 1)}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <select
-              className="input"
-              required
-              value={birth.m}
-              onChange={(e) =>
-                setBirth((b) => {
-                  const m = e.target.value;
-                  const max = daysIn(Number(b.y), Number(m));
-                  return { ...b, m, d: Number(b.d) > max ? "" : b.d };
-                })
-              }
-            >
-              <option value="">Oy</option>
-              {MONTHS.map((name, i) => (
-                <option key={name} value={String(i + 1)}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="input"
-              required
-              value={birth.y}
-              onChange={(e) =>
-                setBirth((b) => {
-                  const y = e.target.value;
-                  const max = daysIn(Number(y), Number(b.m));
-                  return { ...b, y, d: Number(b.d) > max ? "" : b.d };
-                })
-              }
-            >
-              <option value="">Yil</option>
-              {YEARS.map((y) => (
-                <option key={y} value={String(y)}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
+          <BirthDateSelect value={birth} onChange={setBirth} required />
         </div>
 
         <div>

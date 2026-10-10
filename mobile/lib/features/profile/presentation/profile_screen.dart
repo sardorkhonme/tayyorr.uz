@@ -13,6 +13,7 @@ import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
+import '../../auth/presentation/complete_profile_screen.dart' show BirthDateField;
 import '../../auth/data/auth_repository.dart';
 
 /// Saytdagi /profile — profil formasi, akkaunt formasi va chiqish.
@@ -75,6 +76,7 @@ class _ProfileFormState extends State<_ProfileForm> {
   late final TextEditingController _firstName;
   late final TextEditingController _lastName;
   late final TextEditingController _about;
+  DateTime? _birth;
   bool _busy = false;
   bool _uploading = false;
   Uint8List? _preview;
@@ -88,6 +90,7 @@ class _ProfileFormState extends State<_ProfileForm> {
     _firstName = TextEditingController(text: user?.firstName ?? '');
     _lastName = TextEditingController(text: user?.lastName ?? '');
     _about = TextEditingController(text: user?.about ?? '');
+    _birth = DateTime.tryParse(user?.birthDate ?? '');
   }
 
   @override
@@ -138,6 +141,9 @@ class _ProfileFormState extends State<_ProfileForm> {
         firstName: _firstName.text.trim(),
         lastName: _lastName.text.trim(),
         about: _about.text.trim(),
+        birthDate: _birth == null
+            ? null
+            : '${_birth!.year}-${_birth!.month.toString().padLeft(2, '0')}-${_birth!.day.toString().padLeft(2, '0')}',
       );
       if (!mounted) return;
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
@@ -213,6 +219,12 @@ class _ProfileFormState extends State<_ProfileForm> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          const WebLabel("Tug'ilgan sana"),
+          BirthDateField(
+            value: _birth,
+            onChanged: (d) => setState(() => _birth = d),
           ),
           const SizedBox(height: 12),
           const WebLabel("Qo'shimcha ma'lumot"),
@@ -355,7 +367,14 @@ class _SignOutButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFF87171).withValues(alpha: 0.30)),
         ),
-        child: Text('⏻ Hisobdan chiqish', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.power_settings_new_rounded, size: 18, color: WebC.redSoft),
+            const SizedBox(width: 8),
+            Text('Hisobdan chiqish', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
+          ],
+        ),
       ),
     );
   }

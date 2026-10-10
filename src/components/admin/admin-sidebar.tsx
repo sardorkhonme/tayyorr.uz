@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import type { NavLink } from "@/components/nav-menu";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PowerIcon } from "@/components/icons";
 
 /** Admin panel chap paneli (kompyuterda). */
 export function AdminSidebar({ nav }: { nav: NavLink[] }) {
@@ -50,7 +51,7 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
         <ThemeToggle />
         <AdminPostButton
           url="/api/admin/logout"
-          label="⏻ Chiqish"
+          label={<span className="inline-flex items-center gap-2"><PowerIcon /> Chiqish</span>}
           className="w-full rounded-lg px-3 py-2 text-left text-sm text-zinc-400 transition hover:bg-red-500/10 hover:text-red-400"
           redirectTo="/sardorxon/admin/login"
         />

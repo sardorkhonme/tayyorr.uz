@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PowerIcon } from "@/components/icons";
 
 export function HeroVideoManager({
   initialUrl,
@@ -95,7 +96,8 @@ export function HeroVideoManager({
                 : "bg-zinc-500/15 text-zinc-400 hover:bg-zinc-500/25"
             }`}
           >
-            ⏻ {active ? "Faol" : "Nofaol"}
+            <PowerIcon className="h-3.5 w-3.5" />
+            {active ? "Faol" : "Nofaol"}
           </button>
         )}
       </div>

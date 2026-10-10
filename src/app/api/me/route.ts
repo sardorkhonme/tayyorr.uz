@@ -5,8 +5,11 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
+import { birthDateSchema } from "@/lib/birthday";
 
 const schema = z.object({
+  // "YYYY-MM-DD" — profilda tahrirlanadi
+  birthDate: birthDateSchema.optional(),
   firstName: z.string().min(2).max(50).optional(),
   lastName: z.string().min(2).max(50).optional(),
   about: z.string().max(1000).optional(),
@@ -57,7 +60,7 @@ export async function PATCH(req: Request) {
         ? { name: `${data.firstName} ${data.lastName}` }
         : {}),
     },
-    select: { id: true, firstName: true, lastName: true, about: true, avatarUrl: true },
+    select: { id: true, firstName: true, lastName: true, about: true, avatarUrl: true, birthDate: true },
   });
 
   if (Object.keys(data).length > 0) {

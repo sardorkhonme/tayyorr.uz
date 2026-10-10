@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { AvatarUpload } from "@/components/avatar-upload";
+import { BirthDateSelect, birthPartsFrom, birthPartsToIso } from "@/components/birth-date-select";
 
 export function ProfileForm({
   initial,
 }: {
-  initial: { firstName: string; lastName: string; about: string; avatarUrl: string };
+  initial: { firstName: string; lastName: string; about: string; avatarUrl: string; birthDate: string };
 }) {
   const router = useRouter();
   const { update } = useSession();
   const [form, setForm] = useState(initial);
+  const [birth, setBirth] = useState(() => birthPartsFrom(initial.birthDate));
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -34,6 +36,7 @@ export function ProfileForm({
           lastName: form.lastName,
           about: form.about || undefined,
           avatarUrl: form.avatarUrl || undefined,
+          birthDate: birthPartsToIso(birth) ?? undefined,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Xatolik");
@@ -73,6 +76,10 @@ export function ProfileForm({
             onChange={(e) => set("lastName", e.target.value)}
           />
         </div>
+      </div>
+      <div>
+        <label className="label">Tug&apos;ilgan sana</label>
+        <BirthDateSelect value={birth} onChange={setBirth} />
       </div>
       <div>
         <label className="label">Qo'shimcha ma'lumot</label>

@@ -15,7 +15,7 @@ export function AdminPostButton({
 }: {
   url: string;
   body?: unknown;
-  label: string;
+  label: React.ReactNode;
   confirmText?: string;
   promptReason?: string;
   className?: string;

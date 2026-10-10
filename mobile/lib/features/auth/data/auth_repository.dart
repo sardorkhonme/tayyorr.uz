@@ -123,11 +123,13 @@ class AuthRepository {
     required String firstName,
     required String lastName,
     required String about,
+    String? birthDate,
   }) async {
     final res = await _api.patch('/mobile/me', data: {
       'firstName': firstName,
       'lastName': lastName,
       'about': about,
+      if (birthDate != null) 'birthDate': birthDate,
     });
     return _user(res);
   }

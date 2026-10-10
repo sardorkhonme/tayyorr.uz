@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 
 import { useLocale } from "@/components/locale-provider";
+import { PowerIcon } from "@/components/icons";
 
 export interface NavLink {
   href: string;
@@ -157,7 +158,7 @@ export function NavMenu({
                     }}
                     className="menu-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-red-400 transition hover:bg-red-500/10 hover:pl-4"
                   >
-                    <span className="text-base">⏻</span>
+                    <PowerIcon className="h-[18px] w-[18px]" />
                     Chiqish
                   </button>
                 </>

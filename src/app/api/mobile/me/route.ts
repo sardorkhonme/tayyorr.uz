@@ -7,6 +7,7 @@ import { ME_SELECT, serializeMe } from "@/lib/mobile-me";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
+import { birthDateSchema } from "@/lib/birthday";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -25,6 +26,8 @@ export async function GET(req: Request) {
 }
 
 const patchSchema = z.object({
+  // "YYYY-MM-DD" — profilda tahrirlanadi
+  birthDate: birthDateSchema.optional(),
   firstName: z.string().min(2).max(50).optional(),
   lastName: z.string().min(2).max(50).optional(),
   about: z.string().min(5).max(1000).optional(),

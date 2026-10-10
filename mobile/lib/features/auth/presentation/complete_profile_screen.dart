@@ -83,12 +83,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
-  Future<void> _pickBirth() async {
-    FocusScope.of(context).unfocus();
-    final picked = await showBirthDatePicker(context, initial: _birth);
-    if (picked != null) setState(() => _birth = picked);
-  }
-
   void _submit() {
     setState(() => _err = null);
     if (_birth == null) {
@@ -184,35 +178,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                               ),
                               const SizedBox(height: 16),
                               const WebLabel("Tug'ilgan sana"),
-                              GestureDetector(
-                                onTap: _pickBirth,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.isLight ? Colors.white : Colors.white.withValues(alpha: 0.04),
-                                    borderRadius: BorderRadius.circular(11.2),
-                                    border: Border.all(
-                                      color: AppColors.isLight
-                                          ? Colors.black.withValues(alpha: 0.14)
-                                          : Colors.white.withValues(alpha: 0.10),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          _birth == null ? 'Kun / Oy / Yil' : formatBirthDate(_birth!),
-                                          style: TextStyle(
-                                            color: _birth == null ? WebC.zinc500 : WebC.white,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(Icons.cake_outlined, size: 18, color: WebC.zinc500),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              BirthDateField(value: _birth, onChanged: (d) => setState(() => _birth = d)),
                               const SizedBox(height: 16),
                               _field('Login', WebInput(controller: _login)),
                               const SizedBox(height: 16),
@@ -501,4 +467,43 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
       },
     ),
   );
+}
+
+/// Bosilganda aylanma tanlagich ochiladigan "Tug'ilgan sana" maydoni.
+class BirthDateField extends StatelessWidget {
+  const BirthDateField({super.key, required this.value, required this.onChanged});
+  final DateTime? value;
+  final ValueChanged<DateTime> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        FocusScope.of(context).unfocus();
+        final picked = await showBirthDatePicker(context, initial: value);
+        if (picked != null) onChanged(picked);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
+        decoration: BoxDecoration(
+          color: AppColors.isLight ? Colors.white : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(11.2),
+          border: Border.all(
+            color: AppColors.isLight ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value == null ? 'Kun / Oy / Yil' : formatBirthDate(value!),
+                style: TextStyle(color: value == null ? WebC.zinc500 : WebC.white, fontSize: 14),
+              ),
+            ),
+            Icon(Icons.cake_outlined, size: 18, color: WebC.zinc500),
+          ],
+        ),
+      ),
+    );
+  }
 }

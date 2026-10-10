@@ -17,6 +17,9 @@ class UserModel {
   final bool isAvailable;
   final String theme;
 
+  /// Tug'ilgan sana — "YYYY-MM-DD" yoki null.
+  final String? birthDate;
+
   const UserModel({
     required this.id,
     this.login,
@@ -35,6 +38,7 @@ class UserModel {
     this.needsOnboarding = false,
     this.isAvailable = true,
     this.theme = 'dark',
+    this.birthDate,
   });
 
   bool get isPreparer => role == 'PREPARER';
@@ -67,6 +71,7 @@ class UserModel {
       needsOnboarding: json['needsOnboarding'] as bool? ?? false,
       isAvailable: json['isAvailable'] as bool? ?? true,
       theme: json['theme'] as String? ?? 'dark',
+      birthDate: json['birthDate'] as String?,
     );
   }
 }
