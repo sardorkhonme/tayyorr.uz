@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/referral_model.dart';
 import '../data/referral_repository.dart';
@@ -22,7 +23,7 @@ class ReferralState extends Equatable {
   List<Object?> get props => [status, data, error];
 }
 
-class ReferralCubit extends Cubit<ReferralState> {
+class ReferralCubit extends Cubit<ReferralState> with SafeEmit<ReferralState> {
   ReferralCubit(this._repo) : super(const ReferralState());
 
   final ReferralRepository _repo;

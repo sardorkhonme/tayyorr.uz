@@ -9,6 +9,8 @@ import {
   useState,
 } from "react";
 
+import { playTin, primeTin } from "@/lib/notify-sound";
+
 interface UnreadState {
   total: number;
   perConv: Record<string, number>;
@@ -39,6 +41,8 @@ export function UnreadProvider({
   });
   // qo'lda nolga tushirilgan suhbatlar — poll ularni qayta ko'tarmasin
   const clearedAt = useRef<Record<string, number>>({});
+  // oldingi poll natijasi — biror suhbatda o'qilmaganlar ko'paysa "tin"
+  const prevPerConv = useRef<Record<string, number> | null>(null);
 
   const reconcile = useCallback((s: UnreadState) => {
     setState(() => {
@@ -63,6 +67,19 @@ export function UnreadProvider({
       const r = await fetch("/api/me/unread", { cache: "no-store" });
       if (!r.ok) return;
       const d = (await r.json()) as UnreadState;
+      const prev = prevPerConv.current;
+      // ochiq turgan suhbatning o'zida chat-room SSE orqali chaladi — bu yerda
+      // faqat boshqa suhbatlardagi yangi xabarlar
+      const openConv = window.location.pathname.match(/^\/messages\/([^/]+)/)?.[1];
+      if (
+        prev &&
+        Object.entries(d.perConv).some(
+          ([id, n]) => id !== openConv && n > (prev[id] ?? 0),
+        )
+      ) {
+        playTin();
+      }
+      prevPerConv.current = d.perConv;
       reconcile(d);
     } catch {
       /* jim */
@@ -70,8 +87,9 @@ export function UnreadProvider({
   }, [reconcile]);
 
   useEffect(() => {
+    primeTin();
     poll();
-    const iv = setInterval(poll, 15000);
+    const iv = setInterval(poll, 10000);
     const onVis = () => {
       if (document.visibilityState === "visible") poll();
     };

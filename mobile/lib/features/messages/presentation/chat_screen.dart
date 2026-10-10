@@ -12,6 +12,7 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
+import '../../../core/notifications/message_notifier.dart';
 import '../../../widgets/link_text.dart';
 import '../../../widgets/web_ui.dart';
 import 'chat_media.dart';
@@ -51,6 +52,8 @@ class _ChatViewState extends State<_ChatView> {
   bool _sendingFile = false;
   int _contractIndex = 0;
   Timer? _contractTimer;
+
+  late final String _conversationId;
 
   // Javob iqtibosi bosilganda asl xabarga o'tib, uni "chaqnatish" uchun.
   final _itemKeys = <String, GlobalKey>{};
@@ -96,6 +99,10 @@ class _ChatViewState extends State<_ChatView> {
   @override
   void initState() {
     super.initState();
+    // shu suhbat ochiq — unga bildirishnoma kelmaydi, borini olib tashlaymiz
+    _conversationId = context.read<ChatCubit>().conversationId;
+    MessageNotifier.instance.activeConversationId = _conversationId;
+    MessageNotifier.instance.clearFor(_conversationId);
     _contractTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       final n = context.read<ChatCubit>().state.activeContracts.length;
       if (n > 1 && mounted) setState(() => _contractIndex = (_contractIndex + 1) % n);
@@ -104,6 +111,9 @@ class _ChatViewState extends State<_ChatView> {
 
   @override
   void dispose() {
+    if (MessageNotifier.instance.activeConversationId == _conversationId) {
+      MessageNotifier.instance.activeConversationId = null;
+    }
     _controller.dispose();
     _scrollController.dispose();
     _contractTimer?.cancel();

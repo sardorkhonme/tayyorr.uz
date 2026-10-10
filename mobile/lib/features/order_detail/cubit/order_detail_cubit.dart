@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/order_detail_model.dart';
 import '../data/order_detail_repository.dart';
@@ -38,7 +39,7 @@ class OrderDetailState extends Equatable {
   List<Object?> get props => [status, order, error, busy];
 }
 
-class OrderDetailCubit extends Cubit<OrderDetailState> {
+class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetailState> {
   OrderDetailCubit(this._repo, this.orderId) : super(const OrderDetailState());
 
   final OrderDetailRepository _repo;

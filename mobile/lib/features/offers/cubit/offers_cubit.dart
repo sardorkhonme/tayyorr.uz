@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/offer_model.dart';
 import '../data/offers_repository.dart';
@@ -34,7 +35,7 @@ class OffersState extends Equatable {
   List<Object?> get props => [status, offers, error];
 }
 
-class OffersCubit extends Cubit<OffersState> {
+class OffersCubit extends Cubit<OffersState> with SafeEmit<OffersState> {
   OffersCubit(this._repo) : super(const OffersState());
 
   final OffersRepository _repo;

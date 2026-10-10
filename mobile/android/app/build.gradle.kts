@@ -11,6 +11,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications (xabar bildirishnomalari) uchun kerak
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -30,10 +32,21 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // Eski Android qurilmalarda ham "paket yaroqsiz" bo'lmasligi uchun
+            // barcha imzo sxemalari (v1 — Android 7 dan oldingi o'rnatuvchilar uchun ham)
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
+            // (Kalitni almashtirmang — o'rnatilgan ilovalar yangilanmay qoladi.)
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -41,4 +54,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

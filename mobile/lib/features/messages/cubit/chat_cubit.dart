@@ -4,7 +4,9 @@ import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/notifications/message_notifier.dart';
 import '../data/message_model.dart';
 import '../data/messages_repository.dart';
 
@@ -65,7 +67,7 @@ class ChatState extends Equatable {
       [status, other, messages, error, sending, blockedMe, blockedByMe, activeContracts, replyTo?.id];
 }
 
-class ChatCubit extends Cubit<ChatState> {
+class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   ChatCubit(this._repo, this.conversationId) : super(const ChatState());
 
   final MessagesRepository _repo;
@@ -105,6 +107,10 @@ class ChatCubit extends Cubit<ChatState> {
       final merged = Map<String, ChatMessageModel>.fromEntries(
         state.messages.map((m) => MapEntry(m.id, m)),
       );
+      // boshqa tomondan yangi xabar keldi — Telegramdagidek qisqa "tin"
+      if (data.messages.any((m) => !m.mine && !m.system && !merged.containsKey(m.id))) {
+        MessageNotifier.instance.playTin();
+      }
       for (final m in data.messages) {
         merged[m.id] = m;
       }

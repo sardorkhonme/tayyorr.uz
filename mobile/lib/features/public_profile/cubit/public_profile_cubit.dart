@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/public_profile_model.dart';
 import '../data/public_profile_repository.dart';
@@ -18,7 +19,7 @@ class PublicProfileState extends Equatable {
   List<Object?> get props => [status, profile, error];
 }
 
-class PublicProfileCubit extends Cubit<PublicProfileState> {
+class PublicProfileCubit extends Cubit<PublicProfileState> with SafeEmit<PublicProfileState> {
   PublicProfileCubit(this._repo, this.userId) : super(const PublicProfileState()) {
     load();
   }

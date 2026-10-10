@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/wallet_model.dart';
 import '../data/wallet_repository.dart';
@@ -26,7 +27,7 @@ class WalletState extends Equatable {
   List<Object?> get props => [status, wallet, error];
 }
 
-class WalletCubit extends Cubit<WalletState> {
+class WalletCubit extends Cubit<WalletState> with SafeEmit<WalletState> {
   WalletCubit(this._repo) : super(const WalletState());
 
   final WalletRepository _repo;

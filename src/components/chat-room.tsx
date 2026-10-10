@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
+import { playTin, primeTin } from "@/lib/notify-sound";
 import { RocketIcon, BlockedIcon } from "@/components/icons";
 import { useDismiss } from "@/components/use-dismiss";
 import { useUnread } from "@/components/unread-provider";
@@ -261,6 +262,8 @@ export function ChatRoom({
       .catch(() => {});
   }, [conversationId]);
 
+  useEffect(() => primeTin(), []);
+
   // SSE
   useEffect(() => {
     const es = new EventSource(`/api/chat/${conversationId}/stream`);
@@ -288,6 +291,8 @@ export function ChatRoom({
         }
         if (data.type === "message" || data.type === "edit") {
           const m = data.message;
+          // boshqa tomondan kelgan yangi xabar — "tin"
+          if (data.type === "message" && m.senderId !== meId && !m.system) playTin();
           merge([
             {
               id: m.id,

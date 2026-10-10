@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/message_model.dart';
 import '../data/messages_repository.dart';
@@ -34,7 +35,7 @@ class ConversationsState extends Equatable {
   List<Object?> get props => [status, conversations, error];
 }
 
-class ConversationsCubit extends Cubit<ConversationsState> {
+class ConversationsCubit extends Cubit<ConversationsState> with SafeEmit<ConversationsState> {
   ConversationsCubit(this._repo) : super(const ConversationsState());
 
   final MessagesRepository _repo;
