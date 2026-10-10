@@ -9,8 +9,11 @@ class WalletRepository {
     return WalletModel.fromJson(res);
   }
 
-  Future<String> topUp(int amount) async {
-    final res = await _api.post('/mobile/wallet/topup', data: {'amount': amount});
+  Future<String> topUp(int amount, {String? walletCode}) async {
+    final res = await _api.post('/mobile/wallet/topup', data: {
+      'amount': amount,
+      if (walletCode != null && walletCode.isNotEmpty) 'walletCode': walletCode,
+    });
     return res['payUrl'] as String;
   }
 
@@ -24,5 +27,9 @@ class WalletRepository {
       'card': card,
       if (cardName != null && cardName.isNotEmpty) 'cardName': cardName,
     });
+  }
+
+  Future<void> cancelPayout(String id) async {
+    await _api.post('/mobile/wallet/payout/$id/cancel');
   }
 }

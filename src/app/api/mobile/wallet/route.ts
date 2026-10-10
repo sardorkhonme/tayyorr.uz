@@ -43,12 +43,14 @@ export async function GET(req: Request) {
       amount: t.amount,
       method: t.method,
       note: t.note,
+      reversed: !!t.reversedAt,
       createdAt: t.createdAt.toISOString(),
     })),
     payouts: payouts.map((p) => ({
       id: p.id,
       amount: p.amount,
       status: p.status,
+      adminNote: p.adminNote,
       createdAt: p.createdAt.toISOString(),
     })),
   });

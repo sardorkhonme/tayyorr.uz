@@ -11,6 +11,8 @@ export { OPTIONS } from "@/lib/mobile-cors";
 
 const schema = z.object({
   amount: z.coerce.number().int(),
+  // qaysi hisob to'ldiriladi: hamyon kodi yoki bo'sh (o'ziniki)
+  walletCode: z.string().trim().max(20).optional(),
 });
 
 /** Mobil ilovadan Click orqali hisobni to'ldirish — web bilan bir xil oqim. */
@@ -22,7 +24,7 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return mobileJson({ error: "Ma'lumotlar noto'g'ri" }, { status: 400 });
   }
-  const { amount } = parsed.data;
+  const { amount, walletCode } = parsed.data;
 
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return mobileJson(
@@ -33,14 +35,28 @@ export async function POST(req: Request) {
     );
   }
 
+  const target =
+    walletCode && walletCode.length > 0
+      ? await db.user.findUnique({ where: { walletCode: walletCode.toUpperCase() } })
+      : await db.user.findUnique({ where: { id: auth.userId } });
+  if (!target) {
+    return mobileJson({ error: "Bunday hisob kodi topilmadi" }, { status: 404 });
+  }
+
+  let note = "Click orqali to'ldirish (mobil ilova)";
+  if (target.id !== auth.userId) {
+    const me = await db.user.findUnique({ where: { id: auth.userId }, select: { login: true } });
+    note = `Click orqali to'ldirish (${me?.login ?? auth.userId}, mobil ilova)`;
+  }
+
   const wtx = await db.walletTransaction.create({
     data: {
-      userId: auth.userId,
+      userId: target.id,
       type: "TOPUP",
       status: "PENDING",
       amount,
       method: "CLICK",
-      note: "Click orqali to'ldirish (mobil ilova)",
+      note,
     },
   });
 

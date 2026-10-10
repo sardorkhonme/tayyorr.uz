@@ -5,6 +5,7 @@ class WalletTransactionModel {
   final int amount;
   final String method;
   final String? note;
+  final bool reversed;
   final DateTime createdAt;
 
   const WalletTransactionModel({
@@ -14,6 +15,7 @@ class WalletTransactionModel {
     required this.amount,
     required this.method,
     this.note,
+    this.reversed = false,
     required this.createdAt,
   });
 
@@ -25,6 +27,7 @@ class WalletTransactionModel {
       amount: (json['amount'] as num).toInt(),
       method: json['method'] as String,
       note: json['note'] as String?,
+      reversed: json['reversed'] == true,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -34,12 +37,14 @@ class PayoutModel {
   final String id;
   final int amount;
   final String status;
+  final String? adminNote;
   final DateTime createdAt;
 
   const PayoutModel({
     required this.id,
     required this.amount,
     required this.status,
+    this.adminNote,
     required this.createdAt,
   });
 
@@ -48,6 +53,7 @@ class PayoutModel {
       id: json['id'] as String,
       amount: (json['amount'] as num).toInt(),
       status: json['status'] as String,
+      adminNote: json['adminNote'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
