@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
-import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
@@ -31,7 +30,6 @@ class _MessagesListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () => context.read<ConversationsCubit>().load(),
         color: AppColors.indigo,

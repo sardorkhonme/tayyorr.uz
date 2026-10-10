@@ -31,20 +31,24 @@ class AppTheme {
           )
           .copyWith(
             displayLarge: headingFont.copyWith(
+              color: AppColors.textPrimary,
               fontSize: 34,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),
             headlineLarge: headingFont.copyWith(
+              color: AppColors.textPrimary,
               fontSize: 26,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.3,
             ),
             headlineMedium: headingFont.copyWith(
+              color: AppColors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
             titleLarge: headingFont.copyWith(
+              color: AppColors.textPrimary,
               fontSize: 17,
               fontWeight: FontWeight.w600,
             ),
@@ -55,27 +59,29 @@ class AppTheme {
         centerTitle: false,
         foregroundColor: AppColors.textPrimary,
       ),
+      // Saytdagi `.input` bilan bir xil: 11.2px burchak, nozik chegara.
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isLight ? Colors.black.withValues(alpha: 0.035) : Colors.white.withValues(alpha: 0.04),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        isDense: true,
+        fillColor: isLight ? Colors.white : Colors.white.withValues(alpha: 0.04),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.cardBorder),
+          borderRadius: BorderRadius.circular(11.2),
+          borderSide: BorderSide(color: isLight ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.cardBorder),
+          borderRadius: BorderRadius.circular(11.2),
+          borderSide: BorderSide(color: isLight ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.indigo, width: 1.4),
+          borderRadius: BorderRadius.circular(11.2),
+          borderSide: const BorderSide(color: AppColors.indigo),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(11.2),
           borderSide: const BorderSide(color: AppColors.red),
         ),
-        hintStyle: TextStyle(color: AppColors.textFaint),
+        hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 14),
         labelStyle: TextStyle(color: AppColors.textSecondary),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

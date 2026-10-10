@@ -10,3 +10,6 @@ const String kApiBaseUrl = 'https://tayyorr.uz/api';
 /// auditoriya (audience) uchun tekshiriladi.
 const String kGoogleServerClientId =
     '206777863976-nqr6j6flilktv8nkpnc681r15gu3ohgb.apps.googleusercontent.com';
+
+/// Sayt manzili (API manzilidan) — ichki havolalarni brauzerda ochish uchun.
+String get kSiteUrl => kApiBaseUrl.replaceFirst(RegExp(r'/api/?$'), '');

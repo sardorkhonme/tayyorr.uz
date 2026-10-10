@@ -10,6 +10,7 @@ import 'features/auth/data/auth_repository.dart';
 import 'features/auth/presentation/complete_profile_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/home/home_shell.dart';
+import 'features/home/section_cubit.dart';
 import 'features/onboarding/onboarding_screen.dart';
 
 /// Butun ilova uchun bitta Navigator — bloc holati o'zgarganda (kirish,
@@ -57,6 +58,10 @@ class TayyorrApp extends StatelessWidget {
                 listenWhen: (p, c) =>
                     c.status != AuthStatus.authenticating && p.status != c.status,
                 listener: (context, state) {
+                  // chiqib, qayta kirganda bosh sahifadan boshlansin
+                  if (state.status == AuthStatus.unauthenticated) {
+                    SectionCubit.instance.select(AppSection.dashboard);
+                  }
                   navigatorKey.currentState?.pushAndRemoveUntil(
                     MaterialPageRoute(builder: (_) => const _RootGate()),
                     (route) => false,

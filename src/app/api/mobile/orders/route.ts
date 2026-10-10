@@ -48,6 +48,7 @@ export async function GET(req: Request) {
       createdAt: o.createdAt.toISOString(),
       ordererLabel: isPreparer ? o.orderer.login ?? o.orderer.name ?? null : null,
       deleted: !!o.deletedAt,
+      deleteReason: o.deleteReason,
     })),
   });
 }

@@ -9,6 +9,7 @@ class OrderModel {
   final DateTime createdAt;
   final String? ordererLabel;
   final bool deleted;
+  final String? deleteReason;
 
   const OrderModel({
     required this.id,
@@ -21,6 +22,7 @@ class OrderModel {
     required this.createdAt,
     this.ordererLabel,
     required this.deleted,
+    this.deleteReason,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class OrderModel {
       createdAt: DateTime.parse(json['createdAt'] as String),
       ordererLabel: json['ordererLabel'] as String?,
       deleted: json['deleted'] as bool? ?? false,
+      deleteReason: json['deleteReason'] as String?,
     );
   }
 }

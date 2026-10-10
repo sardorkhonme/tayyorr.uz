@@ -5,7 +5,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
-import '../../../widgets/app_drawer.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/glass_card.dart';
 import '../../../widgets/skeleton.dart';
@@ -56,7 +55,6 @@ class _ReferralViewState extends State<_ReferralView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () => context.read<ReferralCubit>().load(),
         color: AppColors.indigo,

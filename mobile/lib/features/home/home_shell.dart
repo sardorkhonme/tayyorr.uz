@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/unread_counter.dart';
 import '../../widgets/aurora_background.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
@@ -12,15 +15,14 @@ import '../wallet/presentation/wallet_screen.dart';
 import 'section_cubit.dart';
 
 /// Saytda bo'lgani kabi — pastki navbar yo'q, bo'limlar orasida
-/// har bir sahifaning app bar'idagi menyu (hamburger) tugmasi ochadigan
-/// drawer orqali o'tiladi.
+/// headerdagi menyu tugmasi ochadigan panel orqali o'tiladi.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => SectionCubit(),
+    return BlocProvider.value(
+      value: SectionCubit.instance,
       child: const _HomeShellView(),
     );
   }
@@ -43,14 +45,19 @@ class _HomeShellView extends StatefulWidget {
 }
 
 class _HomeShellViewState extends State<_HomeShellView> with WidgetsBindingObserver {
+  Timer? _unreadTimer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    UnreadCounter.instance.refresh();
+    _unreadTimer = Timer.periodic(const Duration(seconds: 30), (_) => UnreadCounter.instance.refresh());
   }
 
   @override
   void dispose() {
+    _unreadTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -61,6 +68,7 @@ class _HomeShellViewState extends State<_HomeShellView> with WidgetsBindingObser
     // balansni darhol yangilaymiz.
     if (state == AppLifecycleState.resumed) {
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+      UnreadCounter.instance.refresh();
     }
   }
 

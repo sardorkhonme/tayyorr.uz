@@ -36,9 +36,9 @@ class _AppTextFieldState extends State<AppTextField> {
       children: [
         Text(
           widget.label,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12.8, fontWeight: FontWeight.w500),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 5.6),
         TextField(
           controller: widget.controller,
           obscureText: widget.obscureText && _hidden,
@@ -46,7 +46,7 @@ class _AppTextFieldState extends State<AppTextField> {
           textInputAction: widget.textInputAction,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           autofillHints: widget.autofillHints,
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
           decoration: widget.obscureText
               ? InputDecoration(
                   suffixIcon: IconButton(
@@ -58,7 +58,9 @@ class _AppTextFieldState extends State<AppTextField> {
                     ),
                   ),
                 )
-              : null,
+              // null bo'lsa Flutter bezakni butunlay o'chirib qo'yadi (ramka ham,
+              // fon ham chizilmaydi) — shuning uchun doim mavzudagi bezak.
+              : const InputDecoration(),
         ),
       ],
     );
