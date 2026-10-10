@@ -13,6 +13,7 @@ import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { TERMS_VERSION } from "@/lib/terms";
+import { birthDateSchema } from "@/lib/birthday";
 
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
@@ -28,6 +29,8 @@ const schema = z.object({
     .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat harf, raqam, _ va . dan iborat bo'lsin"),
   password: z.string().min(6).max(100),
   about: z.string().min(5).max(1000),
+  // "YYYY-MM-DD" — ro'yxatdan o'tishda majburiy
+  birthDate: birthDateSchema,
   avatarUrl: z.string().url(),
 });
 

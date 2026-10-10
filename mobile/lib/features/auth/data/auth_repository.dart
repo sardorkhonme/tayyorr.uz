@@ -17,6 +17,17 @@ class AuthRepository {
     scopes: const ['email'],
   );
 
+  static const _birthdayScope = 'https://www.googleapis.com/auth/user.birthday.read';
+
+  Future<bool> _birthdayScopeEnabled() async {
+    try {
+      final res = await _api.get('/mobile/config');
+      return res['googleBirthdayScope'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<UserModel> login({
     required String login,
     required String password,
@@ -41,8 +52,17 @@ class AuthRepository {
       throw ApiException("Google'dan token olinmadi — qayta urinib ko'ring");
     }
 
+    // Tug'ilgan kun ruxsati serverda yoqilgan bo'lsa — qo'shimcha so'raymiz
+    // (rad etilsa ham kirish davom etadi).
+    String? accessToken;
+    if (await _birthdayScopeEnabled()) {
+      final granted = await _google.requestScopes(const [_birthdayScope]).catchError((_) => false);
+      if (granted) accessToken = (await account.authentication).accessToken;
+    }
+
     final res = await _api.post('/mobile/auth/google', data: {
       'idToken': idToken,
+      if (accessToken != null) 'accessToken': accessToken,
     });
     await _storage.saveToken(res['token'] as String);
     return UserModel.fromJson(res['user'] as Map<String, dynamic>);
@@ -57,8 +77,10 @@ class AuthRepository {
     required String login,
     required String password,
     required String about,
+    required String birthDate,
   }) async {
     final res = await _api.post('/mobile/onboarding', data: {
+      'birthDate': birthDate,
       'role': role,
       'acceptTerms': true,
       'firstName': firstName,

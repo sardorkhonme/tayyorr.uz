@@ -7,6 +7,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { authConfig } from "@/auth.config";
 import { logActivity } from "@/lib/activity";
+import { googleBirthdayEnabled, saveGoogleBirthday } from "@/lib/birthday";
 
 const credentialsSchema = z.object({
   login: z.string().min(3),
@@ -53,6 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // uchun) yozamiz, ikki marta yozilmasin.
       if (user?.id && account?.provider === "google") {
         await logActivity(user.id, "AUTH_LOGIN", "Google bilan kirdi");
+        if (googleBirthdayEnabled()) await saveGoogleBirthday(user.id, account.access_token);
       }
       return true;
     },

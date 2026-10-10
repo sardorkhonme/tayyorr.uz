@@ -2,6 +2,8 @@ import type { NextAuthConfig } from "next-auth";
 import { NextResponse } from "next/server";
 import Google from "next-auth/providers/google";
 
+import { GOOGLE_BIRTHDAY_SCOPE, googleBirthdayEnabled } from "@/lib/birthday-scope";
+
 /**
  * Edge (middleware) uchun xavfsiz konfiguratsiya.
  * Bu yerda Prisma yoki bcrypt ishlatilmaydi.
@@ -12,6 +14,10 @@ export const authConfig = {
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
       allowDangerousEmailAccountLinking: true,
+      // tug'ilgan kun ruxsati faqat Google tasdiqlagach yoqiladi (qara: birthday-scope.ts)
+      ...(googleBirthdayEnabled()
+        ? { authorization: { params: { scope: `openid email profile ${GOOGLE_BIRTHDAY_SCOPE}` } } }
+        : {}),
     }),
   ],
   session: { strategy: "jwt" },

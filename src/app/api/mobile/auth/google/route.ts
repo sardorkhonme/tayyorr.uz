@@ -7,10 +7,15 @@ import { signMobileToken } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { ME_SELECT, serializeMe } from "@/lib/mobile-me";
 import { logActivity } from "@/lib/activity";
+import { saveGoogleBirthday } from "@/lib/birthday";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
-const schema = z.object({ idToken: z.string().min(1) });
+const schema = z.object({
+  idToken: z.string().min(1),
+  // tug'ilgan kun ruxsati berilgan bo'lsa — People API uchun (ixtiyoriy)
+  accessToken: z.string().min(1).optional(),
+});
 
 const client = new OAuth2Client(process.env.AUTH_GOOGLE_ID);
 
@@ -59,6 +64,8 @@ export async function POST(req: Request) {
   } else {
     await logActivity(user.id, "AUTH_LOGIN", "Google bilan kirdi (mobil ilova)");
   }
+
+  await saveGoogleBirthday(user.id, parsed.data.accessToken);
 
   const token = signMobileToken(user.id);
   return mobileJson({ token, user: serializeMe(user) });

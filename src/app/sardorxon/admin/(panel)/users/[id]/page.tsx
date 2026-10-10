@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { shortDateTime, shortDate } from "@/lib/date";
+import { ageFrom, formatBirthday, googleBirthdayEnabled } from "@/lib/birthday";
 
 export default async function AdminUserOverview({
   params,
@@ -33,6 +34,20 @@ export default async function AdminUserOverview({
     ["Login", user.login ?? "—"],
     ["Email", user.email ?? "—"],
     ["Rol", user.role ?? "—"],
+    [
+      "Tug'ilgan sana (kiritgan)",
+      user.birthDate
+        ? `${formatBirthday(user.birthDate)} · ${ageFrom(user.birthDate)} yosh`
+        : "kiritilmagan",
+    ],
+    [
+      "Tug'ilgan kun (Google)",
+      user.googleBirthday
+        ? formatBirthday(user.googleBirthday)
+        : googleBirthdayEnabled()
+          ? "Google bermadi (yashirilgan yoki kiritilmagan)"
+          : "olinmaydi (Google ruxsati hali yoqilmagan)",
+    ],
     ["Hisob kodi", user.walletCode ?? "—"],
     ["Balans", formatSom(user.balance)],
     ["Star balansi", `${user.starBalance} ⭐`],

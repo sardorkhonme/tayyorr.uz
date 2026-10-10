@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/web_ui.dart';
@@ -29,6 +31,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _password = TextEditingController();
   final _about = TextEditingController();
   String _role = 'ORDERER';
+  DateTime? _birth;
   bool _agree = false;
   bool _showPw = false;
   bool _uploading = false;
@@ -80,8 +83,18 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
+  Future<void> _pickBirth() async {
+    FocusScope.of(context).unfocus();
+    final picked = await showBirthDatePicker(context, initial: _birth);
+    if (picked != null) setState(() => _birth = picked);
+  }
+
   void _submit() {
     setState(() => _err = null);
+    if (_birth == null) {
+      setState(() => _err = "Tug'ilgan sanangizni tanlang");
+      return;
+    }
     final image = context.read<AuthBloc>().state.user?.image;
     if ((image ?? '').isEmpty) {
       setState(() => _err = 'Glavniy rasmni yuklang');
@@ -93,21 +106,21 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
     FocusScope.of(context).unfocus();
     context.read<AuthBloc>().add(
-          AuthOnboardingCompleted(
-            role: _role,
-            firstName: _firstName.text.trim(),
-            lastName: _lastName.text.trim(),
-            login: _login.text.trim(),
-            password: _password.text,
-            about: _about.text.trim(),
-          ),
-        );
+      AuthOnboardingCompleted(
+        role: _role,
+        firstName: _firstName.text.trim(),
+        lastName: _lastName.text.trim(),
+        login: _login.text.trim(),
+        password: _password.text,
+        about: _about.text.trim(),
+        birthDate:
+            '${_birth!.year}-${_birth!.month.toString().padLeft(2, '0')}-${_birth!.day.toString().padLeft(2, '0')}',
+      ),
+    );
   }
 
-  Widget _field(String label, Widget input) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [WebLabel(label), input],
-      );
+  Widget _field(String label, Widget input) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [WebLabel(label), input]);
 
   @override
   Widget build(BuildContext context) {
@@ -136,20 +149,27 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text("Profilni to'ldiring",
-                                  style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
+                              Text(
+                                "Profilni to'ldiring",
+                                style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600),
+                              ),
                               const SizedBox(height: 4),
                               Text('Barcha maydonlar majburiy.', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
                               const SizedBox(height: 24),
                               Row(
                                 children: [
-                                  for (final r in const [('ORDERER', 'Buyurtma beruvchi'), ('PREPARER', 'Tayyorlovchi')]) ...[
+                                  for (final r in const [
+                                    ('ORDERER', 'Buyurtma beruvchi'),
+                                    ('PREPARER', 'Tayyorlovchi'),
+                                  ]) ...[
                                     if (r.$1 == 'PREPARER') const SizedBox(width: 12),
-                                    Expanded(child: _RoleButton(
-                                      label: r.$2,
-                                      selected: _role == r.$1,
-                                      onTap: () => setState(() => _role = r.$1),
-                                    )),
+                                    Expanded(
+                                      child: _RoleButton(
+                                        label: r.$2,
+                                        selected: _role == r.$1,
+                                        onTap: () => setState(() => _role = r.$1),
+                                      ),
+                                    ),
                                   ],
                                 ],
                               ),
@@ -161,6 +181,37 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                   const SizedBox(width: 12),
                                   Expanded(child: _field('Familiya', WebInput(controller: _lastName))),
                                 ],
+                              ),
+                              const SizedBox(height: 16),
+                              const WebLabel("Tug'ilgan sana"),
+                              GestureDetector(
+                                onTap: _pickBirth,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.isLight ? Colors.white : Colors.white.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(11.2),
+                                    border: Border.all(
+                                      color: AppColors.isLight
+                                          ? Colors.black.withValues(alpha: 0.14)
+                                          : Colors.white.withValues(alpha: 0.10),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _birth == null ? 'Kun / Oy / Yil' : formatBirthDate(_birth!),
+                                          style: TextStyle(
+                                            color: _birth == null ? WebC.zinc500 : WebC.white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(Icons.cake_outlined, size: 18, color: WebC.zinc500),
+                                    ],
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 16),
                               _field('Login', WebInput(controller: _login)),
@@ -181,8 +232,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text('Keyinchalik login + parol bilan ham kira olasiz.',
-                                  style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                              Text(
+                                'Keyinchalik login + parol bilan ham kira olasiz.',
+                                style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                              ),
                               const SizedBox(height: 16),
                               _field("Qo'shimcha ma'lumot", WebInput(controller: _about, maxLines: 3, minLines: 3)),
                               const SizedBox(height: 16),
@@ -239,22 +292,28 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text.rich(
-                                        TextSpan(children: [
-                                          const TextSpan(text: 'Men '),
-                                          TextSpan(
-                                            text: 'ommaviy oferta va foydalanish shartlari',
-                                            style: TextStyle(
-                                              color: WebC.indigo,
-                                              decoration: TextDecoration.underline,
-                                              decorationColor: WebC.indigo,
+                                        TextSpan(
+                                          children: [
+                                            const TextSpan(text: 'Men '),
+                                            TextSpan(
+                                              text: 'ommaviy oferta va foydalanish shartlari',
+                                              style: TextStyle(
+                                                color: WebC.indigo,
+                                                decoration: TextDecoration.underline,
+                                                decorationColor: WebC.indigo,
+                                              ),
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () => launchUrl(
+                                                  Uri.parse('$kSiteUrl/terms'),
+                                                  mode: LaunchMode.externalApplication,
+                                                ),
                                             ),
-                                            recognizer: TapGestureRecognizer()
-                                              ..onTap = () => launchUrl(Uri.parse('$kSiteUrl/terms'),
-                                                  mode: LaunchMode.externalApplication),
-                                          ),
-                                          const TextSpan(
-                                              text: " bilan tanishdim, ularga roziman va ma'lumotlarni o'z ixtiyorim bilan beraman."),
-                                        ]),
+                                            const TextSpan(
+                                              text:
+                                                  " bilan tanishdim, ularga roziman va ma'lumotlarni o'z ixtiyorim bilan beraman.",
+                                            ),
+                                          ],
+                                        ),
                                         style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
                                       ),
                                     ),
@@ -319,4 +378,127 @@ class _RoleButton extends StatelessWidget {
       ),
     );
   }
+}
+
+const _monthNames = [
+  'yanvar',
+  'fevral',
+  'mart',
+  'aprel',
+  'may',
+  'iyun',
+  'iyul',
+  'avgust',
+  'sentabr',
+  'oktabr',
+  'noyabr',
+  'dekabr',
+];
+
+/// "15-mart 2004"
+String formatBirthDate(DateTime d) => '${d.day}-${_monthNames[d.month - 1]} ${d.year}';
+
+/// Pastdan chiqadigan aylanma tanlagich: Kun / Oy / Yil (10–100 yosh).
+Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial}) {
+  final now = DateTime.now();
+  final maxYear = now.year - 10;
+  final minYear = now.year - 100;
+  final start = initial ?? DateTime(now.year - 18, 1, 1);
+  var year = start.year.clamp(minYear, maxYear);
+  var month = start.month;
+  var day = start.day;
+  final dayCtl = FixedExtentScrollController(initialItem: day - 1);
+  final monthCtl = FixedExtentScrollController(initialItem: month - 1);
+  final yearCtl = FixedExtentScrollController(initialItem: maxYear - year);
+
+  int daysIn(int y, int m) => DateTime(y, m + 1, 0).day;
+
+  return showModalBottomSheet<DateTime>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (sheetCtx) => StatefulBuilder(
+      builder: (ctx, setSheet) {
+        final maxDay = daysIn(year, month);
+        if (day > maxDay) day = maxDay;
+        final text = TextStyle(color: WebC.white, fontSize: 18);
+        Widget wheel({
+          required FixedExtentScrollController c,
+          required int count,
+          required String Function(int) label,
+          required ValueChanged<int> onChanged,
+          int flex = 1,
+        }) => Expanded(
+          flex: flex,
+          child: CupertinoPicker(
+            scrollController: c,
+            itemExtent: 40,
+            selectionOverlay: const CupertinoPickerDefaultSelectionOverlay(background: Color(0x1A818CF8)),
+            onSelectedItemChanged: onChanged,
+            children: [for (var i = 0; i < count; i++) Center(child: Text(label(i), style: text))],
+          ),
+        );
+        return Container(
+          padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).padding.bottom + 16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: WebC.border)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(color: WebC.fill10, borderRadius: BorderRadius.circular(99)),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                "Tug'ilgan sanangiz",
+                style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(formatBirthDate(DateTime(year, month, day)), style: TextStyle(color: WebC.indigoSoft, fontSize: 14)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 200,
+                child: Row(
+                  children: [
+                    wheel(
+                      c: dayCtl,
+                      count: maxDay,
+                      label: (i) => '${i + 1}',
+                      onChanged: (i) => setSheet(() => day = i + 1),
+                    ),
+                    wheel(
+                      c: monthCtl,
+                      count: 12,
+                      flex: 2,
+                      label: (i) => _monthNames[i][0].toUpperCase() + _monthNames[i].substring(1),
+                      onChanged: (i) => setSheet(() => month = i + 1),
+                    ),
+                    wheel(
+                      c: yearCtl,
+                      count: maxYear - minYear + 1,
+                      label: (i) => '${maxYear - i}',
+                      onChanged: (i) => setSheet(() => year = maxYear - i),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: WebButton(
+                  label: 'Tanlash',
+                  expand: true,
+                  onPressed: () => Navigator.of(sheetCtx).pop(DateTime(year, month, day)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
 }

@@ -102,6 +102,11 @@ model User {
   about        String? // qo'shimcha ma'lumot
   avatarUrl    String? // glavniy rasm (R2 public)
 
+  // tug'ilgan sana: ro'yxatdan o'tishda o'zi kiritgan va Google profilidagi
+  // (Google ruxsat bersa; yil ko'rsatilmagan bo'lsa "--MM-DD" ko'rinishida)
+  birthDate      DateTime? @db.Date
+  googleBirthday String?
+
   // faqat PREPARER uchun ma'noli
   isAvailable Boolean @default(true) // band emas = true
   ratingSum   Int     @default(0)
