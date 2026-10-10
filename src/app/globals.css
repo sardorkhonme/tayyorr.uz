@@ -764,3 +764,15 @@ html.js-reveal .blur-in.reveal-in {
   }
   html { scroll-behavior: auto; }
 }
+
+/* chatda javob iqtibosi bosilganda asl xabar "lip-lip" yonadi */
+@keyframes msg-flash {
+  0% { background-color: rgba(99, 102, 241, 0); }
+  14% { background-color: rgba(99, 102, 241, 0.28); }
+  30% { background-color: rgba(99, 102, 241, 0.1); }
+  44% { background-color: rgba(99, 102, 241, 0.28); }
+  100% { background-color: rgba(99, 102, 241, 0); }
+}
+.msg-flash {
+  animation: msg-flash 1.4s ease-out;
+}

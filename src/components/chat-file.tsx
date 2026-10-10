@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export interface ChatFile {
@@ -139,23 +139,7 @@ export function ChatFileView({ file, mine }: { file: ChatFile; mine: boolean }) 
     );
   }
 
-  if (isAudio) {
-    return (
-      <div className="w-[min(240px,60vw)] max-w-full">
-        <div className="mb-1 flex items-center justify-between gap-2 text-xs opacity-80">
-          <span className="min-w-0 truncate">{file.name}</span>
-          <button
-            type="button"
-            onClick={() => downloadFile(file.url, file.name)}
-            className="shrink-0 hover:underline"
-          >
-            ↓
-          </button>
-        </div>
-        <audio src={file.url} controls preload="metadata" className="block w-full" />
-      </div>
-    );
-  }
+  if (isAudio) return <AudioMessage file={file} mine={mine} />;
 
   return (
     <button
@@ -173,5 +157,125 @@ export function ChatFileView({ file, mine }: { file: ChatFile; mine: boolean }) 
         </span>
       </span>
     </button>
+  );
+}
+
+// ── Audio xabar (Telegram uslubida, mobil ilova bilan bir xil) ─────
+
+/** Bir vaqtda faqat bitta audio ijro etilsin. */
+let currentAudio: HTMLAudioElement | null = null;
+
+function mmss(sec: number) {
+  const s = Math.max(0, Math.floor(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function AudioMessage({ file, mine }: { file: ChatFile; mine: boolean }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [pos, setPos] = useState(0);
+  const [dur, setDur] = useState(0);
+  const [started, setStarted] = useState(false);
+
+  // fayl nomi va hajmidan barqaror "to'lqin" (havola har safar o'zgaradi)
+  const bars = useMemo(() => {
+    let h = 0;
+    for (const ch of `${file.name}:${file.size}`) h = (h * 31 + ch.charCodeAt(0)) | 0;
+    return Array.from({ length: 34 }, () => {
+      h = (h * 1103515245 + 12345) | 0;
+      return 0.25 + (((h >>> 8) & 0xffff) / 0xffff) * 0.75;
+    });
+  }, [file.name, file.size]);
+
+  function toggle() {
+    const a = ref.current;
+    if (!a) return;
+    if (a.paused) {
+      if (currentAudio && currentAudio !== a) currentAudio.pause();
+      currentAudio = a;
+      if (a.ended) a.currentTime = 0;
+      setStarted(true);
+      a.play().catch(() => {});
+    } else {
+      a.pause();
+    }
+  }
+
+  function seek(clientX: number, el: HTMLElement) {
+    const a = ref.current;
+    if (!a || !dur) return;
+    const r = el.getBoundingClientRect();
+    a.currentTime = Math.min(1, Math.max(0, (clientX - r.left) / r.width)) * dur;
+  }
+
+  const frac = dur ? pos / dur : 0;
+  const ext = file.name.includes(".") ? file.name.split(".").pop()!.toUpperCase() : "";
+  return (
+    <div className="flex w-[min(236px,60vw)] max-w-full items-center gap-2.5">
+      <audio
+        ref={ref}
+        src={file.url}
+        preload="metadata"
+        className="hidden"
+        onLoadedMetadata={(e) => setDur(e.currentTarget.duration || 0)}
+        onTimeUpdate={(e) => setPos(e.currentTarget.currentTime)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+      />
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? "To'xtatish" : "Ijro etish"}
+        className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full text-lg ${
+          mine ? "bg-white text-indigo-600" : "bg-indigo-400 text-white"
+        }`}
+      >
+        {playing ? "❚❚" : "▶"}
+      </button>
+      <div className="min-w-0 flex-1">
+        <div
+          className="flex h-[26px] cursor-pointer items-center gap-[2px]"
+          onPointerDown={(e) => seek(e.clientX, e.currentTarget)}
+        >
+          {bars.map((b, i) => (
+            <span
+              key={i}
+              className={`w-[2.4px] shrink-0 grow rounded-full ${
+                (i + 0.5) / bars.length <= frac
+                  ? mine
+                    ? "bg-white"
+                    : "bg-indigo-400"
+                  : mine
+                    ? "bg-white/35"
+                    : "bg-zinc-600"
+              }`}
+              style={{ height: `${4 + 20 * b}px` }}
+            />
+          ))}
+        </div>
+        <div
+          className={`mt-0.5 flex items-center justify-between text-[11px] tabular-nums ${
+            mine ? "text-indigo-200" : "text-zinc-500"
+          }`}
+        >
+          <span>
+            {started && dur
+              ? `${mmss(pos)} / ${mmss(dur)}`
+              : dur
+                ? mmss(dur)
+                : `${humanSize(file.size)}${ext ? ` · ${ext}` : ""}`}
+          </span>
+          <button
+            type="button"
+            onClick={() => downloadFile(file.url, file.name)}
+            className="hover:underline"
+            aria-label="Yuklab olish"
+          >
+            ↓
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

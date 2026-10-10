@@ -423,8 +423,11 @@ export function ChatRoom({
     const el = document.getElementById(`msg-${id}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("ring-2", "ring-indigo-400/70");
-      setTimeout(() => el.classList.remove("ring-2", "ring-indigo-400/70"), 1400);
+      // Telegramdagidek ikki marta "lip-lip" yonadigan nur (mobil ilova bilan bir xil)
+      el.classList.remove("msg-flash");
+      void el.offsetWidth;
+      el.classList.add("msg-flash");
+      setTimeout(() => el.classList.remove("msg-flash"), 1500);
     }
   }
 
