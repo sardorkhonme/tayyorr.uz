@@ -1,14 +1,18 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../widgets/app_text_field.dart';
+import '../../../core/constants.dart';
+import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
-import '../../../widgets/glass_card.dart';
+import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
+import '../data/auth_repository.dart';
 
 /// Google bilan birinchi marta kirgan (lekin hali rol/login tanlamagan)
-/// foydalanuvchi uchun profilni tugallash sahifasi.
+/// foydalanuvchi uchun profilni to'ldirish — saytdagi /onboarding.
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
 
@@ -17,13 +21,26 @@ class CompleteProfileScreen extends StatefulWidget {
 }
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
-  final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
+  late final TextEditingController _firstName;
+  late final TextEditingController _lastName;
   final _login = TextEditingController();
   final _password = TextEditingController();
   final _about = TextEditingController();
   String _role = 'ORDERER';
-  bool _acceptTerms = false;
+  bool _agree = false;
+  bool _showPw = false;
+  bool _uploading = false;
+  String? _err;
+
+  @override
+  void initState() {
+    super.initState();
+    // Google'dan kelgan ism-familiyani oldindan to'ldiramiz
+    final user = context.read<AuthBloc>().state.user;
+    final parts = (user?.name ?? '').trim().split(RegExp(r'\s+'));
+    _firstName = TextEditingController(text: user?.firstName ?? (parts.isNotEmpty ? parts.first : ''));
+    _lastName = TextEditingController(text: user?.lastName ?? (parts.length > 1 ? parts.sublist(1).join(' ') : ''));
+  }
 
   @override
   void dispose() {
@@ -33,11 +50,36 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     super.dispose();
   }
 
+  Future<void> _pickAvatar() async {
+    final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 800, imageQuality: 85);
+    if (file == null) return;
+    setState(() => _uploading = true);
+    try {
+      final bytes = await file.readAsBytes();
+      final ext = file.name.contains('.') ? file.name.split('.').last.toLowerCase() : 'jpg';
+      final contentType = switch (ext) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        _ => 'image/jpeg',
+      };
+      await AuthRepository().uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
+      if (mounted) context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+    } catch (_) {
+      if (mounted) setState(() => _err = "Rasmni yuklab bo'lmadi");
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
   void _submit() {
-    if (!_acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Oferta shartlariga rozilik bering")),
-      );
+    setState(() => _err = null);
+    final image = context.read<AuthBloc>().state.user?.image;
+    if ((image ?? '').isEmpty) {
+      setState(() => _err = 'Glavniy rasmni yuklang');
+      return;
+    }
+    if (!_agree) {
+      setState(() => _err = 'Davom etish uchun oferta shartlariga rozilik bering');
       return;
     }
     FocusScope.of(context).unfocus();
@@ -53,154 +95,186 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         );
   }
 
+  Widget _field(String label, Widget input) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [WebLabel(label), input],
+      );
+
   @override
   Widget build(BuildContext context) {
-    final user = context.select((AuthBloc b) => b.state.user);
+    final image = context.select((AuthBloc b) => b.state.user?.image);
     return Scaffold(
       body: AuroraBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextButton(
-                      onPressed: () =>
-                          context.read<AuthBloc>().add(const AuthLoggedOut()),
-                      child: const Text('Chiqish'),
-                    ),
-                  ],
-                ),
-                Text('Profilni tugallang',
-                    style: Theme.of(context).textTheme.headlineLarge),
-                const SizedBox(height: 4),
-                Text(
-                  user?.email != null
-                      ? "${user!.email} bilan kirdingiz — davom etish uchun quyidagilarni to'ldiring."
-                      : "Davom etish uchun quyidagilarni to'ldiring.",
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-                ),
-                const SizedBox(height: 20),
-                GlassCard(
-                  padding: const EdgeInsets.all(20),
-                  child: BlocConsumer<AuthBloc, AuthState>(
-                    // Navigatsiya (muvaffaqiyatli yakunlangandan keyin) endi
-                    // markazlashtirilgan — qara: app.dart'dagi BlocListener.
-                    listenWhen: (p, c) => c.error != null && c.error != p.error,
-                    listener: (context, state) {
-                      if (state.error != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.error!),
-                            backgroundColor: AppColors.red.withValues(alpha: 0.9),
-                          ),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      final busy = state.status == AuthStatus.authenticating;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text('Kim sifatida?',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                          const SizedBox(height: 8),
-                          Row(
+                    const Center(child: AppLogo(height: 30)),
+                    const SizedBox(height: 32),
+                    WebCard(
+                      padding: const EdgeInsets.all(28),
+                      child: BlocBuilder<AuthBloc, AuthState>(
+                        // Navigatsiya (muvaffaqiyatli yakunlangandan keyin)
+                        // markazlashtirilgan — qara: app.dart'dagi BlocListener.
+                        builder: (context, state) {
+                          final busy = state.status == AuthStatus.authenticating;
+                          final error = _err ?? state.error;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                child: _RoleChip(
-                                  label: 'Buyurtma beruvchi',
-                                  selected: _role == 'ORDERER',
-                                  onTap: () => setState(() => _role = 'ORDERER'),
-                                ),
+                              Text("Profilni to'ldiring",
+                                  style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 4),
+                              Text('Barcha maydonlar majburiy.', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  for (final r in const [('ORDERER', 'Buyurtma beruvchi'), ('PREPARER', 'Tayyorlovchi')]) ...[
+                                    if (r.$1 == 'PREPARER') const SizedBox(width: 12),
+                                    Expanded(child: _RoleButton(
+                                      label: r.$2,
+                                      selected: _role == r.$1,
+                                      onTap: () => setState(() => _role = r.$1),
+                                    )),
+                                  ],
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _RoleChip(
-                                  label: 'Tayyorlovchi',
-                                  selected: _role == 'PREPARER',
-                                  onTap: () => setState(() => _role = 'PREPARER'),
-                                ),
+                              const SizedBox(height: 16),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: _field('Ism', WebInput(controller: _firstName))),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: _field('Familiya', WebInput(controller: _lastName))),
+                                ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: AppTextField(label: 'Ism', controller: _firstName),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: AppTextField(label: 'Familiya', controller: _lastName),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          AppTextField(
-                            label: 'Login',
-                            controller: _login,
-                            keyboardType: TextInputType.text,
-                          ),
-                          const SizedBox(height: 14),
-                          AppTextField(
-                            label: 'Parol',
-                            controller: _password,
-                            obscureText: true,
-                            autofillHints: const [AutofillHints.newPassword],
-                          ),
-                          const SizedBox(height: 14),
-                          AppTextField(
-                            label: "O'zingiz haqingizda",
-                            controller: _about,
-                            maxLines: 3,
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Checkbox(
-                                value: _acceptTerms,
-                                onChanged: (v) =>
-                                    setState(() => _acceptTerms = v ?? false),
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Text(
-                                    "Ommaviy oferta shartlariga roziman",
-                                    style: TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
+                              const SizedBox(height: 16),
+                              _field('Login', WebInput(controller: _login)),
+                              const SizedBox(height: 16),
+                              _field(
+                                'Parol',
+                                WebInput(
+                                  controller: _password,
+                                  obscure: !_showPw,
+                                  suffix: GestureDetector(
+                                    onTap: () => setState(() => _showPw = !_showPw),
+                                    child: Icon(
+                                      _showPw ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                      size: 18,
+                                      color: WebC.zinc500,
                                     ),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: busy ? null : _submit,
-                            child: busy
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.4,
-                                      color: Colors.black54,
+                              const SizedBox(height: 4),
+                              Text('Keyinchalik login + parol bilan ham kira olasiz.',
+                                  style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                              const SizedBox(height: 16),
+                              _field("Qo'shimcha ma'lumot", WebInput(controller: _about, maxLines: 3, minLines: 3)),
+                              const SizedBox(height: 16),
+                              const WebLabel('Glavniy rasm'),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    clipBehavior: Clip.antiAlias,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: WebC.fill5,
+                                      border: Border.all(color: WebC.border),
                                     ),
-                                  )
-                                : const Text("Davom etish"),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                                    child: (image ?? '').isNotEmpty
+                                        ? Image.network(image!, width: 80, height: 80, fit: BoxFit.cover)
+                                        : Text("rasm yo'q", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  WebButton(
+                                    label: _uploading ? 'Yuklanmoqda...' : 'Rasm tanlash',
+                                    variant: WebBtn.ghost,
+                                    onPressed: _uploading ? null : _pickAvatar,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Container(height: 1, color: WebC.border),
+                              const SizedBox(height: 16),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => setState(() => _agree = !_agree),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 2),
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: Checkbox(
+                                          value: _agree,
+                                          onChanged: (v) => setState(() => _agree = v ?? false),
+                                          activeColor: const Color(0xFF6366F1),
+                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          visualDensity: VisualDensity.compact,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text.rich(
+                                        TextSpan(children: [
+                                          const TextSpan(text: 'Men '),
+                                          TextSpan(
+                                            text: 'ommaviy oferta va foydalanish shartlari',
+                                            style: TextStyle(
+                                              color: WebC.indigo,
+                                              decoration: TextDecoration.underline,
+                                              decorationColor: WebC.indigo,
+                                            ),
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () => launchUrl(Uri.parse('$kSiteUrl/terms'),
+                                                  mode: LaunchMode.externalApplication),
+                                          ),
+                                          const TextSpan(
+                                              text: " bilan tanishdim, ularga roziman va ma'lumotlarni o'z ixtiyorim bilan beraman."),
+                                        ]),
+                                        style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (error != null) ...[
+                                const SizedBox(height: 16),
+                                Text(error, style: TextStyle(color: WebC.red, fontSize: 14)),
+                              ],
+                              const SizedBox(height: 16),
+                              WebButton(
+                                label: busy ? '...' : 'Saqlash va davom etish',
+                                expand: true,
+                                onPressed: busy || !_agree ? null : _submit,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
+                        child: Text('Boshqa hisob bilan kirish', style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -209,8 +283,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 }
 
-class _RoleChip extends StatelessWidget {
-  const _RoleChip({required this.label, required this.selected, required this.onTap});
+class _RoleButton extends StatelessWidget {
+  const _RoleButton({required this.label, required this.selected, required this.onTap});
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -221,25 +295,15 @@ class _RoleChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors.indigo.withValues(alpha: 0.2)
-              : AppColors.tint(0.04),
+          color: selected ? const Color(0xFF6366F1).withValues(alpha: 0.10) : WebC.fill5.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? AppColors.indigo : AppColors.cardBorder,
-          ),
+          border: Border.all(color: selected ? const Color(0xFF818CF8).withValues(alpha: 0.7) : WebC.border),
         ),
         child: Text(
           label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: selected ? Colors.white : AppColors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(color: selected ? WebC.white : WebC.zinc300, fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
     );

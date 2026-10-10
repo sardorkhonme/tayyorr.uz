@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_logo.dart';
-import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
-import '../../../widgets/glass_card.dart';
 import '../../../widgets/google_logo.dart';
+import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _login = TextEditingController();
   final _password = TextEditingController();
+  bool _showPw = false;
 
   @override
   void dispose() {
@@ -51,120 +50,97 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Center(child: AppLogo(height: 30)),
-                    const SizedBox(height: 28),
-                    GlassCard(
-                      padding: const EdgeInsets.all(22),
-                      child: BlocConsumer<AuthBloc, AuthState>(
-                        // Navigatsiya (muvaffaqiyatli kirishdan keyin) endi
+                    const SizedBox(height: 32),
+                    WebCard(
+                      padding: const EdgeInsets.all(24),
+                      child: BlocBuilder<AuthBloc, AuthState>(
+                        // Navigatsiya (muvaffaqiyatli kirishdan keyin)
                         // markazlashtirilgan — qara: app.dart'dagi
                         // BlocListener. Bu yerda faqat xatoni ko'rsatamiz.
-                        listenWhen: (p, c) => c.error != null && c.error != p.error,
-                        listener: (context, state) {
-                          if (state.error != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(state.error!),
-                                backgroundColor: AppColors.red.withValues(alpha: 0.9),
-                              ),
-                            );
-                          }
-                        },
                         builder: (context, state) {
                           final busy = state.status == AuthStatus.authenticating;
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text('Kirish', style: Theme.of(context).textTheme.headlineMedium),
+                              Text('Kirish',
+                                  style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Login va parolingiz bilan kiring.',
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
-                              ),
+                              Text('Login va parol, yoki Google orqali.',
+                                  style: TextStyle(color: WebC.zinc400, fontSize: 14)),
                               const SizedBox(height: 20),
-                              AppTextField(
-                                label: 'Login',
-                                controller: _login,
-                                textInputAction: TextInputAction.next,
-                                autofillHints: const [AutofillHints.username],
-                              ),
-                              const SizedBox(height: 14),
-                              AppTextField(
-                                label: 'Parol',
-                                controller: _password,
-                                obscureText: true,
-                                textInputAction: TextInputAction.done,
-                                autofillHints: const [AutofillHints.password],
-                              ),
-                              const SizedBox(height: 22),
-                              ElevatedButton(
-                                onPressed: busy ? null : _submit,
-                                child: busy
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.4,
-                                          color: Colors.black54,
-                                        ),
-                                      )
-                                    : const Text('Kirish'),
-                              ),
-                              const SizedBox(height: 18),
-                              Row(
-                                children: [
-                                  Expanded(child: Divider(color: AppColors.cardBorder)),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                    child: Text('yoki',
-                                        style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                                  ),
-                                  Expanded(child: Divider(color: AppColors.cardBorder)),
-                                ],
-                              ),
-                              const SizedBox(height: 18),
-                              OutlinedButton(
+                              WebButton(
+                                label: 'Google orqali kirish',
+                                variant: WebBtn.white,
+                                expand: true,
+                                icon: const GoogleLogo(size: 16),
                                 onPressed: busy
                                     ? null
-                                    : () => context
-                                        .read<AuthBloc>()
-                                        .add(const AuthGoogleSignInRequested()),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: AppColors.cardBorder),
-                                  padding: const EdgeInsets.symmetric(vertical: 13),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                    : () => context.read<AuthBloc>().add(const AuthGoogleSignInRequested()),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(child: Container(height: 1, color: WebC.border)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text('yoki', style: TextStyle(color: WebC.zinc600, fontSize: 12)),
+                                  ),
+                                  Expanded(child: Container(height: 1, color: WebC.border)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              const WebLabel('Login'),
+                              AutofillGroup(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    const GoogleLogo(size: 18),
-                                    const SizedBox(width: 10),
-                                    Text('Google bilan kirish',
-                                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
+                                    WebInput(controller: _login),
+                                    const SizedBox(height: 16),
+                                    const WebLabel('Parol'),
+                                    WebInput(
+                                      controller: _password,
+                                      obscure: !_showPw,
+                                      suffix: GestureDetector(
+                                        onTap: () => setState(() => _showPw = !_showPw),
+                                        child: Icon(
+                                          _showPw ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                          size: 18,
+                                          color: WebC.zinc500,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
+                              ),
+                              if (state.error != null) ...[
+                                const SizedBox(height: 16),
+                                Text(state.error!, style: TextStyle(color: WebC.red, fontSize: 14)),
+                              ],
+                              const SizedBox(height: 16),
+                              WebButton(
+                                label: busy ? '...' : 'Kirish',
+                                expand: true,
+                                onPressed: busy ? null : _submit,
                               ),
                             ],
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    // Saytdagi kabi — ro'yxatdan o'tish faqat Google orqali
-                    // (email tasdiqlangan bo'lishi shart, shuning uchun
-                    // alohida login/parol bilan ro'yxatdan o'tish yo'q).
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Hisobingiz yo'qmi?",
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
+                    const SizedBox(height: 24),
+                    // Saytdagi kabi — ro'yxatdan o'tish Google orqali
+                    // (rol va qolgan ma'lumotlar keyingi qadamda so'raladi).
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => context.read<AuthBloc>().add(const AuthGoogleSignInRequested()),
+                        child: Text.rich(
+                          TextSpan(children: [
+                            const TextSpan(text: "Akkountingiz yo'qmi? "),
+                            TextSpan(text: "Ro'yxatdan o'tish", style: TextStyle(color: WebC.indigo)),
+                          ]),
+                          style: TextStyle(color: WebC.zinc400, fontSize: 14),
                         ),
-                        TextButton(
-                          onPressed: () => context
-                              .read<AuthBloc>()
-                              .add(const AuthGoogleSignInRequested()),
-                          child: const Text("Ro'yxatdan o'tish"),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
