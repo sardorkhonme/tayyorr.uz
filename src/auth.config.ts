@@ -44,6 +44,7 @@ export const authConfig = {
         path.startsWith("/login") ||
         path.startsWith("/register") ||
         path === "/terms" ||
+        path === "/privacy" ||
         path.startsWith("/xizmatlar") ||
         path.startsWith("/r/");
 

@@ -55,6 +55,9 @@ export default function MarketingLayout({
             <Link href="/terms" className="transition hover:text-zinc-300">
               Ommaviy oferta
             </Link>
+            <Link href="/privacy" className="transition hover:text-zinc-300">
+              Maxfiylik siyosati
+            </Link>
           </div>
           <p className="mt-6">
             tayyorr<span className="text-indigo-400">.uz</span> ·{" "}

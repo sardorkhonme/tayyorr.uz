@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../widgets/link_text.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
@@ -44,6 +45,15 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Align(alignment: Alignment.centerLeft, child: _SignOutButton()),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 6,
+                children: [
+                  _DocLink(label: 'Foydalanish shartlari', path: '/terms'),
+                  Text('·', style: TextStyle(color: WebC.zinc600, fontSize: 13)),
+                  _DocLink(label: 'Maxfiylik siyosati', path: '/privacy'),
+                ],
+              ),
             ],
     );
   }
@@ -343,6 +353,20 @@ class _SignOutButton extends StatelessWidget {
         ),
         child: Text('⏻ Hisobdan chiqish', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
       ),
+    );
+  }
+}
+
+class _DocLink extends StatelessWidget {
+  const _DocLink({required this.label, required this.path});
+  final String label;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => openLink(context, 'https://tayyorr.uz$path'),
+      child: Text(label, style: TextStyle(color: WebC.zinc500, fontSize: 13, decoration: TextDecoration.underline)),
     );
   }
 }

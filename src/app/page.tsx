@@ -491,6 +491,7 @@ export default async function Home() {
             <FooterCol title="Huquqiy">
               <FooterLink href="/terms">Ommaviy oferta</FooterLink>
               <FooterLink href="/terms">Foydalanish shartlari</FooterLink>
+              <FooterLink href="/privacy">Maxfiylik siyosati</FooterLink>
               <FooterLink href={TELEGRAM_URL} external>
                 Qo&apos;llab-quvvatlash
               </FooterLink>
