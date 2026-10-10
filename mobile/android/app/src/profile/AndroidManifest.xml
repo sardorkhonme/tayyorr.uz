@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- faqat debug/profile: lokal server (http://localhost:3199, adb reverse) bilan sinash uchun -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

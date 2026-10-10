@@ -3,8 +3,8 @@ import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_text_field.dart';
@@ -12,7 +12,9 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
+import '../../../widgets/link_text.dart';
 import '../../../widgets/web_ui.dart';
+import 'chat_media.dart';
 import '../../dashboard/data/order_model.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../public_profile/presentation/public_profile_screen.dart';
@@ -50,6 +52,47 @@ class _ChatViewState extends State<_ChatView> {
   int _contractIndex = 0;
   Timer? _contractTimer;
 
+  // Javob iqtibosi bosilganda asl xabarga o'tib, uni "chaqnatish" uchun.
+  final _itemKeys = <String, GlobalKey>{};
+  String? _flashId;
+  int _flashTick = 0;
+
+  GlobalKey _keyFor(String id) => _itemKeys.putIfAbsent(id, GlobalKey.new);
+
+  Future<void> _jumpTo(String id) async {
+    final messages = context.read<ChatCubit>().state.messages;
+    final index = messages.indexWhere((m) => m.id == id);
+    if (index < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Asl xabar topilmadi (o'chirilgan yoki juda eski)")),
+      );
+      return;
+    }
+    // Xabar hali qurilmagan (ekrandan uzoqda) bo'lsa — taxminiy joyga
+    // sakrab, keyin aniq joylashtiramiz.
+    for (var attempt = 0; attempt < 4 && _itemKeys[id]?.currentContext == null; attempt++) {
+      if (!_scrollController.hasClients) return;
+      final pos = _scrollController.position;
+      // ro'yxat teskari: oxirgi xabar — 0 pozitsiyada
+      final frac = messages.length <= 1 ? 0.0 : (messages.length - 1 - index) / (messages.length - 1);
+      _scrollController.jumpTo((pos.maxScrollExtent * frac).clamp(0.0, pos.maxScrollExtent));
+      await WidgetsBinding.instance.endOfFrame;
+    }
+    final ctx = _itemKeys[id]?.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    await Scrollable.ensureVisible(
+      ctx,
+      alignment: 0.4,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+    if (!mounted) return;
+    setState(() {
+      _flashId = id;
+      _flashTick++;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -69,8 +112,11 @@ class _ChatViewState extends State<_ChatView> {
 
   void _scrollToBottom() {
     if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    // ro'yxat teskari: 0 — eng past. Hali o'lchanmagan yoki allaqachon pastda bo'lsa — hech narsa qilmaymiz
+    if (!pos.hasContentDimensions || pos.pixels <= 0) return;
     _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
+      0,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
     );
@@ -92,15 +138,7 @@ class _ChatViewState extends State<_ChatView> {
     setState(() => _sendingFile = true);
     try {
       final ext = (file.extension ?? '').toLowerCase();
-      final contentType = switch (ext) {
-        'png' => 'image/png',
-        'webp' => 'image/webp',
-        'gif' => 'image/gif',
-        'jpg' || 'jpeg' => 'image/jpeg',
-        'pdf' => 'application/pdf',
-        'zip' => 'application/zip',
-        _ => 'application/octet-stream',
-      };
+      final contentType = mimeForExt(ext);
       await cubit.sendFile(bytes: file.bytes!, filename: file.name, contentType: contentType);
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     } finally {
@@ -115,7 +153,15 @@ class _ChatViewState extends State<_ChatView> {
         child: SafeArea(
           child: BlocConsumer<ChatCubit, ChatState>(
             listenWhen: (p, c) => c.messages.length != p.messages.length,
-            listener: (context, state) => WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom()),
+            // yangi xabar kelganda pastga tushamiz — faqat foydalanuvchi pastda
+            // turgan bo'lsa yoki xabar o'ziniki bo'lsa (eski xabarlarni o'qiyotganda sakratmaymiz)
+            listener: (context, state) {
+              final nearBottom = !_scrollController.hasClients || _scrollController.offset < 300;
+              final mineLast = state.messages.isNotEmpty && state.messages.last.mine;
+              if (nearBottom || mineLast) {
+                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+              }
+            },
             builder: (context, state) {
               final other = state.other ?? widget.initialOther;
               return Column(
@@ -175,20 +221,39 @@ class _ChatViewState extends State<_ChatView> {
                             ),
                           );
                         }
+                        // reverse — Telegramdagidek ro'yxat pastdan boshlanadi:
+                        // rasm/video yuklanib balandlik o'zgarsa ham oxirgi
+                        // xabar doim ko'rinib turadi.
                         return ListView.builder(
                           controller: _scrollController,
+                          reverse: true,
                           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                           itemCount: state.messages.length,
-                          itemBuilder: (context, i) => _MessageBubble(
-                            message: state.messages[i],
-                            hasActiveContract: state.activeContracts.isNotEmpty,
-                            pinnedOrderId: state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
-                          ),
+                          itemBuilder: (context, i) {
+                            final m = state.messages[state.messages.length - 1 - i];
+                            return KeyedSubtree(
+                              key: _keyFor(m.id),
+                              child: _FlashHighlight(
+                                flashKey: _flashId == m.id ? _flashTick : null,
+                                child: _MessageBubble(
+                                  message: m,
+                                  hasActiveContract: state.activeContracts.isNotEmpty,
+                                  pinnedOrderId:
+                                      state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
+                                  onReplyTap: _jumpTo,
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ),
                   ),
-                  if (state.replyTo != null) _ReplyBanner(message: state.replyTo!),
+                  if (state.replyTo != null)
+                    GestureDetector(
+                      onTap: () => _jumpTo(state.replyTo!.id),
+                      child: _ReplyBanner(message: state.replyTo!),
+                    ),
                   if (!state.blockedMe && !state.blockedByMe)
                     _Composer(
                       controller: _controller,
@@ -544,10 +609,18 @@ class _ReplyBanner extends StatelessWidget {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message, required this.hasActiveContract, this.pinnedOrderId});
+  const _MessageBubble({
+    required this.message,
+    required this.hasActiveContract,
+    this.pinnedOrderId,
+    this.onReplyTap,
+  });
   final ChatMessageModel message;
   final bool hasActiveContract;
   final String? pinnedOrderId;
+
+  /// Iqtibos (javob berilgan xabar) bosilganda — o'sha xabarga o'tish.
+  final void Function(String messageId)? onReplyTap;
 
   void _openMenu(BuildContext context) {
     if (message.deleted) return;
@@ -599,6 +672,28 @@ class _MessageBubble extends StatelessWidget {
                 cubit.setReplyTo(message);
               },
             ),
+            if (message.file != null)
+              ListTile(
+                leading: Icon(Icons.download_rounded, color: AppColors.textSecondary),
+                title: Text(
+                  message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlash' : 'Yuklab olish',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  saveChatFile(context, message.file!, message.id);
+                },
+              ),
+            if (message.body.isNotEmpty)
+              ListTile(
+                leading: Icon(Icons.copy_rounded, color: AppColors.textSecondary),
+                title: Text('Nusxa olish', style: TextStyle(color: AppColors.textPrimary)),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  Clipboard.setData(ClipboardData(text: message.body));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nusxalandi')));
+                },
+              ),
             if (message.mine) ...[
               ListTile(
                 leading: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
@@ -763,13 +858,19 @@ class _MessageBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (message.replyTo != null) _ReplyQuote(reply: message.replyTo!, mine: mine),
-            if (message.file != null) _FileAttachment(file: message.file!),
+            if (message.replyTo != null)
+              _ReplyQuote(
+                reply: message.replyTo!,
+                mine: mine,
+                onTap: onReplyTap == null ? null : () => onReplyTap!(message.replyTo!.id),
+              ),
+            if (message.file != null) ChatAttachment(file: message.file!, cacheKey: message.id, mine: mine),
             if (!message.deleted && message.body.isNotEmpty) ...[
               if (message.file != null) const SizedBox(height: 6),
-              Text(
+              LinkText(
                 message.body,
                 style: TextStyle(color: mine ? Colors.white : WebC.zinc200, fontSize: 14, height: 1.45),
+                linkColor: mine ? Colors.white : WebC.indigoSoft,
               ),
             ],
             if (message.deleted)
@@ -834,13 +935,17 @@ class _MessageBubble extends StatelessWidget {
 }
 
 class _ReplyQuote extends StatelessWidget {
-  const _ReplyQuote({required this.reply, required this.mine});
+  const _ReplyQuote({required this.reply, required this.mine, this.onTap});
   final ReplyPreviewModel reply;
   final bool mine;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
       decoration: BoxDecoration(
@@ -852,56 +957,6 @@ class _ReplyQuote extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: mine ? const Color(0xFFC7D2FE) : WebC.zinc400, fontSize: 12),
       ),
-    );
-  }
-}
-
-class _FileAttachment extends StatelessWidget {
-  const _FileAttachment({required this.file});
-  final ChatFileModel file;
-
-  @override
-  Widget build(BuildContext context) {
-    if (file.isImage) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: GestureDetector(
-          onTap: () => launchUrl(Uri.parse(file.url), mode: LaunchMode.externalApplication),
-          child: Image.network(
-            file.url,
-            fit: BoxFit.cover,
-            height: 160,
-            width: double.infinity,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          ),
-        ),
-      );
-    }
-    return GestureDetector(
-      onTap: () => launchUrl(Uri.parse(file.url), mode: LaunchMode.externalApplication),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          // Rangi qanday bo'lishidan qat'i nazar o'qiladigan bo'lishi uchun
-          // yorug' rejimda qattiqroq qora parda ishlatiladi.
-          color: Colors.black.withValues(alpha: AppColors.isLight ? 0.55 : 0.18),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.insert_drive_file_rounded, size: 20, color: Colors.white70),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                file.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white, fontSize: 12.5),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1059,6 +1114,60 @@ class _Composer extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Telegramdagidek: o'tilgan xabar orqasida yumshoq indigo nur ikki marta
+/// "lip-lip" yonib, so'nadi. [flashKey] o'zgarganda animatsiya qayta boshlanadi.
+class _FlashHighlight extends StatefulWidget {
+  const _FlashHighlight({required this.flashKey, required this.child});
+  final int? flashKey;
+  final Widget child;
+
+  @override
+  State<_FlashHighlight> createState() => _FlashHighlightState();
+}
+
+class _FlashHighlightState extends State<_FlashHighlight> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+  late final Animation<double> _a = TweenSequence<double>([
+    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)), weight: 14),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.35), weight: 16),
+    TweenSequenceItem(tween: Tween(begin: 0.35, end: 1.0), weight: 14),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 56),
+  ]).animate(_c);
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.flashKey != null) _c.forward(from: 0);
+  }
+
+  @override
+  void didUpdateWidget(covariant _FlashHighlight old) {
+    super.didUpdateWidget(old);
+    if (widget.flashKey != null && widget.flashKey != old.flashKey) _c.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _a,
+      child: widget.child,
+      builder: (context, child) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.28 * _a.value),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: child,
       ),
     );
   }

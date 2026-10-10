@@ -50,3 +50,13 @@ class AuthLoggedOut extends AuthEvent {
 class AuthMeRefreshRequested extends AuthEvent {
   const AuthMeRefreshRequested();
 }
+
+/// Server yangilangan foydalanuvchini qaytarganda (masalan rasm yuklangach)
+/// qo'shimcha so'rovsiz darhol holatga yoziladi.
+class AuthUserUpdated extends AuthEvent {
+  const AuthUserUpdated(this.user);
+  final UserModel user;
+
+  @override
+  List<Object?> get props => [user];
+}

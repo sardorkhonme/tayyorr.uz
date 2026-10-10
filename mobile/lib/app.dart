@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/storage/local_storage.dart';
-import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/auth/bloc/auth_bloc.dart';
@@ -12,6 +11,7 @@ import 'features/auth/presentation/login_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/home/section_cubit.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'widgets/brand_splash.dart';
 
 /// Butun ilova uchun bitta Navigator — bloc holati o'zgarganda (kirish,
 /// chiqish, ro'yxatdan o'tish) widget daraxtining istalgan chuqurligidan
@@ -45,18 +45,14 @@ class TayyorrApp extends StatelessWidget {
             // shu bois AppColors'dagi yangi ranglar ko'rinmay qolardi.
             // AuthBloc yuqorida (BlocProvider) qolgani uchun sessiya
             // yo'qolmaydi — faqat vizual daraxt yangilanadi.
-            home: KeyedSubtree(
-              key: ValueKey(ThemeController.instance.isLight),
-              child: const _RootGate(),
-            ),
+            home: KeyedSubtree(key: ValueKey(ThemeController.instance.isLight), child: const _RootGate()),
             builder: (context, child) {
               // Navigator ustidan o'ralgan — shuning uchun pushed sahifalar
               // (Profil, Tahrirlash, Chat va h.k.) ostida qolib ketmaydi:
               // status o'zgarishi doim butun stekni tozalab, joriy holatni
               // ko'rsatadi (masalan "Chiqish" har doim ishlashini kafolatlaydi).
               return BlocListener<AuthBloc, AuthState>(
-                listenWhen: (p, c) =>
-                    c.status != AuthStatus.authenticating && p.status != c.status,
+                listenWhen: (p, c) => c.status != AuthStatus.authenticating && p.status != c.status,
                 listener: (context, state) {
                   // chiqib, qayta kirganda bosh sahifadan boshlansin
                   if (state.status == AuthStatus.unauthenticated) {
@@ -86,36 +82,31 @@ class _RootGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        switch (state.status) {
-          case AuthStatus.unknown:
-            return const _SplashScreen();
-          case AuthStatus.authenticated:
-            return const HomeShell();
-          case AuthStatus.onboarding:
-            return const CompleteProfileScreen();
-          case AuthStatus.authenticating:
-          case AuthStatus.unauthenticated:
-            return LocalStorage.instance.hasSeenOnboarding
-                ? const LoginScreen()
-                : const OnboardingScreen();
-        }
-      },
-    );
-  }
-}
-
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: const Center(
-        child: CircularProgressIndicator(color: AppColors.indigo),
+      buildWhen: (p, c) => p.status != c.status,
+      builder: (context, state) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 420),
+        switchInCurve: Curves.easeOutCubic,
+        // "kirilmoqda" holati kirish ekranining o'zi — uni almashtirmaymiz
+        child: KeyedSubtree(
+          key: ValueKey(state.status == AuthStatus.authenticating ? AuthStatus.unauthenticated : state.status),
+          child: _screenFor(state),
+        ),
       ),
     );
+  }
+
+  Widget _screenFor(AuthState state) {
+    switch (state.status) {
+      case AuthStatus.unknown:
+        return const BrandSplash();
+      case AuthStatus.authenticated:
+        return const HomeShell();
+      case AuthStatus.onboarding:
+        return const CompleteProfileScreen();
+      case AuthStatus.authenticating:
+      case AuthStatus.unauthenticated:
+        return LocalStorage.instance.hasSeenOnboarding ? const LoginScreen() : const OnboardingScreen();
+    }
   }
 }
 

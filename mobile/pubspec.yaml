@@ -39,6 +39,15 @@ dependencies:
   intl: ^0.19.0
   flutter_svg: ^2.0.10+1
 
+  # chat media — hammasi ilovaning o'zida: video, audio, PDF ko'rish,
+  # fayllarni keshga yuklash, boshqa turlarni ochish, galereyaga saqlash
+  video_player: ^2.11.1
+  just_audio: ^0.10.6
+  pdfx: ^2.11.0
+  path_provider: ^2.1.6
+  open_filex: ^4.7.0
+  gal: ^2.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

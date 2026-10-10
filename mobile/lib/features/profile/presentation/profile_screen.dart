@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -61,6 +63,7 @@ class _ProfileFormState extends State<_ProfileForm> {
   late final TextEditingController _about;
   bool _busy = false;
   bool _uploading = false;
+  Uint8List? _preview;
   String? _msg;
   String? _avatarErr;
 
@@ -90,18 +93,24 @@ class _ProfileFormState extends State<_ProfileForm> {
     });
     try {
       final bytes = await file.readAsBytes();
+      if (mounted) setState(() => _preview = bytes);
       final ext = file.name.contains('.') ? file.name.split('.').last.toLowerCase() : 'jpg';
       final contentType = switch (ext) {
         'png' => 'image/png',
         'webp' => 'image/webp',
         _ => 'image/jpeg',
       };
-      await _repo.uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
-      if (mounted) context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+      final user = await _repo.uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
+      if (mounted) context.read<AuthBloc>().add(AuthUserUpdated(user));
     } catch (_) {
       if (mounted) setState(() => _avatarErr = "Rasmni yuklab bo'lmadi");
     } finally {
-      if (mounted) setState(() => _uploading = false);
+      if (mounted) {
+        setState(() {
+          _uploading = false;
+          _preview = null;
+        });
+      }
     }
   }
 
@@ -146,7 +155,9 @@ class _ProfileFormState extends State<_ProfileForm> {
                   border: Border.all(color: WebC.border),
                 ),
                 alignment: Alignment.center,
-                child: (image ?? '').isNotEmpty
+                child: _preview != null
+                    ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
+                    : (image ?? '').isNotEmpty
                     ? Image.network(image!, width: 80, height: 80, fit: BoxFit.cover)
                     : Text("rasm yo'q", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
               ),

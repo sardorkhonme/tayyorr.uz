@@ -45,7 +45,13 @@ class ChatFileModel {
 
   const ChatFileModel({required this.name, required this.type, required this.size, required this.url});
 
-  bool get isImage => type.startsWith('image/');
+  /// Kengaytma (kichik harfda), masalan "pdf".
+  String get ext => name.contains('.') ? name.split('.').last.toLowerCase() : '';
+
+  bool get isImage => type.startsWith('image/') || const {'jpg', 'jpeg', 'png', 'webp', 'gif'}.contains(ext);
+  bool get isVideo => type.startsWith('video/') || const {'mp4', 'mov', 'webm', 'mkv', '3gp'}.contains(ext);
+  bool get isAudio =>
+      type.startsWith('audio/') || const {'mp3', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'wav', 'flac'}.contains(ext);
 
   factory ChatFileModel.fromJson(Map<String, dynamic> json) {
     return ChatFileModel(

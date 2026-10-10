@@ -17,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthOnboardingCompleted>(_onOnboardingCompleted);
     on<AuthLoggedOut>(_onLoggedOut);
     on<AuthMeRefreshRequested>(_onRefresh);
+    on<AuthUserUpdated>((event, emit) => emit(state.copyWith(user: event.user)));
   }
 
   final AuthRepository _repo;

@@ -35,5 +35,6 @@ class AuthState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, user?.id, error];
+  // `user` — butun obyekt: rasm, balans, ism o'zgarganda ham ekran yangilansin.
+  List<Object?> get props => [status, user, error];
 }

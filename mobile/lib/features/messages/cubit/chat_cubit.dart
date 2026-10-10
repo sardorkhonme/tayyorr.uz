@@ -59,8 +59,10 @@ class ChatState extends Equatable {
   }
 
   @override
+  // `messages` — ro'yxatning o'zi: reaksiya/tahrirda soni o'zgarmasa ham
+  // yangi ro'yxat emit qilinadi va ekran darhol yangilanadi.
   List<Object?> get props =>
-      [status, other?.id, messages.length, error, sending, blockedMe, blockedByMe, activeContracts.length, replyTo?.id];
+      [status, other, messages, error, sending, blockedMe, blockedByMe, activeContracts, replyTo?.id];
 }
 
 class ChatCubit extends Cubit<ChatState> {
@@ -171,11 +173,31 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   Future<void> deleteMessage(String msgId) async {
+    // optimistik: xabar darhol "o'chirilgan" ko'rinadi, butun suhbat qayta yuklanmaydi
+    final prev = state.messages;
+    emit(state.copyWith(messages: [
+      for (final m in prev)
+        if (m.id == msgId)
+          ChatMessageModel(
+            id: m.id,
+            senderId: m.senderId,
+            body: '',
+            system: m.system,
+            createdAt: m.createdAt,
+            updatedAt: DateTime.now().millisecondsSinceEpoch,
+            mine: m.mine,
+            edited: m.edited,
+            deleted: true,
+            replyTo: m.replyTo,
+            reactions: m.reactions,
+          )
+        else
+          m,
+    ]));
     try {
       await _repo.deleteMessage(conversationId, msgId);
-      await load();
     } on ApiException catch (e) {
-      emit(state.copyWith(error: e.message));
+      emit(state.copyWith(messages: prev, error: e.message));
     }
   }
 
