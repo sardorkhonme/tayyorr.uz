@@ -171,7 +171,6 @@ class WebButton extends StatelessWidget {
             child: Text(
               label,
               textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: fg,
                 fontSize: small ? 13 : 14,
@@ -364,6 +363,7 @@ class WebInput extends StatelessWidget {
       style: TextStyle(
         color: AppColors.isLight ? const Color(0xFF1B1B1F) : const Color(0xFFE4E4E7),
         fontSize: 14,
+        height: 1.5,
         fontFamily: mono ? 'monospace' : null,
       ),
       decoration: webInputDecoration(hint: hint, suffix: suffix),
@@ -380,15 +380,85 @@ InputDecoration webInputDecoration({String? hint, Widget? suffix}) {
   final normal = light ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10);
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 14),
+    hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 14, height: 1.5),
     isDense: true,
     filled: true,
     fillColor: light ? Colors.white : Colors.white.withValues(alpha: 0.04),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 9.6),
     suffixIcon: suffix,
+    suffixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 20),
     border: b(normal),
     enabledBorder: b(normal),
     focusedBorder: b(const Color(0xFF6366F1)),
     disabledBorder: b(normal),
+  );
+}
+
+/// Saytdagi `<Stars>`: ★ to'lgan (amber-400), ☆ bo'sh (zinc-600).
+class WebStars extends StatelessWidget {
+  const WebStars({super.key, required this.value, this.size = 12});
+  final double value;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final rounded = (value * 2).round() / 2;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 1; i <= 5; i++)
+          Padding(
+            padding: const EdgeInsets.only(right: 2),
+            child: Text(
+              i <= rounded || i - 0.5 == rounded ? '★' : '☆',
+              style: TextStyle(
+                fontSize: size,
+                height: 1.2,
+                color: i <= rounded ? const Color(0xFFFBBF24) : WebC.zinc600,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Saytdagi `<StarInput>`: bosib tanlanadigan 5 ta katta yulduz.
+class WebStarInput extends StatelessWidget {
+  const WebStarInput({super.key, required this.value, required this.onChanged});
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (var i = 1; i <= 5; i++)
+          GestureDetector(
+            onTap: () => onChanged(i),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Text(
+                '★',
+                style: TextStyle(fontSize: 30, height: 1.1, color: i <= value ? const Color(0xFFFBBF24) : WebC.zinc600),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Saytdagi modal oyna (`rounded-2xl bg-[#14141b] p-6`).
+Future<T?> showWebDialog<T>(BuildContext context, {required WidgetBuilder builder}) {
+  return showDialog<T>(
+    context: context,
+    barrierColor: AppColors.isLight ? const Color(0xFFE4E4E9).withValues(alpha: 0.66) : Colors.black.withValues(alpha: 0.75),
+    builder: (ctx) => Dialog(
+      backgroundColor: AppColors.isLight ? Colors.white : const Color(0xFF14141B),
+      insetPadding: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: WebC.border)),
+      child: Padding(padding: const EdgeInsets.all(24), child: builder(ctx)),
+    ),
   );
 }

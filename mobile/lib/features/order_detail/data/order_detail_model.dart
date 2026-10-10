@@ -3,15 +3,20 @@ class OrderPartyModel {
   final String? name;
   final String? login;
   final String? image;
+  final bool online;
+  final String? presence;
 
-  const OrderPartyModel({required this.id, this.name, this.login, this.image});
+  const OrderPartyModel({required this.id, this.name, this.login, this.image, this.online = false, this.presence});
 
   factory OrderPartyModel.fromJson(Map<String, dynamic> json) {
+    final p = json['presence'] as Map<String, dynamic>?;
     return OrderPartyModel(
       id: json['id'] as String,
       name: json['name'] as String?,
       login: json['login'] as String?,
       image: (json['avatarUrl'] as String?) ?? (json['image'] as String?),
+      online: p?['online'] as bool? ?? false,
+      presence: p?['text'] as String?,
     );
   }
 
@@ -33,6 +38,7 @@ class OrderOfferModel {
   final bool preparerAvailable;
   final double? preparerRating;
   final int preparerRatingCount;
+  final String? preparerAbout;
 
   const OrderOfferModel({
     required this.id,
@@ -45,6 +51,7 @@ class OrderOfferModel {
     required this.preparerAvailable,
     this.preparerRating,
     required this.preparerRatingCount,
+    this.preparerAbout,
   });
 
   factory OrderOfferModel.fromJson(Map<String, dynamic> json) {
@@ -60,6 +67,7 @@ class OrderOfferModel {
       preparerAvailable: p['isAvailable'] as bool? ?? true,
       preparerRating: (p['rating'] as num?)?.toDouble(),
       preparerRatingCount: (p['ratingCount'] as num?)?.toInt() ?? 0,
+      preparerAbout: p['about'] as String?,
     );
   }
 }
@@ -154,6 +162,10 @@ class OrderDetailModel {
   final List<OfferQueueEntry> queue;
   final List<ContractModel> contracts;
   final OrderReviewModel? review;
+  final DateTime? deletedAt;
+  final String? deletedByRole;
+  final String? deleteReason;
+  final List<OrderFileModel> files;
 
   const OrderDetailModel({
     required this.id,
@@ -171,6 +183,10 @@ class OrderDetailModel {
     this.queue = const [],
     this.contracts = const [],
     this.review,
+    this.deletedAt,
+    this.deletedByRole,
+    this.deleteReason,
+    this.files = const [],
   });
 
   /// Shartnoma DB'da "ACCEPTED" holatida qolib ketaveradi hatto ish
@@ -202,6 +218,25 @@ class OrderDetailModel {
       queue: (json['queue'] as List? ?? []).cast<Map<String, dynamic>>().map(OfferQueueEntry.fromJson).toList(),
       contracts: (json['contracts'] as List? ?? []).cast<Map<String, dynamic>>().map(ContractModel.fromJson).toList(),
       review: json['review'] != null ? OrderReviewModel.fromJson(json['review'] as Map<String, dynamic>) : null,
+      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
+      deletedByRole: json['deletedByRole'] as String?,
+      deleteReason: json['deleteReason'] as String?,
+      files: (json['files'] as List? ?? []).cast<Map<String, dynamic>>().map(OrderFileModel.fromJson).toList(),
     );
   }
+}
+
+class OrderFileModel {
+  const OrderFileModel({required this.id, required this.kind, required this.size, this.url});
+  final String id;
+  final String kind;
+  final int size;
+  final String? url;
+
+  factory OrderFileModel.fromJson(Map<String, dynamic> json) => OrderFileModel(
+        id: json['id'] as String,
+        kind: json['kind'] as String,
+        size: (json['size'] as num).toInt(),
+        url: json['url'] as String?,
+      );
 }

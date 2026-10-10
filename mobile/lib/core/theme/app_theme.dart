@@ -16,6 +16,9 @@ class AppTheme {
     final base = isLight ? ThemeData.light(useMaterial3: true) : ThemeData.dark(useMaterial3: true);
 
     return base.copyWith(
+      // web/kompyuterda Flutter avtomatik 'compact' zichlik qo'llab input va
+      // tugmalarni qisqartiradi — telefondagi bilan bir xil bo'lishi uchun.
+      visualDensity: VisualDensity.standard,
       scaffoldBackgroundColor: AppColors.bg,
       colorScheme: base.colorScheme.copyWith(
         primary: AppColors.indigo,
@@ -64,7 +67,7 @@ class AppTheme {
         filled: true,
         isDense: true,
         fillColor: isLight ? Colors.white : Colors.white.withValues(alpha: 0.04),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 9.6),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(11.2),
           borderSide: BorderSide(color: isLight ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10)),

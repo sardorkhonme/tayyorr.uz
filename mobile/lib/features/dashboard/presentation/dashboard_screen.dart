@@ -115,17 +115,18 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   Future<void> _newOrder() async {
-    final created = await Navigator.of(context).push<bool>(
+    // yaratilgach buyurtma sahifasiga o'tiladi — qaytganda ro'yxat yangilanadi
+    await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const CreateOrderScreen()),
     );
-    if (created == true && mounted) context.read<DashboardCubit>().load();
+    if (mounted) context.read<DashboardCubit>().load();
   }
 
   Future<void> _openOrder(OrderModel o) async {
-    final changed = await Navigator.of(context).push<bool>(
+    await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o.id)),
     );
-    if (changed == true && mounted) context.read<DashboardCubit>().load();
+    if (mounted) context.read<DashboardCubit>().load();
   }
 
   void _openFilter(List<OrderModel> orders) {
@@ -371,7 +372,7 @@ class _ControlsDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onFilter;
   final VoidCallback? onNew;
 
-  static const double _extent = 12 + 38 + 8 + 40 + 8 + 24 + 12 + 2;
+  static const double _extent = 12 + 38 + 8 + 42 + 8 + 24 + 12 + 2;
 
   @override
   double get minExtent => _extent;
@@ -413,7 +414,7 @@ class _ControlsDelegate extends SliverPersistentHeaderDelegate {
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
-                  height: 40,
+                  height: 42,
                   child: Row(
                     children: [
                       Expanded(child: WebInput(hint: "Sarlavha, tavsif yoki tur bo'yicha qidirish…", onChanged: onSearch)),

@@ -46,7 +46,7 @@ class _AppTextFieldState extends State<AppTextField> {
           textInputAction: widget.textInputAction,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           autofillHints: widget.autofillHints,
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.5),
           decoration: widget.obscureText
               ? InputDecoration(
                   suffixIcon: IconButton(

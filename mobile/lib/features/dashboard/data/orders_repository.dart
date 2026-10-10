@@ -10,19 +10,21 @@ class OrdersRepository {
     return list.map(OrderModel.fromJson).toList();
   }
 
-  Future<void> createOrder({
+  /// Yangi buyurtma id'sini qaytaradi.
+  Future<String> createOrder({
     required String title,
     required String type,
     required String description,
     int? budget,
     DateTime? deadline,
   }) async {
-    await _api.post('/mobile/orders', data: {
+    final res = await _api.post('/mobile/orders', data: {
       'title': title,
       'type': type,
       'description': description,
       if (budget != null) 'budget': budget,
       if (deadline != null) 'deadline': deadline.toUtc().toIso8601String(),
     });
+    return (res['order'] as Map<String, dynamic>)['id'] as String;
   }
 }

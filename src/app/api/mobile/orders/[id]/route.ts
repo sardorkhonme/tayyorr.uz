@@ -11,6 +11,8 @@ import { refundOfferStars } from "@/lib/stars";
 import { logToGroup, siteUrl } from "@/lib/telegram-log";
 import { softDeleteOrder } from "@/lib/order-delete";
 import { maskName } from "@/lib/mask-name";
+import { presenceText } from "@/lib/presence";
+import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -26,8 +28,9 @@ export async function GET(
   const order = await db.order.findUnique({
     where: { id },
     include: {
-      orderer: { select: { id: true, name: true, login: true, avatarUrl: true, image: true } },
-      preparer: { select: { id: true, name: true, login: true, avatarUrl: true, image: true } },
+      orderer: { select: { id: true, name: true, login: true, avatarUrl: true, image: true, lastSeenAt: true } },
+      preparer: { select: { id: true, name: true, login: true, avatarUrl: true, image: true, lastSeenAt: true } },
+      files: true,
       offers: {
         include: {
           preparer: {
@@ -40,6 +43,7 @@ export async function GET(
               isAvailable: true,
               ratingCount: true,
               ratingSum: true,
+              about: true,
             },
           },
         },
@@ -86,6 +90,26 @@ export async function GET(
     }
   }
 
+  // ishtirokchi: rasm + onlayn holati (webdagi PersonCard bilan bir xil)
+  const party = (u: NonNullable<typeof order.preparer>) => ({
+    id: u.id,
+    name: u.name,
+    login: u.login,
+    avatarUrl: u.avatarUrl,
+    image: u.image,
+    presence: presenceText(u.lastSeenAt),
+  });
+
+  const files = await Promise.all(
+    order.files.map(async (f) => ({
+      id: f.id,
+      kind: f.kind,
+      mimeType: f.mimeType,
+      size: f.size,
+      url: isParty ? await presignGet({ bucket: PRIVATE_BUCKET, key: f.key }) : null,
+    })),
+  );
+
   return mobileJson({
     order: {
       id: order.id,
@@ -96,9 +120,12 @@ export async function GET(
       budget: order.budget,
       deadline: order.deadline?.toISOString() ?? null,
       deletedAt: order.deletedAt?.toISOString() ?? null,
+      deletedByRole: order.deletedByRole,
+      deleteReason: order.deleteReason,
       createdAt: order.createdAt.toISOString(),
-      orderer: order.orderer,
-      preparer: order.preparer,
+      orderer: party(order.orderer),
+      preparer: order.preparer ? party(order.preparer) : null,
+      files,
       queue,
       contracts: order.contracts.map((c) => ({
         id: c.id,
@@ -128,6 +155,7 @@ export async function GET(
           isAvailable: o.preparer.isAvailable,
           rating: o.preparer.ratingCount ? o.preparer.ratingSum / o.preparer.ratingCount : null,
           ratingCount: o.preparer.ratingCount,
+          about: o.preparer.about,
         },
       })),
     },
