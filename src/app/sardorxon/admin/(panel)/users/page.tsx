@@ -3,14 +3,16 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { shortDateTime } from "@/lib/date";
+import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
+import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { LiveSearch } from "@/components/admin/live-search";
 
 export default async function AdminUsers({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { q } = await searchParams;
-  const query = (q ?? "").trim();
+  const query = cleanQuery((await searchParams).q);
 
   const users = await db.user.findMany({
     where: {
@@ -18,11 +20,7 @@ export default async function AdminUsers({
       ...(query
         ? {
             OR: [
-              { id: { equals: query } },
-              { login: { contains: query, mode: "insensitive" } },
-              { name: { contains: query, mode: "insensitive" } },
-              { firstName: { contains: query, mode: "insensitive" } },
-              { lastName: { contains: query, mode: "insensitive" } },
+              userSearchWhere(query),
               { email: { contains: query, mode: "insensitive" } },
               { walletCode: { contains: query.toUpperCase() } },
             ],
@@ -37,29 +35,23 @@ export default async function AdminUsers({
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Foydalanuvchilar</h1>
 
-      <form className="flex gap-2">
-        <input
-          name="q"
-          defaultValue={query}
-          placeholder="login, ism, email, ID yoki hisob kodi"
-          className="input max-w-sm"
-        />
-        <button className="btn-ghost">Qidirish</button>
-      </form>
+      <LiveSearch placeholder="Ism, familiya, login, ID, email yoki hisob kodi" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
             <tr>
               <th className="px-4 py-2">Foydalanuvchi</th>
               <th className="px-4 py-2">Rol</th>
               <th className="px-4 py-2">Balans</th>
               <th className="px-4 py-2">Holat</th>
+              <th className="px-4 py-2"></th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => {
               const banned = u.bannedUntil && u.bannedUntil.getTime() > Date.now();
+              const label = u.name ?? (u.login ? `@${u.login}` : u.id);
               return (
                 <tr key={u.id} className="border-t border-white/5">
                   <td className="px-4 py-2">
@@ -94,12 +86,21 @@ export default async function AdminUsers({
                       <span className="text-emerald-400">faol</span>
                     )}
                   </td>
+                  <td className="px-4 py-2 text-right">
+                    <AdminPostButton
+                      url={`/api/admin/users/${u.id}`}
+                      method="DELETE"
+                      label="O'chirish"
+                      className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
+                      confirmText={`«${label}» hisobi va uning BARCHA ma'lumotlari (buyurtmalar, xabarlar, hisob amallari) butunlay o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi. Davom etilsinmi?`}
+                    />
+                  </td>
                 </tr>
               );
             })}
             {users.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
                   Hech narsa topilmadi.
                 </td>
               </tr>

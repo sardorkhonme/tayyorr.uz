@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { shortDate } from "@/lib/date";
+import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
+import { LiveSearch } from "@/components/admin/live-search";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +25,23 @@ const STATUS: Record<string, string> = {
   CANCELLED: "Bekor",
 };
 
-export default async function AdminOrders() {
+export default async function AdminOrders({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const q = cleanQuery((await searchParams).q);
   const orders = await db.order.findMany({
+    where: q
+      ? {
+          OR: [
+            { title: { contains: q, mode: "insensitive" } },
+            { orderer: userSearchWhere(q) },
+            { preparer: userSearchWhere(q) },
+            ...(idPrefixWhere(q) ? [idPrefixWhere(q)!] : []),
+          ],
+        }
+      : undefined,
     orderBy: { createdAt: "desc" },
     take: 150,
     include: {
@@ -37,6 +54,7 @@ export default async function AdminOrders() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Buyurtmalar</h1>
+      <LiveSearch placeholder="Sarlavha, buyurtmachi yoki tayyorlovchi (ism, login, ID)" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[820px] text-sm">
@@ -120,6 +138,13 @@ export default async function AdminOrders() {
                 </td>
               </tr>
             ))}
+            {orders.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
+                  Hech narsa topilmadi.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -2,12 +2,26 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
+import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
+import { LiveSearch } from "@/components/admin/live-search";
 
-export default async function AdminMessages() {
+export default async function AdminMessages({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const q = cleanQuery((await searchParams).q);
   const supportId = await getSupportUserId();
 
   const convs = await db.conversation.findMany({
-    where: { OR: [{ userAId: supportId }, { userBId: supportId }] },
+    where: q
+      ? {
+          OR: [
+            { userAId: supportId, userB: userSearchWhere(q) },
+            { userBId: supportId, userA: userSearchWhere(q) },
+          ],
+        }
+      : { OR: [{ userAId: supportId }, { userBId: supportId }] },
     orderBy: { lastMessageAt: "desc" },
     take: 100,
     include: {
@@ -35,9 +49,10 @@ export default async function AdminMessages() {
         Foydalanuvchilar bilan yozishmalar. Javoblar «tayyorr.uz support» nomidan
         boradi.
       </p>
+      <LiveSearch placeholder="Ism, familiya, login yoki foydalanuvchi ID" />
 
       {rows.length === 0 && (
-        <p className="text-sm text-zinc-500">Hozircha suhbat yo'q.</p>
+        <p className="text-sm text-zinc-500">{q ? "Hech narsa topilmadi." : "Hozircha suhbat yo'q."}</p>
       )}
 
       <ul className="flex flex-col gap-2">

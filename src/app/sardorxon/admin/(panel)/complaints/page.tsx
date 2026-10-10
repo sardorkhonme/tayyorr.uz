@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
+import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
+import { LiveSearch } from "@/components/admin/live-search";
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: "Yangi",
@@ -10,8 +12,14 @@ const STATUS_LABEL: Record<string, string> = {
   DISMISSED: "Rad etildi",
 };
 
-export default async function AdminComplaints() {
+export default async function AdminComplaints({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const q = cleanQuery((await searchParams).q);
   const complaints = await db.complaint.findMany({
+    where: q ? { OR: [{ reporter: userSearchWhere(q) }, { suspect: userSearchWhere(q) }] } : undefined,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     take: 100,
     include: {
@@ -23,9 +31,10 @@ export default async function AdminComplaints() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Shikoyatlar</h1>
+      <LiveSearch placeholder="Shikoyat qiluvchi yoki qilinuvchi (ism, login, ID)" />
 
       {complaints.length === 0 && (
-        <p className="text-sm text-zinc-500">Shikoyatlar yo'q.</p>
+        <p className="text-sm text-zinc-500">{q ? "Hech narsa topilmadi." : "Shikoyatlar yo'q."}</p>
       )}
 
       <ul className="flex flex-col gap-2">

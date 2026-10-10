@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
+import { LiveSearch } from "@/components/admin/live-search";
 
 const STATUS: Record<string, string> = {
   PENDING: "O'tkazilishi kutilmoqda",
@@ -16,8 +18,16 @@ function groupCard(d: string) {
   return d.replace(/(.{4})/g, "$1 ").trim();
 }
 
-export default async function AdminPayouts() {
+export default async function AdminPayouts({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const q = cleanQuery((await searchParams).q);
   const rows = await db.payoutRequest.findMany({
+    where: q
+      ? { OR: [{ user: userSearchWhere(q) }, ...(idPrefixWhere(q) ? [idPrefixWhere(q)!] : [])] }
+      : undefined,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     take: 150,
     include: { user: { select: { id: true, login: true, name: true } } },
@@ -31,6 +41,7 @@ export default async function AdminPayouts() {
         o'tkazgach «Kartaga o'tkazdim» ni bosing. «O'tkazib bo'lmadi» — mablag'
         foydalanuvchiga qaytadi.
       </p>
+      <LiveSearch placeholder="Foydalanuvchi (ism, login, ID) yoki so'rov ID" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[820px] text-sm">
@@ -107,7 +118,7 @@ export default async function AdminPayouts() {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
-                  So'rovlar yo'q.
+                  {q ? "Hech narsa topilmadi." : "So'rovlar yo'q."}
                 </td>
               </tr>
             )}

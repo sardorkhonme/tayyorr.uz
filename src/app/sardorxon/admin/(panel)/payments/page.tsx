@@ -3,6 +3,8 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { shortDateTime } from "@/lib/date";
+import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
+import { LiveSearch } from "@/components/admin/live-search";
 
 const TYPE_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -16,8 +18,16 @@ const TYPE_LABEL: Record<string, string> = {
   COMMISSION: "Komissiya",
 };
 
-export default async function AdminPayments() {
+export default async function AdminPayments({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const q = cleanQuery((await searchParams).q);
   const txns = await db.walletTransaction.findMany({
+    where: q
+      ? { OR: [{ user: userSearchWhere(q) }, ...(idPrefixWhere(q) ? [idPrefixWhere(q)!] : [])] }
+      : undefined,
     orderBy: { createdAt: "desc" },
     take: 150,
     include: {
@@ -28,6 +38,7 @@ export default async function AdminPayments() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">To'lovlar / hisob amallari</h1>
+      <LiveSearch placeholder="Foydalanuvchi (ism, login, ID) yoki chekdagi Amal ID" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[720px] text-sm">
@@ -93,6 +104,13 @@ export default async function AdminPayments() {
                 </td>
               </tr>
             ))}
+            {txns.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
+                  Hech narsa topilmadi.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

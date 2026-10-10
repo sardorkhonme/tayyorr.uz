@@ -2,9 +2,17 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
+import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
+import { LiveSearch } from "@/components/admin/live-search";
 
-export default async function AdminChats() {
+export default async function AdminChats({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const q = cleanQuery((await searchParams).q);
   const convs = await db.conversation.findMany({
+    where: q ? { OR: [{ userA: userSearchWhere(q) }, { userB: userSearchWhere(q) }] } : undefined,
     orderBy: { lastMessageAt: "desc" },
     take: 100,
     include: {
@@ -20,6 +28,7 @@ export default async function AdminChats() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Barcha suhbatlar</h1>
+      <LiveSearch placeholder="Ishtirokchi (ism, familiya, login, ID)" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[640px] text-sm">
@@ -55,6 +64,13 @@ export default async function AdminChats() {
                 </td>
               </tr>
             ))}
+            {convs.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center text-zinc-500">
+                  Hech narsa topilmadi.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
