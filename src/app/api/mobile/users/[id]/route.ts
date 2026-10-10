@@ -5,6 +5,7 @@ import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { presenceText } from "@/lib/presence";
 import { maskName } from "@/lib/mask-name";
+import { blockState } from "@/lib/chat";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -44,6 +45,32 @@ export async function GET(
   }
 
   const isOwner = auth.userId === id;
+  const displayName =
+    user.name || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null;
+
+  // Bloklagan foydalanuvchiga web'dagidek faqat ism va "o'zi haqida".
+  if (!isOwner && (await blockState(auth.userId, id)).blockedMe) {
+    return mobileJson({
+      user: {
+        id: user.id,
+        name: displayName,
+        login: null,
+        role: null,
+        about: user.about,
+        image: null,
+        rating: null,
+        ratingCount: 0,
+        email: null,
+        createdAt: user.createdAt.toISOString(),
+        online: false,
+        presenceText: "",
+        ordersCreated: 0,
+        ordersTaken: 0,
+        doneOrders: [],
+        blockedMe: true,
+      },
+    });
+  }
   const isPreparerProfile = user.role === "PREPARER";
   const avg = user.ratingCount ? user.ratingSum / user.ratingCount : 0;
   const presence = presenceText(user.lastSeenAt);
@@ -77,7 +104,7 @@ export async function GET(
   return mobileJson({
     user: {
       id: user.id,
-      name: user.name || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || null,
+      name: displayName,
       login: user.login,
       role: user.role,
       about: user.about,

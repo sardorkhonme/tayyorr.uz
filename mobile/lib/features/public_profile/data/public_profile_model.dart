@@ -64,6 +64,7 @@ class PublicProfileModel {
   final int ordersCreated;
   final int ordersTaken;
   final List<PublicOrderModel> doneOrders;
+  final bool blockedMe;
 
   const PublicProfileModel({
     required this.id,
@@ -81,6 +82,7 @@ class PublicProfileModel {
     required this.ordersCreated,
     required this.ordersTaken,
     required this.doneOrders,
+    this.blockedMe = false,
   });
 
   bool get isPreparer => role == 'PREPARER';
@@ -88,7 +90,7 @@ class PublicProfileModel {
   String get displayName {
     if ((name ?? '').isNotEmpty) return name!;
     if (login != null) return '@$login';
-    return '—';
+    return 'Foydalanuvchi';
   }
 
   factory PublicProfileModel.fromJson(Map<String, dynamic> json) {
@@ -111,6 +113,7 @@ class PublicProfileModel {
           .cast<Map<String, dynamic>>()
           .map(PublicOrderModel.fromJson)
           .toList(),
+      blockedMe: json['blockedMe'] == true,
     );
   }
 }
