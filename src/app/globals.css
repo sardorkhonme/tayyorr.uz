@@ -659,9 +659,11 @@ html.light .ann-ind-fill {
   background: #4338ca;
 }
 .ann-nav {
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1;
-  padding: 0 3px;
+  /* barmoq bilan bosish oson bo'lsin — ko'rinishi kichik, bosiladigan joyi katta */
+  padding: 6px 10px;
+  margin: -6px -4px;
   color: rgba(255, 255, 255, 0.65);
   transition: color 0.15s;
 }

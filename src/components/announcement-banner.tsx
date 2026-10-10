@@ -32,23 +32,46 @@ function trackClick(id?: string) {
 export function AnnouncementBanner({
   a,
   indicator,
+  swipe,
 }: {
   a: Resolved;
   indicator?: React.ReactNode;
+  /** chap/o'ngga surish — keyingi/oldingi e'lon */
+  swipe?: { onPrev: () => void; onNext: () => void };
 }) {
   const external = !!a.buttonUrl && /^https?:\/\//i.test(a.buttonUrl);
+  const start = useRef<{ x: number; y: number } | null>(null);
+  // Karta balandligi matnga moslashadi (qirqilmaydi) — o'lcham silliq o'zgaradi
   return (
-    <div className="flex h-auto min-h-[9.5rem] flex-col overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4 sm:h-[9.5rem]">
+    <div
+      onPointerDown={(e) => {
+        if (swipe) start.current = { x: e.clientX, y: e.clientY };
+      }}
+      onPointerUp={(e) => {
+        const s0 = start.current;
+        start.current = null;
+        if (!swipe || !s0) return;
+        const dx = e.clientX - s0.x;
+        const dy = e.clientY - s0.y;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          if (dx < 0) swipe.onNext();
+          else swipe.onPrev();
+        }
+      }}
+      onPointerCancel={() => (start.current = null)}
+      style={{ touchAction: swipe ? "pan-y" : undefined }}
+      className="flex min-h-[9.5rem] select-none flex-col overflow-hidden rounded-2xl border border-indigo-400/25 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/10 p-4 transition-[min-height] duration-300"
+    >
       <div className="flex flex-1 flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
         <div className="min-w-0 flex-1">
           <BlurText
             text={a.title}
-            className="line-clamp-1 block text-base font-semibold text-white"
+            className="block text-base font-semibold text-white"
           />
           {a.body && (
             <BlurText
               text={a.body}
-              className="mt-1 line-clamp-3 block max-w-2xl text-sm leading-snug text-zinc-300"
+              className="mt-1 block max-w-2xl whitespace-pre-line text-sm leading-snug text-zinc-300"
             />
           )}
         </div>
@@ -158,5 +181,11 @@ export function AnnouncementCarousel({ items }: { items: AnnItem[] }) {
     </div>
   ) : undefined;
 
-  return <AnnouncementBanner a={cur} indicator={indicator} />;
+  return (
+    <AnnouncementBanner
+      a={cur}
+      indicator={indicator}
+      swipe={many ? { onPrev: () => go(idx - 1), onNext: () => go(idx + 1) } : undefined}
+    />
+  );
 }

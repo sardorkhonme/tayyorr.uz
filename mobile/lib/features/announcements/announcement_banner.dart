@@ -22,13 +22,15 @@ class Announcement {
     final res = await ApiClient.instance.get('/mobile/announcements');
     return (res['announcements'] as List)
         .cast<Map<String, dynamic>>()
-        .map((j) => Announcement(
-              j['id'] as String,
-              j['title'] as String? ?? '',
-              j['body'] as String? ?? '',
-              j['buttonText'] as String?,
-              j['buttonUrl'] as String?,
-            ))
+        .map(
+          (j) => Announcement(
+            j['id'] as String,
+            j['title'] as String? ?? '',
+            j['body'] as String? ?? '',
+            j['buttonText'] as String?,
+            j['buttonUrl'] as String?,
+          ),
+        )
         .toList();
   }
 }
@@ -79,9 +81,14 @@ class _AnnouncementCarouselState extends State<AnnouncementCarousel> with Single
       ..forward(from: 0);
   }
 
+  int _dir = 1; // animatsiya yo'nalishi: 1 — keyingi, -1 — oldingi
+
   void _go(int to) {
     final n = widget.items.length;
-    setState(() => _i = (to + n) % n);
+    setState(() {
+      _dir = to >= _i ? 1 : -1;
+      _i = (to + n) % n;
+    });
     _start();
   }
 
@@ -111,99 +118,130 @@ class _AnnouncementCarouselState extends State<AnnouncementCarousel> with Single
     final hasBtn = (a.buttonText ?? '').isNotEmpty && (a.buttonUrl ?? '').isNotEmpty;
     final navColor = light ? const Color(0xFF312E81).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.65);
 
-    return Container(
-      constraints: const BoxConstraints(minHeight: 152),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.25)),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.15),
-            const Color(0xFFD946EF).withValues(alpha: 0.10),
-          ],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 400),
-            child: Column(
-              key: ValueKey(a.id),
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(a.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                if (a.body.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(a.body,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.375)),
-                ],
-                if (hasBtn) ...[
-                  const SizedBox(height: 12),
-                  WebButton(label: a.buttonText!, variant: WebBtn.white, expand: true, onPressed: () => _open(a)),
-                ],
-              ],
-            ),
+    // Balandlik matnga moslashadi (qirqilmaydi); chap/o'ngga surish — almashtiradi.
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: !many
+          ? null
+          : (d) {
+              final v = d.primaryVelocity ?? 0;
+              if (v < -150) _go(_i + 1);
+              if (v > 150) _go(_i - 1);
+            },
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 152),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.25)),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFF6366F1).withValues(alpha: 0.15), const Color(0xFFD946EF).withValues(alpha: 0.10)],
           ),
-          if (many) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => _go(_i - 1),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Text('‹', style: TextStyle(color: navColor, fontSize: 15, height: 1)),
-                  ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AnimatedSize(
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 380),
+                layoutBuilder: (current, previous) =>
+                    Stack(alignment: Alignment.topCenter, children: [...previous, if (current != null) current]),
+                transitionBuilder: (child, anim) {
+                  final incoming = child.key == ValueKey(a.id);
+                  final from = Offset(0.18 * _dir * (incoming ? 1 : -1), 0);
+                  return FadeTransition(
+                    opacity: anim,
+                    child: SlideTransition(
+                      position: Tween(
+                        begin: from,
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Column(
+                  key: ValueKey(a.id),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      a.title,
+                      style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    if (a.body.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(a.body, style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.375)),
+                    ],
+                    if (hasBtn) ...[
+                      const SizedBox(height: 12),
+                      WebButton(label: a.buttonText!, variant: WebBtn.white, expand: true, onPressed: () => _open(a)),
+                    ],
+                  ],
                 ),
-                const SizedBox(width: 8),
-                for (var k = 0; k < widget.items.length; k++) ...[
+              ),
+            ),
+            if (many) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   GestureDetector(
-                    onTap: () => _go(k),
-                    child: Container(
-                      width: 16,
-                      height: 2,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: k < _i
-                            ? (light ? const Color(0xFF312E81).withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.6))
-                            : (light ? const Color(0xFF312E81).withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.28)),
-                      ),
-                      child: k == _i
-                          ? AnimatedBuilder(
-                              animation: _progress,
-                              builder: (_, __) => FractionallySizedBox(
-                                alignment: Alignment.centerLeft,
-                                widthFactor: _progress.value,
-                                child: Container(color: light ? const Color(0xFF4338CA) : Colors.white),
-                              ),
-                            )
-                          : null,
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _go(_i - 1),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 8, 12, 8),
+                      child: Text('‹', style: TextStyle(color: navColor, fontSize: 20, height: 1)),
                     ),
                   ),
+                  for (var k = 0; k < widget.items.length; k++) ...[
+                    GestureDetector(
+                      onTap: () => _go(k),
+                      child: Container(
+                        width: 16,
+                        height: 2,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          color: k < _i
+                              ? (light
+                                    ? const Color(0xFF312E81).withValues(alpha: 0.55)
+                                    : Colors.white.withValues(alpha: 0.6))
+                              : (light
+                                    ? const Color(0xFF312E81).withValues(alpha: 0.25)
+                                    : Colors.white.withValues(alpha: 0.28)),
+                        ),
+                        child: k == _i
+                            ? AnimatedBuilder(
+                                animation: _progress,
+                                builder: (_, __) => FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: _progress.value,
+                                  child: Container(color: light ? const Color(0xFF4338CA) : Colors.white),
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
                   const SizedBox(width: 4),
-                ],
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: () => _go(_i + 1),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Text('›', style: TextStyle(color: navColor, fontSize: 15, height: 1)),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _go(_i + 1),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                      child: Text('›', style: TextStyle(color: navColor, fontSize: 20, height: 1)),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
