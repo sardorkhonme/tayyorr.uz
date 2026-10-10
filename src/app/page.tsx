@@ -13,7 +13,6 @@ import { PhoneScrollShowcase } from "@/components/phone-scroll-showcase";
 import { TelegramIcon, InstagramIcon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
-import { publicUrl } from "@/lib/r2";
 
 const TELEGRAM_URL = "https://t.me/tayyorruz";
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
@@ -312,8 +311,18 @@ export default async function Home() {
       />
 
       {/* ---------- mobil ilova ---------- */}
-      <section id="ilova" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
-        <div className="lq-glass-strong blur-in relative overflow-hidden rounded-3xl p-8 sm:p-12">
+      <section id="ilova" className="relative z-10 mx-auto max-w-5xl px-6 py-20 lg:pt-36">
+        {/* telefonda: kartaning tepasiga minib turadi */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/app-phone.webp"
+          alt="tayyorr.uz mobil ilovasi"
+          width={508}
+          height={854}
+          className="phone-float relative z-10 mx-auto -mb-28 block w-44 drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)] sm:w-52 lg:hidden"
+        />
+        <div className="relative">
+        <div className="lq-glass-strong blur-in relative overflow-hidden rounded-3xl p-8 pt-32 sm:p-12 sm:pt-36 lg:pt-12">
           <div
             aria-hidden
             className="blob"
@@ -341,7 +350,7 @@ export default async function Home() {
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
-                  href={publicUrl("app/tayyorr.apk")}
+                  href="/api/app/download"
                   className="group inline-flex items-center gap-3 rounded-xl bg-white px-5 py-3 text-black transition hover:bg-zinc-200"
                 >
                   <IconAndroid />
@@ -373,15 +382,18 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="hidden justify-self-center lg:block">
-              <div className="lq-glass flex h-64 w-48 flex-col items-center justify-center gap-3 rounded-[2rem] border border-white/10 text-center">
-                <span className="font-display text-2xl font-bold">
-                  tayyorr<span className="text-indigo-400">.uz</span>
-                </span>
-                <span className="text-xs text-zinc-500">mobil ilova</span>
-              </div>
-            </div>
+            <div aria-hidden className="hidden lg:block" />
           </div>
+        </div>
+        {/* kompyuterda: kartaning o'ng tomonida, yuqori qismi kartadan chiqib turadi */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/app-phone.webp"
+          alt="tayyorr.uz mobil ilovasi"
+          width={508}
+          height={854}
+          className="phone-float pointer-events-none absolute bottom-6 right-[6%] z-10 hidden h-[135%] w-auto drop-shadow-[0_40px_50px_rgba(0,0,0,0.6)] lg:block"
+        />
         </div>
       </section>
 

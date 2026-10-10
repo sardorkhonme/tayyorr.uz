@@ -171,6 +171,7 @@ model User {
   activityLogs      ActivityLog[]
   announcementClicks AnnouncementClick[]
   siteVisits         SiteVisit[]
+  appDownloads       AppDownload[]
 
   @@index([role, isAvailable])
 }
@@ -657,4 +658,16 @@ model FileObject {
   orderId    String?
   order      Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
+}
+
+/** Landingdagi "Ilovani yuklab olish" (APK) tugmasi bosilgani. */
+model AppDownload {
+  id        String   @id @default(cuid())
+  userId    String? // tizimga kirgan bo'lsa
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

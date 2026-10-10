@@ -5,17 +5,12 @@ import {
   LandingVideoManager,
   type Video,
 } from "@/components/admin/landing-video-manager";
-import {
-  LandingPhoneSlideManager,
-  type PhoneSlide,
-} from "@/components/admin/landing-phone-slide-manager";
 
 export default async function AdminLandingContent() {
-  const [heroVideo, faqRows, videoRows, phoneSlideRows] = await Promise.all([
+  const [heroVideo, faqRows, videoRows] = await Promise.all([
     db.heroVideo.findUnique({ where: { id: "hero" } }),
     db.landingFaq.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
     db.landingVideo.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
-    db.landingPhoneSlide.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
   ]);
 
   const faqs: Faq[] = faqRows.map((f) => ({
@@ -35,16 +30,6 @@ export default async function AdminLandingContent() {
     active: v.active,
   }));
 
-  const phoneSlides: PhoneSlide[] = phoneSlideRows.map((p) => ({
-    id: p.id,
-    title: p.title,
-    subtitle: p.subtitle,
-    imageUrl: p.imageUrl,
-    imageKey: p.imageKey ?? "",
-    order: p.order,
-    active: p.active,
-  }));
-
   return (
     <div className="flex flex-col gap-10">
       <div>
@@ -61,13 +46,6 @@ export default async function AdminLandingContent() {
           initialUrl={heroVideo?.videoUrl ?? ""}
           initialActive={heroVideo?.active ?? true}
         />
-      </section>
-
-      <section>
-        <h2 className="mb-3 text-lg font-semibold text-white">
-          Telefon slaydlari (yuklab olishdan oldingi bo&apos;lim)
-        </h2>
-        <LandingPhoneSlideManager initial={phoneSlides} />
       </section>
 
       <section>
