@@ -67,7 +67,7 @@ class TayyorrApp extends StatelessWidget {
                     (route) => false,
                   );
                 },
-                child: child ?? const SizedBox.shrink(),
+                child: _ThemeRebuilder(child: child ?? const SizedBox.shrink()),
               );
             },
           ),
@@ -116,5 +116,39 @@ class _SplashScreen extends StatelessWidget {
         child: CircularProgressIndicator(color: AppColors.indigo),
       ),
     );
+  }
+}
+
+/// Mavzu almashganda Navigator ichidagi BARCHA route'larni (push qilingan
+/// sahifalar ham) majburan qayta quradi. `const` widgetlar oddiy qayta
+/// qurishda o'tkazib yuboriladi va AppColors/WebC'ning yangi ranglari
+/// ko'rinmay qolardi — shu bois butun element daraxti belgilanadi.
+class _ThemeRebuilder extends StatefulWidget {
+  const _ThemeRebuilder({required this.child});
+  final Widget child;
+
+  @override
+  State<_ThemeRebuilder> createState() => _ThemeRebuilderState();
+}
+
+class _ThemeRebuilderState extends State<_ThemeRebuilder> {
+  bool? _wasLight;
+
+  @override
+  Widget build(BuildContext context) {
+    final light = ThemeController.instance.isLight;
+    if (_wasLight != null && _wasLight != light) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        void mark(Element e) {
+          e.markNeedsBuild();
+          e.visitChildren(mark);
+        }
+
+        (context as Element).visitChildren(mark);
+      });
+    }
+    _wasLight = light;
+    return widget.child;
   }
 }
