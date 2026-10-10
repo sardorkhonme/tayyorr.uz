@@ -30,15 +30,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _syncTheme(UserModel user) => ThemeController.instance.syncFromServer(user.theme);
 
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
-    final user = await _repo.tryRestoreSession();
-    // Shu orada foydalanuvchi allaqachon kirgan/ro'yxatdan o'tgan bo'lishi
-    // mumkin (sekin tokenni o'qish tugaguncha) — bu holda eski natijani
-    // qo'llamaymiz, aks holda yangi sessiyani ustidan bosib qo'yamiz.
+    final token = await _repo.readToken();
     if (state.status != AuthStatus.unknown) return;
-    if (user != null) {
+    if (token == null) {
+      emit(state.copyWith(status: AuthStatus.unauthenticated));
+      return;
+    }
+
+    // Oxirgi ma'lum profil bilan darhol ochamiz, serverdan fonda yangilaymiz —
+    // sekin yoki yo'q internetda ham ilova logoda qotib qolmaydi.
+    final cached = _repo.cachedUser();
+    if (cached != null) {
+      _syncTheme(cached);
+      emit(state.copyWith(status: _statusFor(cached), user: cached));
+      add(const AuthMeRefreshRequested());
+      return;
+    }
+
+    try {
+      final user = await _repo.refreshMe().timeout(const Duration(seconds: 12));
+      if (state.status != AuthStatus.unknown) return;
       _syncTheme(user);
       emit(state.copyWith(status: _statusFor(user), user: user));
-    } else {
+    } on ApiException catch (e) {
+      // faqat token yaroqsiz bo'lsa tizimdan chiqaramiz
+      if (e.statusCode == 401) await _repo.logout();
+      emit(state.copyWith(status: AuthStatus.unauthenticated));
+    } catch (_) {
       emit(state.copyWith(status: AuthStatus.unauthenticated));
     }
   }
@@ -112,8 +130,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthMeRefreshRequested event, Emitter<AuthState> emit) async {
     try {
       final user = await _repo.refreshMe();
+      // shu orada tizimdan chiqilgan bo'lsa — eski javobni qo'llamaymiz
+      if (state.status != AuthStatus.authenticated && state.status != AuthStatus.onboarding) return;
       _syncTheme(user);
-      emit(state.copyWith(user: user));
+      emit(state.copyWith(status: _statusFor(user), user: user));
+    } on ApiException catch (e) {
+      // token yaroqsiz (masalan boshqa qurilmadan chiqilgan) — tizimdan chiqaramiz
+      if (e.statusCode == 401) {
+        await _repo.logout();
+        emit(const AuthState(status: AuthStatus.unauthenticated));
+      }
     } catch (_) {
       // jim — vaqtinchalik tarmoq xatosi bo'lishi mumkin, sessiyani uzmaymiz
     }

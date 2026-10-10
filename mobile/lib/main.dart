@@ -9,6 +9,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalStorage.instance.init();
   ThemeController.instance.loadCached();
-  await MessageNotifier.instance.init();
+  // kutmaymiz — bildirishnoma tayyorlanishi ilova ochilishini to'xtatmasin
+  MessageNotifier.instance.init();
   runApp(const TayyorrApp());
 }

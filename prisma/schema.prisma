@@ -676,3 +676,11 @@ model AppDownload {
 
   @@index([createdAt])
 }
+
+// Umumiy sozlamalar (kalit — qiymat), admin paneldan o'zgartiriladi.
+// Masalan: "versionLabel" — sayt va ilovadagi akkaunt bo'limi ostida ko'rsatiladigan versiya.
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

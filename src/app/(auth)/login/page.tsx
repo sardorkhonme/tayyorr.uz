@@ -34,26 +34,8 @@ export default function LoginPage() {
     <AuthShell width="max-w-sm">
       <div className="card p-7">
         <h1 className="text-xl font-semibold text-white">Kirish</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          Login va parol, yoki Google orqali.
-        </p>
 
-        <button
-          type="button"
-          className="btn-white mt-6 w-full"
-          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-        >
-          <GoogleGlyph />
-          Google orqali kirish
-        </button>
-
-        <div className="my-5 flex items-center gap-3 text-xs text-zinc-600">
-          <span className="h-px flex-1 bg-white/10" />
-          yoki
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-
-        <form onSubmit={submit} className="flex flex-col gap-3">
+        <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
           <div>
             <label className="label">Login</label>
             <input
@@ -76,6 +58,22 @@ export default function LoginPage() {
             {busy ? "..." : "Kirish"}
           </button>
         </form>
+
+        {/* Google orqali kirish — doim pastda (mobil ilova bilan bir xil) */}
+        <div className="my-5 flex items-center gap-3 text-xs text-zinc-600">
+          <span className="h-px flex-1 bg-white/10" />
+          yoki
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <button
+          type="button"
+          className="btn-white w-full"
+          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        >
+          <GoogleGlyph />
+          Google orqali kirish
+        </button>
       </div>
 
       <p className="mt-5 text-center text-sm text-zinc-500">

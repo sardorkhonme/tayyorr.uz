@@ -64,31 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Text('Kirish',
                                   style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 4),
-                              Text('Login va parol, yoki Google orqali.',
-                                  style: TextStyle(color: WebC.zinc400, fontSize: 14)),
                               const SizedBox(height: 20),
-                              WebButton(
-                                label: 'Google orqali kirish',
-                                variant: WebBtn.white,
-                                expand: true,
-                                icon: const GoogleLogo(size: 16),
-                                onPressed: busy
-                                    ? null
-                                    : () => context.read<AuthBloc>().add(const AuthGoogleSignInRequested()),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: Container(height: 1, color: WebC.border)),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    child: Text('yoki', style: TextStyle(color: WebC.zinc600, fontSize: 12)),
-                                  ),
-                                  Expanded(child: Container(height: 1, color: WebC.border)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
                               const WebLabel('Login'),
                               AutofillGroup(
                                 child: Column(
@@ -121,6 +97,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                 label: busy ? '...' : 'Kirish',
                                 expand: true,
                                 onPressed: busy ? null : _submit,
+                              ),
+                              // Google orqali kirish — doim pastda (sayt bilan bir xil)
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(child: Container(height: 1, color: WebC.border)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text('yoki', style: TextStyle(color: WebC.zinc600, fontSize: 12)),
+                                  ),
+                                  Expanded(child: Container(height: 1, color: WebC.border)),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              WebButton(
+                                label: 'Google orqali kirish',
+                                variant: WebBtn.white,
+                                expand: true,
+                                icon: const GoogleLogo(size: 16),
+                                onPressed: busy
+                                    ? null
+                                    : () => context.read<AuthBloc>().add(const AuthGoogleSignInRequested()),
                               ),
                             ],
                           );

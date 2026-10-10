@@ -453,38 +453,41 @@ html.light .lq-glass-strong {
 }
 
 /* Skeleton-loading — heroning "nurli chiziq"iga o'xshash harakatlanuvchi
-   yorug' chiziq, oddiy pulslashdan (yorug'-xira) ko'ra jonliroq. */
+   yorug' chiziq. Nur o'ngga qiya ("/" ko'rinishida) va qutichalarda
+   fondan bilinib turadigan ingichka chegara bor (mobil ilova bilan bir xil). */
 @keyframes skel-sweep {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% { transform: translateX(-60%); }
+  100% { transform: translateX(60%); }
 }
 .skel {
   position: relative;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 .skel::after {
   content: "";
   position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
+  inset: 0 -100%;
+  transform: translateX(-60%);
   background: linear-gradient(
-    100deg,
-    transparent 20%,
+    120deg,
+    transparent 40%,
     rgba(255, 255, 255, 0.16) 50%,
-    transparent 80%
+    transparent 60%
   );
   animation: skel-sweep 1.7s ease-in-out infinite;
 }
 html.light .skel {
   background: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09);
 }
 html.light .skel::after {
   background: linear-gradient(
-    100deg,
-    transparent 20%,
+    120deg,
+    transparent 40%,
     rgba(99, 102, 241, 0.2) 50%,
-    transparent 80%
+    transparent 60%
   );
 }
 @media (prefers-reduced-motion: reduce) {

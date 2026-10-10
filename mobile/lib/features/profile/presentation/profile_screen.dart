@@ -3,7 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../widgets/link_text.dart';
 import '../../../widgets/confirm_dialog.dart';
@@ -36,6 +38,8 @@ class ProfileScreen extends StatelessWidget {
               _ProfileForm(key: ValueKey('p-${user.id}')),
               const SizedBox(height: 16),
               _AccountForm(key: ValueKey('a-${user.id}'), initialLogin: user.login ?? ''),
+              const SizedBox(height: 8),
+              const Center(child: _VersionLabel()),
               const SizedBox(height: 32),
               Container(height: 1, color: WebC.border),
               const SizedBox(height: 24),
@@ -368,5 +372,50 @@ class _DocLink extends StatelessWidget {
       onTap: () => openLink(context, 'https://tayyorr.uz$path'),
       child: Text(label, style: TextStyle(color: WebC.zinc500, fontSize: 13, decoration: TextDecoration.underline)),
     );
+  }
+}
+
+/// "tayyorr.uz v1.0.2" — admin yorliq qo'ygan bo'lsa o'sha, aks holda o'rnatilgan build versiyasi.
+class _VersionLabel extends StatefulWidget {
+  const _VersionLabel();
+
+  @override
+  State<_VersionLabel> createState() => _VersionLabelState();
+}
+
+class _VersionLabelState extends State<_VersionLabel> {
+  static String? _cached;
+  String? _label = _cached;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    // ikkalasi parallel va vaqt chegarasi bilan — biri osilib qolsa ham ikkinchisi ishlaydi
+    final results = await Future.wait<String>([
+      PackageInfo.fromPlatform()
+          .then((i) => i.version.isEmpty ? '' : 'v${i.version}')
+          .timeout(const Duration(seconds: 4))
+          .catchError((_) => ''),
+      ApiClient.instance
+          .get('/mobile/config')
+          .then((r) => (r['versionLabel'] as String? ?? '').trim())
+          .timeout(const Duration(seconds: 8))
+          .catchError((_) => ''),
+    ]);
+    final label = results[1].isNotEmpty ? results[1] : results[0];
+    if (label.isEmpty || !mounted) return;
+    _cached = label;
+    setState(() => _label = label);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = _label;
+    if (l == null) return const SizedBox(height: 16);
+    return Text('tayyorr.uz $l', style: TextStyle(color: WebC.zinc600, fontSize: 12));
   }
 }

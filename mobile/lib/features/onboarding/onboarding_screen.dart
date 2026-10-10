@@ -53,6 +53,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
       AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
   double _page = 0;
 
+  /// Qaysi sahifaga ketayotganimiz — animatsiya paytida tez bosilsa ham bosish yo'qolmasin.
+  int _target = 0;
+
   @override
   void initState() {
     super.initState();
@@ -79,11 +82,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
   }
 
   void _next() {
-    if (_page.round() >= _pages.length - 1) {
+    if (_target >= _pages.length - 1) {
       _finish();
       return;
     }
-    _controller.nextPage(duration: const Duration(milliseconds: 420), curve: Curves.easeOutCubic);
+    _target++;
+    _controller.animateToPage(_target, duration: const Duration(milliseconds: 420), curve: Curves.easeOutCubic);
   }
 
   @override
@@ -115,6 +119,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
               Expanded(
                 child: PageView.builder(
                   controller: _controller,
+                  // barmoq bilan surilganda ham maqsad sahifa yangilansin
+                  onPageChanged: (i) => _target = i,
                   itemCount: _pages.length,
                   itemBuilder: (context, i) {
                     final p = _pages[i];

@@ -5,6 +5,7 @@ import { RestrictionNotice } from "@/components/restriction-notice";
 import { ProfileForm } from "@/components/profile-form";
 import { AccountForm } from "@/components/account-form";
 import { SignOutButton } from "@/components/sign-out-button";
+import { getVersionLabel } from "@/lib/app-version";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -30,6 +31,7 @@ export default async function ProfilePage() {
     },
   });
   if (!user) return null;
+  const versionLabel = await getVersionLabel();
 
   return (
     <div className="mx-auto max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
@@ -53,6 +55,7 @@ export default async function ProfilePage() {
       <div className="mt-4">
         <AccountForm initial={{ login: user.login ?? "" }} />
       </div>
+      <p className="mt-2 text-center text-xs text-zinc-600">tayyorr.uz {versionLabel}</p>
 
       <div className="mt-8 border-t border-white/10 pt-6">
         <p className="mb-3 text-sm text-zinc-500">

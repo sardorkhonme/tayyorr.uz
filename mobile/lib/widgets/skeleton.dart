@@ -4,7 +4,8 @@ import '../core/theme/app_colors.dart';
 import 'glass_card.dart';
 
 /// Saytdagi `.skel` klassi bilan bir xil effekt: xira fon ustida chapdan
-/// o'ngga suzib o'tuvchi yorug' chiziq, 1.7s, cheksiz takrorlanadi.
+/// o'ngga suzib o'tuvchi, o'ngga qiya ("/") yorug' chiziq, 1.7s, cheksiz;
+/// qutichada fondan bilinib turadigan ingichka chegara.
 class Skel extends StatefulWidget {
   const Skel({super.key, this.width, required this.height, this.borderRadius = 10, this.shape = BoxShape.rectangle});
 
@@ -35,7 +36,14 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final radius = widget.shape == BoxShape.circle ? null : BorderRadius.circular(widget.borderRadius);
-    return ClipRRect(
+    final borderColor = AppColors.isLight ? Colors.black.withValues(alpha: 0.09) : Colors.white.withValues(alpha: 0.10);
+    return Container(
+      foregroundDecoration: BoxDecoration(
+        shape: widget.shape,
+        borderRadius: widget.shape == BoxShape.circle ? null : (radius ?? BorderRadius.circular(widget.height / 2)),
+        border: Border.all(color: borderColor),
+      ),
+      child: ClipRRect(
       borderRadius: radius ?? BorderRadius.circular(widget.height / 2),
       child: SizedBox(
         width: widget.width,
@@ -49,23 +57,22 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
                   animation: _controller,
                   builder: (context, _) {
                     final w = constraints.maxWidth.isFinite ? constraints.maxWidth : widget.width ?? 100;
-                    final dx = -w + _controller.value * 2 * w;
+                    final h = widget.height;
+                    // qiya nur to'liq o'tishi uchun biroz kengroq yo'l
+                    final dx = -w - h + _controller.value * (2 * w + 2 * h);
                     // Saytdagidek: qorong'ida oq, yorug'da indigo suzuvchi chiziq.
                     final sweepColor = AppColors.isLight
                         ? AppColors.indigo.withValues(alpha: 0.2)
                         : Colors.white.withValues(alpha: 0.16);
                     return Transform.translate(
                       offset: Offset(dx, 0),
-                      child: Container(
-                        width: w,
-                        height: widget.height,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [Colors.transparent, sweepColor, Colors.transparent],
-                            stops: const [0.2, 0.5, 0.8],
-                          ),
+                      child: OverflowBox(
+                        maxWidth: double.infinity,
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(
+                          width: w,
+                          height: h,
+                          child: CustomPaint(painter: _SlantedSweep(color: sweepColor)),
                         ),
                       ),
                     );
@@ -76,8 +83,35 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
           ),
         ),
       ),
+    ),
     );
   }
+}
+
+/// O'ngga qiya ("/") yorug' nur — pastki-chapdan yuqori-o'ngga yo'nalgan tasma.
+class _SlantedSweep extends CustomPainter {
+  _SlantedSweep({required this.color});
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const band = 40.0; // nur kengligi
+    const angle = 0.42; // ~24° — yuqori uchi o'ngga og'gan
+    final len = size.height * 3 + 40; // aylantirilganda ham balandlikni to'liq qoplasin
+    canvas.save();
+    canvas.translate(size.width / 2, size.height / 2);
+    canvas.rotate(angle);
+    final rect = Rect.fromLTWH(-band / 2, -len / 2, band, len);
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [color.withValues(alpha: 0), color, color.withValues(alpha: 0)],
+      ).createShader(rect);
+    canvas.drawRect(rect, paint);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _SlantedSweep old) => old.color != color;
 }
 
 /// Bir qatorli matn o'rnini bosuvchi chiziq.

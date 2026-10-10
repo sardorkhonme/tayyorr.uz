@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -28,6 +29,13 @@ class AuthRepository {
     }
   }
 
+  /// Serverdan kelgan foydalanuvchini keshlab, modelga aylantiradi.
+  UserModel _user(Map<String, dynamic> res) {
+    final json = res['user'] as Map<String, dynamic>;
+    _storage.setCachedUserJson(jsonEncode(json));
+    return UserModel.fromJson(json);
+  }
+
   Future<UserModel> login({
     required String login,
     required String password,
@@ -37,7 +45,7 @@ class AuthRepository {
       'password': password,
     });
     await _storage.saveToken(res['token'] as String);
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+    return _user(res);
   }
 
   /// Google orqali kirish/ro'yxatdan o'tish. Foydalanuvchi hisob tanlashni
@@ -65,7 +73,7 @@ class AuthRepository {
       if (accessToken != null) 'accessToken': accessToken,
     });
     await _storage.saveToken(res['token'] as String);
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+    return _user(res);
   }
 
   /// Google bilan birinchi marta kirgan foydalanuvchi uchun profilni
@@ -89,24 +97,26 @@ class AuthRepository {
       'password': password,
       'about': about,
     });
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+    return _user(res);
   }
 
-  Future<UserModel?> tryRestoreSession() async {
-    final token = await _storage.readToken();
-    if (token == null) return null;
+  /// Saqlangan token bormi (xatoga chidamli).
+  Future<String?> readToken() => _storage.readToken();
+
+  /// Oxirgi saqlangan profil — internetsiz ham darhol ochish uchun.
+  UserModel? cachedUser() {
+    final raw = _storage.cachedUserJson;
+    if (raw == null) return null;
     try {
-      final res = await _api.get('/mobile/me');
-      return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+      return UserModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {
-      await _storage.clearToken();
       return null;
     }
   }
 
   Future<UserModel> refreshMe() async {
     final res = await _api.get('/mobile/me');
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+    return _user(res);
   }
 
   Future<UserModel> updateProfile({
@@ -119,7 +129,7 @@ class AuthRepository {
       'lastName': lastName,
       'about': about,
     });
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+    return _user(res);
   }
 
   /// Profil rasmini yuklaydi: R2'ga to'g'ridan PUT qiladi, so'ng profilni
@@ -145,7 +155,7 @@ class AuthRepository {
     );
 
     final res = await _api.patch('/mobile/me', data: {'avatarUrl': avatarUrl});
-    return UserModel.fromJson(res['user'] as Map<String, dynamic>);
+    return _user(res);
   }
 
   /// Username (login) va/yoki parolni tahrirlash — eski parol shart emas.

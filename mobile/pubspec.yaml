@@ -1,7 +1,7 @@
 name: tayyorr_app
 description: "tayyorr.uz — talabalar uchun platforma"
 publish_to: "none"
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.11.0
@@ -48,6 +48,7 @@ dependencies:
   open_filex: ^4.7.0
   gal: ^2.3.3
   flutter_local_notifications: ^22.3.1
+  package_info_plus: ^9.0.1
 
 dev_dependencies:
   flutter_test:
