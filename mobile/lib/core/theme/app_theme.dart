@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
+import 'swipe_back_transitions.dart';
 
 class AppTheme {
   AppTheme._();
@@ -125,6 +126,13 @@ class AppTheme {
         ),
       ),
       dividerTheme: DividerThemeData(color: AppColors.cardBorder),
+      // ichki sahifalardan chapdan o'ngga surib qaytish (Telegram kabi)
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: SwipeBackPageTransitionsBuilder(),
+          TargetPlatform.iOS: SwipeBackPageTransitionsBuilder(),
+        },
+      ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.indigo,

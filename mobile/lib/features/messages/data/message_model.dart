@@ -77,6 +77,9 @@ class ChatMessageModel {
   final ReactionSummary reactions;
   final ChatFileModel? file;
 
+  /// Qabul qiluvchi o'qigan vaqt (epoch ms) — ✓✓ uchun.
+  final int? readAt;
+
   const ChatMessageModel({
     required this.id,
     required this.senderId,
@@ -90,6 +93,7 @@ class ChatMessageModel {
     this.replyTo,
     required this.reactions,
     this.file,
+    this.readAt,
   });
 
   DateTime get createdAtDate => DateTime.fromMillisecondsSinceEpoch(createdAt);
@@ -110,6 +114,7 @@ class ChatMessageModel {
           ? ReactionSummary.fromJson(json['reactions'] as Map<String, dynamic>)
           : const ReactionSummary(like: 0, dislike: 0),
       file: json['file'] != null ? ChatFileModel.fromJson(json['file'] as Map<String, dynamic>) : null,
+      readAt: (json['readAt'] as num?)?.toInt(),
     );
   }
 }

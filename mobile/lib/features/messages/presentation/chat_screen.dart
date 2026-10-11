@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
+import 'package:dio/dio.dart' show CancelToken;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,9 +14,11 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
+import '../../../core/media/media_cache.dart';
 import '../../../core/notifications/message_notifier.dart';
 import '../../../widgets/link_text.dart';
 import '../../../widgets/web_ui.dart';
+import 'chat_composer.dart';
 import 'chat_media.dart';
 import '../../dashboard/data/order_model.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
@@ -49,7 +53,9 @@ class _ChatView extends StatefulWidget {
 class _ChatViewState extends State<_ChatView> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  bool _sendingFile = false;
+  // tanlangan / yozib olingan, hali yuborilmagan fayl (ko'rib chiqish uchun)
+  PendingAttachment? _pending;
+  CancelToken? _uploadToken;
   int _contractIndex = 0;
   Timer? _contractTimer;
 
@@ -133,27 +139,80 @@ class _ChatViewState extends State<_ChatView> {
   }
 
   Future<void> _send() async {
+    final cubit = context.read<ChatCubit>();
     final text = _controller.text;
-    if (text.trim().isEmpty) return;
-    _controller.clear();
-    await context.read<ChatCubit>().send(text);
+    final pending = _pending;
+    if (pending != null) {
+      // fayl hali yuklanayotgan bo'lsa — tugashini kutamiz (tugma xira turadi)
+      if (!pending.ready) return;
+      _controller.clear();
+      setState(() => _pending = null);
+      final msg = await cubit.sendPrepared(file: pending.prepared!, body: text);
+      // yuborilgan faylni qayta yuklamaslik uchun keshdagi nusxani xabarga bog'laymiz
+      if (msg != null) await MediaCache.instance.adopt(pending.localKey, msg.id, pending.name);
+    } else {
+      if (text.trim().isEmpty) return;
+      _controller.clear();
+      await cubit.send(text);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
 
-  Future<void> _pickAndSendFile() async {
-    final cubit = context.read<ChatCubit>();
+  /// Fayl tanlash — darhol yuborilmaydi: yuklanadi va ko'rib chiqish uchun ko'rsatiladi.
+  Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(withData: true);
     final file = result?.files.single;
     if (file == null || file.bytes == null) return;
-    setState(() => _sendingFile = true);
-    try {
-      final ext = (file.extension ?? '').toLowerCase();
-      final contentType = mimeForExt(ext);
-      await cubit.sendFile(bytes: file.bytes!, filename: file.name, contentType: contentType);
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-    } finally {
-      if (mounted) setState(() => _sendingFile = false);
+    await _stage(file.bytes!, file.name, mimeForExt((file.extension ?? '').toLowerCase()));
+  }
+
+  /// Ovozli xabar yozib olindi — u ham avval ko'rib chiqiladi (eshitib ko'rish mumkin).
+  Future<void> _onRecorded(String path, Duration _) async {
+    final f = File(path);
+    final bytes = await f.readAsBytes();
+    final name = path.split('/').last;
+    await _stage(bytes, name, 'audio/mp4');
+    unawaited(f.delete().catchError((_) => f));
+  }
+
+  Future<void> _stage(Uint8List bytes, String name, String type) async {
+    _cancelPending();
+    if (bytes.length > 100 * 1024 * 1024) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fayl 100MB dan katta')));
+      return;
     }
+    final key = 'local-${DateTime.now().microsecondsSinceEpoch}';
+    await MediaCache.instance.putLocal(key, name, bytes);
+    final pending = PendingAttachment(localKey: key, name: name, type: type, size: bytes.length);
+    final token = CancelToken();
+    if (!mounted) return;
+    setState(() {
+      _pending = pending;
+      _uploadToken = token;
+    });
+    try {
+      final prepared = await MessagesRepository().uploadChatFile(
+        context.read<ChatCubit>().conversationId,
+        bytes: bytes,
+        filename: name,
+        contentType: type,
+        cancelToken: token,
+        onProgress: (p) {
+          if (mounted && identical(_pending, pending)) setState(() => pending.progress = p);
+        },
+      );
+      if (mounted && identical(_pending, pending)) setState(() => pending.prepared = prepared);
+    } catch (e) {
+      if (token.isCancelled || !mounted || !identical(_pending, pending)) return;
+      setState(() => _pending = null);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Faylni yuklab bo'lmadi — qayta urinib ko'ring")));
+    }
+  }
+
+  void _cancelPending() {
+    _uploadToken?.cancel();
+    _uploadToken = null;
+    if (_pending != null && mounted) setState(() => _pending = null);
   }
 
   @override
@@ -264,12 +323,16 @@ class _ChatViewState extends State<_ChatView> {
                       onTap: () => _jumpTo(state.replyTo!.id),
                       child: _ReplyBanner(message: state.replyTo!),
                     ),
+                  if (!state.blockedMe && !state.blockedByMe && _pending != null)
+                    PendingAttachmentBar(pending: _pending!, onCancel: _cancelPending),
                   if (!state.blockedMe && !state.blockedByMe)
-                    _Composer(
+                    ChatComposer(
                       controller: _controller,
                       onSend: _send,
-                      onAttach: _sendingFile ? null : _pickAndSendFile,
-                      busy: _sendingFile,
+                      onAttach: _pickFile,
+                      onRecorded: _onRecorded,
+                      hasAttachment: _pending != null,
+                      attachmentReady: _pending?.ready ?? false,
                     )
                   else if (state.blockedByMe)
                     Padding(
@@ -889,10 +952,23 @@ class _MessageBubble extends StatelessWidget {
                 style: TextStyle(color: timeColor, fontStyle: FontStyle.italic, fontSize: 14),
               ),
             const SizedBox(height: 2),
-            Text(
-              '${message.edited && !message.deleted ? 'tahrirlangan · ' : ''}${_time(message.createdAtDate)}',
-              textAlign: TextAlign.right,
-              style: TextStyle(color: timeColor, fontSize: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  '${message.edited && !message.deleted ? 'tahrirlangan · ' : ''}${_time(message.createdAtDate)}',
+                  style: TextStyle(color: timeColor, fontSize: 10),
+                ),
+                // Telegramdagidek: ✓ — yetkazildi, ✓✓ — o'qildi
+                if (mine && !message.deleted) ...[
+                  const SizedBox(width: 3),
+                  Icon(
+                    message.readAt != null ? Icons.done_all_rounded : Icons.done_rounded,
+                    size: 14,
+                    color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -1009,122 +1085,6 @@ class _ReactionCountPill extends StatelessWidget {
         border: Border.all(color: AppColors.cardBorder),
       ),
       child: Text('$icon $count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-    );
-  }
-}
-
-class _Composer extends StatelessWidget {
-  const _Composer({required this.controller, required this.onSend, required this.onAttach, required this.busy});
-  final TextEditingController controller;
-  final VoidCallback onSend;
-  final VoidCallback? onAttach;
-  final bool busy;
-
-  @override
-  Widget build(BuildContext context) {
-    // Saytdagi suzuvchi yozish paneli: 16px burchakli shisha konteyner,
-    // ichida 42x42 📎, matn maydoni va 42x42 gradient yuborish tugmasi.
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.isLight
-                  ? Colors.white.withValues(alpha: 0.85)
-                  : const Color(0xFF0B0B12).withValues(alpha: 0.80),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.isLight ? Colors.black.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: onAttach,
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: WebC.fill5,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: WebC.border),
-                    ),
-                    child: busy
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: WebC.zinc400),
-                          )
-                        : const Text('📎', style: TextStyle(fontSize: 16)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 42, maxHeight: 140),
-                    padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.isLight
-                          ? Colors.black.withValues(alpha: 0.03)
-                          : Colors.white.withValues(alpha: 0.03),
-                      borderRadius: BorderRadius.circular(11.2),
-                      border: Border.all(color: WebC.border),
-                    ),
-                    child: TextField(
-                      controller: controller,
-                      minLines: 1,
-                      maxLines: 5,
-                      textCapitalization: TextCapitalization.sentences,
-                      style: TextStyle(color: WebC.white, fontSize: 14, height: 1.5),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        isCollapsed: true,
-                        contentPadding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        filled: false,
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        hintText: 'Xabar yozing...',
-                        hintStyle: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.5),
-                      ),
-                      onSubmitted: (_) => onSend(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: controller,
-                  builder: (context, v, child) => Opacity(opacity: v.text.trim().isEmpty ? 0.5 : 1, child: child),
-                  child: GestureDetector(
-                    onTap: onSend,
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                        ),
-                      ),
-                      child: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

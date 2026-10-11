@@ -90,6 +90,32 @@ class MessagesRepository {
   }
 
   /// Chatga fayl biriktiradi: R2'ga to'g'ridan PUT qiladi, so'ng xabar sifatida yuboradi.
+  /// Faylni R2'ga yuklaydi (xabar hali YUBORILMAYDI) — [onProgress] 0..1.
+  /// Qaytgan qiymat `sendMessage(file: ...)` ga beriladi.
+  Future<Map<String, Object>> uploadChatFile(
+    String conversationId, {
+    required Uint8List bytes,
+    required String filename,
+    required String contentType,
+    void Function(double)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    final presign = await _api.post('/mobile/messages/$conversationId/upload-presign', data: {
+      'filename': filename,
+      'contentType': contentType,
+    });
+    await Dio().put(
+      presign['uploadUrl'] as String,
+      data: Stream.fromIterable([bytes]),
+      cancelToken: cancelToken,
+      options: Options(headers: {'Content-Type': contentType, Headers.contentLengthHeader: bytes.length}),
+      onSendProgress: (sent, total) {
+        if (total > 0) onProgress?.call(sent / total);
+      },
+    );
+    return {'key': presign['key'] as String, 'name': filename, 'type': contentType, 'size': bytes.length};
+  }
+
   Future<ChatMessageModel> sendFile(
     String conversationId, {
     required Uint8List bytes,

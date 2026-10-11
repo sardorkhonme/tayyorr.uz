@@ -5,6 +5,8 @@
     <!-- yangi xabar bildirishnomalari (Android 13+ da ruxsat so'raladi) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- ovozli xabar yozish -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="Tayyorr.uz"
         android:name="${applicationName}"

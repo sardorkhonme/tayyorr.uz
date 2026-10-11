@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/media/media_cache.dart';
+import '../../../widgets/progress_ring.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/message_model.dart';
 
@@ -139,24 +140,24 @@ class _ImageAttachmentState extends State<_ImageAttachment> {
 
   @override
   Widget build(BuildContext context) {
-    final placeholder = Container(
-      width: ChatAttachment.width,
-      height: 180,
-      color: Colors.black.withValues(alpha: 0.15),
-      alignment: Alignment.center,
-      child: const SizedBox(
-        width: 22,
-        height: 22,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
-      ),
-    );
     final img = _local != null
         ? Image.file(_local!, fit: BoxFit.cover, width: ChatAttachment.width)
         : Image.network(
             widget.file.url,
             fit: BoxFit.cover,
             width: ChatAttachment.width,
-            loadingBuilder: (_, child, p) => p == null ? child : placeholder,
+            loadingBuilder: (_, child, p) => p == null
+                ? child
+                : Container(
+                    width: ChatAttachment.width,
+                    height: 180,
+                    color: Colors.black.withValues(alpha: 0.15),
+                    alignment: Alignment.center,
+                    child: ProgressRing(
+                      value: p.expectedTotalBytes == null ? null : p.cumulativeBytesLoaded / p.expectedTotalBytes!,
+                      size: 46,
+                    ),
+                  ),
             errorBuilder: (_, __, ___) => SizedBox(
               width: ChatAttachment.width,
               height: 120,
@@ -344,12 +345,8 @@ class _DownloadIconButtonState extends State<_DownloadIconButton> {
       builder: (context, p, _) {
         if (_busy || p != null) {
           return Padding(
-            padding: const EdgeInsets.all(12),
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.4, value: p, color: Colors.white),
-            ),
+            padding: const EdgeInsets.all(6),
+            child: ProgressRing(value: p, size: 36, stroke: 2.6),
           );
         }
         return IconButton(
@@ -727,8 +724,8 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                               ? ValueListenableBuilder<double?>(
                                   valueListenable: MediaCache.instance.progressOf(widget.cacheKey),
                                   builder: (_, p, __) => Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: CircularProgressIndicator(strokeWidth: 2.4, value: p, color: fg),
+                                    padding: const EdgeInsets.all(3),
+                                    child: ProgressRing(value: p, size: 36, stroke: 2.6, color: fg),
                                   ),
                                 )
                               : Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded, color: fg, size: 28),
@@ -873,8 +870,8 @@ class _DocAttachmentState extends State<_DocAttachment> {
                 alignment: Alignment.center,
                 child: p != null
                     ? Padding(
-                        padding: const EdgeInsets.all(11),
-                        child: CircularProgressIndicator(strokeWidth: 2.4, value: p, color: fg),
+                        padding: const EdgeInsets.all(3),
+                        child: ProgressRing(value: p, size: 38, stroke: 2.6, color: fg),
                       )
                     : _cached
                     ? Icon(Icons.insert_drive_file_rounded, color: fg, size: 22)

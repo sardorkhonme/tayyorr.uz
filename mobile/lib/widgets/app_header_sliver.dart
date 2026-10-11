@@ -75,6 +75,23 @@ class WebHeaderBar extends StatelessWidget {
           ),
           child: Row(
             children: [
+              // ichki sahifada — doim ko'rinadigan orqaga tugmasi
+              if (ModalRoute.of(context)?.canPop ?? false) ...[
+                GestureDetector(
+                  onTap: () => Navigator.of(context).maybePop(),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: WebC.fill5,
+                      border: Border.all(color: WebC.border),
+                    ),
+                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: WebC.zinc300),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
               GestureDetector(
                 onTap: () => goToSection(context, AppSection.dashboard),
                 child: const AppLogo(height: 16),

@@ -1,7 +1,7 @@
 name: tayyorr_app
 description: "tayyorr.uz — talabalar uchun platforma"
 publish_to: "none"
-version: 1.0.3+4
+version: 1.0.4+5
 
 environment:
   sdk: ^3.11.0
@@ -52,6 +52,8 @@ dependencies:
   # push bildirishnomalar (ilova yopiq bo'lsa ham)
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
+  # ovozli xabar yozish
+  record: ^6.2.1
 
 dev_dependencies:
   flutter_test:

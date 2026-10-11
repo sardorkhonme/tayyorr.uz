@@ -150,6 +150,26 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     }
   }
 
+  /// Oldindan yuklangan fayl (va ixtiyoriy matn) bilan xabar yuborish.
+  Future<ChatMessageModel?> sendPrepared({required Map<String, Object> file, String? body}) async {
+    final replyId = state.replyTo?.id;
+    final text = body?.trim();
+    emit(state.copyWith(sending: true, error: null, clearReply: true));
+    try {
+      final msg = await _repo.sendMessage(
+        conversationId,
+        body: (text == null || text.isEmpty) ? null : text,
+        replyToId: replyId,
+        file: file,
+      );
+      emit(state.copyWith(sending: false, messages: [...state.messages, msg]));
+      return msg;
+    } on ApiException catch (e) {
+      emit(state.copyWith(sending: false, error: e.message));
+      return null;
+    }
+  }
+
   Future<void> sendFile({required Uint8List bytes, required String filename, required String contentType}) async {
     final replyId = state.replyTo?.id;
     emit(state.copyWith(sending: true, error: null, clearReply: true));

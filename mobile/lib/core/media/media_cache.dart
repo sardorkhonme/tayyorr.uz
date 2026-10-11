@@ -39,6 +39,27 @@ class MediaCache {
 
   Future<File> _fileFor(String key, String name) async => File('${(await _dir()).path}/${key}_${_safe(name)}');
 
+  /// Mahalliy faylni (tanlangan / yozib olingan) keshga [key] bilan joylaydi —
+  /// ko'rib chiqish va yuborilgandan keyin qayta yuklamaslik uchun.
+  Future<File> putLocal(String key, String name, List<int> bytes) async {
+    final f = await _fileFor(key, name);
+    await f.writeAsBytes(bytes, flush: true);
+    _known.add(key);
+    return f;
+  }
+
+  /// Yuborilgandan keyin vaqtinchalik kalitni xabar id'siga ko'chiradi.
+  Future<void> adopt(String fromKey, String toKey, String name) async {
+    if (kIsWeb) return;
+    try {
+      final from = await _fileFor(fromKey, name);
+      if (await from.exists()) {
+        await from.rename((await _fileFor(toKey, name)).path);
+        _known.add(toKey);
+      }
+    } catch (_) {}
+  }
+
   /// Yuklash jarayoni (0..1), yuklanmayotgan bo'lsa `null`.
   ValueNotifier<double?> progressOf(String key) => _progress.putIfAbsent(key, () => ValueNotifier<double?>(null));
 
