@@ -129,6 +129,7 @@ export async function POST(
       `\nTopshirish muddati: ${shortDateTime(dl)}.` +
       `\n\nQabul qilsangiz, ish boshlanadi. Imzolangandan keyin shartnomani faqat ikki tomon roziligi bilan bekor qilish mumkin.`,
     system: true,
+    orderId: id,
   });
   await deliverMessage(msg);
 

@@ -99,7 +99,7 @@ async function notice(c: Pick<Contract, "ordererId" | "preparerId" | "orderId">,
   try {
     const conv = await getOrCreateConversation(c.ordererId, c.preparerId, c.orderId);
     const senderId = actorId ?? (await getSupportUserId());
-    const msg = await createMessage({ conversationId: conv.id, senderId, body, system: true });
+    const msg = await createMessage({ conversationId: conv.id, senderId, body, system: true, orderId: c.orderId });
     await deliverMessage(msg); // actor bo'lsa — ikkinchi tomonga; bo'lmasa userA'ga
     if (!actorId) {
       const second = conv.userAId === c.ordererId ? c.preparerId : c.ordererId;

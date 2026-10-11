@@ -28,6 +28,8 @@ export interface ClientMessage {
   senderId: string;
   body: string;
   system: boolean;
+  /** tizim xabari tegishli buyurtma */
+  orderId: string | null;
   createdAt: number;
   updatedAt: number;
   mine: boolean;
@@ -92,6 +94,7 @@ export async function toClientMessage(
     senderId: m.senderId,
     body: hideContent ? "" : m.body,
     system: m.system,
+    orderId: m.orderId,
     createdAt: m.createdAt.getTime(),
     updatedAt: m.updatedAt.getTime(),
     mine: m.senderId === meId,
@@ -130,6 +133,7 @@ export async function toSerializedMessage(m: Message) {
     senderId: m.senderId,
     body: deleted ? "" : m.body,
     system: m.system,
+    orderId: m.orderId,
     createdAt: m.createdAt.toISOString(),
     updatedAt: m.updatedAt.toISOString(),
     edited: !!m.editedAt,

@@ -70,6 +70,8 @@ class ChatMessageModel {
   final String senderId;
   final String body;
   final bool system;
+  /// Tizim xabari tegishli buyurtma — ostidagi tugma shuni ochadi
+  final String? orderId;
   final int createdAt; // epoch ms
   final int updatedAt; // epoch ms
   final bool mine;
@@ -87,6 +89,7 @@ class ChatMessageModel {
     required this.senderId,
     required this.body,
     required this.system,
+    this.orderId,
     required this.createdAt,
     required this.updatedAt,
     required this.mine,
@@ -106,6 +109,7 @@ class ChatMessageModel {
       senderId: json['senderId'] as String,
       body: json['body'] as String? ?? '',
       system: json['system'] as bool? ?? false,
+      orderId: json['orderId'] as String?,
       createdAt: (json['createdAt'] as num).toInt(),
       updatedAt: (json['updatedAt'] as num).toInt(),
       mine: json['mine'] as bool? ?? false,

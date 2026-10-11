@@ -38,6 +38,8 @@ interface Msg {
   senderId: string;
   body: string;
   system?: boolean;
+  /** tizim xabari tegishli buyurtma */
+  orderId?: string | null;
   createdAt: number;
   updatedAt: number;
   mine: boolean;
@@ -309,6 +311,7 @@ export function ChatRoom({
               senderId: m.senderId,
               body: m.body,
               system: m.system,
+              orderId: m.orderId ?? null,
               createdAt: new Date(m.createdAt).getTime(),
               updatedAt: new Date(m.updatedAt).getTime(),
               mine: m.senderId === meId,
@@ -321,6 +324,8 @@ export function ChatRoom({
           if (data.type === "message" && m.senderId !== meId && !document.hidden) {
             markRead();
           }
+          // shartnoma holati o'zgardi — tepadagi qadalgan panel yangilansin
+          if (data.type === "message" && m.system) router.refresh();
         } else if (data.type === "delete") {
           applyDelete(data.messageId, new Date(data.updatedAt).getTime());
         } else if (data.type === "read" && data.by !== meId) {
@@ -861,9 +866,9 @@ export function ChatRoom({
                           {fmtTime(m.createdAt)}
                         </div>
                       </div>
-                      {pinnedOrder && (
+                      {(m.orderId ?? pinnedOrder?.id ?? orderId) && (
                         <Link
-                          href={`/orders/${pinnedOrder.id}`}
+                          href={`/orders/${m.orderId ?? pinnedOrder?.id ?? orderId}`}
                           className={`block border-t px-3.5 py-2 text-center font-medium backdrop-blur-sm transition ${
                             m.mine
                               ? "border-white/20 bg-white/10 text-white hover:bg-white/20"

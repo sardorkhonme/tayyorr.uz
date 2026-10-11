@@ -70,6 +70,8 @@ export async function createMessage(opts: {
   senderId: string;
   body?: string;
   system?: boolean;
+  /** tizim xabari tegishli buyurtma (tugma shu buyurtmani ochadi) */
+  orderId?: string | null;
   replyToId?: string | null;
   broadcastId?: string | null;
   file?: {
@@ -96,6 +98,7 @@ export async function createMessage(opts: {
         senderId: opts.senderId,
         body: opts.body ?? "",
         system: opts.system ?? false,
+        orderId: opts.orderId ?? null,
         replyToId,
         broadcastId: opts.broadcastId ?? null,
         fileKey: opts.file?.key ?? null,

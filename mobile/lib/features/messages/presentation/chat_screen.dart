@@ -306,7 +306,6 @@ class _ChatViewState extends State<_ChatView> {
                                 flashKey: _flashId == m.id ? _flashTick : null,
                                 child: _MessageBubble(
                                   message: m,
-                                  hasActiveContract: state.activeContracts.isNotEmpty,
                                   pinnedOrderId:
                                       state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
                                   onReplyTap: _jumpTo,
@@ -697,12 +696,11 @@ class _ReplyBanner extends StatelessWidget {
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
     required this.message,
-    required this.hasActiveContract,
     this.pinnedOrderId,
     this.onReplyTap,
   });
   final ChatMessageModel message;
-  final bool hasActiveContract;
+  /// Eski (buyurtmasi yozilmagan) tizim xabarlari uchun zaxira — faol shartnoma
   final String? pinnedOrderId;
 
   /// Iqtibos (javob berilgan xabar) bosilganda — o'sha xabarga o'tish.
@@ -888,14 +886,14 @@ class _MessageBubble extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(message.body, style: TextStyle(color: bubbleTextColor, fontSize: 13.5, height: 1.4)),
-              if (hasActiveContract && pinnedOrderId != null) ...[
+              if ((message.orderId ?? pinnedOrderId) != null) ...[
                 const SizedBox(height: 8),
                 Divider(color: mine ? Colors.white24 : AppColors.cardBorder, height: 1),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => Navigator.of(
                     context,
-                  ).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: pinnedOrderId!))),
+                  ).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: (message.orderId ?? pinnedOrderId)!))),
                   child: Text(
                     'Buyurtmani ko\'rish ›',
                     style: TextStyle(color: bubbleTextColor, fontSize: 12.5, fontWeight: FontWeight.w700),
