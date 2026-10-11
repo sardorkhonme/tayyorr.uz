@@ -18,7 +18,8 @@ self.addEventListener("push", (event) => {
     tag: data.tag || url,
     renotify: true,
     icon: "/icon-192.png",
-    badge: "/icon-192.png",
+    // Android holat satridagi kichik oq belgi (shaffof fonda oq "T")
+    badge: "/badge-96.png",
     data: { url },
   };
 
