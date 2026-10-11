@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
  * (mobile/pubspec.yaml dagi `version` bilan bir xil saqlang).
  * Admin "Mobil ilova" sahifasidan boshqa yorliq qo'yishi mumkin — u ustun turadi.
  */
-export const APP_VERSION = "1.0.5";
+export const APP_VERSION = "1.0.6";
 
 const KEY = "versionLabel";
 

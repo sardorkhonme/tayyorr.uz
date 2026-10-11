@@ -1,7 +1,7 @@
 name: tayyorr_app
 description: "tayyorr.uz — talabalar uchun platforma"
 publish_to: "none"
-version: 1.0.5+6
+version: 1.0.6+7
 
 environment:
   sdk: ^3.11.0
