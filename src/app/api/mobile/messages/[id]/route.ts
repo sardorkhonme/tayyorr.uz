@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { chatContractPins } from "@/lib/chat-pins";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import {
@@ -58,20 +59,7 @@ export async function GET(
       },
     }),
     blockState(me, otherId),
-    db.contract.findMany({
-      where: {
-        status: "ACCEPTED",
-        order: { status: { in: ["IN_PROGRESS", "DELIVERED"] }, deletedAt: null },
-        OR: [
-          { ordererId: me, preparerId: otherId },
-          { ordererId: otherId, preparerId: me },
-        ],
-      },
-      select: {
-        order: { select: { id: true, title: true, type: true, status: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
+    chatContractPins(me, otherId),
   ]);
   const hidden = bs.blockedMe && !other?.isSupport;
 
@@ -89,7 +77,7 @@ export async function GET(
       isSupport: other.isSupport,
       lastSeenAt: hidden || !other.lastSeenAt ? null : other.lastSeenAt.toISOString(),
     },
-    activeContracts: activeContracts.map((c) => c.order),
+    activeContracts,
     messages,
   });
 }

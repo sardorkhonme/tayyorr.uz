@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
-import { shortDateTime, shortDate } from "@/lib/date";
+import { shortDateTime } from "@/lib/date";
+import { AdminDisputePanel } from "@/components/admin/admin-dispute-panel";
 
 const TYPE: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -53,6 +54,14 @@ export default async function AdminOrderDetail({
   });
   if (!order) notFound();
 
+  // imzolangan va hali faol shartnoma (bekor qilish so'rovi / nizo shu yerda)
+  const active =
+    order.status === "IN_PROGRESS" || order.status === "DELIVERED"
+      ? (order.contracts.find((c) => c.status === "ACCEPTED") ?? null)
+      : null;
+  const roleOf = (userId: string | null) =>
+    userId === order.ordererId ? "Buyurtmachi" : "Tayyorlovchi";
+
   const files = await Promise.all(
     order.files.map(async (f) => ({
       id: f.id,
@@ -73,7 +82,7 @@ export default async function AdminOrderDetail({
     ["Byudjet", order.budget ? formatSom(order.budget) : "—"],
     [
       "Muddat",
-      order.deadline ? shortDate(order.deadline) : "—",
+      order.deadline ? shortDateTime(order.deadline) : "—",
     ],
     [
       "Buyurtmachi",
@@ -161,6 +170,47 @@ export default async function AdminOrderDetail({
           />
         )}
       </div>
+
+      {active?.cancelState && (
+        <div
+          className={`rounded-xl border p-4 text-sm ${
+            active.cancelState === "DISPUTED"
+              ? "border-red-400/40 bg-red-500/10"
+              : "border-amber-400/30 bg-amber-500/10"
+          }`}
+        >
+          <div className="font-semibold text-white">
+            {active.cancelState === "DISPUTED"
+              ? "⚖️ Nizo — qaroringiz kerak"
+              : "⚠️ Bekor qilish so'rovi (javob kutilmoqda)"}
+          </div>
+          <div className="mt-2 text-zinc-300">
+            So'ragan: <b>{roleOf(active.cancelRequestedById)}</b>
+            {active.cancelRequestedAt && ` · ${shortDateTime(active.cancelRequestedAt)}`}
+          </div>
+          <div className="mt-1 text-zinc-300">Sabab: {active.cancelReason}</div>
+          {active.cancelRejectReason && (
+            <div className="mt-1 text-zinc-300">
+              Rad etish sababi: {active.cancelRejectReason}
+            </div>
+          )}
+          {active.cancelState === "PENDING" && active.cancelDueAt && (
+            <div className="mt-1 text-xs text-zinc-400">
+              {shortDateTime(active.cancelDueAt)} gacha javob bo'lmasa — avtomatik
+              bekor qilinadi (pul buyurtmachiga).
+            </div>
+          )}
+          {active.cancelState === "DISPUTED" && (
+            <div className="mt-3">
+              <AdminDisputePanel
+                contractId={active.id}
+                amount={active.amount}
+                deadline={(active.deadline ?? order.deadline)?.toISOString() ?? null}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="rounded-xl border border-white/10">
         <dl className="divide-y divide-white/5 text-sm">
@@ -268,6 +318,14 @@ export default async function AdminOrderDetail({
                   </span>
                 </div>
                 {c.note && <p className="mt-1 text-zinc-400">{c.note}</p>}
+                <div className="mt-1 text-xs text-zinc-500">
+                  {c.deadline && `Muddat: ${shortDateTime(c.deadline)}`}
+                  {c.deliveredAt && ` · topshirildi ${shortDateTime(c.deliveredAt)}`}
+                  {c.reviewDueAt && ` · tekshiruv ${shortDateTime(c.reviewDueAt)} gacha`}
+                  {c.revisionCount > 0 && ` · qayta ishlash ${c.revisionCount}×`}
+                  {c.disputeResolution &&
+                    ` · admin qarori: ${c.disputeResolution}${c.disputeNote ? ` (${c.disputeNote})` : ""}`}
+                </div>
                 <div className="mt-1 text-xs text-zinc-600">
                   {shortDateTime(c.createdAt)}
                   {c.commissionAmount

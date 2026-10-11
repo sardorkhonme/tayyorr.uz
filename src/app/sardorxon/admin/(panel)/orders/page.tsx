@@ -31,6 +31,16 @@ export default async function AdminOrders({
   searchParams: Promise<{ q?: string }>;
 }) {
   const q = cleanQuery((await searchParams).q);
+  // admin qarorini kutayotgan nizolar va javob kutilayotgan bekor qilish so'rovlari
+  const disputes = await db.contract.findMany({
+    where: {
+      status: "ACCEPTED",
+      cancelState: { not: null },
+      order: { status: { in: ["IN_PROGRESS", "DELIVERED"] } },
+    },
+    orderBy: { cancelRequestedAt: "asc" },
+    include: { order: { select: { id: true, title: true } } },
+  });
   const orders = await db.order.findMany({
     where: q
       ? {
@@ -55,6 +65,32 @@ export default async function AdminOrders({
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Buyurtmalar</h1>
       <LiveSearch placeholder="Sarlavha, buyurtmachi yoki tayyorlovchi (ism, login, ID)" />
+
+      {disputes.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {disputes.map((d) => (
+            <Link
+              key={d.id}
+              href={`/sardorxon/admin/orders/${d.order.id}`}
+              className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-sm transition hover:bg-white/5 ${
+                d.cancelState === "DISPUTED"
+                  ? "border-red-400/40 bg-red-500/10"
+                  : "border-amber-400/30 bg-amber-500/5"
+              }`}
+            >
+              <span className="text-white">
+                {d.cancelState === "DISPUTED" ? "⚖️ Nizo — qaror kerak" : "⚠️ Bekor qilish so'ralgan"}
+                {" · "}
+                {d.order.title}
+              </span>
+              <span className="text-xs text-zinc-400">
+                {formatSom(d.amount)}
+                {d.cancelRequestedAt && ` · ${shortDate(d.cancelRequestedAt)}`}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[820px] text-sm">

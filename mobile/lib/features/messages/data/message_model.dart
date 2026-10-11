@@ -1,3 +1,5 @@
+import '../../dashboard/data/order_model.dart';
+
 class ReplyPreviewModel {
   final String id;
   final String authorId;
@@ -153,8 +155,29 @@ class ChatContractOrderRef {
   final String title;
   final String type;
   final String status;
+  /// SENT — shartnoma yuborilgan (javob kutilmoqda), ACCEPTED — imzolangan
+  final String contractStatus;
+  /// PENDING — bekor qilish so'ralgan, DISPUTED — admin ko'rib chiqmoqda
+  final String? cancelState;
+  final DateTime? deadline;
 
-  const ChatContractOrderRef({required this.id, required this.title, required this.type, required this.status});
+  const ChatContractOrderRef({
+    required this.id,
+    required this.title,
+    required this.type,
+    required this.status,
+    this.contractStatus = 'ACCEPTED',
+    this.cancelState,
+    this.deadline,
+  });
+
+  /// Qadalgan panel uchun qisqa holat matni (saytdagi pinBadge bilan bir xil).
+  String get badge {
+    if (contractStatus == 'SENT') return '📄 Shartnoma yuborilgan';
+    if (cancelState == 'DISPUTED') return "⚖️ Admin ko'rib chiqmoqda";
+    if (cancelState == 'PENDING') return "⚠️ Bekor qilish so'ralgan";
+    return kOrderStatusLabel[status] ?? status;
+  }
 
   factory ChatContractOrderRef.fromJson(Map<String, dynamic> json) {
     return ChatContractOrderRef(
@@ -162,6 +185,9 @@ class ChatContractOrderRef {
       title: json['title'] as String,
       type: json['type'] as String,
       status: json['status'] as String,
+      contractStatus: json['contractStatus'] as String? ?? 'ACCEPTED',
+      cancelState: json['cancelState'] as String?,
+      deadline: json['deadline'] != null ? DateTime.parse(json['deadline'] as String) : null,
     );
   }
 }

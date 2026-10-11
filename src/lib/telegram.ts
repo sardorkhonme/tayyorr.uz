@@ -1,7 +1,7 @@
 import { after } from "next/server";
 
 import { db } from "@/lib/db";
-import { shortDate } from "@/lib/date";
+import { shortDateTime } from "@/lib/date";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHANNEL = process.env.TELEGRAM_CHANNEL_ID; // "@tayyorruz_works" yoki "-100..."
@@ -38,7 +38,7 @@ function clip(s: string, max: number): string {
 }
 
 function fmtDate(d: Date): string {
-  return shortDate(d);
+  return shortDateTime(d);
 }
 
 export interface ChannelOrder {

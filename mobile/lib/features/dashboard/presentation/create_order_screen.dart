@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/format.dart';
+import '../../../widgets/date_time_picker.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
@@ -35,20 +37,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   }
 
   Future<void> _pickDeadline() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _deadline ?? DateTime.now().add(const Duration(days: 3)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: AppColors.isLight
-              ? const ColorScheme.light(primary: AppColors.indigo)
-              : ColorScheme.dark(primary: AppColors.indigo, surface: AppColors.surface),
-        ),
-        child: child!,
-      ),
-    );
+    final picked = await pickDateTime(context, initial: _deadline);
     if (picked != null) setState(() => _deadline = picked);
   }
 
@@ -85,8 +74,6 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
   }
 
-  String _fmtDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   @override
   Widget build(BuildContext context) {
@@ -128,12 +115,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const WebLabel('Muddat'),
+                        const WebLabel('Muddat (sana va vaqt)'),
                         WebInput(
                           readOnly: true,
                           onTap: _pickDeadline,
-                          hint: 'dd/mm/yyyy',
-                          controller: TextEditingController(text: _deadline == null ? '' : _fmtDate(_deadline!)),
+                          hint: 'Sana va vaqt',
+                          controller: TextEditingController(text: _deadline == null ? '' : shortDateTime(_deadline!)),
                           suffix: Icon(Icons.calendar_today_rounded, size: 16, color: WebC.zinc300),
                         ),
                       ],

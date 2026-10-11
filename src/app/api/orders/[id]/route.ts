@@ -5,11 +5,15 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { restrictionApiError } from "@/lib/restriction";
-import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegram";
+import { markOrderRemovedInChannel } from "@/lib/telegram";
 import { softDeleteOrder } from "@/lib/order-delete";
 import { logActivity } from "@/lib/activity";
-import { refundOfferStars } from "@/lib/stars";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import {
+  cancelOpenOrder,
+  deliverWork,
+  orderLockedReason,
+  sweepContracts,
+} from "@/lib/contract-flow";
 
 export async function GET(
   _req: Request,
@@ -20,6 +24,7 @@ export async function GET(
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
   const { id } = await params;
+  await sweepContracts({ orderId: id });
 
   const order = await db.order.findUnique({
     where: { id },
@@ -87,9 +92,14 @@ export async function GET(
 }
 
 const patchSchema = z.object({
-  status: z.enum(["DELIVERED", "DONE", "CANCELLED"]),
+  status: z.enum(["DELIVERED", "CANCELLED"]),
 });
 
+/**
+ * Tayyorlovchi ishni topshiradi (DELIVERED) yoki buyurtmachi hali shartnoma
+ * imzolanmagan (OPEN) buyurtmasini bekor qiladi. Yakunlash — /finalize,
+ * imzolangan shartnomani bekor qilish — /contracts/[id] REQUEST_CANCEL.
+ */
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -107,68 +117,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Noto'g'ri status" }, { status: 400 });
   }
 
-  const order = await db.order.findUnique({ where: { id } });
-  if (!order) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
-
-  const { status } = parsed.data;
-  const isOrderer = order.ordererId === session.user.id;
-  const isPreparer = order.preparerId === session.user.id;
-
-  if (status === "DELIVERED" && !isPreparer) {
-    return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 403 });
-  }
-  if ((status === "DONE" || status === "CANCELLED") && !isOrderer) {
-    return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 403 });
-  }
-
-  const updated = await db.$transaction(async (tx) => {
-    const o = await tx.order.update({ where: { id }, data: { status } });
-    // ish yakunlandi -> tayyorlovchi yana bo'sh
-    if (status === "DONE" && o.preparerId) {
-      await tx.user.update({
-        where: { id: o.preparerId },
-        data: { isAvailable: true },
-      });
-    }
-    return o;
-  });
-
-  await updateOrderChannelPost(id);
-
-  // buyurtma hech kim tomonidan bajarilmay bekor qilindi — ariza
-  // yuborganlarga sarflagan starlari qaytariladi
-  if (status === "CANCELLED") {
-    await refundOfferStars(id, "bekor qilindi");
-  }
-
-  const act =
-    status === "DELIVERED"
-      ? "ORDER_DELIVER"
-      : status === "DONE"
-        ? "ORDER_FINALIZE"
-        : "ORDER_CANCEL";
-  const verb =
-    status === "DELIVERED"
-      ? "Ishni topshirdi"
-      : status === "DONE"
-        ? "Ishni yakunladi"
-        : "Buyurtmani bekor qildi";
-  await logActivity(session.user.id, act, `${verb}: «${order.title}»`, {
-    orderId: id,
-  });
-
-  await logToGroup(
-    "orders",
-    status === "DELIVERED"
-      ? "📦 Ish topshirildi"
-      : status === "DONE"
-        ? "✅ Buyurtma yakunlandi"
-        : "🚫 Buyurtma bekor qilindi",
-    [`«${order.title}»`, `Buyurtma ID: ${id}`],
-    siteUrl(`/sardorxon/admin/orders/${id}`),
-  );
-
-  return NextResponse.json({ order: updated });
+  const r =
+    parsed.data.status === "DELIVERED"
+      ? await deliverWork(id, session.user.id)
+      : await cancelOpenOrder(id, session.user.id);
+  if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
+  return NextResponse.json({ ok: true });
 }
 
 /** Buyurtmachi o'z buyurtmasini o'chiradi (soft). O'zida qoladi, boshqalarga ko'rinmaydi. */
@@ -192,6 +146,9 @@ export async function DELETE(
   if (order.deletedAt) {
     return NextResponse.json({ error: "Allaqachon o'chirilgan" }, { status: 400 });
   }
+  await sweepContracts({ orderId: id });
+  const locked = await orderLockedReason(id);
+  if (locked) return NextResponse.json({ error: locked }, { status: 400 });
 
   const full = await softDeleteOrder(id, "ORDERER", null);
   if (full?.telegramMessageId) {

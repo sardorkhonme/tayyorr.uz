@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/format.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
@@ -20,7 +21,6 @@ import '../../../widgets/link_text.dart';
 import '../../../widgets/web_ui.dart';
 import 'chat_composer.dart';
 import 'chat_media.dart';
-import '../../dashboard/data/order_model.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../public_profile/presentation/public_profile_screen.dart';
 import '../cubit/chat_cubit.dart';
@@ -611,8 +611,10 @@ class _PinnedContractCard extends StatelessWidget {
                           style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          '${kOrderTypeLabel[order.type] ?? order.type} · ${kOrderStatusLabel[order.status] ?? order.status}'
+                          '${order.deadline != null ? '⏱ ${shortDateTime(order.deadline!)} · ' : ''}${order.badge}'
                           '${total > 1 ? " · ${index + 1}/$total" : ""}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
                         ),
                       ],
@@ -623,7 +625,18 @@ class _PinnedContractCard extends StatelessWidget {
                       onPressed: onCycle,
                       icon: const Icon(Icons.swap_horiz_rounded, size: 18, color: AppColors.textMuted),
                     ),
-                  Icon(Icons.chevron_right_rounded, color: AppColors.textFaint, size: 18),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.indigo.withValues(alpha: 0.22),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      "Ishni ko'rish",
+                      style: TextStyle(color: AppColors.indigo, fontSize: 11.5, fontWeight: FontWeight.w700),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -127,10 +127,22 @@ class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetail
     }
   }
 
-  Future<bool> respondToContract(String contractId, {required String action}) async {
+  Future<bool> respondToContract(String contractId, {required String action, String? reason}) async {
     emit(state.copyWith(busy: true, error: null));
     try {
-      await _repo.respondToContract(contractId, action: action);
+      await _repo.respondToContract(contractId, action: action, reason: reason);
+      await load();
+      return true;
+    } on ApiException catch (e) {
+      emit(state.copyWith(busy: false, error: e.message));
+      return false;
+    }
+  }
+
+  Future<bool> requestRevision({required String reason, required DateTime deadline}) async {
+    emit(state.copyWith(busy: true, error: null));
+    try {
+      await _repo.requestRevision(orderId, reason: reason, deadline: deadline);
       await load();
       return true;
     } on ApiException catch (e) {

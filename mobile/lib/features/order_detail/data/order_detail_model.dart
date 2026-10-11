@@ -109,6 +109,16 @@ class ContractModel {
   final String preparerId;
   final String preparerName;
   final DateTime createdAt;
+  final DateTime? deliveredAt;
+  /// Ish topshirilgach — shu vaqtgacha javob bo'lmasa pul tayyorlovchiga o'tadi
+  final DateTime? reviewDueAt;
+  final int revisionCount;
+  /// PENDING — bekor qilish so'ralgan, DISPUTED — admin hal qiladi
+  final String? cancelState;
+  final String? cancelRequestedById;
+  final String? cancelReason;
+  final DateTime? cancelDueAt;
+  final String? cancelRejectReason;
 
   const ContractModel({
     required this.id,
@@ -119,7 +129,17 @@ class ContractModel {
     required this.preparerId,
     required this.preparerName,
     required this.createdAt,
+    this.deliveredAt,
+    this.reviewDueAt,
+    this.revisionCount = 0,
+    this.cancelState,
+    this.cancelRequestedById,
+    this.cancelReason,
+    this.cancelDueAt,
+    this.cancelRejectReason,
   });
+
+  static DateTime? _d(Object? v) => v != null ? DateTime.parse(v as String) : null;
 
   factory ContractModel.fromJson(Map<String, dynamic> json) {
     return ContractModel(
@@ -127,10 +147,18 @@ class ContractModel {
       status: json['status'] as String,
       amount: (json['amount'] as num).toInt(),
       note: json['note'] as String?,
-      deadline: json['deadline'] != null ? DateTime.parse(json['deadline'] as String) : null,
+      deadline: _d(json['deadline']),
       preparerId: json['preparerId'] as String,
       preparerName: json['preparerName'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      deliveredAt: _d(json['deliveredAt']),
+      reviewDueAt: _d(json['reviewDueAt']),
+      revisionCount: (json['revisionCount'] as num?)?.toInt() ?? 0,
+      cancelState: json['cancelState'] as String?,
+      cancelRequestedById: json['cancelRequestedById'] as String?,
+      cancelReason: json['cancelReason'] as String?,
+      cancelDueAt: _d(json['cancelDueAt']),
+      cancelRejectReason: json['cancelRejectReason'] as String?,
     );
   }
 }

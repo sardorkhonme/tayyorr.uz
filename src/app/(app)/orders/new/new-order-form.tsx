@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const TYPES = [
@@ -12,6 +12,13 @@ const TYPES = [
   ["OTHER", "Boshqa"],
 ] as const;
 
+/** Hozirgi vaqt <input type="datetime-local"> formatida (o'tgan vaqtni tanlamaslik uchun). */
+function nowLocal() {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 export function NewOrderForm() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -22,6 +29,9 @@ export function NewOrderForm() {
     budget: "",
   });
   const [err, setErr] = useState<string | null>(null);
+  // server va brauzer vaqt zonasi farq qiladi — min faqat brauzerda hisoblanadi
+  const [minDeadline, setMinDeadline] = useState<string | undefined>();
+  useEffect(() => setMinDeadline(nowLocal()), []);
   const [busy, setBusy] = useState(false);
 
   function set(k: keyof typeof form, v: string) {
@@ -100,13 +110,14 @@ export function NewOrderForm() {
             placeholder="Mavzu, talablar, hajm, formatlash..."
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="label">Muddat</label>
+            <label className="label">Muddat (sana va vaqt)</label>
             <input
               className="input"
-              type="date"
+              type="datetime-local"
               value={form.deadline}
+              min={minDeadline}
               onChange={(e) => set("deadline", e.target.value)}
             />
           </div>

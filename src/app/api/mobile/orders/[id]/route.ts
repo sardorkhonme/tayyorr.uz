@@ -5,10 +5,15 @@ import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getRestriction, restrictionText } from "@/lib/restriction";
-import { updateOrderChannelPost, markOrderRemovedInChannel } from "@/lib/telegram";
+import { markOrderRemovedInChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
-import { refundOfferStars } from "@/lib/stars";
-import { logToGroup, siteUrl } from "@/lib/telegram-log";
+import {
+  cancelOpenOrder,
+  deliverWork,
+  orderLockedReason,
+  sweepContracts,
+} from "@/lib/contract-flow";
+import { contractView } from "@/lib/contract-view";
 import { softDeleteOrder } from "@/lib/order-delete";
 import { maskName } from "@/lib/mask-name";
 import { presenceText } from "@/lib/presence";
@@ -24,6 +29,7 @@ export async function GET(
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
   const { id } = await params;
+  await sweepContracts({ orderId: id });
 
   const order = await db.order.findUnique({
     where: { id },
@@ -127,16 +133,7 @@ export async function GET(
       preparer: order.preparer ? party(order.preparer) : null,
       files,
       queue,
-      contracts: order.contracts.map((c) => ({
-        id: c.id,
-        status: c.status,
-        amount: c.amount,
-        note: c.note,
-        deadline: c.deadline?.toISOString() ?? null,
-        preparerId: c.preparerId,
-        preparerName: c.preparer.name ?? c.preparer.login ?? "Tayyorlovchi",
-        createdAt: c.createdAt.toISOString(),
-      })),
+      contracts: order.contracts.map((c) => contractView(c, order)),
       review: order.review
         ? { stars: order.review.stars, comment: order.review.comment }
         : null,
@@ -165,12 +162,8 @@ export async function GET(
 const patchSchema = z.object({ status: z.enum(["DELIVERED", "CANCELLED"]) });
 
 /**
- * Holatni o'zgartirish: tayyorlovchi topshiradi (DELIVERED), buyurtmachi
- * hali hech kimga topshirilmagan (OPEN) buyurtmasini bekor qiladi.
- * Diqqat: ish YAKUNLASH endi shu yerda emas — /finalize orqali (eskroudan
- * tayyorlovchiga pul o'tishi kerak). Faol shartnoma bor IN_PROGRESS/
- * DELIVERED buyurtmani bekor qilish ham shu yerda emas — /contracts/[id]
- * CANCEL orqali (bloklangan pulni to'g'ri qaytarish uchun).
+ * Tayyorlovchi ishni topshiradi (DELIVERED) yoki buyurtmachi hali shartnoma
+ * imzolanmagan (OPEN) buyurtmasini bekor qiladi — web bilan bir xil (lib/contract-flow).
  */
 export async function PATCH(
   req: Request,
@@ -188,47 +181,11 @@ export async function PATCH(
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return mobileJson({ error: "Noto'g'ri status" }, { status: 400 });
 
-  const order = await db.order.findUnique({ where: { id } });
-  if (!order) return mobileJson({ error: "Topilmadi" }, { status: 404 });
-
-  const { status } = parsed.data;
-  const isOrderer = order.ordererId === auth.userId;
-  const isPreparer = order.preparerId === auth.userId;
-
-  if (status === "DELIVERED" && !isPreparer) {
-    return mobileJson({ error: "Ruxsat yo'q" }, { status: 403 });
-  }
-  if (status === "CANCELLED") {
-    if (!isOrderer) return mobileJson({ error: "Ruxsat yo'q" }, { status: 403 });
-    if (order.status !== "OPEN") {
-      return mobileJson(
-        { error: "Ish boshlangan buyurtmani shartnoma orqali bekor qiling" },
-        { status: 400 },
-      );
-    }
-  }
-
-  await db.order.update({ where: { id }, data: { status } });
-
-  await updateOrderChannelPost(id);
-
-  if (status === "CANCELLED") {
-    await refundOfferStars(id, "Buyurtma bekor qilindi (mobil ilova)");
-  }
-
-  await logActivity(
-    auth.userId,
-    status === "DELIVERED" ? "ORDER_DELIVER" : "ORDER_CANCEL",
-    `Buyurtma holati: ${status} — «${order.title}» (mobil ilova)`,
-    { orderId: id },
-  );
-  await logToGroup(
-    "orders",
-    status === "DELIVERED" ? "📦 Ish topshirildi" : "🚫 Buyurtma bekor qilindi",
-    [`«${order.title}»`],
-    siteUrl(`/sardorxon/admin/orders/${id}`),
-  );
-
+  const r =
+    parsed.data.status === "DELIVERED"
+      ? await deliverWork(id, auth.userId)
+      : await cancelOpenOrder(id, auth.userId);
+  if (!r.ok) return mobileJson({ error: r.error }, { status: r.status });
   return mobileJson({ ok: true });
 }
 
@@ -251,6 +208,9 @@ export async function DELETE(
   if (order.deletedAt) {
     return mobileJson({ error: "Allaqachon o'chirilgan" }, { status: 400 });
   }
+  await sweepContracts({ orderId: id });
+  const locked = await orderLockedReason(id);
+  if (locked) return mobileJson({ error: locked }, { status: 400 });
 
   const full = await softDeleteOrder(id, "ORDERER", null);
   if (full?.telegramMessageId) {

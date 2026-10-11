@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { shortDateTime } from "@/lib/date";
 import { restrictionApiError } from "@/lib/restriction";
 import { postOrderToChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
@@ -79,6 +80,9 @@ export async function POST(req: Request) {
   }
 
   const { title, type, description, deadline, budget } = parsed.data;
+  if (deadline && new Date(deadline).getTime() <= Date.now()) {
+    return NextResponse.json({ error: "Muddat o'tib ketgan vaqt bo'lmasin" }, { status: 400 });
+  }
 
   const order = await db.order.create({
     data: {
@@ -112,7 +116,7 @@ export async function POST(req: Request) {
       `Turi: ${type}`,
       description.length > 500 ? `${description.slice(0, 500)}…` : description,
       budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} so'm` : "Byudjet: kelishiladi",
-      deadline ? `Muddat: ${deadline}` : "",
+      deadline ? `Muddat: ${shortDateTime(new Date(deadline))}` : "",
       `Buyurtmachi: ${userLabel(orderer)}`,
       orderer?.email ? `Email: ${orderer.email}` : "",
       `Buyurtma ID: ${order.id}`,

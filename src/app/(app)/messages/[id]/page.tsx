@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getConversationForUser, otherUserId, blockState } from "@/lib/chat";
 import { toClientMessages } from "@/lib/chat-messages";
 import { listConversations } from "@/lib/conversations";
+import { chatContractPins } from "@/lib/chat-pins";
 import { ChatRoom } from "@/components/chat-room";
 import { ChatContactsRail } from "@/components/chat-contacts-rail";
 
@@ -41,23 +42,7 @@ export default async function ChatPage({
       take: 200,
       include: { reactions: true },
     }),
-    // ikkovi o'rtasidagi HOZIR faol (bekor qilinmagan/yakunlanmagan/
-    // o'chirilmagan) shartnomalar — bir nechta bo'lsa panelda
-    // almashib turadi (slider)
-    db.contract.findMany({
-      where: {
-        status: "ACCEPTED",
-        order: { status: { in: ["IN_PROGRESS", "DELIVERED"] }, deletedAt: null },
-        OR: [
-          { ordererId: me, preparerId: otherId },
-          { ordererId: otherId, preparerId: me },
-        ],
-      },
-      select: {
-        order: { select: { id: true, title: true, type: true, status: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
+    chatContractPins(me, otherId),
   ]);
 
   const bs = other?.isSupport
@@ -74,7 +59,7 @@ export default async function ChatPage({
         conversationId={id}
         meId={me}
         orderId={conv.orderId}
-        orders={activeContracts.map((c) => c.order)}
+        orders={activeContracts}
         blockedByMe={bs.iBlocked}
         blockedMe={bs.blockedMe}
         other={{

@@ -10,7 +10,9 @@ import { RestrictionNotice } from "@/components/restriction-notice";
 import { OrderActions } from "@/components/order-actions";
 import { OrderDeleteButton } from "@/components/order-delete-button";
 import { BackLink } from "@/components/back-link";
-import { shortDateTime, shortDate } from "@/lib/date";
+import { shortDateTime } from "@/lib/date";
+import { sweepContracts } from "@/lib/contract-flow";
+import { contractView } from "@/lib/contract-view";
 import { maskName } from "@/lib/mask-name";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -39,6 +41,8 @@ export default async function OrderDetailPage({
   const restriction = await getRestriction(session!.user.id);
   if (restriction) return <RestrictionNotice restriction={restriction} />;
   const me = session!.user;
+  // muddati o'tgan shartnoma bo'lsa — sahifa ko'rsatilishidan oldin hal qilinadi
+  await sweepContracts({ orderId: id });
 
   const order = await db.order.findUnique({
     where: { id },
@@ -107,6 +111,10 @@ export default async function OrderDetailPage({
     notFound();
   }
   const deleted = !!order.deletedAt;
+  // imzolangan faol shartnoma bor — buyurtmani o'chirib bo'lmaydi
+  const locked =
+    (order.status === "IN_PROGRESS" || order.status === "DELIVERED") &&
+    order.contracts.some((c) => c.status === "ACCEPTED");
 
   // takliflar: buyurtma egasiga hammasi (to'liq ism), tayyorlovchiga faqat o'ziniki
   const visibleOffers = isOrderer
@@ -193,7 +201,7 @@ export default async function OrderDetailPage({
 
       <div className="flex flex-wrap gap-4 text-sm text-zinc-400">
         {order.deadline && (
-          <span>Muddat: {shortDate(order.deadline)}</span>
+          <span>Muddat: {shortDateTime(order.deadline)}</span>
         )}
         {order.budget && <span>Byudjet: {order.budget.toLocaleString()} so'm</span>}
       </div>
@@ -233,14 +241,8 @@ export default async function OrderDetailPage({
         isAssigned={isAssigned}
         ordererId={order.ordererId}
         meId={me.id}
-        contracts={order.contracts.map((c) => ({
-          id: c.id,
-          preparerId: c.preparerId,
-          preparerName: c.preparer.name ?? c.preparer.login ?? "tayyorlovchi",
-          amount: c.amount,
-          note: c.note,
-          status: c.status,
-        }))}
+        orderDeadline={order.deadline?.toISOString() ?? null}
+        contracts={order.contracts.map((c) => contractView(c, order))}
         reviewed={!!order.review}
         myReview={
           order.review
@@ -277,7 +279,7 @@ export default async function OrderDetailPage({
       />
       )}
 
-      {isOrderer && !deleted && (
+      {isOrderer && !deleted && !locked && (
         <div className="border-t border-white/10 pt-4">
           <OrderDeleteButton orderId={order.id} />
         </div>

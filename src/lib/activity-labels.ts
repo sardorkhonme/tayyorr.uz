@@ -11,6 +11,7 @@ export const ACTIVITY_LABEL: Record<string, string> = {
   ORDER_CANCEL: "Buyurtmani bekor qildi",
   ORDER_DELIVER: "Ishni topshirdi",
   ORDER_FINALIZE: "Ishni yakunladi",
+  ORDER_REVISION: "Ishni qayta ishlashga qaytardi",
 
   OFFER_CREATE: "Taklif yubordi",
   OFFER_ACCEPT: "Taklifni qabul qildi",
@@ -20,6 +21,8 @@ export const ACTIVITY_LABEL: Record<string, string> = {
   CONTRACT_ACCEPT: "Shartnomani qabul qildi",
   CONTRACT_DECLINE: "Shartnomani rad etdi",
   CONTRACT_CANCEL: "Shartnomani bekor qildi",
+  CONTRACT_CANCEL_REQUEST: "Bekor qilishni so'radi",
+  CONTRACT_CANCEL_RESPOND: "Bekor qilish so'roviga javob berdi",
 
   REVIEW_CREATE: "Baho qoldirdi",
 
@@ -43,6 +46,7 @@ export const ACTIVITY_GROUPS: { label: string; actions: string[] }[] = [
       "ORDER_CANCEL",
       "ORDER_DELIVER",
       "ORDER_FINALIZE",
+      "ORDER_REVISION",
     ],
   },
   {
@@ -55,6 +59,8 @@ export const ACTIVITY_GROUPS: { label: string; actions: string[] }[] = [
       "CONTRACT_ACCEPT",
       "CONTRACT_DECLINE",
       "CONTRACT_CANCEL",
+      "CONTRACT_CANCEL_REQUEST",
+      "CONTRACT_CANCEL_RESPOND",
     ],
   },
   {

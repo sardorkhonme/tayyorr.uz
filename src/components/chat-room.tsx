@@ -16,7 +16,7 @@ import { useDismiss } from "@/components/use-dismiss";
 import { useUnread } from "@/components/unread-provider";
 import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
-import { smartTime } from "@/lib/date";
+import { shortDateTime, smartTime } from "@/lib/date";
 
 interface ReplyPreview {
   id: string;
@@ -56,6 +56,9 @@ interface OrderPin {
   title: string;
   type: string;
   status: string;
+  contractStatus?: string;
+  cancelState?: string | null;
+  deadline?: string | null;
 }
 
 interface Props {
@@ -78,15 +81,6 @@ interface Props {
   initialMessages: Msg[];
 }
 
-const ORDER_TYPE_LABEL: Record<string, string> = {
-  PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
-  REFERAT: "Referat",
-  ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
-};
-
 const ORDER_STATUS_LABEL: Record<string, string> = {
   OPEN: "Ochiq",
   IN_PROGRESS: "Jarayonda",
@@ -94,6 +88,14 @@ const ORDER_STATUS_LABEL: Record<string, string> = {
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
+
+/** Qadalgan panel: shartnoma bosqichi qisqa matnda. */
+function pinBadge(p: OrderPin) {
+  if (p.contractStatus === "SENT") return "📄 Shartnoma yuborilgan";
+  if (p.cancelState === "DISPUTED") return "⚖️ Admin ko'rib chiqmoqda";
+  if (p.cancelState === "PENDING") return "⚠️ Bekor qilish so'ralgan";
+  return ORDER_STATUS_LABEL[p.status] ?? p.status;
+}
 
 function fmtTime(ms: number) {
   return smartTime(ms);
@@ -737,24 +739,31 @@ export function ChatRoom({
       {pinnedOrder && (
         <div className="shrink-0 border-b border-white/10 bg-[#0e0e16]/90 backdrop-blur-2xl">
           <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2 sm:px-4">
-            <Link
-              href={`/orders/${pinnedOrder.id}`}
-              className="flex min-w-0 flex-1 items-center gap-2.5 transition hover:opacity-80"
-            >
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
               <span className="shrink-0 text-base">📌</span>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-white">
                   {pinnedOrder.title}
                 </div>
                 <div className="truncate text-xs text-zinc-500">
-                  {ORDER_TYPE_LABEL[pinnedOrder.type] ?? pinnedOrder.type} ·{" "}
-                  {ORDER_STATUS_LABEL[pinnedOrder.status] ?? pinnedOrder.status}
+                  {pinnedOrder.deadline && (
+                    <>
+                      <span className="text-zinc-300">
+                        ⏱ {shortDateTime(pinnedOrder.deadline)}
+                      </span>
+                      {" · "}
+                    </>
+                  )}
+                  {pinBadge(pinnedOrder)}
                 </div>
               </div>
-              <span className="shrink-0 text-xs text-indigo-300">
-                Ko'rish ›
-              </span>
-            </Link>
+              <Link
+                href={`/orders/${pinnedOrder.id}`}
+                className="shrink-0 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-200 transition hover:bg-indigo-500/30"
+              >
+                Ishni ko'rish
+              </Link>
+            </div>
             {orders.length > 1 && (
               <button
                 type="button"

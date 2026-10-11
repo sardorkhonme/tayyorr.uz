@@ -8,6 +8,7 @@ import { getRestriction, restrictionText } from "@/lib/restriction";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { logActivity } from "@/lib/activity";
+import { shortDateTime } from "@/lib/date";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -47,6 +48,14 @@ export async function POST(
   }
   if (order.status !== "OPEN") {
     return mobileJson({ error: "Buyurtma allaqachon jarayonda" }, { status: 400 });
+  }
+  // shartnoma muddati: tanlanmagan bo'lsa — buyurtma muddati
+  const dl = deadline ? new Date(deadline) : order.deadline;
+  if (!dl || dl.getTime() <= Date.now()) {
+    return mobileJson(
+      { error: "Shartnoma muddatini (sana va vaqt) belgilang — kelajakdagi vaqt bo'lsin" },
+      { status: 400 },
+    );
   }
 
   const offer = await db.offer.findUnique({
@@ -104,7 +113,7 @@ export async function POST(
         preparerId,
         amount,
         note: note || null,
-        deadline: deadline ? new Date(deadline) : null,
+        deadline: dl,
       },
     });
   });
@@ -117,7 +126,8 @@ export async function POST(
       `📄 Shartnoma yuborildi. Kelishilgan summa: ${amount.toLocaleString("ru-RU")} so'm ` +
       `(hisobingizdan bloklandi, ish yakunlangach tayyorlovchiga o'tadi).` +
       (note ? `\n\nTavsif: ${note}` : "") +
-      `\n\nQabul qilsangiz, ish boshlanadi.`,
+      `\nTopshirish muddati: ${shortDateTime(dl)}.` +
+      `\n\nQabul qilsangiz, ish boshlanadi. Imzolangandan keyin shartnomani faqat ikki tomon roziligi bilan bekor qilish mumkin.`,
     system: true,
   });
   await deliverMessage(msg);
@@ -142,7 +152,7 @@ export async function POST(
       `Buyurtmachi: ${userLabel(orderer)}`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
       note ? `Tavsif: ${note}` : "",
-      deadline ? `Muddat: ${deadline}` : "",
+      `Muddat: ${shortDateTime(dl)}`,
       `Shartnoma ID: ${contract.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),

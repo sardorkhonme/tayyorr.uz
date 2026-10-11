@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/confirm_dialog.dart';
+import '../../../widgets/date_time_picker.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -19,10 +20,12 @@ import '../../home/section_cubit.dart';
 import '../../messages/data/message_model.dart';
 import '../../messages/data/messages_repository.dart';
 import '../../messages/presentation/chat_screen.dart';
+import '../../offers/data/offer_model.dart' show kOfferStatusLabel;
 import '../../public_profile/presentation/public_profile_screen.dart';
 import '../cubit/order_detail_cubit.dart';
 import '../data/order_detail_model.dart';
 import '../data/order_detail_repository.dart';
+import 'contract_panel.dart';
 
 const _minOfferStars = 2;
 
@@ -82,9 +85,11 @@ class _OrderDetailView extends StatelessWidget {
     final isOrderer = o.orderer.id == meId;
     final isPreparer = me?.isPreparer ?? false;
     final isAssigned = o.preparer?.id == meId;
+    // imzolangan faol shartnoma bor — buyurtmani o'chirib bo'lmaydi
+    final locked = (o.status == 'IN_PROGRESS' || o.status == 'DELIVERED') && o.contracts.any((c) => c.status == 'ACCEPTED');
 
     final meta = <String>[
-      if (o.deadline != null) 'Muddat: ${shortDate(o.deadline!)}',
+      if (o.deadline != null) 'Muddat: ${shortDateTime(o.deadline!)}',
       if ((o.budget ?? 0) > 0) "Byudjet: ${groupDigits(o.budget!)} so'm",
     ];
 
@@ -115,7 +120,7 @@ class _OrderDetailView extends StatelessWidget {
       if (o.files.isNotEmpty) _Files(files: o.files),
       if (!o.deleted)
         _OrderActions(order: o, state: state, meId: meId, isOrderer: isOrderer, isPreparer: isPreparer, isAssigned: isAssigned),
-      if (isOrderer && !o.deleted)
+      if (isOrderer && !o.deleted && !locked)
         Container(
           padding: const EdgeInsets.only(top: 16),
           decoration: BoxDecoration(border: Border(top: BorderSide(color: WebC.border))),
@@ -305,6 +310,7 @@ class _OrderActionsState extends State<_OrderActions> {
   final _boost = TextEditingController();
   final _cAmount = TextEditingController();
   final _cNote = TextEditingController();
+  DateTime? _cDeadline;
   final _reviewComment = TextEditingController();
   int _reviewStars = 0;
   String? _contractFor;
@@ -402,10 +408,20 @@ class _OrderActionsState extends State<_OrderActions> {
                   style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               _rich('Kelishilgan summa: ', "${groupDigits(incoming.amount)} so'm"),
+              if (incoming.deadline != null) ...[
+                const SizedBox(height: 4),
+                _rich('Topshirish muddati: ', shortDateTime(incoming.deadline!)),
+              ],
               if ((incoming.note ?? '').isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text('Izoh: ${incoming.note}', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
               ],
+              const SizedBox(height: 8),
+              Text(
+                "Qabul qilganingizdan keyin shartnomani faqat ikki tomon roziligi (yoki admin qarori) bilan bekor qilish "
+                "mumkin. Muddatgacha ish topshirilmasa — shartnoma bekor bo'ladi.",
+                style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
+              ),
               const SizedBox(height: 12),
               Wrap(spacing: 8, runSpacing: 8, children: [
                 WebButton(
@@ -499,63 +515,30 @@ class _OrderActionsState extends State<_OrderActions> {
           ),
         ),
 
-      // Yakunlash (faqat buyurtmachi)
-      if (widget.isOrderer && accepted != null && (status == 'IN_PROGRESS' || status == 'DELIVERED'))
-        _TintCard(
-          color: const Color(0xFF10B981),
-          border: const Color(0xFF34D399),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text.rich(
-                TextSpan(
-                  style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
-                  children: [
-                    const TextSpan(text: 'Ish tayyor bo\'lsa yakunlang — '),
-                    TextSpan(text: "${groupDigits(accepted.amount)} so'm", style: const TextStyle(fontWeight: FontWeight.w700)),
-                    const TextSpan(text: ' to\'liq (komissiyasiz) tayyorlovchi hisobiga o\'tadi.'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                WebButton(label: '✅ Buyurtmani yakunlash', onPressed: busy ? null : () => _cubit.finalizeOrder()),
-                WebButton(
-                  label: '✖ Shartnomani bekor qilish',
-                  variant: WebBtn.ghost,
-                  onPressed: busy
-                      ? null
-                      : () async {
-                          final ok = await confirmDialog(
-                            context,
-                            title: 'Shartnoma bekor qilinsinmi?',
-                            message: "Shartnoma bekor qilinadi. Mablag' to'liq (komissiyasiz) sizga qaytadi. Davom etilsinmi?",
-                            confirmLabel: 'Ha',
-                            cancelLabel: "Yo'q",
-                          );
-                          if (ok == true) _cubit.respondToContract(accepted.id, action: 'CANCEL');
-                        },
-                ),
-              ]),
-            ],
+      // Imzolangan shartnoma: topshirish / yakunlash / qayta ishlash / bekor qilish so'rovi
+      if (accepted != null && (widget.isOrderer || widget.isAssigned) && (status == 'IN_PROGRESS' || status == 'DELIVERED'))
+        ContractPanel(order: o, contract: accepted, meId: widget.meId, isOrderer: widget.isOrderer, busy: busy),
+
+      if (widget.isOrderer && status == 'OPEN')
+        Align(
+          alignment: Alignment.centerLeft,
+          child: WebButton(
+            label: 'Buyurtmani bekor qilish',
+            variant: WebBtn.ghost,
+            onPressed: busy
+                ? null
+                : () async {
+                    final ok = await confirmDialog(
+                      context,
+                      title: 'Buyurtma bekor qilinsinmi?',
+                      message: "Yuborilgan shartnoma bo'lsa, bloklangan mablag' sizga qaytadi.",
+                      confirmLabel: 'Ha',
+                      cancelLabel: "Yo'q",
+                    );
+                    if (ok == true) _cubit.setStatus('CANCELLED');
+                  },
           ),
         ),
-
-      // Holatni o'zgartirish
-      if ((widget.isAssigned && status == 'IN_PROGRESS') || (widget.isOrderer && status == 'OPEN'))
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          if (widget.isAssigned && status == 'IN_PROGRESS')
-            WebButton(
-              label: 'Ishni topshirdim (buyurtmachi yakunlaydi)',
-              onPressed: busy ? null : () => _cubit.setStatus('DELIVERED'),
-            ),
-          if (widget.isOrderer && status == 'OPEN')
-            WebButton(
-              label: 'Buyurtmani bekor qilish',
-              variant: WebBtn.ghost,
-              onPressed: busy ? null : () => _cubit.setStatus('CANCELLED'),
-            ),
-        ]),
     ];
 
     return Column(
@@ -633,7 +616,9 @@ class _OrderActionsState extends State<_OrderActions> {
             Text.rich(TextSpan(
               style: TextStyle(color: WebC.zinc500, fontSize: 12),
               children: [
-                TextSpan(text: 'Holat: ${myOffer.status} · Jami sarflangan: '),
+                const TextSpan(text: 'Holat: '),
+                WidgetSpan(alignment: PlaceholderAlignment.middle, child: _OfferBadge(status: myOffer.status)),
+                const TextSpan(text: ' · Jami sarflangan: '),
                 TextSpan(text: '${myOffer.starsSpent} ⭐', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
               ],
             )),
@@ -816,6 +801,7 @@ class _OrderActionsState extends State<_OrderActions> {
                             _contractFor = open ? null : x.preparer.id;
                             _cAmount.text = '${x.price}';
                             _cNote.clear();
+                            _cDeadline = o.deadline != null && o.deadline!.isAfter(DateTime.now()) ? o.deadline : null;
                           }),
                 ),
                 WebButton(
@@ -824,7 +810,7 @@ class _OrderActionsState extends State<_OrderActions> {
                   onPressed: busy ? null : () => _cubit.respondToOffer(x.id, accept: false),
                 ),
               ],
-              if (x.status != 'PENDING') Text(x.status, style: TextStyle(color: WebC.zinc400, fontSize: 12)),
+              if (x.status != 'PENDING') _OfferBadge(status: x.status),
             ],
           ),
           if (open) ...[
@@ -845,6 +831,18 @@ class _OrderActionsState extends State<_OrderActions> {
                   const WebLabel("Kelishilgan summa (so'm)"),
                   WebInput(controller: _cAmount, keyboardType: TextInputType.number),
                   const SizedBox(height: 8),
+                  const WebLabel('Topshirish muddati (sana va vaqt)'),
+                  WebInput(
+                    readOnly: true,
+                    hint: 'Sana va vaqtni tanlang',
+                    controller: TextEditingController(text: _cDeadline == null ? '' : shortDateTime(_cDeadline!)),
+                    onTap: () async {
+                      final d = await pickDateTime(context, initial: _cDeadline);
+                      if (d != null && mounted) setState(() => _cDeadline = d);
+                    },
+                    suffix: Icon(Icons.event_rounded, size: 16, color: WebC.zinc300),
+                  ),
+                  const SizedBox(height: 8),
                   const WebLabel('Izoh / shartlar (ixtiyoriy)'),
                   WebInput(controller: _cNote, maxLines: 2, minLines: 2),
                   const SizedBox(height: 8),
@@ -860,11 +858,16 @@ class _OrderActionsState extends State<_OrderActions> {
                                 setState(() => _localErr = 'Summani kiriting');
                                 return;
                               }
+                              if (_cDeadline == null || !_cDeadline!.isAfter(DateTime.now())) {
+                                setState(() => _localErr = 'Shartnoma muddatini (sana va vaqt) tanlang');
+                                return;
+                              }
                               setState(() => _localErr = null);
                               final ok = await _cubit.sendContract(
                                 preparerId: x.preparer.id,
                                 amount: amount,
                                 note: _cNote.text.trim().isEmpty ? null : _cNote.text.trim(),
+                                deadline: _cDeadline,
                               );
                               if (ok && mounted) setState(() => _contractFor = null);
                             },
@@ -911,6 +914,28 @@ class _OrderActionsState extends State<_OrderActions> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Taklif holati — rangli yorliq (saytdagi OfferBadge).
+class _OfferBadge extends StatelessWidget {
+  const _OfferBadge({required this.status});
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (status) {
+      'ACCEPTED' => const Color(0xFF34D399),
+      'REJECTED' => const Color(0xFFF87171),
+      'PENDING' => const Color(0xFFFBBF24),
+      _ => const Color(0xFFA1A1AA),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(999)),
+      child: Text(kOfferStatusLabel[status] ?? status,
+          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 }

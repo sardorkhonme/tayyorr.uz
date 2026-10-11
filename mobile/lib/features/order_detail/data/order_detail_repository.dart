@@ -48,8 +48,20 @@ class OrderDetailRepository {
     });
   }
 
-  Future<void> respondToContract(String contractId, {required String action}) async {
-    await _api.post('/mobile/contracts/$contractId', data: {'action': action});
+  /// ACCEPT / DECLINE / CANCEL (yuborilgan shartnoma) va REQUEST_CANCEL /
+  /// APPROVE_CANCEL / REJECT_CANCEL / WITHDRAW_CANCEL (imzolangan shartnoma).
+  Future<void> respondToContract(String contractId, {required String action, String? reason}) async {
+    await _api.post('/mobile/contracts/$contractId', data: {
+      'action': action,
+      if (reason != null) 'reason': reason,
+    });
+  }
+
+  Future<void> requestRevision(String orderId, {required String reason, required DateTime deadline}) async {
+    await _api.post('/mobile/orders/$orderId/revision', data: {
+      'reason': reason,
+      'deadline': deadline.toUtc().toIso8601String(),
+    });
   }
 
   Future<void> finalizeOrder(String orderId) async {

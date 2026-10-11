@@ -93,6 +93,9 @@ export async function POST(req: Request) {
     );
   }
   const { title, type, description, deadline, budget } = parsed.data;
+  if (deadline && new Date(deadline).getTime() <= Date.now()) {
+    return mobileJson({ error: "Muddat o'tib ketgan vaqt bo'lmasin" }, { status: 400 });
+  }
 
   const order = await db.order.create({
     data: {

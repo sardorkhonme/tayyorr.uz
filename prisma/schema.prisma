@@ -76,6 +76,12 @@ enum ContractStatus {
   CANCELLED // buyurtmachi bekor qildi
 }
 
+// shartnoma imzolangandan keyingi bekor qilish so'rovi
+enum ContractCancelState {
+  PENDING // so'rov yuborildi — ikkinchi tomon 3 ish kuni ichida javob beradi
+  DISPUTED // ikkinchi tomon rozi bo'lmadi — admin hal qiladi
+}
+
 enum PayoutStatus {
   PENDING // so'rov yuborildi, admin ko'rib chiqmoqda
   PAID // kartaga o'tkazildi
@@ -260,6 +266,23 @@ model Contract {
   deadline   DateTime?
   status     ContractStatus @default(SENT)
 
+  // ish topshirilgach: buyurtmachi tekshiradi, reviewDueAt'gacha javob
+  // bermasa ish muvaffaqiyatli yakunlanadi (pul tayyorlovchiga)
+  deliveredAt   DateTime?
+  reviewDueAt   DateTime?
+  revisionCount Int       @default(0)
+
+  // bekor qilish so'rovi (imzolangan shartnomani bir tomonlama bekor qilib bo'lmaydi)
+  cancelState         ContractCancelState?
+  cancelRequestedById String?
+  cancelReason        String?
+  cancelRequestedAt   DateTime?
+  cancelDueAt         DateTime? // shu vaqtgacha javob bo'lmasa — rozi deb hisoblanadi
+  cancelRejectReason  String?
+  disputeResolution   String? // admin qarori: CANCEL | CONTINUE | COMPLETE
+  disputeNote         String?
+  disputeResolvedAt   DateTime?
+
   // yakuniy taqsimot (hal qilinganda to'ldiriladi)
   commissionAmount Int? // saytga
   payoutAmount     Int? // tayyorlovchiga
@@ -271,6 +294,7 @@ model Contract {
 
   @@index([orderId, status])
   @@index([preparerId, status])
+  @@index([cancelState])
 }
 
 model Broadcast {

@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { sweepContracts } from "@/lib/contract-flow";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { ME_SELECT, serializeMe } from "@/lib/mobile-me";
 import { mobileJson } from "@/lib/mobile-cors";
@@ -16,6 +17,7 @@ export async function GET(req: Request) {
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
 
+  after(() => sweepContracts());
   const user = await db.user.findUnique({
     where: { id: auth.userId },
     select: ME_SELECT,
