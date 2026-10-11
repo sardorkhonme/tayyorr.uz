@@ -305,14 +305,15 @@ const roleName = (c: Contract, userId: string) => (c.ordererId === userId ? "Buy
 async function requestCancel(c: ContractFull, me: string, reason: string): Promise<FlowResult> {
   if (c.cancelState === "PENDING") return fail("Bekor qilish so'rovi allaqachon yuborilgan");
   if (c.cancelState === "DISPUTED") return fail("Masala admin ko'rib chiqmoqda");
-  const due = addBusinessDays(new Date(), 3);
+  const now = new Date();
+  const due = addBusinessDays(now, 3);
   const upd = await db.contract.updateMany({
     where: { id: c.id, status: "ACCEPTED", cancelState: null },
     data: {
       cancelState: "PENDING",
       cancelRequestedById: me,
       cancelReason: reason,
-      cancelRequestedAt: new Date(),
+      cancelRequestedAt: now,
       cancelDueAt: due,
       cancelRejectReason: null,
     },

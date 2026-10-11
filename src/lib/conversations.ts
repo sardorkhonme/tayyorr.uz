@@ -15,15 +15,19 @@ export interface ConvRow {
 }
 
 /** Foydalanuvchining barcha suhbatlari — ro'yxat / kontaktlar uchun. */
-export async function listConversations(meId: string): Promise<ConvRow[]> {
+export async function listConversations(
+  meId: string,
+  opts: { asSupport?: boolean } = {},
+): Promise<ConvRow[]> {
   const [convs, supportId, blockedRows] = await Promise.all([
     db.conversation.findMany({
       where: {
-        hiddenFromUsersAt: null,
-        deletedByUsersAt: null,
+        // admin (support) foydalanuvchi o'chirgan suhbatlarni ham ko'radi
+        ...(opts.asSupport ? {} : { hiddenFromUsersAt: null, deletedByUsersAt: null }),
         OR: [{ userAId: meId }, { userBId: meId }],
       },
       orderBy: { lastMessageAt: "desc" },
+      ...(opts.asSupport ? { take: 100 } : {}),
       include: {
         userA: {
           select: { id: true, name: true, login: true, avatarUrl: true, image: true },

@@ -31,6 +31,18 @@ export default async function AdminMessages({
     },
   });
 
+  // qidiruvga mos, lekin hali support bilan yozishmagan foydalanuvchilar — yangi chat ochish uchun
+  const withConv = new Set(convs.map((c) => (c.userAId === supportId ? c.userBId : c.userAId)));
+  const fresh = q
+    ? (
+        await db.user.findMany({
+          where: { AND: [userSearchWhere(q), { isSupport: false }] },
+          select: { id: true, login: true, name: true, avatarUrl: true, image: true },
+          take: 20,
+        })
+      ).filter((u) => !withConv.has(u.id))
+    : [];
+
   const rows = await Promise.all(
     convs.map(async (c) => {
       const user = c.userAId === supportId ? c.userB : c.userA;
@@ -51,8 +63,32 @@ export default async function AdminMessages({
       </p>
       <LiveSearch placeholder="Ism, familiya, login yoki foydalanuvchi ID" />
 
-      {rows.length === 0 && (
+      {rows.length === 0 && fresh.length === 0 && (
         <p className="text-sm text-zinc-500">{q ? "Hech narsa topilmadi." : "Hozircha suhbat yo'q."}</p>
+      )}
+
+      {fresh.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div className="text-xs uppercase tracking-wide text-zinc-500">Yangi suhbat boshlash</div>
+          {fresh.map((u) => (
+            <Link
+              key={u.id}
+              href={`/sardorxon/admin/messages/new?user=${u.id}`}
+              className="flex items-center gap-3 rounded-xl border border-dashed border-white/15 p-3 transition hover:bg-white/[0.04]"
+            >
+              <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+                {(u.avatarUrl ?? u.image) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={u.avatarUrl ?? u.image ?? ""} alt="" className="h-full w-full object-cover" />
+                )}
+              </div>
+              <span className="min-w-0 flex-1 truncate text-sm text-white">
+                {u.name ?? "—"} <span className="text-zinc-500">@{u.login ?? "—"}</span>
+              </span>
+              <span className="shrink-0 text-xs font-medium text-indigo-300">💬 Yozish</span>
+            </Link>
+          ))}
+        </div>
       )}
 
       <ul className="flex flex-col gap-2">

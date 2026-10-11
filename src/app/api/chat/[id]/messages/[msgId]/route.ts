@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { auth } from "@/auth";
+import { chatActor, conversationForActor } from "@/lib/chat-actor";
 import { db } from "@/lib/db";
-import { getConversationForUser } from "@/lib/chat";
 import { publishToConversation } from "@/lib/chat-bus";
 import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
 
-async function loadOwn(convId: string, msgId: string, meId: string) {
-  const conv = await getConversationForUser(convId, meId);
+async function loadOwn(convId: string, msgId: string, actor: { id: string; support: boolean }) {
+  const meId = actor.id;
+  const conv = await conversationForActor(convId, actor);
   if (!conv) return { error: "Suhbat topilmadi", status: 404 as const };
   const msg = await db.message.findUnique({ where: { id: msgId } });
   if (!msg || msg.conversationId !== convId) {
@@ -29,14 +29,14 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string; msgId: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await chatActor(req);
+  if (!actor) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
   const { id, msgId } = await params;
-  const me = session.user.id;
+  const me = actor.id;
 
-  const found = await loadOwn(id, msgId, me);
+  const found = await loadOwn(id, msgId, actor);
   if ("error" in found) {
     return NextResponse.json({ error: found.error }, { status: found.status });
   }
@@ -65,17 +65,17 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string; msgId: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await chatActor(req);
+  if (!actor) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
   const { id, msgId } = await params;
-  const me = session.user.id;
+  const me = actor.id;
 
-  const found = await loadOwn(id, msgId, me);
+  const found = await loadOwn(id, msgId, actor);
   if ("error" in found) {
     return NextResponse.json({ error: found.error }, { status: found.status });
   }

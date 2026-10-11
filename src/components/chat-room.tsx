@@ -14,7 +14,7 @@ import { ProgressRing } from "@/components/progress-ring";
 import { useVoiceRecorder } from "@/lib/voice-recorder";
 import { useDismiss } from "@/components/use-dismiss";
 import { useUnread } from "@/components/unread-provider";
-import { prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
+import { prepareAdminChatFile, prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 import { shortDateTime, smartTime } from "@/lib/date";
 
@@ -70,6 +70,8 @@ interface Props {
   /** Ikkovi o'rtasidagi HOZIR faol loyihalar — bittadan ko'p bo'lsa
    * panelda almashib turadi (slider). */
   orders?: OrderPin[];
+  /** Admin panelida — "tayyorr.uz support" nomidan yozish (API'ga ?as=support) */
+  asSupport?: boolean;
   blockedByMe?: boolean;
   blockedMe?: boolean;
   other: {
@@ -110,12 +112,18 @@ export function ChatRoom({
   meId,
   orderId,
   orders = [],
+  asSupport = false,
   blockedByMe = false,
   blockedMe = false,
   other,
   initialMessages,
 }: Props) {
   const router = useRouter();
+  // admin panelida xuddi shu chat — support nomidan, havolalar admin sahifalariga
+  const apiUrl = (path: string) =>
+    asSupport ? `${path}${path.includes("?") ? "&" : "?"}as=support` : path;
+  const listHref = asSupport ? "/sardorxon/admin/messages" : "/messages";
+  const orderHref = (id: string) => (asSupport ? `/sardorxon/admin/orders/${id}` : `/orders/${id}`);
   const unread = useUnread();
   const unreadRef = useRef(unread);
   unreadRef.current = unread;
@@ -167,7 +175,7 @@ export function ChatRoom({
     setIBlocked(!wasBlocked); // darhol yangilanadi
     setErr(null);
     try {
-      const res = await fetch(`/api/chat/${conversationId}/block`, {
+      const res = await fetch(apiUrl(`/api/chat/${conversationId}/block`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
@@ -191,9 +199,9 @@ export function ChatRoom({
     )
       return;
     try {
-      const res = await fetch(`/api/chat/${conversationId}`, { method: "DELETE" });
+      const res = await fetch(apiUrl(`/api/chat/${conversationId}`), { method: "DELETE" });
       if (res.ok) {
-        router.push("/messages");
+        router.push(listHref);
         router.refresh();
       }
     } catch {
@@ -269,7 +277,7 @@ export function ChatRoom({
   const markRead = useCallback(() => {
     // indikatorlarni darhol nolga tushiramiz (server so'rovini kutmasdan)
     unreadRef.current?.clearConv(conversationId);
-    fetch(`/api/chat/${conversationId}/read`, { method: "POST" })
+    fetch(apiUrl(`/api/chat/${conversationId}/read`), { method: "POST" })
       .then(() => unreadRef.current?.clearConv(conversationId))
       .catch(() => {});
   }, [conversationId]);
@@ -278,7 +286,7 @@ export function ChatRoom({
 
   // SSE
   useEffect(() => {
-    const es = new EventSource(`/api/chat/${conversationId}/stream`);
+    const es = new EventSource(apiUrl(`/api/chat/${conversationId}/stream`));
     es.onopen = () => setLive(true);
     es.onerror = () => setLive(false);
     es.onmessage = (e) => {
@@ -345,7 +353,7 @@ export function ChatRoom({
     const iv = setInterval(async () => {
       try {
         const res = await fetch(
-          `/api/chat/${conversationId}?since=${sinceRef.current}`,
+          apiUrl(`/api/chat/${conversationId}?since=${sinceRef.current}`),
           { cache: "no-store" },
         );
         if (!res.ok) return;
@@ -429,7 +437,7 @@ export function ChatRoom({
     setUploadName(file.name);
     setAttachment(null);
     try {
-      const prepared = await prepareChatFile(file, conversationId, (p) => {
+      const prepared = await (asSupport ? prepareAdminChatFile : prepareChatFile)(file, conversationId, (p) => {
         if (seq === pickSeq.current) setUploadPct(p);
       });
       if (seq === pickSeq.current) setAttachment(prepared);
@@ -510,7 +518,7 @@ export function ChatRoom({
     );
     try {
       const res = await fetch(
-        `/api/chat/${conversationId}/messages/${m.id}/react`,
+        apiUrl(`/api/chat/${conversationId}/messages/${m.id}/react`),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -537,7 +545,7 @@ export function ChatRoom({
     if (!window.confirm("Xabar ikkala tomondan ham o'chirilsinmi?")) return;
     applyDelete(m.id, Date.now());
     try {
-      const res = await fetch(`/api/chat/${conversationId}/messages/${m.id}`, {
+      const res = await fetch(apiUrl(`/api/chat/${conversationId}/messages/${m.id}`), {
         method: "DELETE",
       });
       if (!res.ok) throw new Error();
@@ -557,7 +565,7 @@ export function ChatRoom({
       setText("");
       try {
         const res = await fetch(
-          `/api/chat/${conversationId}/messages/${editId}`,
+          apiUrl(`/api/chat/${conversationId}/messages/${editId}`),
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -606,7 +614,7 @@ export function ChatRoom({
     ]);
 
     try {
-      const res = await fetch(`/api/chat/${conversationId}/messages`, {
+      const res = await fetch(apiUrl(`/api/chat/${conversationId}/messages`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -668,20 +676,28 @@ export function ChatRoom({
     !uploading && (editing ? !!text.trim() : !!text.trim() || !!attachment);
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col lg:left-[34rem]">
+    <div
+      className={`fixed inset-0 z-40 flex flex-col ${asSupport ? "lg:left-[33rem]" : "lg:left-[34rem]"}`}
+    >
       {/* ---- birlashgan header (sayt + suhbat) ---- */}
       <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
           <button
             type="button"
-            onClick={() => router.push("/messages")}
+            onClick={() => router.push(listHref)}
             className="backdrop-blur-sm -ml-1 rounded-lg px-1.5 py-1 text-lg text-zinc-400 transition hover:bg-white/5 hover:text-white"
             aria-label="Orqaga"
           >
             ‹
           </button>
           <Link
-            href={other.isSupport || !other.id ? "#" : `/u/${other.id}`}
+            href={
+              !other.id || other.isSupport
+                ? "#"
+                : asSupport
+                  ? `/sardorxon/admin/users/${other.id}`
+                  : `/u/${other.id}`
+            }
             className="flex min-w-0 flex-1 items-center gap-2.5"
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-zinc-500">
@@ -722,7 +738,7 @@ export function ChatRoom({
             </div>
           </Link>
 
-          {other.id && !other.isSupport && (
+          {other.id && !other.isSupport && !asSupport && (
             <div className="shrink-0">
               <button
                 ref={hdrBtnRef}
@@ -763,7 +779,7 @@ export function ChatRoom({
                 </div>
               </div>
               <Link
-                href={`/orders/${pinnedOrder.id}`}
+                href={orderHref(pinnedOrder.id)}
                 className="shrink-0 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-200 transition hover:bg-indigo-500/30"
               >
                 Ishni ko'rish
@@ -868,7 +884,7 @@ export function ChatRoom({
                       </div>
                       {(m.orderId ?? pinnedOrder?.id ?? orderId) && (
                         <Link
-                          href={`/orders/${m.orderId ?? pinnedOrder?.id ?? orderId}`}
+                          href={orderHref((m.orderId ?? pinnedOrder?.id ?? orderId)!)}
                           className={`block border-t px-3.5 py-2 text-center font-medium backdrop-blur-sm transition ${
                             m.mine
                               ? "border-white/20 bg-white/10 text-white hover:bg-white/20"
@@ -1219,7 +1235,7 @@ export function ChatRoom({
                   </button>
                 </>
               ) : (
-                !other.isSupport && (
+                !other.isSupport && !asSupport && (
                   <button
                     type="button"
                     onClick={() => reportMsg(menu.msg)}

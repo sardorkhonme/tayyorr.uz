@@ -1,22 +1,21 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/auth";
+import { chatActor, conversationForActor } from "@/lib/chat-actor";
 import { db } from "@/lib/db";
-import { getConversationForUser } from "@/lib/chat";
 import { publishToConversation } from "@/lib/chat-bus";
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await chatActor(req);
+  if (!actor) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
   const { id } = await params;
-  const me = session.user.id;
+  const me = actor.id;
 
-  const conv = await getConversationForUser(id, me);
+  const conv = await conversationForActor(id, actor);
   if (!conv) {
     return NextResponse.json({ error: "Suhbat topilmadi" }, { status: 404 });
   }

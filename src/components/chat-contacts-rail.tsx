@@ -18,16 +18,29 @@ function fmt(iso: string | null) {
 }
 
 /** Kompyuterda chat ichida chap tomonda turadigan kontaktlar ustuni. */
-export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
+export function ChatContactsRail({
+  rows,
+  base = "/messages",
+  asSupport = false,
+}: {
+  rows: ConvRow[];
+  /** ro'yxat sahifasi: foydalanuvchi — /messages, admin — /sardorxon/admin/messages */
+  base?: string;
+  asSupport?: boolean;
+}) {
   const pathname = usePathname();
-  const activeId = pathname.split("/")[2] ?? "";
+  const activeId = pathname.split("/").pop() ?? "";
   const live = useUnread();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:left-64 lg:flex">
+    <aside
+      className={`fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex ${
+        asSupport ? "lg:left-60" : "lg:left-64"
+      }`}
+    >
       <div className="flex items-center justify-between px-4 py-3.5">
         <span className="text-sm font-semibold text-white">Suhbatlar</span>
-        <Link href="/messages" className="text-xs text-zinc-500 hover:text-white">
+        <Link href={base} className="text-xs text-zinc-500 hover:text-white">
           Hammasi
         </Link>
       </div>
@@ -48,7 +61,7 @@ export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
           return (
             <Link
               key={c.id}
-              href={`/messages/${c.id}`}
+              href={`${base}/${c.id}`}
               className={`backdrop-blur-sm blur-in flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition ${
                 active ? "bg-indigo-500/15" : "hover:bg-white/5"
               }`}
@@ -79,7 +92,7 @@ export function ChatContactsRail({ rows }: { rows: ConvRow[] }) {
                 </span>
                 <span className="mt-0.5 flex items-center justify-between gap-1.5">
                   <span className="truncate text-xs text-zinc-500">
-                    {c.lastMine ? "Siz: " : ""}
+                    {c.lastMine ? (asSupport ? "Support: " : "Siz: ") : ""}
                     {c.lastText}
                   </span>
                   {unread > 0 && (

@@ -1,5 +1,4 @@
-import { auth } from "@/auth";
-import { getConversationForUser } from "@/lib/chat";
+import { chatActor, conversationForActor } from "@/lib/chat-actor";
 import { chatBus } from "@/lib/chat-bus";
 
 export const runtime = "nodejs";
@@ -10,12 +9,12 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const actor = await chatActor(req);
+  if (!actor) {
     return new Response("unauthorized", { status: 401 });
   }
   const { id } = await params;
-  const conv = await getConversationForUser(id, session.user.id);
+  const conv = await conversationForActor(id, actor);
   if (!conv) return new Response("not found", { status: 404 });
 
   const channel = `conv:${id}`;
