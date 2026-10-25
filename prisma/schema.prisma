@@ -139,6 +139,9 @@ model User {
   termsAcceptedAt DateTime?
   termsVersion    String?
 
+  // foydalanuvchi Tayyorr.uz ni qayerdan eshitgani
+  hearAboutUs String? // "instagram" | "telegram" | "ai" | "google" | "friend" | "other"
+
   // qaysi tashriflar (referral) havolasi orqali ro'yxatdan o'tgan (admin havolasi)
   referralLinkId String?
   referralLink   ReferralLink? @relation(fields: [referralLinkId], references: [id], onDelete: SetNull)

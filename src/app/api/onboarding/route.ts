@@ -14,6 +14,7 @@ import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { TERMS_VERSION } from "@/lib/terms";
 import { birthDateSchema } from "@/lib/birthday";
+import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
 
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
@@ -32,6 +33,7 @@ const schema = z.object({
   // "YYYY-MM-DD" — ro'yxatdan o'tishda majburiy
   birthDate: birthDateSchema,
   avatarUrl: z.string().url(),
+  hearAboutUs: z.enum(["instagram", "telegram", "ai", "google", "friend", "other"]),
 });
 
 export async function POST(req: Request) {
@@ -153,7 +155,9 @@ export async function POST(req: Request) {
       `Ism: ${firstName} ${lastName}`,
       session.user.email ? `Email: ${session.user.email}` : "",
       `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
+      `Qayerdan: ${HEAR_ABOUT_US_LABELS[parsed.data.hearAboutUs] ?? parsed.data.hearAboutUs}`,
       refLink ? `Referral havola: ${refLink.name}` : "",
+      referrer ? `Shaxsiy referal: ${userLabel(referrer)}` : "",
       `Foydalanuvchi ID: ${session.user.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${session.user.id}`),

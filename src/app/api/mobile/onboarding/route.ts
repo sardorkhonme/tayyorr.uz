@@ -36,6 +36,9 @@ const schema = z.object({
   // "YYYY-MM-DD" — yangi ilova doim yuboradi; eski versiyalar ro'yxatdan
   // o'tolmay qolmasligi uchun bu yerda ixtiyoriy (saytda majburiy)
   birthDate: birthDateSchema.optional(),
+  hearAboutUs: z
+    .enum(["instagram", "telegram", "ai", "google", "friend", "other"])
+    .optional(),
 });
 
 /**

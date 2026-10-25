@@ -9,6 +9,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { PasswordInput } from "@/components/password-input";
 import { TermsGate } from "@/components/terms-gate";
 import { BirthDateSelect, birthPartsToIso } from "@/components/birth-date-select";
+import { HearAboutUsSelect, type HearAboutUsValue } from "@/components/hear-about-us-select";
 
 type Role = "ORDERER" | "PREPARER";
 
@@ -29,6 +30,7 @@ function OnboardingInner() {
   });
   const [avatarUrl, setAvatarUrl] = useState("");
   const [birth, setBirth] = useState({ d: "", m: "", y: "" });
+  const [hearAboutUs, setHearAboutUs] = useState<HearAboutUsValue>("");
   const [agree, setAgree] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -65,6 +67,10 @@ function OnboardingInner() {
       setErr("Glavniy rasmni yuklang");
       return;
     }
+    if (!hearAboutUs) {
+      setErr("Bizni qayerdan eshitganingizni tanlang");
+      return;
+    }
     if (!agree) {
       setErr("Davom etish uchun oferta shartlariga rozilik bering");
       return;
@@ -79,6 +85,7 @@ function OnboardingInner() {
           ...form,
           avatarUrl,
           birthDate: birthPartsToIso(birth),
+          hearAboutUs,
           acceptTerms: true,
         }),
       });
@@ -196,6 +203,11 @@ function OnboardingInner() {
         <div>
           <label className="label">Glavniy rasm</label>
           <AvatarUpload value={avatarUrl} onChange={setAvatarUrl} />
+        </div>
+
+        <div>
+          <label className="label">Bizni qayerdan eshitdingiz?</label>
+          <HearAboutUsSelect value={hearAboutUs} onChange={setHearAboutUs} />
         </div>
 
         <div className="border-t border-white/10 pt-4">

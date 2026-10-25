@@ -6,6 +6,16 @@ import { shortDateTime } from "@/lib/date";
 import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { LiveSearch } from "@/components/admin/live-search";
+import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
+
+const CHANNEL_ICONS: Record<string, string> = {
+  instagram: "📸",
+  telegram: "✈️",
+  ai: "🤖",
+  google: "🔍",
+  friend: "👥",
+  other: "💬",
+};
 
 export default async function AdminUsers({
   searchParams,
@@ -27,6 +37,9 @@ export default async function AdminUsers({
           }
         : {}),
     },
+    include: {
+      referralLink: { select: { name: true, code: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -43,6 +56,7 @@ export default async function AdminUsers({
             <tr>
               <th className="px-4 py-2">Foydalanuvchi</th>
               <th className="px-4 py-2">Rol</th>
+              <th className="px-4 py-2">Manba</th>
               <th className="px-4 py-2">Balans</th>
               <th className="px-4 py-2">Holat</th>
               <th className="px-4 py-2"></th>
@@ -78,6 +92,24 @@ export default async function AdminUsers({
                         ? "Buyurtmachi"
                         : "—"}
                   </td>
+                  <td className="px-4 py-2">
+                    <div className="flex flex-col gap-0.5 text-xs">
+                      {u.hearAboutUs && (
+                        <span className="text-zinc-300">
+                          {CHANNEL_ICONS[u.hearAboutUs] ?? "💬"}{" "}
+                          {HEAR_ABOUT_US_LABELS[u.hearAboutUs] ?? u.hearAboutUs}
+                        </span>
+                      )}
+                      {u.referralLink && (
+                        <span className="text-emerald-400">
+                          🔗 {u.referralLink.name}
+                        </span>
+                      )}
+                      {!u.hearAboutUs && !u.referralLink && (
+                        <span className="text-zinc-600">—</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-2 text-white">{formatSom(u.balance)}</td>
                   <td className="px-4 py-2">
                     {banned ? (
@@ -100,7 +132,7 @@ export default async function AdminUsers({
             })}
             {users.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
                   Hech narsa topilmadi.
                 </td>
               </tr>

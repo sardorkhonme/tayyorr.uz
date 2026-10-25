@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { shortDateTime, shortDate } from "@/lib/date";
 import { ageFrom, formatBirthday, googleBirthdayEnabled } from "@/lib/birthday";
+import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
 
 export default async function AdminUserOverview({
   params,
@@ -15,6 +16,8 @@ export default async function AdminUserOverview({
   const user = await db.user.findUnique({
     where: { id },
     include: {
+      referralLink: { select: { name: true, code: true } },
+      referredBy: { select: { id: true, name: true, login: true } },
       _count: {
         select: {
           ordersCreated: true,
@@ -73,6 +76,24 @@ export default async function AdminUserOverview({
         : user.telegramBlockedAt
           ? `🚫 bloklagan · ${shortDate(user.telegramBlockedAt)}`
           : "ulanmagan",
+    ],
+    [
+      "Qayerdan eshitgan",
+      user.hearAboutUs
+        ? HEAR_ABOUT_US_LABELS[user.hearAboutUs] ?? user.hearAboutUs
+        : "ko'rsatilmagan",
+    ],
+    [
+      "Referral havola",
+      user.referralLink
+        ? `${user.referralLink.name} (${user.referralLink.code})`
+        : "—",
+    ],
+    [
+      "Kim taklif qilgan",
+      user.referredBy
+        ? `${user.referredBy.name ?? "—"} (@${user.referredBy.login ?? "—"})`
+        : "—",
     ],
   ];
 

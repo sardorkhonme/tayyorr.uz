@@ -20,6 +20,7 @@ const BASE: NavLink[] = [
   { href: "/sardorxon/admin/payouts", label: "Yechib olish", icon: "🏧" },
   { href: "/sardorxon/admin/complaints", label: "Shikoyatlar", icon: "⚠️" },
   { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "👥" },
+  { href: "/sardorxon/admin/sources", label: "Qayerdan eshitgan", icon: "📊" },
   { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "🗨️" },
   { href: "/sardorxon/admin/referrals", label: "Tashriflar", icon: "🔗" },
   { href: "/sardorxon/admin/landing", label: "Sayt kontenti", icon: "🎬" },
