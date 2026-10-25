@@ -86,6 +86,7 @@ class AuthRepository {
     required String password,
     required String about,
     required String birthDate,
+    String? hearAboutUs,
   }) async {
     final res = await _api.post('/mobile/onboarding', data: {
       'birthDate': birthDate,
@@ -96,6 +97,7 @@ class AuthRepository {
       'login': login,
       'password': password,
       'about': about,
+      if (hearAboutUs != null) 'hearAboutUs': hearAboutUs,
     });
     return _user(res);
   }

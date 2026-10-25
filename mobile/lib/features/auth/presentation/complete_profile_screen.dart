@@ -32,6 +32,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _about = TextEditingController();
   String _role = 'ORDERER';
   DateTime? _birth;
+  String? _hearAboutUs;
   bool _agree = false;
   bool _showPw = false;
   bool _uploading = false;
@@ -94,6 +95,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       setState(() => _err = 'Glavniy rasmni yuklang');
       return;
     }
+    if (_hearAboutUs == null || _hearAboutUs!.isEmpty) {
+      setState(() => _err = 'Bizni qayerdan eshitganingizni tanlang');
+      return;
+    }
     if (!_agree) {
       setState(() => _err = 'Davom etish uchun oferta shartlariga rozilik bering');
       return;
@@ -109,6 +114,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         about: _about.text.trim(),
         birthDate:
             '${_birth!.year}-${_birth!.month.toString().padLeft(2, '0')}-${_birth!.day.toString().padLeft(2, '0')}',
+        hearAboutUs: _hearAboutUs,
       ),
     );
   }
@@ -233,6 +239,49 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
+                              const WebLabel("Bizni qayerdan eshitdingiz?"),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  for (final opt in _hearAboutUsOptions)
+                                    GestureDetector(
+                                      onTap: () => setState(() => _hearAboutUs = opt.$1),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 150),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                                        decoration: BoxDecoration(
+                                          color: _hearAboutUs == opt.$1
+                                              ? const Color(0xFF6366F1).withValues(alpha: 0.12)
+                                              : WebC.fill5.withValues(alpha: 0.03),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: _hearAboutUs == opt.$1
+                                                ? const Color(0xFF818CF8).withValues(alpha: 0.8)
+                                                : WebC.border,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(opt.$3, style: const TextStyle(fontSize: 15)),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              opt.$2,
+                                              style: TextStyle(
+                                                color: _hearAboutUs == opt.$1 ? WebC.white : WebC.zinc300,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                               Container(height: 1, color: WebC.border),
                               const SizedBox(height: 16),
                               GestureDetector(
@@ -345,6 +394,15 @@ class _RoleButton extends StatelessWidget {
     );
   }
 }
+
+const _hearAboutUsOptions = [
+  ('instagram', 'Instagram', '📸'),
+  ('telegram', 'Telegram', '✈️'),
+  ('ai', 'Suniy intellekt', '🤖'),
+  ('google', 'Google', '🔍'),
+  ('friend', "Do'stimdan", '👥'),
+  ('other', 'Boshqa', '💬'),
+];
 
 const _monthNames = [
   'yanvar',

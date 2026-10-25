@@ -110,6 +110,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         about: event.about,
         birthDate: event.birthDate,
+        hearAboutUs: event.hearAboutUs,
       );
       _syncTheme(user);
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));

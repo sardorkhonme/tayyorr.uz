@@ -32,6 +32,7 @@ class AuthOnboardingCompleted extends AuthEvent {
     required this.password,
     required this.about,
     required this.birthDate,
+    this.hearAboutUs,
   });
   final String role;
   final String firstName;
@@ -42,9 +43,13 @@ class AuthOnboardingCompleted extends AuthEvent {
 
   /// Tug'ilgan sana — "YYYY-MM-DD".
   final String birthDate;
+
+  /// Bizni qayerdan eshitgan — "instagram", "telegram", "ai", "google", "friend", "other".
+  final String? hearAboutUs;
+
   @override
   List<Object?> get props =>
-      [role, firstName, lastName, login, password, about, birthDate];
+      [role, firstName, lastName, login, password, about, birthDate, hearAboutUs];
 }
 
 class AuthLoggedOut extends AuthEvent {

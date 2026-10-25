@@ -16,6 +16,7 @@ import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { TERMS_VERSION } from "@/lib/terms";
 import { birthDateSchema } from "@/lib/birthday";
+import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -158,6 +159,9 @@ export async function POST(req: Request) {
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
       `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
+      parsed.data.hearAboutUs
+        ? `Qayerdan: ${HEAR_ABOUT_US_LABELS[parsed.data.hearAboutUs] ?? parsed.data.hearAboutUs}`
+        : "",
       refLink ? `Referral havola: ${refLink.name}` : "",
       `Foydalanuvchi ID: ${auth.userId}`,
     ].filter(Boolean),
