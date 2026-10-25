@@ -14,6 +14,7 @@ import { ThemeSync } from "@/components/theme-sync";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { RestrictionBanner } from "@/components/restriction-banner";
 import { UnreadProvider } from "@/components/unread-provider";
+import { AccountNotFound } from "@/components/account-not-found";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export const metadata: Metadata = {
@@ -29,23 +30,28 @@ export default async function AppLayout({
   if (!session?.user) redirect("/login");
   if (!session.user.profileComplete) redirect("/onboarding");
 
-  const [restriction, u, unreadMsgs] = await Promise.all([
+  const u = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      name: true,
+      firstName: true,
+      login: true,
+      role: true,
+      avatarUrl: true,
+      image: true,
+      balance: true,
+      starBalance: true,
+      walletCode: true,
+      theme: true,
+    },
+  });
+
+  if (!u) {
+    return <AccountNotFound />;
+  }
+
+  const [restriction, unreadMsgs] = await Promise.all([
     getRestriction(session.user.id),
-    db.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        name: true,
-        firstName: true,
-        login: true,
-        role: true,
-        avatarUrl: true,
-        image: true,
-        balance: true,
-        starBalance: true,
-        walletCode: true,
-        theme: true,
-      },
-    }),
     db.message.count({
       where: {
         senderId: { not: session.user.id },
@@ -58,7 +64,7 @@ export default async function AppLayout({
       },
     }),
   ]);
-  const walletCode = u?.walletCode ?? (await ensureWalletCode(session.user.id));
+  const walletCode = u.walletCode ?? (await ensureWalletCode(session.user.id));
 
   return (
     <UnreadProvider initialTotal={unreadMsgs}>

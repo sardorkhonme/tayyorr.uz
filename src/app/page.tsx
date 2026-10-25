@@ -23,7 +23,13 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const session = await auth();
-  const loggedIn = !!session?.user;
+  const userExists = session?.user?.id
+    ? await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true },
+      })
+    : null;
+  const loggedIn = !!userExists;
 
   const [heroVideo, videoRows, faqRows, phoneSlideRows] = await Promise.all([
     db.heroVideo.findUnique({ where: { id: "hero" } }),

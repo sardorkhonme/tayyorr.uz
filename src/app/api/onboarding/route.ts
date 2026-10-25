@@ -54,6 +54,17 @@ export async function POST(req: Request) {
     parsed.data;
   void acceptTerms;
 
+  const userRecord = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true },
+  });
+  if (!userRecord) {
+    return NextResponse.json(
+      { error: "Bunday hisob mavjud emas. Qaytadan kiring yoki ro'yxatdan o'ting" },
+      { status: 404 },
+    );
+  }
+
   const clash = await db.user.findFirst({
     where: { login, NOT: { id: session.user.id } },
   });
