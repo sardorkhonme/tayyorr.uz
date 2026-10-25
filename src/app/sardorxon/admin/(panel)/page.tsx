@@ -3,16 +3,10 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { SupportProfileForm } from "@/components/admin/support-profile-form";
-import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
-
-const HEAR_ICONS: Record<string, string> = {
-  instagram: "📸",
-  telegram: "✈️",
-  ai: "🤖",
-  google: "🔍",
-  friend: "👥",
-  other: "💬",
-};
+import {
+  HEAR_ABOUT_US_LABELS,
+  ChannelBrandIcon,
+} from "@/components/hear-about-us-select";
 
 export default async function AdminHome() {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -39,7 +33,6 @@ export default async function AdminHome() {
   const hearAboutUsStats = hearAboutUsRaw.map((r) => ({
     key: r.hearAboutUs,
     label: HEAR_ABOUT_US_LABELS[r.hearAboutUs] ?? r.hearAboutUs,
-    icon: HEAR_ICONS[r.hearAboutUs] ?? "📊",
     count: Number(r._count),
   }));
   const hearTotal = hearAboutUsStats.reduce((s, r) => s + r.count, 0);
@@ -98,8 +91,9 @@ export default async function AdminHome() {
               return (
                 <div key={s.key}>
                   <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="text-zinc-300">
-                      {s.icon} {s.label}
+                    <span className="flex items-center gap-2 text-zinc-300">
+                      <ChannelBrandIcon name={s.key} className="h-4 w-4" />
+                      <span>{s.label}</span>
                     </span>
                     <span className="font-mono text-white">
                       {s.count}{" "}

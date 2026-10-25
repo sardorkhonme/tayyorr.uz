@@ -30,6 +30,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _login = TextEditingController();
   final _password = TextEditingController();
   final _about = TextEditingController();
+  final _hearAboutUsDetail = TextEditingController();
   String _role = 'ORDERER';
   DateTime? _birth;
   String? _hearAboutUs;
@@ -51,7 +52,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   void dispose() {
-    for (final c in [_firstName, _lastName, _login, _password, _about]) {
+    for (final c in [_firstName, _lastName, _login, _password, _about, _hearAboutUsDetail]) {
       c.dispose();
     }
     super.dispose();
@@ -99,6 +100,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       setState(() => _err = 'Bizni qayerdan eshitganingizni tanlang');
       return;
     }
+    if (_hearAboutUs == 'other' && _hearAboutUsDetail.text.trim().isEmpty) {
+      setState(() => _err = 'Qayerdan eshitganingizni yozing');
+      return;
+    }
     if (!_agree) {
       setState(() => _err = 'Davom etish uchun oferta shartlariga rozilik bering');
       return;
@@ -115,6 +120,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         birthDate:
             '${_birth!.year}-${_birth!.month.toString().padLeft(2, '0')}-${_birth!.day.toString().padLeft(2, '0')}',
         hearAboutUs: _hearAboutUs,
+        hearAboutUsDetail:
+            _hearAboutUs == 'other' ? _hearAboutUsDetail.text.trim() : null,
       ),
     );
   }
@@ -281,6 +288,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     ),
                                 ],
                               ),
+                              if (_hearAboutUs == 'other') ...[
+                                const SizedBox(height: 10),
+                                WebInput(
+                                  controller: _hearAboutUsDetail,
+                                  hint: "Qayerdan eshitganingizni yozing (YouTube, TikTok...)",
+                                ),
+                              ],
                               const SizedBox(height: 16),
                               Container(height: 1, color: WebC.border),
                               const SizedBox(height: 16),
@@ -354,7 +368,21 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     Center(
                       child: GestureDetector(
                         onTap: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
-                        child: Text('Boshqa hisob bilan kirish', style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+                        child: Text.rich(
+                          TextSpan(
+                            text: 'Hisobingiz bormi? ',
+                            style: TextStyle(color: WebC.zinc500, fontSize: 14),
+                            children: [
+                              TextSpan(
+                                text: 'Kirish',
+                                style: TextStyle(
+                                  color: WebC.indigo,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],

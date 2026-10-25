@@ -34,6 +34,7 @@ const schema = z.object({
   birthDate: birthDateSchema,
   avatarUrl: z.string().url(),
   hearAboutUs: z.enum(["instagram", "telegram", "ai", "google", "friend", "other"]),
+  hearAboutUsDetail: z.string().max(200).optional(),
 });
 
 export async function POST(req: Request) {
@@ -166,7 +167,7 @@ export async function POST(req: Request) {
       `Ism: ${firstName} ${lastName}`,
       session.user.email ? `Email: ${session.user.email}` : "",
       `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
-      `Qayerdan: ${HEAR_ABOUT_US_LABELS[parsed.data.hearAboutUs] ?? parsed.data.hearAboutUs}`,
+      `Qayerdan: ${HEAR_ABOUT_US_LABELS[parsed.data.hearAboutUs] ?? parsed.data.hearAboutUs}${parsed.data.hearAboutUsDetail ? ` (${parsed.data.hearAboutUsDetail})` : ""}`,
       refLink ? `Referral havola: ${refLink.name}` : "",
       referrer ? `Shaxsiy referal: ${userLabel(referrer)}` : "",
       `Foydalanuvchi ID: ${session.user.id}`,

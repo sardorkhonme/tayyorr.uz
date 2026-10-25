@@ -40,6 +40,7 @@ const schema = z.object({
   hearAboutUs: z
     .enum(["instagram", "telegram", "ai", "google", "friend", "other"])
     .optional(),
+  hearAboutUsDetail: z.string().max(200).optional(),
 });
 
 /**

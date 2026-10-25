@@ -6,16 +6,10 @@ import { shortDateTime } from "@/lib/date";
 import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { LiveSearch } from "@/components/admin/live-search";
-import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
-
-const CHANNEL_ICONS: Record<string, string> = {
-  instagram: "📸",
-  telegram: "✈️",
-  ai: "🤖",
-  google: "🔍",
-  friend: "👥",
-  other: "💬",
-};
+import {
+  HEAR_ABOUT_US_LABELS,
+  ChannelBrandIcon,
+} from "@/components/hear-about-us-select";
 
 export default async function AdminUsers({
   searchParams,
@@ -95,9 +89,14 @@ export default async function AdminUsers({
                   <td className="px-4 py-2">
                     <div className="flex flex-col gap-0.5 text-xs">
                       {u.hearAboutUs && (
-                        <span className="text-zinc-300">
-                          {CHANNEL_ICONS[u.hearAboutUs] ?? "💬"}{" "}
-                          {HEAR_ABOUT_US_LABELS[u.hearAboutUs] ?? u.hearAboutUs}
+                        <span className="inline-flex items-center gap-1.5 text-zinc-300">
+                          <ChannelBrandIcon name={u.hearAboutUs} className="h-3.5 w-3.5 shrink-0" />
+                          <span>
+                            {HEAR_ABOUT_US_LABELS[u.hearAboutUs] ?? u.hearAboutUs}
+                            {u.hearAboutUsDetail && (
+                              <span className="text-zinc-500"> ({u.hearAboutUsDetail})</span>
+                            )}
+                          </span>
                         </span>
                       )}
                       {u.referralLink && (

@@ -2,7 +2,10 @@ import Link from "next/link";
 
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
-import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
+import {
+  HEAR_ABOUT_US_LABELS,
+  ChannelBrandIcon,
+} from "@/components/hear-about-us-select";
 import { LiveSearch } from "@/components/admin/live-search";
 
 export const dynamic = "force-dynamic";
@@ -138,7 +141,15 @@ export default async function AdminSourcesPage({
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xl">{c.icon}</span>
+                <span className="flex items-center">
+                  {c.key === "referral" ? (
+                    <span className="text-xl">🔗</span>
+                  ) : c.key === "unknown" ? (
+                    <span className="text-xl">❓</span>
+                  ) : (
+                    <ChannelBrandIcon name={c.key} className="h-6 w-6" />
+                  )}
+                </span>
                 <span className="text-xs font-semibold text-zinc-400">{pct}%</span>
               </div>
               <div className="mt-2 text-2xl font-bold text-white">{count}</div>
@@ -225,8 +236,15 @@ export default async function AdminSourcesPage({
                   <td className="px-4 py-2.5">
                     {hearLabel ? (
                       <span className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-xs text-indigo-300">
-                        <span>{hearIcon}</span>
-                        <span>{hearLabel}</span>
+                        <ChannelBrandIcon name={hearKey!} className="h-3.5 w-3.5 shrink-0" />
+                        <span>
+                          {hearLabel}
+                          {u.hearAboutUsDetail && (
+                            <span className="ml-1 text-zinc-400">
+                              ({u.hearAboutUsDetail})
+                            </span>
+                          )}
+                        </span>
                       </span>
                     ) : (
                       <span className="text-xs text-zinc-600">ko'rsatilmagan</span>

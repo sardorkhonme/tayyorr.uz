@@ -80,8 +80,8 @@ export default function RegisterPage() {
       </div>
 
       <p className="mt-5 text-center text-sm text-zinc-500">
-        Akkountingiz bormi?{" "}
-        <Link href="/login" className="text-indigo-400 hover:text-indigo-300">
+        Hisobingiz bormi?{" "}
+        <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
           Kirish
         </Link>
       </p>

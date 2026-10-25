@@ -80,7 +80,7 @@ export default async function AdminUserOverview({
     [
       "Qayerdan eshitgan",
       user.hearAboutUs
-        ? HEAR_ABOUT_US_LABELS[user.hearAboutUs] ?? user.hearAboutUs
+        ? `${HEAR_ABOUT_US_LABELS[user.hearAboutUs] ?? user.hearAboutUs}${user.hearAboutUsDetail ? ` (${user.hearAboutUsDetail})` : ""}`
         : "ko'rsatilmagan",
     ],
     [
