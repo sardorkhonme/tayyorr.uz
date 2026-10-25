@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
 import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
+import { LiveSearch } from "@/components/admin/live-search";
 
 export const dynamic = "force-dynamic";
 
@@ -186,27 +187,7 @@ export default async function AdminSourcesPage({
           })}
         </div>
 
-        <form method="GET" className="flex gap-2">
-          <input type="hidden" name="channel" value={channel} />
-          <input
-            type="text"
-            name="q"
-            defaultValue={query ?? ""}
-            placeholder="Foydalanuvchi qidirish (ism, login, email)..."
-            className="input text-sm"
-          />
-          <button type="submit" className="btn-secondary whitespace-nowrap text-sm">
-            Qidirish
-          </button>
-          {query && (
-            <Link
-              href={`/sardorxon/admin/sources?channel=${channel}`}
-              className="btn-secondary flex items-center justify-center text-sm"
-            >
-              Tozalash
-            </Link>
-          )}
-        </form>
+        <LiveSearch placeholder="Foydalanuvchi qidirish (ism, familiya, login, email)..." />
       </div>
 
       {/* Foydalanuvchilar ro'yxati jadvali */}
