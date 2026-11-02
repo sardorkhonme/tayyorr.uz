@@ -2,14 +2,12 @@ import { after } from "next/server";
 
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
+import { APP_URL } from "@/lib/site";
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHANNEL = process.env.TELEGRAM_CHANNEL_ID; // "@tayyorruz_works" yoki "-100..."
-const SITE = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.AUTH_URL ||
-  "https://tayyorr.uz"
-).replace(/\/+$/, "");
+// havolalar kabinetga (app.tayyorr.uz) — landing faqat tanishtiradi
+const SITE = APP_URL.replace(/\/+$/, "");
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",

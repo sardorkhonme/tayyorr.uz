@@ -17,7 +17,7 @@ const TOPICS = {
 
 export type SmmTopic = keyof typeof TOPICS;
 
-const ADMIN_URL = (process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz") + "/sardorxon/admin";
+const ADMIN_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://tayyorr.uz") + "/sardorxon/admin";
 
 export function adminUserUrl(userId: string) {
   return `${ADMIN_URL}/users/${userId}`;

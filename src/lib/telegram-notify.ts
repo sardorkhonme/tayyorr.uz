@@ -1,14 +1,12 @@
 import { after } from "next/server";
 
 import { db } from "@/lib/db";
+import { APP_URL } from "@/lib/site";
 
 const TOKEN = process.env.TELEGRAM_NOTIFY_BOT_TOKEN;
 const BOT_USERNAME = process.env.TELEGRAM_NOTIFY_BOT_USERNAME || "tayyorr_xabarnoma_bot";
-const SITE = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.AUTH_URL ||
-  "https://tayyorr.uz"
-).replace(/\/+$/, "");
+// havolalar kabinetga (app.tayyorr.uz) — landing faqat tanishtiradi
+const SITE = APP_URL.replace(/\/+$/, "");
 
 /** Botning ochiq (hammaga bir xil) manzili — akkaunt ulash email+kod orqali botning o'zida sodir bo'ladi. */
 export function botLink(): string {

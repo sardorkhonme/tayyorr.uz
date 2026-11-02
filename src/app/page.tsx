@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
 import { ScrollHeader } from "@/components/scroll-header";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
-import { HeroMockup } from "@/components/hero-mockup";
 import { HeroBgVideo } from "@/components/hero-bg-video";
 import { LandingVideos } from "@/components/landing-videos";
 import { LandingFaq } from "@/components/landing-faq";
@@ -14,9 +11,12 @@ import { PhoneScrollShowcase } from "@/components/phone-scroll-showcase";
 import { TelegramIcon, InstagramIcon, Icon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
+import { APP_URL, PLUS_URL } from "@/lib/site";
 
 const TELEGRAM_URL = "https://t.me/tayyorruz";
-const TAYYORR_PLUS_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
+const START_URL = `${PLUS_URL}/register`;
+const LOGIN_URL = `${PLUS_URL}/login`;
+const SMM_PLATFORMS = ["Instagram", "Telegram", "TikTok", "YouTube", "Facebook", "X (Twitter)"];
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
 
 export const metadata: Metadata = {
@@ -24,17 +24,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const session = await auth();
-  const userExists = session?.user?.id
-    ? await db.user.findUnique({
-        where: { id: session.user.id },
-        select: { id: true },
-      })
-    : null;
-  const loggedIn = !!userExists;
-  // hisobga kirgan foydalanuvchi landingni emas, darhol kabinetni ko'radi
-  if (loggedIn) redirect("/dashboard");
-
+  // tayyorr.uz — faqat tanishtiruv sahifasi; kirish va kabinet tayyorr+ / app.tayyorr.uz da
   const [heroVideo, videoRows, faqRows, phoneSlideRows] = await Promise.all([
     db.heroVideo.findUnique({ where: { id: "hero" } }),
     db.landingVideo.findMany({
@@ -93,19 +83,16 @@ export default async function Home() {
       <ScrollHeader>
         <Logo className="text-xl sm:text-2xl" markClassName="h-8 sm:h-9" />
         <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
-          <Link href="/xizmatlar" className="transition hover:text-white">
+          <a href="#xizmatlar" className="transition hover:text-white">
             Xizmatlar
-          </Link>
-          <a href="#qanday" className="transition hover:text-white">
-            Qanday ishlaydi
           </a>
-          <a href="#turlar" className="transition hover:text-white">
-            Ish turlari
+          <a href="#ilmiy" className="transition hover:text-white">
+            Ilmiy ishlar
           </a>
-          <a href="#imkoniyat" className="transition hover:text-white">
-            Imkoniyatlar
+          <a href="#smm" className="transition hover:text-white">
+            Tayyorr SMM
           </a>
-          <a href={TAYYORR_PLUS_URL} className="inline-flex items-center gap-1.5 transition hover:text-white">
+          <a href={PLUS_URL} className="inline-flex items-center gap-1.5 transition hover:text-white">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/plus-mark.png" alt="" className="h-5 w-5 object-contain" />
             <span>
@@ -117,29 +104,18 @@ export default async function Home() {
           </a>
         </div>
         <div className="flex items-center gap-2">
-          {loggedIn ? (
-            <Link
-              href="/dashboard"
-              className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
-            >
-              Asosiy menyu
-            </Link>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:text-white"
-              >
-                Kirish
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
-              >
-                Boshlash
-              </Link>
-            </>
-          )}
+          <a
+            href={LOGIN_URL}
+            className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:text-white"
+          >
+            Kirish
+          </a>
+          <a
+            href={START_URL}
+            className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
+          >
+            Boshlash
+          </a>
         </div>
       </ScrollHeader>
 
@@ -151,45 +127,91 @@ export default async function Home() {
             <h1
               className="font-display animate-rise text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl"
             >
-              Ilmiy ishlaringiz uchun{" "}
-              <span className="text-indigo-300">doim odam</span> topiladi
+              Kerakli xizmatlar —{" "}
+              <span className="text-indigo-300">bitta hisobda</span>
             </h1>
 
             <p
               className="animate-rise mx-auto mt-6 max-w-lg text-lg text-zinc-400 lg:mx-0"
               style={{ animationDelay: "80ms" }}
             >
-              Prezentatsiya, kurs ishi, referat yoki diplom ishi — buyurtma
-              qoldiring, u barcha tayyorlovchilarga ko'rinadi. Yoki o'zingiz
-              tayyorlab, daromad qiling.
+              Ilmiy ishlaringiz uchun ishonchli tayyorlovchi toping, ijtimoiy
+              tarmoqlaringizni o&apos;stiring — barchasi bitta hisob va bitta
+              hamyon bilan.
             </p>
 
             <div
               className="animate-rise mx-auto mt-9 grid max-w-md grid-cols-1 gap-3 sm:mx-0 sm:inline-flex sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center lg:justify-start"
               style={{ animationDelay: "140ms" }}
             >
-              <Link
-                href={loggedIn ? "/dashboard" : "/register"}
+              <a
+                href={START_URL}
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200 sm:w-auto"
               >
-                {loggedIn ? "Asosiy menyuga o'tish" : "Bepul boshlash"}
+                Bepul boshlash
                 <span className="transition-transform group-hover:translate-x-0.5">→</span>
-              </Link>
+              </a>
               <a
-                href="#qanday"
+                href="#xizmatlar"
                 className="lq-glass inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-sm font-medium text-zinc-200 sm:w-auto"
               >
-                Qanday ishlaydi?
+                Xizmatlarni ko&apos;rish
               </a>
             </div>
 
           </div>
 
-          {/* vizual: prezentatsiya + hujjat maketi — birinchi qarashda "bu nima uchun sayt" ayon bo'lsin */}
+          {/* vizual: xizmatlar to'plami — birinchi qarashda "bu yerda nimalar bor" ayon bo'lsin */}
           <div className="animate-rise" style={{ animationDelay: "100ms" }}>
-            <HeroMockup />
+            <HeroServices />
           </div>
         </div>
+      </section>
+
+      {/* ---------- barcha xizmatlar ---------- */}
+      <section id="xizmatlar" className="relative z-10 mx-auto max-w-5xl scroll-mt-24 px-6 py-16">
+        <SectionHeading
+          kicker="Bizning xizmatlar"
+          title="Bitta hisob — barcha xizmatlar"
+          subtitle="Bir marta ro'yxatdan o'tasiz: hisob, hamyon va yordam hamma xizmatda umumiy."
+        />
+        <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <ServiceCard
+            href={`${APP_URL}/dashboard`}
+            mark="/logo-mark.png"
+            title="Ilmiy ishlar"
+            domain="app.tayyorr.uz"
+            text="Prezentatsiya, kurs ishi, referat va diplom ishi — buyurtma bering yoki o'zingiz tayyorlab daromad qiling."
+            glow="bg-indigo-500/20"
+          />
+          <ServiceCard
+            href={`${PLUS_URL}/smm`}
+            mark="/smm-mark.png"
+            title="Tayyorr SMM"
+            domain="plus.tayyorr.uz"
+            text="Obunachilar, layklar va ko'rishlar — bir necha daqiqada, avtomatik. Bajarilmasa pul qaytadi."
+            glow="bg-fuchsia-500/20"
+          />
+          <ServiceCard
+            href={PLUS_URL}
+            mark="/plus-mark.png"
+            title="tayyorr+"
+            domain="plus.tayyorr.uz"
+            text="Barcha xizmatlar paneli: bitta hisob, umumiy hamyon va yordam. Yangi xizmatlar shu yerda paydo bo'ladi."
+            glow="bg-violet-500/20"
+          />
+        </div>
+      </section>
+
+      {/* ---------- ilmiy ishlar ---------- */}
+      <section id="ilmiy" className="relative z-10 mx-auto max-w-5xl scroll-mt-24 px-6 pt-20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.png" alt="" className="blur-in mx-auto mb-5 h-16 w-16 object-contain" />
+        <SectionHeading
+          kicker="Ilmiy ishlar · app.tayyorr.uz"
+          title="Ilmiy ishlaringiz uchun doim odam topiladi"
+          subtitle="Buyurtma qoldiring — u barcha tayyorlovchilarga ko'rinadi. Yoki o'zingiz tayyorlab, daromad qiling."
+        />
       </section>
 
       {/* ---------- dual role ---------- */}
@@ -203,7 +225,7 @@ export default async function Home() {
               "Kelgan takliflardan narx va reyting bo'yicha tanlaysiz",
               "Tayyor ishni bevosita platformada qabul qilasiz",
             ]}
-            cta={{ href: "/register", label: "Buyurtma qoldirish" }}
+            cta={{ href: `${APP_URL}/register`, label: "Buyurtma qoldirish" }}
           />
           <RolePanel
             title="Tayyorlovchi"
@@ -213,7 +235,7 @@ export default async function Home() {
               '"Band / bo\'sh" holatini bir bosishda yangilaysiz',
               "Taklif yuborasiz, tanlansangiz — ishga kirishasiz",
             ]}
-            cta={{ href: "/register", label: "Tayyorlovchi bo'lish" }}
+            cta={{ href: `${APP_URL}/register`, label: "Tayyorlovchi bo'lish" }}
           />
         </div>
       </section>
@@ -286,38 +308,71 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ---------- bizning xizmatlar (tayyorr+) ---------- */}
-      <section id="tayyorr-plus" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/plus-mark.png" alt="tayyorr+" className="blur-in mx-auto mb-5 h-16 w-16 object-contain" />
-        <SectionHeading
-          kicker="Bizning xizmatlar"
-          title="tayyorr+ — bitta hisob, ko'proq imkoniyat"
-          subtitle="tayyorr.uz hisobingiz va hamyoningiz bilan qo'shimcha xizmatlardan foydalaning."
-        />
-        <div className="mt-14 grid gap-4 sm:grid-cols-2">
-          <a
-            href={TAYYORR_PLUS_URL}
-            className="lq-glass blur-in group relative flex flex-col overflow-hidden rounded-2xl p-7"
-          >
-            <span className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff] shadow-lg shadow-fuchsia-500/20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/smm-mark.png" alt="" className="h-9 w-9 object-contain" />
-            </span>
-            <h3 className="font-display mt-5 text-xl font-bold text-white">Tayyorr SMM</h3>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-400">
-              Instagram, Telegram, TikTok va YouTube uchun obunachilar, layklar va ko&apos;rishlar —
-              bir necha daqiqada, avtomatik.
-            </p>
-            <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 transition group-hover:gap-2.5">
-              tayyorr+ ga o&apos;tish <span>→</span>
-            </span>
-          </a>
-          <div className="blur-in flex flex-col justify-center rounded-2xl border border-dashed border-white/10 p-7 text-center">
-            <Icon name="sparkles" className="mx-auto h-7 w-7 text-indigo-300" />
-            <h3 className="font-display mt-3 font-bold text-white">Yangi xizmatlar tez orada</h3>
-            <p className="mt-2 text-sm text-zinc-500">tayyorr+ doimiy kengayib boradi.</p>
+      {/* ---------- Tayyorr SMM ---------- */}
+      <section id="smm" className="relative z-10 mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
+        <div className="lq-glass-strong blur-in relative overflow-hidden rounded-3xl p-8 sm:p-12">
+          <div
+            aria-hidden
+            className="blob"
+            style={{
+              top: "-8rem",
+              right: "-6rem",
+              width: "26rem",
+              height: "26rem",
+              background: "radial-gradient(circle, #d946ef, transparent 70%)",
+              opacity: 0.25,
+            }}
+          />
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.3fr_1fr]">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#fff] shadow-lg shadow-fuchsia-500/20">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/smm-mark.png" alt="" className="h-10 w-10 object-contain" />
+                </span>
+                <div className="text-xs font-medium uppercase tracking-[0.2em] text-fuchsia-300">
+                  Tayyorr SMM · tayyorr+
+                </div>
+              </div>
+              <h2 className="font-display mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Ijtimoiy tarmoqlaringizni o&apos;stiring
+              </h2>
+              <p className="mt-4 max-w-md text-zinc-400">
+                Obunachilar, layklar va ko&apos;rishlar — buyurtma bir necha daqiqada avtomatik
+                boshlanadi. Hamyon tayyorr.uz bilan umumiy.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  "Bajarilmasa yoki qisman bajarilsa — pul hamyonga avtomatik qaytadi",
+                  "Parol so'ralmaydi — faqat ochiq sahifa yoki post havolasi",
+                  "Holatni «Buyurtmalarim» bo'limida real vaqtda kuzatasiz",
+                ].map((p) => (
+                  <li key={p} className="flex gap-3 text-sm text-zinc-300">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-fuchsia-500/15 text-fuchsia-300">
+                      <Icon name="check" className="h-3 w-3" strokeWidth={2.4} />
+                    </span>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href={`${PLUS_URL}/smm`}
+                className="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+              >
+                Tayyorr SMM ga o&apos;tish
+                <span className="transition-transform group-hover:translate-x-0.5">→</span>
+              </a>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2.5 lg:justify-start">
+              {SMM_PLATFORMS.map((name) => (
+                <span
+                  key={name}
+                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-200"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -326,7 +381,7 @@ export default async function Home() {
       <section id="imkoniyat" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <SectionHeading
           kicker="Imkoniyatlar"
-          title="Nega tayyorr.uz"
+          title="Nega tayyorr"
           subtitle="Ishni tez, tartibli va xavfsiz qiladigan mayda-chuydalar."
         />
         <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -467,17 +522,17 @@ export default async function Home() {
             }}
           />
           <h2 className="font-display relative text-3xl font-bold tracking-tight sm:text-4xl">
-            Bugun birinchi buyurtmangizni qoldiring
+            Bitta hisob oching — barchasidan foydalaning
           </h2>
           <p className="relative mx-auto mt-4 max-w-md text-zinc-400">
-            Ro'yxatdan o'tish bir daqiqa. To'lov faqat kelishilgan ish uchun.
+            Ro&apos;yxatdan o&apos;tish bir daqiqa. Ilmiy ishlar, SMM va keyingi xizmatlar — bitta hamyon bilan.
           </p>
-          <Link
-            href={loggedIn ? "/dashboard" : "/register"}
+          <a
+            href={START_URL}
             className="relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
           >
-            {loggedIn ? "Asosiy menyuga o'tish" : "Hoziroq boshlash"} →
-          </Link>
+            Hoziroq boshlash →
+          </a>
         </div>
       </section>
 
@@ -492,9 +547,8 @@ export default async function Home() {
             <div>
               <Logo className="text-xl sm:text-2xl" markClassName="h-8 sm:h-9" />
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
-                Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli
-                tayyorlovchilarga buyurtma qiling yoki o&apos;zingiz tayyorlab
-                daromad qiling.
+                Ilmiy ishlar, Tayyorr SMM va boshqa xizmatlar — bitta hisob va
+                bitta hamyon bilan.
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <a
@@ -533,11 +587,11 @@ export default async function Home() {
 
             {/* platforma */}
             <FooterCol title="Platforma">
-              <FooterLink href="/#qanday">Qanday ishlaydi</FooterLink>
-              <FooterLink href="/#turlar">Ish turlari</FooterLink>
-              <FooterLink href="/#imkoniyat">Imkoniyatlar</FooterLink>
-              <FooterLink href="/register">Ro&apos;yxatdan o&apos;tish</FooterLink>
-              <FooterLink href="/login">Kirish</FooterLink>
+              <FooterLink href={`${APP_URL}/dashboard`}>Ilmiy ishlar</FooterLink>
+              <FooterLink href={`${PLUS_URL}/smm`}>Tayyorr SMM</FooterLink>
+              <FooterLink href={PLUS_URL}>tayyorr+</FooterLink>
+              <FooterLink href={START_URL}>Ro&apos;yxatdan o&apos;tish</FooterLink>
+              <FooterLink href={LOGIN_URL}>Kirish</FooterLink>
             </FooterCol>
 
             {/* huquqiy */}
@@ -553,7 +607,7 @@ export default async function Home() {
 
           <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 text-xs text-zinc-600 sm:flex-row">
             <span>
-              © {new Date().getFullYear()} tayyorr
+              © {new Date().getFullYear()} Tayyorr
               <span className="text-indigo-400">.uz</span> — Barcha huquqlar
               himoyalangan.
             </span>
@@ -613,6 +667,15 @@ function FooterLink({
       </li>
     );
   }
+  if (href.startsWith("http")) {
+    return (
+      <li>
+        <a href={href} className="transition hover:text-zinc-200">
+          {children}
+        </a>
+      </li>
+    );
+  }
   return (
     <li>
       <Link href={href} className="transition hover:text-zinc-200">
@@ -623,6 +686,78 @@ function FooterLink({
 }
 
 /* ---------------- helpers ---------------- */
+
+const HERO_SERVICES = [
+  { mark: "/logo-mark.png", title: "Ilmiy ishlar", text: "Prezentatsiya, kurs ishi, diplom", tag: "app.tayyorr.uz" },
+  { mark: "/smm-mark.png", title: "Tayyorr SMM", text: "Obunachi, layk, ko'rishlar", tag: "Avtomatik" },
+  { mark: "/plus-mark.png", title: "tayyorr+", text: "Barcha xizmatlar paneli", tag: "Bitta hisob" },
+];
+
+/** Hero o'ng tomoni: xizmatlar to'plami (shisha kartalar). */
+function HeroServices() {
+  return (
+    <div className="relative mx-auto max-w-md">
+      <div aria-hidden className="absolute -inset-10 rounded-full bg-indigo-500/20 blur-3xl" />
+      <div className="lq-glass-strong relative space-y-3 rounded-3xl p-4 sm:p-5">
+        {HERO_SERVICES.map((s, i) => (
+          <div
+            key={s.title}
+            className="animate-rise flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+            style={{ animationDelay: `${200 + i * 120}ms` }}
+          >
+            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#fff] shadow-lg shadow-indigo-500/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.mark} alt="" className="h-10 w-10 object-contain" />
+            </span>
+            <span className="min-w-0 flex-1 text-left">
+              <span className="font-display block text-lg font-bold text-white">{s.title}</span>
+              <span className="block truncate text-sm text-zinc-400">{s.text}</span>
+            </span>
+            <span className="hidden shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-zinc-300 sm:inline">
+              {s.tag}
+            </span>
+          </div>
+        ))}
+        <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-indigo-500/25 to-fuchsia-500/25 px-4 py-3 text-sm">
+          <span className="text-zinc-300">Umumiy hamyon</span>
+          <span className="font-display font-bold text-white">1 hisob · 1 hamyon</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ServiceCard({
+  href,
+  mark,
+  title,
+  domain,
+  text,
+  glow,
+}: {
+  href: string;
+  mark: string;
+  title: string;
+  domain: string;
+  text: string;
+  glow: string;
+}) {
+  return (
+    <a href={href} className="lq-glass blur-in group relative flex flex-col overflow-hidden rounded-2xl p-7">
+      <span className={`absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl ${glow}`} />
+      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#fff] shadow-lg shadow-indigo-500/20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={mark} alt="" className="h-10 w-10 object-contain" />
+      </span>
+      <h3 className="font-display mt-5 text-xl font-bold text-white">{title}</h3>
+      <p className="mt-0.5 text-xs text-zinc-500">{domain}</p>
+      <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-400">{text}</p>
+      <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 transition group-hover:gap-2.5">
+        Ochish <span>→</span>
+      </span>
+    </a>
+  );
+}
 
 function SectionHeading({
   kicker,
@@ -671,12 +806,12 @@ function RolePanel({
           </li>
         ))}
       </ul>
-      <Link
+      <a
         href={cta.href}
         className="backdrop-blur-sm mt-8 inline-flex rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
       >
         {cta.label}
-      </Link>
+      </a>
     </div>
   );
 }

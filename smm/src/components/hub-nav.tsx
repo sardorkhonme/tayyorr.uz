@@ -115,9 +115,9 @@ function MainSiteCard() {
       </span>
       <span className="relative z-[2] min-w-0 flex-1">
         <span className="block font-display text-sm font-bold leading-tight">
-          tayyorr<span className="text-indigo-300">.uz</span>
+          Ilmiy ishlar
         </span>
-        <span className="block truncate text-[11px] text-white/70">Prezentatsiya, kurs ishi</span>
+        <span className="block truncate text-[11px] text-white/70">app.tayyorr.uz</span>
       </span>
       <Icon
         name="external"

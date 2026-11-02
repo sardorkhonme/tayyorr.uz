@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "tayyorr.uz",
     description:
       "Prezentatsiya, kurs ishi, referat va diplom ishini buyurtma qiling yoki tayyorlab bering.",
-    start_url: "/",
+    start_url: "/dashboard",
     scope: "/",
     display: "standalone",
     background_color: "#07070c",

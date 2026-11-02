@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { buildClickPayUrl, CLICK_MIN, CLICK_MAX } from "@/lib/click";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
+import { APP_URL as SITE_URL } from "@/lib/site";
 
 const schema = z.object({
   amount: z.coerce.number().int(),

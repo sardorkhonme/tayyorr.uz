@@ -3,6 +3,7 @@ import { getOrCreateConversation, createMessage } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getSupportUserId } from "@/lib/support";
 import { sendTelegramMessage } from "@/lib/telegram-notify";
+import { APP_URL } from "@/lib/site";
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -109,7 +110,7 @@ export async function handleIncomingMessage(
     await sendTelegramMessage(
       chatId,
       `Kod tayyorr.uz'dagi "Qo'llab-quvvatlash" chatingizga yuborildi.\n\n` +
-        `Ko'rish: ${process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz"}/messages\n\n` +
+        `Ko'rish: ${APP_URL}/messages\n\n` +
         "Kodni shu yerga kiriting.",
     );
     return;

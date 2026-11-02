@@ -14,7 +14,8 @@ export type HubLink = {
   mobileOnly?: boolean;
 };
 
-export const MAIN_SITE_URL = process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz";
+/** tayyorr.uz kabineti (ilmiy ishlar) — app.tayyorr.uz; tayyorr.uz o'zi faqat landing. */
+export const MAIN_SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://tayyorr.uz";
 
 /** tayyorr+ navigatsiyasi — yangi xizmat qo'shilsa shu ro'yxatga qo'shiladi. */
 export const HUB_NAV: HubLink[] = [

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { currentUser } from "@/auth";
 import { Icon } from "@/components/icons";
 import { db } from "@/lib/db";
-import { MAIN_URL, som } from "@/lib/format";
+import { APP_URL, som } from "@/lib/format";
 import { TXN_LABEL } from "@/lib/wallet";
 
 export const metadata = { title: "Chek" };
@@ -64,7 +64,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
 
       {t.method === "CLICK" && (
         <a
-          href={`${MAIN_URL}/wallet/${t.id}`}
+          href={`${APP_URL}/wallet/${t.id}`}
           className="card glow-card flex items-center justify-between gap-3 !rounded-2xl p-5"
         >
           <span>

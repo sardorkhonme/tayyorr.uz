@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { APP_URL } from "@/lib/site";
 
 /**
  * Admin loglar guruhi — @tayyorrworkbot orqali (mavjud, kanalga buyurtma
@@ -10,11 +11,8 @@ import { after } from "next/server";
  */
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const GROUP_ID = process.env.TELEGRAM_LOG_GROUP_ID;
-const SITE = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.AUTH_URL ||
-  "https://tayyorr.uz"
-).replace(/\/+$/, "");
+// havolalar kabinetga (app.tayyorr.uz) — landing faqat tanishtiradi
+const SITE = APP_URL.replace(/\/+$/, "");
 
 const TOPICS = {
   registrations: process.env.TELEGRAM_TOPIC_REGISTRATIONS,

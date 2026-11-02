@@ -17,7 +17,7 @@ const headingFont = Space_Grotesk({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
 const TITLE = "tayyorr.uz — prezentatsiya, kurs ishi va referat buyurtma qilish";
 const DESCRIPTION =
-  "tayyorr.uz — talabalar uchun platforma: prezentatsiya, kurs ishi, referat, esse va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling yoki o'zingiz tayyorlab daromad qiling. Xavfsiz to'lov, kelishuv va baholash tizimi.";
+  "tayyorr.uz — talabalar uchun platforma: prezentatsiya, kurs ishi, referat, esse va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling yoki o'zingiz tayyorlab daromad qiling. Xavfsiz to'lov, kelishuv va baholash tizimi. Tayyorr SMM — obunachi, layk va ko'rishlar. Bitta hisob va bitta hamyon.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -39,6 +39,9 @@ export const metadata: Metadata = {
     "buyurtma qilish",
     "tayyorr",
     "tayyorr.uz",
+    "smm panel",
+    "instagram obunachi",
+    "telegram obunachi",
     "O'zbekiston",
   ],
   authors: [{ name: "tayyorr.uz" }],

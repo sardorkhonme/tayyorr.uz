@@ -138,7 +138,7 @@ export default async function DashboardPage({
           </span>
         </Link>
 
-        {/* tayyorr.uz — tayyorr+ xizmatlaridan biri (asosiy platforma) */}
+        {/* Ilmiy ishlar (app.tayyorr.uz) — tayyorr+ xizmatlaridan biri */}
         <a
           href={MAIN_SITE_URL}
           style={{ "--glow": "#4f46e5" } as React.CSSProperties}
@@ -150,10 +150,10 @@ export default async function DashboardPage({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-mark.png" alt="tayyorr.uz" className="h-10 w-10 object-contain" />
             </span>
-            <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">Asosiy platforma</span>
+            <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">app.tayyorr.uz</span>
           </div>
           <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
-            tayyorr<span className="text-indigo-600">.uz</span>
+            Ilmiy ishlar
           </h2>
           <p className="mt-2 leading-relaxed text-zinc-500">
             Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling.
