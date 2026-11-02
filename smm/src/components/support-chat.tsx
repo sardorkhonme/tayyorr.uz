@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/icons";
+import { Linkify } from "@/components/linkify";
 
 type Msg = { id: string; mine: boolean; body: string; createdAt: string };
 
@@ -119,7 +120,9 @@ export function SupportChat({
                       : "rounded-bl-md border border-zinc-100 bg-white text-zinc-800"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                  <p className="whitespace-pre-wrap break-words">
+                <Linkify text={m.body} mine={m.mine} />
+              </p>
                   <p className={`mt-0.5 text-right text-[10px] ${m.mine ? "text-indigo-100" : "text-zinc-400"}`}>
                     {timeFmt.format(new Date(m.createdAt))}
                   </p>

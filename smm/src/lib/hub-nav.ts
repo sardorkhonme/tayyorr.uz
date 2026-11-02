@@ -17,6 +17,7 @@ export const HUB_NAV: HubLink[] = [
   { href: "/", label: "Asosiy", icon: "home" },
   { href: "/smm", label: "Tayyorr SMM", icon: "rocket" },
   { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
+  { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
   { href: "/support", label: "Yordam", icon: "headset" },
   { href: MAIN_SITE_URL, label: "tayyorr.uz", icon: "external", external: true },
 ];
