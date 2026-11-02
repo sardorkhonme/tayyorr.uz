@@ -1,26 +1,57 @@
 /**
- * tayyorr.uz admin log guruhiga xabar (o'sha bot va guruh).
- * Topik: TELEGRAM_TOPIC_SMM, bo'lmasa TELEGRAM_TOPIC_PAYMENTS.
+ * tayyorr.uz admin log guruhi (o'sha bot) — TayyorrSMM topiklari.
  * Xato bo'lsa jim o'tkaziladi — sayt ishiga xalaqit bermaydi.
  */
+const TOPICS = {
+  // SMM buyurtmalar
+  orders: process.env.TELEGRAM_TOPIC_SMM_ORDERS || "498",
+  // SMM tizim balansi (ZOSMM): to'ldirish, yechilish, ogohlantirishlar
+  system: process.env.TELEGRAM_TOPIC_SMM_SYSTEM || "500",
+} as const;
+
+export type SmmTopic = keyof typeof TOPICS;
+
+const ADMIN_URL = (process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz") + "/sardorxon/admin";
+
+export function adminUserUrl(userId: string) {
+  return `${ADMIN_URL}/users/${userId}`;
+}
+
 function esc(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export async function notifyAdmins(title: string, lines: string[] = [], url?: { text: string; href: string }) {
+export function userLabel(u: {
+  login?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  email?: string | null;
+} | null) {
+  if (!u) return "—";
+  const full = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.name || "";
+  return [full, u.login ? `@${u.login}` : ""].filter(Boolean).join(" · ") || u.email || "—";
+}
+
+export async function notifyAdmins(
+  topic: SmmTopic,
+  title: string,
+  lines: string[] = [],
+  url?: { text: string; href: string },
+) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_LOG_GROUP_ID;
   if (!token || !chatId) return false;
-  const thread = process.env.TELEGRAM_TOPIC_SMM || process.env.TELEGRAM_TOPIC_PAYMENTS;
 
-  const text = `<b>${esc(title)}</b>` + (lines.length ? `\n\n${lines.map(esc).join("\n")}` : "");
+  const body = lines.filter(Boolean);
+  const text = `<b>${esc(title)}</b>` + (body.length ? `\n\n${body.map(esc).join("\n")}` : "");
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        ...(thread ? { message_thread_id: Number(thread) } : {}),
+        message_thread_id: Number(TOPICS[topic]),
         text,
         parse_mode: "HTML",
         disable_web_page_preview: true,

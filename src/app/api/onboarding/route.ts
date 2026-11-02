@@ -85,6 +85,7 @@ export async function POST(req: Request) {
 
   // shaxsiy (foydalanuvchidan-foydalanuvchiga) referal — o'zini o'zi
   // taklif qilishning oldini olamiz
+  const fromSmm = cookieStore.get("tyr_src")?.value === "smm";
   const uRefId = cookieStore.get("tyr_uref")?.value;
   const referrer =
     uRefId && uRefId !== session.user.id
@@ -157,12 +158,13 @@ export async function POST(req: Request) {
   await logActivity(
     session.user.id,
     "REGISTER",
-    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})`,
+    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})${fromSmm ? " — TayyorrSMM orqali" : ""}`,
   );
   await logToGroup(
     "registrations",
-    "🆕 Yangi ro'yxatdan o'tish",
+    fromSmm ? "🆕 Yangi ro'yxatdan o'tish (TayyorrSMM orqali)" : "🆕 Yangi ro'yxatdan o'tish",
     [
+      fromSmm ? "Manba: TayyorrSMM (smm.tayyorr.uz)" : "",
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
       session.user.email ? `Email: ${session.user.email}` : "",
@@ -183,5 +185,13 @@ export async function POST(req: Request) {
     );
   }
 
+  if (fromSmm) {
+    const res = NextResponse.json({
+      ok: true,
+      redirect: process.env.SMM_SITE_URL || "https://smm.tayyorr.uz",
+    });
+    res.cookies.delete("tyr_src");
+    return res;
+  }
   return NextResponse.json({ ok: true });
 }

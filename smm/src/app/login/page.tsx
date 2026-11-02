@@ -44,7 +44,7 @@ export default async function LoginPage({
 
         <p className="mt-5 text-center text-sm text-zinc-500">
           Hisobingiz yo'qmi?{" "}
-          <a href={`${MAIN_URL}/register`} className="text-indigo-300 hover:underline">
+          <a href={`${MAIN_URL}/register?from=smm`} className="text-indigo-300 hover:underline">
             tayyorr.uz da ro'yxatdan o'ting
           </a>
         </p>

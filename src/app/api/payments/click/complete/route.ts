@@ -13,6 +13,8 @@ import {
   verifyCompleteSign,
 } from "@/lib/click";
 
+const SMM_SITE_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
+
 function fail(code: number, extra: Record<string, unknown> = {}) {
   return NextResponse.json({ error: code, error_note: clickErrorNote(code), ...extra });
 }
@@ -71,6 +73,10 @@ export async function POST(req: Request) {
   }
 
   const actionNum = Number(action);
+  // TayyorrSMM (smm.tayyorr.uz) da boshlangan to'lov — alohida topik va SMM havolalari
+  const fromSmm = meta.source === "smm";
+  const payTopic = fromSmm ? "smmTopups" : "payments";
+  const smmTag = fromSmm ? " — TayyorrSMM" : "";
 
   // Click bekor qilish/qaytarish haqida xabar bermoqda (action=0 yoki manfiy xato kodi).
   // Bu allaqachon SUCCESS bo'lgan to'lov uchun ham kelishi mumkin — Click.uz'da
@@ -85,8 +91,8 @@ export async function POST(req: Request) {
         select: { login: true, name: true, firstName: true, lastName: true, email: true, balance: true, walletCode: true },
       });
       await logToGroup(
-        "payments",
-        "⚠️ To'lov bekor qilindi (Click)",
+        payTopic,
+        `⚠️ To'lov bekor qilindi (Click${smmTag})`,
         [
           `Foydalanuvchi: ${userLabel(u)}`,
           u?.email ? `Email: ${u.email}` : "",
@@ -154,12 +160,12 @@ export async function POST(req: Request) {
   await sendTelegramToUser(wtx.userId, {
     title: "💳 Hisob to'ldirildi",
     body: `${wtx.amount.toLocaleString("ru-RU")} so'm Click orqali hamyoningizga tushdi.`,
-    url: siteUrl("/wallet"),
+    url: fromSmm ? SMM_SITE_URL : siteUrl("/wallet"),
     buttonLabel: "Tranzaksiyalarni ko'rish",
   });
   await logToGroup(
-    "payments",
-    "💳 Hisob to'ldirildi (Click)",
+    payTopic,
+    `💳 Hisob to'ldirildi (Click${smmTag})`,
     [
       `Foydalanuvchi: ${userLabel(updatedUser)}`,
       updatedUser.email ? `Email: ${updatedUser.email}` : "",

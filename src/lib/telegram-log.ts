@@ -29,6 +29,8 @@ const TOPICS = {
   referrals: process.env.TELEGRAM_TOPIC_REFERRALS,
   support: process.env.TELEGRAM_TOPIC_SUPPORT,
   stars: process.env.TELEGRAM_TOPIC_STARS,
+  // TayyorrSMM (smm.tayyorr.uz) orqali hamyonni to'ldirish
+  smmTopups: process.env.TELEGRAM_TOPIC_SMM_TOPUPS || "499",
 } as const;
 
 export type LogTopic = keyof typeof TOPICS;

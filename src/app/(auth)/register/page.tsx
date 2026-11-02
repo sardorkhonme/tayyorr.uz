@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
@@ -18,6 +18,14 @@ export default function RegisterPage() {
   const [role, setRole] = useState<Role | null>(null);
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // TayyorrSMM (smm.tayyorr.uz) dan kelgan — onboarding'da manba sifatida qayd
+  // qilinadi va tugagach foydalanuvchi SMM saytiga qaytariladi
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("from") === "smm") {
+      document.cookie = "tyr_src=smm; path=/; max-age=2592000; samesite=lax";
+    }
+  }, []);
 
   return (
     <AuthShell>

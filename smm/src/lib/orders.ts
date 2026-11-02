@@ -1,6 +1,20 @@
 import { db } from "@/lib/db";
-import { chargeFor } from "@/lib/format";
+import { chargeFor, num } from "@/lib/format";
 import { addOrder, fetchStatuses, ProviderError, type ProviderStatus } from "@/lib/provider";
+import { adminUserUrl, notifyAdmins, userLabel } from "@/lib/telegram";
+
+const USER_SELECT = {
+  login: true,
+  firstName: true,
+  lastName: true,
+  name: true,
+  email: true,
+  balance: true,
+} as const;
+
+function som(n: number) {
+  return `${num(n)} so'm`;
+}
 
 export const FINAL_STATUSES = ["COMPLETED", "PARTIAL", "CANCELED", "FAILED"];
 const ACTIVE_STATUSES = ["PROCESSING", "IN_PROGRESS"];
@@ -68,10 +82,27 @@ export async function placeOrder(userId: string, serviceId: string, link: string
 
   try {
     const providerOrderId = await addOrder(service.providerId, link, quantity);
-    return db.smmOrder.update({
+    const updated = await db.smmOrder.update({
       where: { id: order.id },
       data: { providerOrderId, status: "PROCESSING" },
     });
+    const u = await db.user.findUnique({ where: { id: userId }, select: USER_SELECT });
+    await notifyAdmins(
+      "orders",
+      "🛒 Yangi SMM buyurtma",
+      [
+        `Foydalanuvchi: ${userLabel(u)}`,
+        `Xizmat: ${service.name}`,
+        `Havola: ${link}`,
+        `Miqdor: ${num(quantity)}`,
+        `Summa: ${som(charge)}`,
+        `Hamyonda qoldi: ${u ? som(u.balance) : "?"}`,
+        `ZOSMM buyurtma: #${providerOrderId}`,
+        `Buyurtma ID: ${order.id}`,
+      ],
+      { text: "Foydalanuvchi", href: adminUserUrl(userId) },
+    );
+    return updated;
   } catch (e) {
     if (e instanceof ProviderError) {
       // provayder aniq rad etdi — pul to'liq qaytadi
@@ -82,6 +113,18 @@ export async function placeOrder(userId: string, serviceId: string, link: string
     await db.smmOrder
       .update({ where: { id: order.id }, data: { error: "Provayder javob bermadi" } })
       .catch(() => {});
+    await notifyAdmins(
+      "orders",
+      "⏳ SMM buyurtma: ZOSMM javob bermadi — tekshiring",
+      [
+        `Xizmat: ${service.name}`,
+        `Havola: ${link}`,
+        `Miqdor: ${num(quantity)} · ${som(charge)}`,
+        "Buyurtma PENDING holatda qoldi (pul yechilgan). ZOSMM kabinetida yaratilganini tekshiring.",
+        `Buyurtma ID: ${order.id}`,
+      ],
+      { text: "Foydalanuvchi", href: adminUserUrl(userId) },
+    );
     return order;
   }
 }
@@ -96,12 +139,13 @@ export async function finishOrder(
   refund: number,
   extra: { error?: string; startCount?: number | null; remains?: number | null } = {},
 ) {
-  await db.$transaction(async (tx) => {
+  const done = await db.$transaction(async (tx) => {
     const upd = await tx.smmOrder.updateMany({
       where: { id: orderId, status: { notIn: FINAL_STATUSES } },
       data: { status, refundAmount: refund > 0 ? refund : null, checkedAt: new Date(), ...extra },
     });
-    if (upd.count !== 1 || refund <= 0) return;
+    if (upd.count !== 1) return false;
+    if (refund <= 0) return true;
 
     const o = await tx.smmOrder.findUniqueOrThrow({
       where: { id: orderId },
@@ -121,7 +165,40 @@ export async function finishOrder(
         meta: { smmOrderId: o.id },
       },
     });
+    return true;
   });
+  if (done) await notifyOrderFinished(orderId);
+}
+
+const FINISH_TITLE: Record<string, string> = {
+  COMPLETED: "✅ SMM buyurtma bajarildi",
+  PARTIAL: "🟡 SMM buyurtma qisman bajarildi",
+  CANCELED: "❌ SMM buyurtma bekor qilindi",
+  FAILED: "⛔ SMM buyurtma rad etildi",
+};
+
+async function notifyOrderFinished(orderId: string) {
+  const o = await db.smmOrder.findUnique({
+    where: { id: orderId },
+    include: { service: { select: { name: true } }, user: { select: USER_SELECT } },
+  });
+  if (!o) return;
+  await notifyAdmins(
+    "orders",
+    FINISH_TITLE[o.status] ?? `SMM buyurtma: ${o.status}`,
+    [
+      `Foydalanuvchi: ${userLabel(o.user)}`,
+      `Xizmat: ${o.service.name}`,
+      `Havola: ${o.link}`,
+      `Miqdor: ${num(o.quantity)} · ${som(o.charge)}`,
+      o.status === "PARTIAL" && o.remains != null ? `Bajarilmadi: ${num(o.remains)} dona` : "",
+      o.refundAmount ? `Qaytarildi: ${som(o.refundAmount)} (hamyon: ${som(o.user.balance)})` : "",
+      o.error ? `Sabab: ${o.error}` : "",
+      o.providerOrderId ? `ZOSMM buyurtma: #${o.providerOrderId}` : "",
+      `Buyurtma ID: ${o.id}`,
+    ],
+    { text: "Foydalanuvchi", href: adminUserUrl(o.userId) },
+  );
 }
 
 function toInt(v: string | number | undefined) {

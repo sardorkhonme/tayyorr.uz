@@ -6,12 +6,28 @@ import { notifyAdmins } from "@/lib/telegram";
 /** Ogohlantirish chegaralari (so'm) — balans shulardan pastga tushganda bir martadan xabar. */
 const THRESHOLDS = [100_000, 50_000, 40_000, 30_000, 20_000, 10_000];
 /** Oxirgi xabar berilgan chegara (bo'lmasa — balans normal). */
-const KEY = "smmProviderAlertLevel";
-const ADD_FUNDS_URL = "https://zosmm.com/addfunds";
+const LEVEL_KEY = "smmProviderAlertLevel";
+/** Oxirgi ko'rilgan provayder balansi (o'z valyutasida) — har o'zgarish haqida xabar uchun. */
+const LAST_KEY = "smmProviderLastBalance";
+const ADD_FUNDS = { text: "ZOSMM balansini to'ldirish", href: "https://zosmm.com/addfunds" };
+
+/** Shartli yozuv: faqat qiymat `prev` bo'lsa almashtiradi — parallel tekshiruvlarda xabar takrorlanmaydi. */
+async function swap(key: string, prev: string | null, next: string | null) {
+  if (prev === null) {
+    if (next === null) return false;
+    return db.appSetting
+      .create({ data: { key, value: next } })
+      .then(() => true)
+      .catch(() => false);
+  }
+  if (next === null) return (await db.appSetting.deleteMany({ where: { key, value: prev } })).count === 1;
+  return (await db.appSetting.updateMany({ where: { key, value: prev }, data: { value: next } })).count === 1;
+}
 
 /**
- * Provayder balansini tekshiradi va kerak bo'lsa Telegram orqali eslatadi.
- * Bir chegara uchun faqat bir marta yoziladi; balans 100 000 dan oshsa — qayta tiklanadi.
+ * Provayder (ZOSMM) balansini tekshiradi:
+ * - har o'zgarishda (to'ldirildi / yechildi) "SMM tizim balansi" topigiga xabar;
+ * - 100k/50k/40k/30k/20k/10k so'mdan tushganda bir martalik ogohlantirish.
  */
 export async function checkProviderBalance() {
   if (!providerConfigured()) return null;
@@ -24,49 +40,57 @@ export async function checkProviderBalance() {
     return null;
   }
   const fx = Number(process.env.SMM_PROVIDER_RATE_UZS || 0);
-  const uzs = currency === "UZS" ? balance : balance * fx;
-  if (!(uzs >= 0) || (currency !== "UZS" && !fx)) return null;
+  const isUzs = currency === "UZS";
+  if (!isUzs && !fx) return null;
+  const toUzs = (v: number) => (isUzs ? v : v * fx);
+  const fmt = (v: number) =>
+    `${num(Math.round(toUzs(v)))} so'm` + (isUzs ? "" : ` ($${v.toFixed(2)})`);
+  const uzs = toUzs(balance);
 
-  // balans pastga tushgan eng kichik chegara (masalan 35 000 -> 40 000)
-  const level = [...THRESHOLDS].reverse().find((t) => uzs < t) ?? null;
+  const [lastRow, levelRow] = await Promise.all([
+    db.appSetting.findUnique({ where: { key: LAST_KEY } }),
+    db.appSetting.findUnique({ where: { key: LEVEL_KEY } }),
+  ]);
 
-  const row = await db.appSetting.findUnique({ where: { key: KEY } });
-  const prev = row ? Number(row.value) : null;
-  const shown = `${num(Math.floor(uzs))} so'm` + (currency === "UZS" ? "" : ` ($${balance.toFixed(2)})`);
-
-  if (level === null) {
-    // balans normal — oldin ogohlantirilgan bo'lsa, "to'ldirildi" deb xabar beramiz
-    if (prev !== null) {
-      const del = await db.appSetting.deleteMany({ where: { key: KEY, value: row!.value } });
-      if (del.count === 1) await notifyAdmins("✅ ZOSMM balansi to'ldirildi", [`Balans: ${shown}`]);
+  // 1) balans o'zgarishi
+  const cur = balance.toFixed(4);
+  const prevStr = lastRow?.value ?? null;
+  if (prevStr !== cur && (await swap(LAST_KEY, prevStr, cur))) {
+    if (prevStr === null) {
+      await notifyAdmins("system", "🔌 ZOSMM kuzatuvi yoqildi", [`Joriy balans: ${fmt(balance)}`]);
+    } else {
+      const diff = balance - Number(prevStr);
+      await notifyAdmins(
+        "system",
+        diff > 0 ? "💰 ZOSMM hisobi to'ldirildi" : "➖ ZOSMM hisobidan yechildi",
+        [`${diff > 0 ? "+" : "−"}${fmt(Math.abs(diff))}`, `Balans: ${fmt(balance)}`],
+      );
     }
-    return { uzs, level };
   }
 
-  if (prev === null || level < prev) {
-    // shartli yozish — parallel tekshiruvlarda xabar ikki marta ketmaydi
-    const claimed =
-      prev === null
-        ? await db.appSetting
-            .create({ data: { key: KEY, value: String(level) } })
-            .then(() => true)
-            .catch(() => false)
-        : (await db.appSetting.updateMany({ where: { key: KEY, value: row!.value }, data: { value: String(level) } }))
-            .count === 1;
-    if (claimed) {
+  // 2) chegaradan tushish ogohlantirishi — eng kichik kesib o'tilgan chegara (35 000 -> 40 000)
+  const level = [...THRESHOLDS].reverse().find((t) => uzs < t) ?? null;
+  const prevLevel = levelRow?.value ?? null;
+
+  if (level === null) {
+    if (prevLevel !== null) await swap(LEVEL_KEY, prevLevel, null);
+  } else if (prevLevel === null || level < Number(prevLevel)) {
+    if (await swap(LEVEL_KEY, prevLevel, String(level))) {
       await notifyAdmins(
+        "system",
         level <= 10_000 ? "🚨 ZOSMM balansi tugayapti!" : "⚠️ ZOSMM balansi kamaydi",
         [
-          `Balans: ${shown}`,
+          `Balans: ${fmt(balance)}`,
           `${num(level)} so'mdan kam qoldi.`,
           "Balans tugasa TayyorrSMM buyurtmalari rad etiladi (mijozlarga pul qaytadi).",
         ],
-        { text: "ZOSMM balansini to'ldirish", href: ADD_FUNDS_URL },
+        ADD_FUNDS,
       );
     }
-  } else if (level > prev) {
+  } else if (level > Number(prevLevel)) {
     // qisman to'ldirilgan, lekin hali chegaradan past — keyingi tushishda yana yozilsin
-    await db.appSetting.updateMany({ where: { key: KEY, value: row!.value }, data: { value: String(level) } });
+    await swap(LEVEL_KEY, prevLevel, String(level));
   }
-  return { uzs, level };
+
+  return { balance, currency, uzs, level };
 }

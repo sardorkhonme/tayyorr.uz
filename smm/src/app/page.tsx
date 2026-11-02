@@ -88,7 +88,7 @@ export default async function DashboardPage({
                 </div>
                 <div className="flex gap-2">
                   <a href="/login" className="btn-primary flex-1">Kirish</a>
-                  <a href={`${MAIN_URL}/register`} className="btn-ghost">Ro'yxatdan o'tish</a>
+                  <a href={`${MAIN_URL}/register?from=smm`} className="btn-ghost">Ro'yxatdan o'tish</a>
                 </div>
               </>
             )}
