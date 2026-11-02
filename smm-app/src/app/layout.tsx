@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 
 import "./globals.css";
 import { GlowPointer } from "@/components/glow-pointer";
+import { SiteFooter } from "@/components/site-footer";
 import { SmmHeader, type HeaderUser } from "@/components/smm-header";
 import { currentUser } from "@/lib/session";
 
@@ -35,7 +36,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-dvh antialiased">
         <GlowPointer />
         <SmmHeader user={user} />
-        <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-8 sm:px-6 sm:pt-10">{children}</main>
+        <main className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-10">
+          {children}
+          <SiteFooter />
+        </main>
       </body>
     </html>
   );

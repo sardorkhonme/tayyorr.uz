@@ -114,7 +114,7 @@ export function OrderDialog({
         ) : !loggedIn ? (
           <div className="space-y-3 text-center">
             <p className="text-zinc-600">
-              Buyurtma berish uchun hisobingizga kiring. tayyorr.uz dagi login va parolingiz shu yerda ham ishlaydi.
+              Buyurtma berish uchun hisobingizga kiring. Bitta tayyorr hisobi — barcha xizmatlarda ishlaydi.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Link href="/register" className="btn-primary flex-1 !py-3.5">Ro&apos;yxatdan o&apos;tish</Link>

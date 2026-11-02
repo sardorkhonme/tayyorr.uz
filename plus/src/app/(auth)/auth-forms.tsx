@@ -63,7 +63,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
   return (
     <>
       <h1 className="font-display text-2xl font-bold text-zinc-900">Xush kelibsiz!</h1>
-      <p className="mb-6 mt-1.5 text-zinc-500">tayyorr.uz hisobingiz ham shu yerda ishlaydi.</p>
+      <p className="mb-6 mt-1.5 text-zinc-500">Bitta hisob — barcha tayyorr xizmatlarida.</p>
 
       <form action={action} className="space-y-5">
         <div>

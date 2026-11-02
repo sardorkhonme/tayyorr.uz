@@ -5,7 +5,7 @@ import { Logo } from "@/components/logo";
 import { MAIN_URL } from "@/lib/format";
 
 const POINTS = [
-  "tayyorr.uz bilan bitta hisob va bitta hamyon",
+  "Barcha xizmatlar uchun bitta hisob va bitta hamyon",
   "Tayyorr SMM — obunachi, layk va ko'rishlar",
   "Bajarilmagan xizmat uchun pul avtomatik qaytadi",
   "Yangi xizmatlar doimiy qo'shib boriladi",
@@ -33,7 +33,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
             ))}
           </ul>
         </div>
-        <p className="text-sm text-indigo-100/80">tayyorr.uz oilasi</p>
+        <p className="text-sm text-indigo-100/80">Tayyorr oilasi</p>
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
       </aside>
 

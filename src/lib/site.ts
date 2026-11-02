@@ -9,6 +9,7 @@ export const LANDING_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.
 /** NEXT_PUBLIC_APP_URL qo'yilmaguncha kabinet havolalari tayyorr.uz ga (u app ga yo'naltiradi). */
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || LANDING_URL;
 export const PLUS_URL = process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz";
+export const SMM_URL = process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz";
 /** Admin panel — alohida loyiha. Berilmaguncha eski joyi (/sardorxon/admin) ishlaydi. */
 export const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL || "";
 

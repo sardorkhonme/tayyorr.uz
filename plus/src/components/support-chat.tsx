@@ -175,7 +175,7 @@ export function SupportChat({
             <Icon name="message" className="h-7 w-7" />
           </span>
           <p className="mt-4 font-semibold text-zinc-900">Yozish uchun hisobga kiring</p>
-          <p className="mt-1 text-sm text-zinc-500">Javobni shu yerda va tayyorr.uz da ko&apos;rasiz.</p>
+          <p className="mt-1 text-sm text-zinc-500">Javobni shu yerda ko&apos;rasiz.</p>
           <div className="mt-6 flex w-full flex-col gap-2">
             <Link href="/login" className="btn-primary !py-3">Kirish</Link>
             <Link href="/register" className="btn-ghost !py-3">Ro&apos;yxatdan o&apos;tish</Link>

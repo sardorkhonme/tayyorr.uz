@@ -49,7 +49,7 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <h1 className="font-display text-3xl font-bold text-zinc-900">Hamyon</h1>
-        <p className="mt-2 text-zinc-500">tayyorr.uz va tayyorr+ uchun bitta hamyon — amallar ikkala joyda bir xil.</p>
+        <p className="mt-2 text-zinc-500">Barcha tayyorr xizmatlari uchun bitta hamyon — amallar hamma joyda bir xil.</p>
       </header>
 
       {topup && (

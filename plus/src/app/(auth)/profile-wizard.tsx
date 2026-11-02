@@ -281,7 +281,7 @@ export function ProfileWizard({
                   {showPw ? "Yashirish" : "Ko'rsatish"}
                 </button>
               </div>
-              <p className="mt-1.5 text-xs text-zinc-500">tayyorr.uz ga ham shu login/email va parol bilan kirasiz.</p>
+              <p className="mt-1.5 text-xs text-zinc-500">Barcha tayyorr xizmatlariga shu login/email va parol bilan kirasiz.</p>
             </Field>
           )}
 

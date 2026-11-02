@@ -6,7 +6,7 @@ export function payPlatform(returnTo: string): { key: "app" | "smm" | "plus"; la
   } catch {
     /* noto'g'ri URL */
   }
-  if (host.startsWith("app.")) return { key: "app", label: "tayyorr.uz" };
+  if (host.startsWith("app.")) return { key: "app", label: "Ilmiy ishlar" };
   if (host.startsWith("smm.")) return { key: "smm", label: "Tayyorr SMM" };
   return { key: "plus", label: "tayyorr+" };
 }

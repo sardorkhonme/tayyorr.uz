@@ -30,14 +30,12 @@ export default async function AccountPage() {
     {
       mark: "/logo-mark.png",
       title: "Ilmiy ishlar",
-      domain: "app.tayyorr.uz",
       href: `${APP_URL}/dashboard`,
       status: full?.role ? (full.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi") : "Rol tanlanmagan",
     },
     {
       mark: "/smm-mark.png",
       title: "Tayyorr SMM",
-      domain: "smm.tayyorr.uz",
       href: SMM_URL,
       status: smmOrders ? `${smmOrders} ta buyurtma` : "Faol",
     },
@@ -63,7 +61,6 @@ export default async function AccountPage() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-zinc-900">{p.title}</span>
-                <span className="block truncate text-xs text-zinc-500">{p.domain}</span>
               </span>
               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{p.status}</span>
             </a>

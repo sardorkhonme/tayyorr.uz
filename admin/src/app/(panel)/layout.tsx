@@ -86,7 +86,28 @@ export default async function AdminPanelLayout({
       </header>
 
       <main className="px-4 py-6 sm:px-6 sm:py-8 lg:pl-[15.5rem] lg:pr-8">
-        <div className="mx-auto max-w-5xl">{children}</div>
+        <div className="mx-auto max-w-5xl">
+          {children}
+          {/* ixcham footer — boshqaruv paneli uchun ortiqcha havolalarsiz */}
+          <footer className="mt-14 flex flex-col gap-3 border-t border-white/10 py-6 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+            <span className="flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-mark.png" alt="" className="h-5 w-5 object-contain" />
+              Tayyorr admin · © {new Date().getFullYear()}
+            </span>
+            <span className="flex gap-4">
+              {[
+                { href: process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz", label: "Ilmiy ishlar" },
+                { href: process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz", label: "tayyorr+" },
+                { href: process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz", label: "Tayyorr SMM" },
+              ].map((l) => (
+                <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" className="transition hover:text-zinc-300">
+                  {l.label}
+                </a>
+              ))}
+            </span>
+          </footer>
+        </div>
       </main>
     </div>
   );

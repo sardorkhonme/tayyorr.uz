@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ensureWalletCode } from "@/lib/wallet";
 import { AuroraBackground } from "@/components/aurora-background";
+import { AppFooter } from "@/components/app-footer";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { PresencePing } from "@/components/presence-ping";
@@ -108,6 +109,7 @@ export default async function AppLayout({
             {children}
           </div>
         </main>
+        <AppFooter />
       </div>
     </UnreadProvider>
   );

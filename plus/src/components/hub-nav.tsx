@@ -93,7 +93,7 @@ function GuestCard() {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-4">
       <p className="text-sm font-semibold text-zinc-900">Hisobingizga kiring</p>
-      <p className="mt-1 text-xs leading-relaxed text-zinc-500">tayyorr.uz hisobi shu yerda ham ishlaydi.</p>
+      <p className="mt-1 text-xs leading-relaxed text-zinc-500">Bitta hisob — barcha tayyorr xizmatlarida.</p>
       <div className="mt-3 flex flex-col gap-2">
         <Link href="/register" className="btn-primary !py-2.5 !text-sm">Ro&apos;yxatdan o&apos;tish</Link>
         <Link href="/login" className="btn-ghost !py-2.5 !text-sm">Kirish</Link>

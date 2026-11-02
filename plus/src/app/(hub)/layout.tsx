@@ -4,6 +4,7 @@ import { auth, currentUser } from "@/auth";
 import { AccountNotFound } from "@/components/account-not-found";
 import { HubMobileBar, HubSidebar, type HubUser } from "@/components/hub-nav";
 import { PushPrompt } from "@/components/push-prompt";
+import { SiteFooter } from "@/components/site-footer";
 import { SupportWidget } from "@/components/support-widget";
 
 /** tayyorr+ kabineti: chapda panel (kompyuter), tepada popup menyu (telefon). */
@@ -27,7 +28,10 @@ export default async function HubLayout({ children }: { children: React.ReactNod
       <HubSidebar user={user} />
       <HubMobileBar user={user} />
       <main className="px-4 pb-24 pt-6 sm:px-6 sm:pt-8 lg:pl-[18.5rem] lg:pr-8 lg:pt-10">
-        <div className="mx-auto w-full max-w-5xl">{children}</div>
+        <div className="mx-auto w-full max-w-5xl">
+          {children}
+          <SiteFooter />
+        </div>
       </main>
       <SupportWidget loggedIn={!!user} />
       {user && <PushPrompt />}

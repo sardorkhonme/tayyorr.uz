@@ -6,7 +6,6 @@ const SERVICES = [
   {
     mark: "/logo-mark.png",
     title: "Ilmiy ishlar",
-    domain: "app.tayyorr.uz",
     href: `${APP_URL}/dashboard`,
     glow: "rgba(56, 189, 248, 0.22)",
     text: "Prezentatsiya, kurs ishi, referat va diplom ishi uchun ishonchli tayyorlovchi toping — yoki o'zingiz tayyorlab daromad qiling.",
@@ -15,7 +14,6 @@ const SERVICES = [
   {
     mark: "/smm-mark.png",
     title: "Tayyorr SMM",
-    domain: "smm.tayyorr.uz",
     href: SMM_URL,
     glow: "rgba(217, 70, 239, 0.22)",
     text: "Instagram, Telegram, TikTok va YouTube uchun obunachi, layk va ko'rishlar — buyurtma bir necha daqiqada avtomatik boshlanadi.",
@@ -24,7 +22,6 @@ const SERVICES = [
   {
     mark: "/plus-mark.png",
     title: "tayyorr+",
-    domain: "plus.tayyorr.uz",
     href: PLUS_URL,
     glow: "rgba(139, 92, 246, 0.25)",
     text: "Barcha xizmatlarning boshqaruv paneli: bitta hisob, umumiy hamyon va yordam. Yangi xizmatlar ham shu yerda paydo bo'ladi.",
@@ -130,7 +127,6 @@ export default function Home() {
                 <img src={s.mark} alt="" className="h-11 w-11 object-contain" />
               </span>
               <h3 className="mt-6 font-display text-2xl font-bold text-white">{s.title}</h3>
-              <p className="mt-1 text-xs text-zinc-500">{s.domain}</p>
               <p className="mt-4 leading-relaxed text-zinc-400">{s.text}</p>
               <ul className="mt-5 space-y-2.5">
                 {s.points.map((p) => (

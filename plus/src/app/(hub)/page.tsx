@@ -129,9 +129,8 @@ export default async function DashboardPage({
           <div className="flex items-start justify-between gap-4">
             <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-indigo-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-mark.png" alt="tayyorr.uz" className="h-10 w-10 object-contain" />
+              <img src="/logo-mark.png" alt="Ilmiy ishlar" className="h-10 w-10 object-contain" />
             </span>
-            <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">app.tayyorr.uz</span>
           </div>
           <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
             Ilmiy ishlar
@@ -165,7 +164,7 @@ export default async function DashboardPage({
         <section className="shine relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-7 text-white sm:p-9">
           <h2 className="font-display text-2xl font-bold sm:text-3xl">Bir daqiqada boshlang</h2>
           <p className="mt-2 max-w-lg text-indigo-100">
-            Ro&apos;yxatdan o&apos;ting yoki tayyorr.uz hisobingiz bilan kiring — hamyon umumiy.
+            Ro&apos;yxatdan o&apos;ting yoki tayyorr hisobingiz bilan kiring — hamyon umumiy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link href="/register" className="btn-dark !bg-white !px-6 !py-3.5 !text-zinc-900">
