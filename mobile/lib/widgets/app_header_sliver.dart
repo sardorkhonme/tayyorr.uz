@@ -256,19 +256,19 @@ class _NavItem {
   const _NavItem(this.section, this.label, this.icon);
   final AppSection section;
   final String label;
-  final String icon;
+  final IconData icon;
 }
 
 /// Saytdagi `navForRole`: tayyorlovchiga "Mening takliflarim" va "Referal" ham.
 List<_NavItem> _navForRole(bool isPreparer) => [
-      const _NavItem(AppSection.dashboard, 'Asosiy menyu', '🏠'),
+      const _NavItem(AppSection.dashboard, 'Asosiy menyu', Icons.home_rounded),
       if (isPreparer) ...const [
-        _NavItem(AppSection.offers, 'Mening takliflarim', '🙋'),
-        _NavItem(AppSection.referral, 'Referal', '🎁'),
+        _NavItem(AppSection.offers, 'Mening takliflarim', Icons.back_hand_rounded),
+        _NavItem(AppSection.referral, 'Referal', Icons.card_giftcard_rounded),
       ],
-      const _NavItem(AppSection.messages, 'Xabarlar', '💬'),
-      const _NavItem(AppSection.wallet, 'Hamyon', '💳'),
-      const _NavItem(AppSection.profile, 'Profil', '👤'),
+      const _NavItem(AppSection.messages, 'Xabarlar', Icons.chat_bubble_outline_rounded),
+      const _NavItem(AppSection.wallet, 'Hamyon', Icons.account_balance_wallet_rounded),
+      const _NavItem(AppSection.profile, 'Profil', Icons.person_rounded),
     ];
 
 class _MenuPanel extends StatelessWidget {
@@ -310,7 +310,7 @@ class _MenuPanel extends StatelessWidget {
               children: [
                 if (isPreparer) ...[
                   _Row(
-                    icon: '⭐',
+                    icon: Icons.star_rounded,
                     label: 'Stars',
                     color: WebC.amber,
                     trailing: _Pill('${user?.starBalance ?? 0}', bg: const Color(0xFFF59E0B).withValues(alpha: 0.15), fg: WebC.amber),
@@ -336,7 +336,7 @@ class _MenuPanel extends StatelessWidget {
                         // tayyorr+ (smm.tayyorr.uz) — "Asosiy menyu"dan keyin, saytdagidek
                         if (it.section == AppSection.dashboard)
                           _Row(
-                            icon: '✨',
+                            icon: Icons.auto_awesome_rounded,
                             label: 'tayyorr+',
                             onTap: () {
                               Navigator.of(context).pop();
@@ -371,7 +371,7 @@ class _Row extends StatelessWidget {
     this.color,
   });
 
-  final String icon;
+  final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool active;
@@ -391,7 +391,7 @@ class _Row extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(icon, style: const TextStyle(fontSize: 16)),
+            Icon(icon, size: 18, color: color ?? (active ? WebC.white : WebC.zinc300)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

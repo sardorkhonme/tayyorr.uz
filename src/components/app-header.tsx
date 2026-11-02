@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Logo } from "@/components/logo";
 import { navForRole } from "@/lib/nav";
 import { useUnread } from "@/components/unread-provider";
+import { StarIcon } from "@/components/icons";
 
 export function AppHeader({
   image,
@@ -57,7 +58,7 @@ export function AppHeader({
                   href="/wallet"
                   className="backdrop-blur-sm flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-amber-300 transition hover:bg-white/5"
                 >
-                  <span className="text-base">⭐</span>
+                  <StarIcon className="h-[18px] w-[18px]" />
                   <span className="flex-1">Stars</span>
                   <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">
                     {starBalance}

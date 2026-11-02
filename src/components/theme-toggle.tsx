@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icon, type IconName } from "@/components/icons";
 
 type Mode = "light" | "dark";
 
@@ -14,9 +15,9 @@ function apply(mode: Mode) {
   }).catch(() => {});
 }
 
-const OPTS: [Mode, string, string][] = [
-  ["light", "☀️", "Yorug'"],
-  ["dark", "🌙", "Qorong'i"],
+const OPTS: [Mode, IconName, string][] = [
+  ["light", "sun", "Yorug'"],
+  ["dark", "moon", "Qorong'i"],
 ];
 
 /** Yorug'/qorong'i rejim tanlagichi. */
@@ -58,7 +59,7 @@ export function ThemeToggle({
               : "text-zinc-400 hover:text-white"
           }`}
         >
-          <span aria-hidden>{icon}</span>
+          <Icon name={icon} className="h-3.5 w-3.5" />
           <span>{label}</span>
         </button>
       ))}

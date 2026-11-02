@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "@/components/icons";
 
 export function ReportDialog({
   suspectId,
@@ -120,7 +121,10 @@ export function ReportButton({
   return (
     <>
       <button type="button" className={className} onClick={() => setOpen(true)}>
-        ⚠︎ {label}
+        <span className="inline-flex items-center gap-1.5">
+          <Icon name="alert" className="h-4 w-4" />
+          {label}
+        </span>
       </button>
       {open && (
         <ReportDialog

@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin";
 import { shortDateTime } from "@/lib/date";
 import { getSmmSettings, refreshSmmUsdRate } from "@/lib/smm-settings";
 import { SmmSettingsForm } from "@/components/admin/smm-settings-form";
+import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,10 @@ export default async function AdminSmm() {
 
       <div className="grid gap-4 md:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-          <span className="text-sm text-zinc-400">💵 Dollar kursi (Markaziy bank)</span>
+          <span className="flex items-center gap-1.5 text-sm text-zinc-400">
+            <Icon name="banknote" className="h-4 w-4" />
+            Dollar kursi (Markaziy bank)
+          </span>
           <span className="mt-1 text-3xl font-semibold text-white">
             {settings.usd ? `${settings.usd.rate.toLocaleString("ru-RU")} so'm` : "—"}
           </span>

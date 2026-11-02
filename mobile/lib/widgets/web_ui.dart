@@ -98,6 +98,7 @@ class WebButton extends StatelessWidget {
     this.variant = WebBtn.primary,
     this.expand = false,
     this.icon,
+    this.leading,
     this.busy = false,
     this.small = false,
   });
@@ -107,6 +108,9 @@ class WebButton extends StatelessWidget {
   final WebBtn variant;
   final bool expand;
   final Widget? icon;
+
+  /// Matn oldidagi ikonka — tugma matni rangida chiziladi (emoji o'rniga).
+  final IconData? leading;
   final bool busy;
   final bool small;
 
@@ -167,6 +171,7 @@ class WebButton extends StatelessWidget {
           )
         else ...[
           if (icon != null) ...[icon!, const SizedBox(width: 8)],
+          if (leading != null) ...[Icon(leading, size: small ? 15 : 16, color: fg), const SizedBox(width: 8)],
           Flexible(
             child: Text(
               label,
@@ -394,7 +399,7 @@ InputDecoration webInputDecoration({String? hint, Widget? suffix}) {
   );
 }
 
-/// Saytdagi `<Stars>`: ★ to'lgan (amber-400), ☆ bo'sh (zinc-600).
+/// Saytdagi `<Stars>`: to'lgan (amber-400) / bo'sh (zinc-600) yulduzcha ikonkalar.
 class WebStars extends StatelessWidget {
   const WebStars({super.key, required this.value, this.size = 12});
   final double value;
@@ -409,13 +414,10 @@ class WebStars extends StatelessWidget {
         for (var i = 1; i <= 5; i++)
           Padding(
             padding: const EdgeInsets.only(right: 2),
-            child: Text(
-              i <= rounded || i - 0.5 == rounded ? '★' : '☆',
-              style: TextStyle(
-                fontSize: size,
-                height: 1.2,
-                color: i <= rounded ? const Color(0xFFFBBF24) : WebC.zinc600,
-              ),
+            child: Icon(
+              i <= rounded || i - 0.5 == rounded ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: size + 2,
+              color: i <= rounded || i - 0.5 == rounded ? AppColors.amber : WebC.zinc600,
             ),
           ),
       ],
@@ -438,9 +440,10 @@ class WebStarInput extends StatelessWidget {
             onTap: () => onChanged(i),
             child: Padding(
               padding: const EdgeInsets.only(right: 4),
-              child: Text(
-                '★',
-                style: TextStyle(fontSize: 30, height: 1.1, color: i <= value ? const Color(0xFFFBBF24) : WebC.zinc600),
+              child: Icon(
+                i <= value ? Icons.star_rounded : Icons.star_outline_rounded,
+                size: 34,
+                color: i <= value ? AppColors.amber : WebC.zinc600,
               ),
             ),
           ),
@@ -461,4 +464,52 @@ Future<T?> showWebDialog<T>(BuildContext context, {required WidgetBuilder builde
       child: Padding(padding: const EdgeInsets.all(24), child: builder(ctx)),
     ),
   );
+}
+
+/// Star (ichki valyuta) belgisi — "⭐" emoji o'rniga sariq to'ldirilgan yulduz
+/// (saytdagi `<StarIcon>`).
+class StarGlyph extends StatelessWidget {
+  const StarGlyph({super.key, this.size = 14});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Icon(Icons.star_rounded, size: size, color: AppColors.amber);
+}
+
+/// Matn (Text.rich) ichida ikonka — emoji o'rniga.
+WidgetSpan iconSpan(IconData icon, {double size = 14, Color? color, double gap = 4}) => WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: Padding(
+        padding: EdgeInsets.only(right: gap),
+        child: Icon(icon, size: size, color: color),
+      ),
+    );
+
+/// Matn ichida star belgisi: `Text.rich(TextSpan(children: [TextSpan(text: '5 '), starSpan()]))`.
+WidgetSpan starSpan({double size = 14}) => WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: StarGlyph(size: size),
+    );
+
+/// "ikonka + matn" qatori (sarlavhalar, holat yozuvlari uchun).
+class IconLabel extends StatelessWidget {
+  const IconLabel(this.icon, this.text, {super.key, required this.style, this.size, this.color, this.gap = 6});
+  final IconData icon;
+  final String text;
+  final TextStyle style;
+  final double? size;
+  final Color? color;
+  final double gap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: size ?? (style.fontSize ?? 14) + 2, color: color ?? style.color),
+        SizedBox(width: gap),
+        Flexible(child: Text(text, style: style)),
+      ],
+    );
+  }
 }

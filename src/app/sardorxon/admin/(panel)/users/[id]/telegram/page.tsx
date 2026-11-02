@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { Icon } from "@/components/icons";
 
 export default async function AdminUserTelegram({
   params,
@@ -29,7 +30,8 @@ export default async function AdminUserTelegram({
       {user.telegramChatId ? (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-emerald-300">
-            ✅ Ulangan
+            <Icon name="check-circle" className="mr-1 inline-block h-4 w-4 align-[-3px]" />
+            Ulangan
             {user.telegramUsername ? ` — @${user.telegramUsername}` : ""}
             {user.telegramLinkedAt ? ` · ${shortDateTime(user.telegramLinkedAt)}` : ""}
           </p>
@@ -42,7 +44,8 @@ export default async function AdminUserTelegram({
         </div>
       ) : user.telegramBlockedAt ? (
         <p className="text-sm text-amber-300">
-          🚫 Botni bloklagan
+          <Icon name="ban" className="mr-1 inline-block h-4 w-4 align-[-3px]" />
+          Botni bloklagan
           {user.telegramUsername ? ` — @${user.telegramUsername}` : ""}
           {" · "}
           {shortDateTime(user.telegramBlockedAt)}

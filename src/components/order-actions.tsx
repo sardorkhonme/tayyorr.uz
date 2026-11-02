@@ -14,6 +14,7 @@ import {
 } from "@/components/contract-panel";
 import { shortDateTime } from "@/lib/date";
 import type { ContractView } from "@/lib/contract-view";
+import { Icon, StarIcon } from "@/components/icons";
 
 export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Ko'rib chiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
@@ -199,14 +200,18 @@ export function OrderActions(props: Props) {
           disabled={busy}
           onClick={() => startChat(ordererId)}
         >
-          💬 Buyurtmachi bilan yozishish
+          <Icon name="message" className="h-4 w-4" />
+          Buyurtmachi bilan yozishish
         </button>
       )}
 
       {/* Tayyorlovchiga kelgan shartnoma */}
       {myIncomingContract && (
         <div className="card border-indigo-400/30 bg-indigo-500/5">
-          <h2 className="font-semibold text-white">📄 Sizga shartnoma yuborildi</h2>
+          <h2 className="flex items-center gap-2 font-semibold text-white">
+            <Icon name="file" className="h-[18px] w-[18px] text-indigo-300" />
+            Sizga shartnoma yuborildi
+          </h2>
           <p className="mt-1 text-sm text-zinc-300">
             Kelishilgan summa:{" "}
             <b>{myIncomingContract.amount.toLocaleString()} so'm</b>
@@ -258,7 +263,8 @@ export function OrderActions(props: Props) {
       {isOrderer && sentContract && (
         <div className="card border-indigo-400/30 bg-indigo-500/5">
           <p className="text-sm text-zinc-300">
-            📄 <b>{sentContract.preparerName}</b> ga shartnoma yuborildi —{" "}
+            <Icon name="file" className="mr-1 inline-block h-4 w-4 align-[-3px] text-indigo-300" />
+            <b>{sentContract.preparerName}</b> ga shartnoma yuborildi —{" "}
             {sentContract.amount.toLocaleString()} so'm. Javob kutilmoqda.
           </p>
           <button
@@ -325,7 +331,8 @@ export function OrderActions(props: Props) {
                 onChange={(e) => setOfferStars(e.target.value)}
               />
               <p className="mt-1 text-xs text-amber-300">
-                ⭐ Kamida {MIN_OFFER_STARS} star talab qiladi — navbatda
+                <StarIcon className="mr-1 h-3 w-3" />
+                Kamida {MIN_OFFER_STARS} star talab qiladi — navbatda
                 yuqoriroqda turish uchun boshidanoq ko'proq yuborishingiz
                 mumkin. Star balansingizdan sarflanadi.{" "}
                 <Link href="/wallet" className="underline hover:text-amber-200">
@@ -335,15 +342,22 @@ export function OrderActions(props: Props) {
             </div>
           )}
           <button className="btn-primary" disabled={busy}>
-            {myOffer
-              ? "Yangilash"
-              : `Yuborish (${Number(offerStars) || MIN_OFFER_STARS} ⭐)`}
+            {myOffer ? (
+              "Yangilash"
+            ) : (
+              <span>
+                Yuborish ({Number(offerStars) || MIN_OFFER_STARS}{" "}
+                <StarIcon className="h-3.5 w-3.5" />)
+              </span>
+            )}
           </button>
           {myOffer && (
             <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
               <p className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
                 Holat: <OfferBadge status={myOffer.status} /> · Jami sarflangan:{" "}
-                <b className="text-amber-300">{myOffer.starsSpent} ⭐</b>
+                <b className="inline-flex items-center gap-0.5 text-amber-300">
+                  {myOffer.starsSpent} <StarIcon className="h-3 w-3" />
+                </b>
               </p>
               <div className="flex items-center gap-2">
                 <input
@@ -361,7 +375,8 @@ export function OrderActions(props: Props) {
                   disabled={busy}
                   onClick={boost}
                 >
-                  🚀 Navbatda yuqoriga chiqish
+                  <Icon name="rocket" className="h-4 w-4" />
+                  Navbatda yuqoriga chiqish
                 </button>
               </div>
               <p className="text-xs text-zinc-600">
@@ -411,7 +426,9 @@ export function OrderActions(props: Props) {
                     <span className="text-xs text-indigo-300">(siz)</span>
                   )}
                 </span>
-                <span className="text-xs text-amber-300">{q.starsSpent} ⭐</span>
+                <span className="inline-flex items-center gap-0.5 text-xs text-amber-300">
+                  {q.starsSpent} <StarIcon className="h-3 w-3" />
+                </span>
               </li>
             ))}
           </ul>
@@ -437,8 +454,8 @@ export function OrderActions(props: Props) {
                     <span className="text-zinc-400"> @{o.preparer.login}</span>
                   )}
                 </Link>
-                <span className="shrink-0 text-xs text-amber-300">
-                  {o.starsSpent} ⭐
+                <span className="inline-flex shrink-0 items-center gap-0.5 text-xs text-amber-300">
+                  {o.starsSpent} <StarIcon className="h-3 w-3" />
                 </span>
               </div>
               <Link
@@ -468,7 +485,8 @@ export function OrderActions(props: Props) {
                   disabled={busy}
                   onClick={() => startChat(o.preparerId)}
                 >
-                  💬 Chat
+                  <Icon name="message" className="h-4 w-4" />
+                  Chat
                 </button>
                 <ReportButton
                   suspectId={o.preparerId}
@@ -493,7 +511,8 @@ export function OrderActions(props: Props) {
                         );
                       }}
                     >
-                      📄 Shartnoma tuzish
+                      <Icon name="file" className="h-4 w-4" />
+                      Shartnoma tuzish
                     </button>
                     <button
                       className="btn-ghost"

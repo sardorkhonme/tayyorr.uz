@@ -9,7 +9,7 @@ import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { playTin, primeTin } from "@/lib/notify-sound";
-import { RocketIcon, BlockedIcon, MicIcon } from "@/components/icons";
+import { RocketIcon, BlockedIcon, MicIcon, Icon, type IconName } from "@/components/icons";
 import { ProgressRing } from "@/components/progress-ring";
 import { useVoiceRecorder } from "@/lib/voice-recorder";
 import { useDismiss } from "@/components/use-dismiss";
@@ -98,11 +98,28 @@ const ORDER_STATUS_LABEL: Record<string, string> = {
 };
 
 /** Qadalgan panel: shartnoma bosqichi qisqa matnda. */
-function pinBadge(p: OrderPin) {
-  if (p.contractStatus === "SENT") return "📄 Shartnoma yuborilgan";
-  if (p.cancelState === "DISPUTED") return "⚖️ Admin ko'rib chiqmoqda";
-  if (p.cancelState === "PENDING") return "⚠️ Bekor qilish so'ralgan";
+function pinBadge(p: OrderPin): React.ReactNode {
+  const withIcon = (name: IconName, text: string) => (
+    <>
+      <Icon name={name} className="mr-1 inline-block h-3 w-3 align-[-2px]" />
+      {text}
+    </>
+  );
+  if (p.contractStatus === "SENT") return withIcon("file", "Shartnoma yuborilgan");
+  if (p.cancelState === "DISPUTED") return withIcon("scale", "Admin ko'rib chiqmoqda");
+  if (p.cancelState === "PENDING") return withIcon("alert", "Bekor qilish so'ralgan");
   return ORDER_STATUS_LABEL[p.status] ?? p.status;
+}
+
+/** Javob preview matni: serverdan "📎 fayl.pdf" ko'rinishida keladi — emoji o'rniga ikonka. */
+function ReplyText({ text }: { text: string }) {
+  if (!text.startsWith("📎 ")) return <>{text}</>;
+  return (
+    <>
+      <Icon name="paperclip" className="mr-1 inline-block h-3 w-3 align-[-2px]" />
+      {text.slice(3)}
+    </>
+  );
 }
 
 function fmtTime(ms: number) {
@@ -766,7 +783,7 @@ export function ChatRoom({
         <div className="shrink-0 border-b border-white/10 bg-[#0e0e16]/90 backdrop-blur-2xl">
           <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2 sm:px-4">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
-              <span className="shrink-0 text-base">📌</span>
+              <Icon name="pin" className="h-4 w-4 shrink-0 text-indigo-300" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-white">
                   {pinnedOrder.title}
@@ -775,7 +792,8 @@ export function ChatRoom({
                   {pinnedOrder.deadline && (
                     <>
                       <span className="text-zinc-300">
-                        ⏱ {shortDateTime(pinnedOrder.deadline)}
+                        <Icon name="clock" className="mr-1 inline-block h-3 w-3 align-[-2px]" />
+                        {shortDateTime(pinnedOrder.deadline)}
                       </span>
                       {" · "}
                     </>
@@ -820,16 +838,18 @@ export function ChatRoom({
                     setHdrMenu(null);
                     setReportHdr(true);
                   }}
-                  className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                  className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                 >
-                  ⚠︎ Shikoyat qilish
+                  <Icon name="alert" className="h-4 w-4 shrink-0" />
+                  Shikoyat qilish
                 </button>
                 <button
                   type="button"
                   onClick={toggleBlock}
-                  className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                  className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                 >
-                  {iBlocked ? "✓ Blokdan chiqarish" : "🚫 Bloklash"}
+                  <Icon name={iBlocked ? "check" : "ban"} className="h-4 w-4 shrink-0" />
+                  {iBlocked ? "Blokdan chiqarish" : "Bloklash"}
                 </button>
               </>
             )}
@@ -837,9 +857,10 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={deleteConversation}
-                className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
               >
-                🗑 Suhbatni o'chirish
+                <Icon name="trash" className="h-4 w-4 shrink-0" />
+                Suhbatni o'chirish
               </button>
             )}
           </div>,
@@ -948,15 +969,18 @@ export function ChatRoom({
                           <div className="font-medium opacity-90">
                             {m.replyTo.authorId === meId ? "Siz" : other.name}
                           </div>
-                          <div className="truncate opacity-75">{m.replyTo.text}</div>
+                          <div className="truncate opacity-75">
+                            <ReplyText text={m.replyTo.text} />
+                          </div>
                         </button>
                       )}
                       {m.file && m.file.url && (
                         <ChatFileView file={m.file} mine={m.mine} />
                       )}
                       {m.file && !m.file.url && (
-                        <div className="text-xs opacity-70">
-                          📎 {m.file.name} · yuborilmoqda…
+                        <div className="flex items-center gap-1 text-xs opacity-70">
+                          <Icon name="paperclip" className="h-3.5 w-3.5 shrink-0" />
+                          {m.file.name} · yuborilmoqda…
                         </div>
                       )}
                       {m.body && (
@@ -989,9 +1013,10 @@ export function ChatRoom({
                                       : "bg-white/10 text-zinc-200"
                                 }`}
                               >
-                                <span className="text-base leading-none">
-                                  {v === "LIKE" ? "👍" : "👎"}
-                                </span>
+                                <Icon
+                                  name={v === "LIKE" ? "thumbs-up" : "thumbs-down"}
+                                  className="h-4 w-4"
+                                />
                                 <span className="text-xs font-medium">{n}</span>
                               </button>
                             );
@@ -1052,9 +1077,9 @@ export function ChatRoom({
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="text-zinc-500 hover:text-white"
+                  className="flex items-center gap-1 text-zinc-500 hover:text-white"
                 >
-                  bekor ✕
+                  bekor <Icon name="close" className="h-3.5 w-3.5" />
                 </button>
               </div>
             )}
@@ -1066,14 +1091,17 @@ export function ChatRoom({
                     Javob:{" "}
                     {replyingTo.authorId === meId ? "Siz" : other.name}
                   </div>
-                  <div className="truncate text-zinc-400">{replyingTo.text}</div>
+                  <div className="truncate text-zinc-400">
+                    <ReplyText text={replyingTo.text} />
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setReplyingTo(null)}
                   className="shrink-0 text-zinc-500 hover:text-white"
+                  aria-label="Bekor qilish"
                 >
-                  ✕
+                  <Icon name="close" className="h-4 w-4" />
                 </button>
               </div>
             )}
@@ -1096,7 +1124,7 @@ export function ChatRoom({
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-zinc-300 hover:bg-white/20 hover:text-white"
                     aria-label="Bekor qilish"
                   >
-                    ✕
+                    <Icon name="close" className="h-4 w-4" />
                   </button>
                   <span className="text-[11px] text-zinc-500">
                     {uploading ? `${uploadPct}%` : humanSize(localFile.size)}
@@ -1123,7 +1151,7 @@ export function ChatRoom({
                   onClick={() => fileInputRef.current?.click()}
                   title="Fayl biriktirish"
                 >
-                  {uploading ? "…" : "📎"}
+                  {uploading ? "…" : <Icon name="paperclip" className="h-5 w-5" />}
                 </button>
               )}
               {voice.recording ? (
@@ -1176,7 +1204,7 @@ export function ChatRoom({
                   aria-label={editing ? "Saqlash" : "Yuborish"}
                   title={editing ? "Saqlash" : "Yuborish"}
                 >
-                  {editing ? "✓" : <RocketIcon />}
+                  {editing ? <Icon name="check" className="h-5 w-5" strokeWidth={2.2} /> : <RocketIcon />}
                 </button>
               )}
             </form>
@@ -1207,11 +1235,12 @@ export function ChatRoom({
                         react(menu.msg, v);
                         setMenu(null);
                       }}
-                      className={`backdrop-blur-sm flex-1 rounded-lg py-1.5 text-lg transition ${
-                        on ? "bg-indigo-500/30" : "hover:bg-white/10"
+                      className={`backdrop-blur-sm flex flex-1 items-center justify-center rounded-lg py-2 transition ${
+                        on ? "bg-indigo-500/30 text-white" : "text-zinc-300 hover:bg-white/10"
                       }`}
+                      aria-label={v === "LIKE" ? "Yoqdi" : "Yoqmadi"}
                     >
-                      {v === "LIKE" ? "👍" : "👎"}
+                      <Icon name={v === "LIKE" ? "thumbs-up" : "thumbs-down"} className="h-5 w-5" />
                     </button>
                   );
                 })}
@@ -1219,25 +1248,28 @@ export function ChatRoom({
               <button
                 type="button"
                 onClick={() => startReply(menu.msg)}
-                className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
               >
-                ↩︎ Javob berish
+                <Icon name="reply" className="h-4 w-4 shrink-0" />
+                Javob berish
               </button>
               {menu.msg.mine ? (
                 <>
                   <button
                     type="button"
                     onClick={() => startEdit(menu.msg)}
-                    className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                    className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                   >
-                    ✎ Tahrirlash
+                    <Icon name="pencil" className="h-4 w-4 shrink-0" />
+                    Tahrirlash
                   </button>
                   <button
                     type="button"
                     onClick={() => del(menu.msg)}
-                    className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                    className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
                   >
-                    🗑 O'chirish
+                    <Icon name="trash" className="h-4 w-4 shrink-0" />
+                    O'chirish
                   </button>
                 </>
               ) : (
@@ -1245,9 +1277,10 @@ export function ChatRoom({
                   <button
                     type="button"
                     onClick={() => reportMsg(menu.msg)}
-                    className="backdrop-blur-sm block w-full px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                    className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                   >
-                    ⚠︎ Shikoyat qilish
+                    <Icon name="alert" className="h-4 w-4 shrink-0" />
+                    Shikoyat qilish
                   </button>
                 )
               )}

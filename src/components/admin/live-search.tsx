@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Icon } from "@/components/icons";
 
 /**
  * Yozish bilan (Enter'siz) qidiruv: har o'zgarishda ?q= ni yangilaydi,
@@ -36,7 +37,7 @@ export function LiveSearch({ placeholder }: { placeholder: string }) {
   return (
     <div className="relative w-full max-w-md">
       <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
-        🔍
+        <Icon name="search" className="h-4 w-4" />
       </span>
       <input
         type="search"

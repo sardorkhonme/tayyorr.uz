@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import type { NavLink } from "@/components/nav-menu";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { PowerIcon } from "@/components/icons";
+import { Icon, PowerIcon } from "@/components/icons";
 
 /** Admin panel chap paneli (kompyuterda). */
 export function AdminSidebar({ nav }: { nav: NavLink[] }) {
@@ -35,7 +35,7 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
                   : "text-zinc-400 hover:bg-white/5 hover:text-white"
               }`}
             >
-              <span className="text-base">{l.icon}</span>
+              <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
               <span className="flex-1">{l.label}</span>
               {!!l.badge && l.badge > 0 && (
                 <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">

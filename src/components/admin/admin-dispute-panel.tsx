@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { localInputToIso, toLocalInput } from "@/components/contract-panel";
+import { Icon } from "@/components/icons";
 
 /** Nizo bo'yicha admin qarori: bekor qilish / davom ettirish / yakunlash. */
 export function AdminDisputePanel({
@@ -80,13 +81,16 @@ export function AdminDisputePanel({
       {err && <p className="text-sm text-red-400">{err}</p>}
       <div className="flex flex-wrap gap-2">
         <button className="btn-ghost text-red-300" disabled={busy} onClick={() => decide("CANCEL")}>
-          ✖ Bekor qilish (pul buyurtmachiga)
+          <Icon name="x-circle" className="h-4 w-4" />
+          Bekor qilish (pul buyurtmachiga)
         </button>
         <button className="btn-ghost" disabled={busy} onClick={() => decide("CONTINUE")}>
-          ▶ Davom ettirish
+          <Icon name="play" className="h-4 w-4" />
+          Davom ettirish
         </button>
         <button className="btn-primary" disabled={busy} onClick={() => decide("COMPLETE")}>
-          ✅ Yakunlash (pul tayyorlovchiga)
+          <Icon name="check-circle" className="h-4 w-4" />
+          Yakunlash (pul tayyorlovchiga)
         </button>
       </div>
     </div>

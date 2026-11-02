@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { BlockedIcon } from "@/components/icons";
+import { BlockedIcon, Icon } from "@/components/icons";
 import type { ConvRow } from "@/lib/conversations";
 import { shortDate } from "@/lib/date";
 import { useUnread } from "@/components/unread-provider";
@@ -77,13 +77,13 @@ export function ChatContactsRail({
                     className="h-full w-full object-cover"
                   />
                 ) : c.isSupport ? (
-                  "🛟"
+                  <Icon name="lifebuoy" className="h-5 w-5 text-indigo-300" />
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center justify-between gap-1.5">
                   <span className="flex min-w-0 items-center gap-1 truncate text-sm font-medium text-white">
-                    {c.isSupport && <span className="text-xs">📌</span>}
+                    {c.isSupport && <Icon name="pin" className="h-3 w-3 shrink-0 text-indigo-400" />}
                     {c.name}
                   </span>
                   <span className="shrink-0 text-[10px] text-zinc-600">

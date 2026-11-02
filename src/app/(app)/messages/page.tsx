@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
 import { getT } from "@/lib/i18n-server";
-import { BlockedIcon } from "@/components/icons";
+import { BlockedIcon, Icon } from "@/components/icons";
 import { LiveConvBadge } from "@/components/live-conv-badge";
 import { shortDate } from "@/lib/date";
 import { stripSource } from "@/lib/message-source";
@@ -94,13 +94,13 @@ export default async function MessagesPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : isSupport ? (
-                    "🛟"
+                    <Icon name="lifebuoy" className="h-6 w-6 text-indigo-300" />
                   ) : null}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-1.5 truncate font-medium text-white">
-                      {isSupport && <span className="text-xs text-indigo-400">📌</span>}
+                      {isSupport && <Icon name="pin" className="h-3.5 w-3.5 shrink-0 text-indigo-400" />}
                       {other.name ?? other.login ?? "Foydalanuvchi"}
                     </span>
                     {last && (
@@ -111,11 +111,19 @@ export default async function MessagesPage() {
                   </div>
                   <div className="mt-0.5 flex items-center justify-between gap-2">
                     <span className="truncate text-sm text-zinc-400">
-                      {last
-                        ? `${last.senderId === me ? "Siz: " : ""}${
-                            stripSource(last.body) || "📎 fayl"
-                          }`
-                        : t("msgs.started")}
+                      {last ? (
+                        <>
+                          {last.senderId === me ? "Siz: " : ""}
+                          {stripSource(last.body) || (
+                            <>
+                              <Icon name="paperclip" className="mr-0.5 inline-block h-3.5 w-3.5 align-[-2px]" />
+                              fayl
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        t("msgs.started")
+                      )}
                     </span>
                     <LiveConvBadge convId={c.id} initial={unread} />
                   </div>

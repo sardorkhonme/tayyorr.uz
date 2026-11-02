@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/theme_controller.dart';
 import 'web_ui.dart';
 
-/// Saytdagi ThemeToggle bilan bir xil: "☀️ Yorug'" / "🌙 Qorong'i".
+/// Saytdagi ThemeToggle bilan bir xil: quyosh "Yorug'" / oy "Qorong'i".
 /// `bare` — menyu ichida (ramkasiz).
 class ThemeToggle extends StatelessWidget {
   const ThemeToggle({super.key, this.bare = false});
@@ -20,7 +20,7 @@ class ThemeToggle extends StatelessWidget {
           children: [
             Expanded(
               child: _Segment(
-                emoji: '☀️',
+                icon: Icons.light_mode_rounded,
                 label: 'Yorug\'',
                 selected: isLight,
                 onTap: () => ThemeController.instance.setLight(true),
@@ -29,7 +29,7 @@ class ThemeToggle extends StatelessWidget {
             const SizedBox(width: 4),
             Expanded(
               child: _Segment(
-                emoji: '🌙',
+                icon: Icons.dark_mode_rounded,
                 label: 'Qorong\'i',
                 selected: !isLight,
                 onTap: () => ThemeController.instance.setLight(false),
@@ -53,8 +53,8 @@ class ThemeToggle extends StatelessWidget {
 }
 
 class _Segment extends StatelessWidget {
-  const _Segment({required this.emoji, required this.label, required this.selected, required this.onTap});
-  final String emoji;
+  const _Segment({required this.icon, required this.label, required this.selected, required this.onTap});
+  final IconData icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -73,7 +73,7 @@ class _Segment extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 12)),
+            Icon(icon, size: 14, color: selected ? WebC.white : WebC.zinc400),
             const SizedBox(width: 6),
             Text(label, style: TextStyle(color: selected ? WebC.white : WebC.zinc400, fontSize: 12)),
           ],

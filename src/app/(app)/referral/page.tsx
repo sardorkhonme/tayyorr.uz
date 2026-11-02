@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ReferralLinkCard } from "@/components/referral-link-card";
 import { shortDateTime } from "@/lib/date";
+import { StarIcon } from "@/components/icons";
 
 export default async function ReferralPage() {
   const session = await auth();
@@ -28,7 +29,7 @@ export default async function ReferralPage() {
         <h1 className="text-xl font-semibold text-white">Referal</h1>
         <p className="mt-1 text-sm text-zinc-400">
           Do'stlaringizni taklif qiling — har bir ro'yxatdan o'tgan uchun
-          1 ⭐ olasiz.
+          1 <StarIcon className="h-3.5 w-3.5" /> olasiz.
         </p>
       </div>
 
@@ -55,8 +56,8 @@ export default async function ReferralPage() {
                 </span>
                 <span className="flex items-center gap-3 text-xs text-zinc-500">
                   {shortDateTime(r.createdAt)}
-                  <span className="rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-300">
-                    +1 ⭐
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 px-2 py-0.5 font-semibold text-amber-300">
+                    +1 <StarIcon className="h-3 w-3" />
                   </span>
                 </span>
               </li>

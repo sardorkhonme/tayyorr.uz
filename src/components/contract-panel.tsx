@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { shortDateTime } from "@/lib/date";
 import type { ContractView } from "@/lib/contract-view";
+import { Icon } from "@/components/icons";
 
 /** ISO -> <input type="datetime-local"> qiymati (brauzer vaqti bilan). */
 export function toLocalInput(iso: string | null | undefined): string {
@@ -94,7 +95,10 @@ export function ContractPanel({
   return (
     <div className="card flex flex-col gap-3 border-emerald-400/25 bg-emerald-500/5">
       <div>
-        <h2 className="font-semibold text-white">📄 Shartnoma imzolangan</h2>
+        <h2 className="flex items-center gap-2 font-semibold text-white">
+          <Icon name="file" className="h-[18px] w-[18px] text-emerald-300" />
+          Shartnoma imzolangan
+        </h2>
         <p className="mt-1 text-sm text-zinc-300">
           Summa: <b>{c.amount.toLocaleString()} so'm</b>
           {isOrderer ? " · tayyorlovchi: " + c.preparerName : ""}
@@ -107,7 +111,8 @@ export function ContractPanel({
         )}
         {delivered && c.reviewDueAt && (
           <p className="mt-2 rounded-lg bg-white/[0.04] px-3 py-2 text-xs text-zinc-400">
-            📦 Ish topshirilgan{c.deliveredAt ? ` (${shortDateTime(c.deliveredAt)})` : ""}.{" "}
+            <Icon name="package" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px]" />
+            Ish topshirilgan{c.deliveredAt ? ` (${shortDateTime(c.deliveredAt)})` : ""}.{" "}
             {isOrderer ? "Tekshirib javob bering" : "Buyurtmachi tekshirmoqda"} —{" "}
             <b className="text-zinc-200">{shortDateTime(c.reviewDueAt)}</b> gacha javob bo'lmasa, ish
             muvaffaqiyatli deb topiladi va pul tayyorlovchiga o'tadi.
@@ -123,8 +128,9 @@ export function ContractPanel({
       {/* bekor qilish so'rovi */}
       {pending && (
         <div className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm">
-          <div className="font-medium text-amber-200">
-            ⚠️ {requester} bekor qilishni so'ra{requester === "Siz" ? "dingiz" : "di"}
+          <div className="flex items-center gap-1.5 font-medium text-amber-200">
+            <Icon name="alert" className="h-4 w-4 shrink-0" />
+            {requester} bekor qilishni so'ra{requester === "Siz" ? "dingiz" : "di"}
           </div>
           <div className="mt-1 text-zinc-300">Sabab: {c.cancelReason}</div>
           {c.cancelDueAt && (
@@ -172,7 +178,10 @@ export function ContractPanel({
 
       {disputed && (
         <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm">
-          <div className="font-medium text-red-200">⚖️ Masala administrator ko'rib chiqmoqda</div>
+          <div className="flex items-center gap-1.5 font-medium text-red-200">
+            <Icon name="scale" className="h-4 w-4 shrink-0" />
+            Masala administrator ko'rib chiqmoqda
+          </div>
           <div className="mt-1 text-zinc-300">Bekor qilish sababi: {c.cancelReason}</div>
           <div className="mt-0.5 text-zinc-300">Rad etish sababi: {c.cancelRejectReason}</div>
           <div className="mt-1 text-xs text-zinc-400">
@@ -198,12 +207,14 @@ export function ContractPanel({
                 }
               }}
             >
-              ✅ Ishni yakunlash
+              <Icon name="check-circle" className="h-4 w-4" />
+              Ishni yakunlash
             </button>
           )}
           {isOrderer && delivered && !c.cancelState && (
             <button className="btn-ghost" disabled={busy} onClick={() => open("revision")}>
-              🔁 Qayta ishlash
+              <Icon name="refresh" className="h-4 w-4" />
+              Qayta ishlash
             </button>
           )}
           {!isOrderer && status === "IN_PROGRESS" && (
@@ -212,12 +223,14 @@ export function ContractPanel({
               disabled={busy}
               onClick={() => call(`/api/orders/${orderId}`, "PATCH", { status: "DELIVERED" })}
             >
-              📦 Ishni topshirdim
+              <Icon name="package" className="h-4 w-4" />
+              Ishni topshirdim
             </button>
           )}
           {!c.cancelState && (
             <button className="btn-ghost text-red-300" disabled={busy} onClick={() => open("cancel")}>
-              ✖ Bekor qilishni so'rash
+              <Icon name="x-circle" className="h-4 w-4" />
+              Bekor qilishni so'rash
             </button>
           )}
         </div>

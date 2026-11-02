@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import { Icon } from "@/components/icons";
 
 export default function AppError({
   error,
@@ -30,9 +31,11 @@ export default function AppError({
 
   return (
     <div className="flex min-h-[55vh] flex-col items-center justify-center gap-4 text-center">
-      <span className="text-[5rem] leading-none">
-        {isUserNotFound ? "👤" : "⚠️"}
-      </span>
+      <Icon
+        name={isUserNotFound ? "user" : "alert"}
+        className={`h-20 w-20 ${isUserNotFound ? "text-zinc-400" : "text-amber-400"}`}
+        strokeWidth={1.4}
+      />
       <h1 className="text-xl font-semibold text-white">
         {isUserNotFound ? "Bunday hisob mavjud emas" : "Nimadir noto'g'ri ketdi"}
       </h1>

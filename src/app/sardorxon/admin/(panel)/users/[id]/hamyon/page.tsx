@@ -6,6 +6,7 @@ import { formatSom } from "@/lib/wallet";
 import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { BalanceAdjustForm } from "@/components/admin/balance-adjust-form";
+import { StarIcon } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
   TOPUP: "To'ldirish",
@@ -42,7 +43,7 @@ export default async function AdminUserWallet({
       <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
         <h2 className="mb-3 font-semibold text-white">Balans / Starni to'g'irlash</h2>
         <p className="mb-3 text-xs text-zinc-500">
-          Joriy balans: {formatSom(user.balance)} · {user.starBalance} ⭐. Sababi
+          Joriy balans: {formatSom(user.balance)} · {user.starBalance} <StarIcon className="h-3 w-3" />. Sababi
           foydalanuvchiga ko'rinadi.
         </p>
         <BalanceAdjustForm userId={user.id} />

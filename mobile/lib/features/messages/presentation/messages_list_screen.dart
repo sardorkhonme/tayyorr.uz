@@ -82,9 +82,10 @@ class _ConversationTile extends StatelessWidget {
     final support = c.other.isSupport;
     final img = c.other.image ?? '';
     final lastAt = c.lastMessageCreatedAt;
-    final preview = c.lastMessageBody != null || lastAt != null
-        ? '${c.lastMessageMine == true ? 'Siz: ' : ''}${(c.lastMessageBody ?? '').isNotEmpty ? c.lastMessageBody : '📎 fayl'}'
-        : 'Suhbat boshlandi';
+    final hasLast = c.lastMessageBody != null || lastAt != null;
+    final fileOnly = hasLast && (c.lastMessageBody ?? '').isEmpty;
+    final prefix = hasLast && c.lastMessageMine == true ? 'Siz: ' : '';
+    final preview = hasLast ? (fileOnly ? 'fayl' : c.lastMessageBody!) : 'Suhbat boshlandi';
 
     Widget avatar;
     if (c.blockedMe) {
@@ -92,7 +93,7 @@ class _ConversationTile extends StatelessWidget {
     } else if (img.isNotEmpty) {
       avatar = Image.network(img, fit: BoxFit.cover, width: 44, height: 44, errorBuilder: (_, __, ___) => const SizedBox());
     } else if (support) {
-      avatar = const Text('🛟', style: TextStyle(fontSize: 18));
+      avatar = Icon(Icons.support_rounded, size: 22, color: WebC.indigoSoft);
     } else {
       avatar = const SizedBox();
     }
@@ -122,7 +123,7 @@ class _ConversationTile extends StatelessWidget {
                 Row(
                   children: [
                     if (support) ...[
-                      Text('📌', style: TextStyle(color: WebC.indigo, fontSize: 12)),
+                      Icon(Icons.push_pin_rounded, size: 13, color: WebC.indigo),
                       const SizedBox(width: 6),
                     ],
                     Expanded(
@@ -141,7 +142,12 @@ class _ConversationTile extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(preview,
+                      child: Text.rich(
+                          TextSpan(children: [
+                            if (prefix.isNotEmpty) TextSpan(text: prefix),
+                            if (fileOnly) iconSpan(Icons.attach_file_rounded, size: 14, color: WebC.zinc400, gap: 2),
+                            TextSpan(text: preview),
+                          ]),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: WebC.zinc400, fontSize: 14)),

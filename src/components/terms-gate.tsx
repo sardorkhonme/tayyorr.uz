@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { TermsContent } from "@/components/terms-content";
+import { Icon } from "@/components/icons";
 
 /**
  * Ro'yxatdan o'tish / onboarding uchun rozilik katakchasi.
@@ -74,8 +75,9 @@ function TermsModal({ onClose }: { onClose: () => void }) {
             type="button"
             className="backdrop-blur-sm rounded-lg px-2 py-1 text-sm text-zinc-400 hover:bg-white/5 hover:text-white"
             onClick={onClose}
+            aria-label="Yopish"
           >
-            ✕
+            <Icon name="close" className="h-4 w-4" />
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-4">

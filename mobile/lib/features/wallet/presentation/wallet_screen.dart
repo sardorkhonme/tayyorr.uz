@@ -18,7 +18,7 @@ import '../data/wallet_repository.dart';
 
 const _starPrice = 2000;
 
-/// Saytdagi /wallet — balans, ⭐ Star, to'ldirish, yechish va tarix.
+/// Saytdagi /wallet — balans, Star, to'ldirish, yechish va tarix.
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
@@ -117,16 +117,23 @@ class _Section extends StatelessWidget {
 
 /// Karta sarlavhasi + o'ng tomondagi kichik nishon.
 class _FormHead extends StatelessWidget {
-  const _FormHead({required this.title, this.tag, this.tagColor, this.tagBg});
+  const _FormHead({required this.title, this.tag, this.tagColor, this.tagBg, this.titleIcon, this.tagStar = false});
   final String title;
   final String? tag;
   final Color? tagColor;
   final Color? tagBg;
 
+  /// sarlavha oldidagi ikonka (emoji o'rniga)
+  final Widget? titleIcon;
+
+  /// teg matnidan keyin star belgisi
+  final bool tagStar;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
+        if (titleIcon != null) ...[titleIcon!, const SizedBox(width: 8)],
         Expanded(
           child: Text(title, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
         ),
@@ -134,8 +141,13 @@ class _FormHead extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: tagBg ?? WebC.fill5, borderRadius: BorderRadius.circular(4)),
-            child: Text(tag!,
-                style: TextStyle(color: tagColor ?? WebC.zinc300, fontSize: 11, fontWeight: FontWeight.w600)),
+            child: Text.rich(
+              TextSpan(children: [
+                if (tagStar) ...[TextSpan(text: tag!.split(' ').first), const TextSpan(text: ' '), starSpan(size: 11), TextSpan(text: tag!.substring(tag!.indexOf(' ')))]
+                else TextSpan(text: tag!),
+              ]),
+              style: TextStyle(color: tagColor ?? WebC.zinc300, fontSize: 11, fontWeight: FontWeight.w600),
+            ),
           ),
       ],
     );
@@ -163,9 +175,10 @@ class _Msg extends StatelessWidget {
 
 /// Saytdagi tez tanlash tugmachasi (`rounded-lg border bg-white/5 text-xs`).
 class _Quick extends StatelessWidget {
-  const _Quick({required this.label, required this.onTap});
+  const _Quick({required this.label, required this.onTap, this.star = false});
   final String label;
   final VoidCallback onTap;
+  final bool star;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +191,13 @@ class _Quick extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: WebC.border),
         ),
-        child: Text(label, style: TextStyle(color: WebC.zinc300, fontSize: 12)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: TextStyle(color: WebC.zinc300, fontSize: 12)),
+            if (star) ...[const SizedBox(width: 3), const StarGlyph(size: 12)],
+          ],
+        ),
       ),
     );
   }
@@ -329,7 +348,7 @@ class _BalanceCardState extends State<_BalanceCard> {
       );
 }
 
-// ── ⭐ Star ─────────────────────────────────────────────────────────
+// ── Star ─────────────────────────────────────────────────────────
 
 class _BuyStarsForm extends StatefulWidget {
   const _BuyStarsForm({required this.starBalance, required this.onDone});
@@ -365,7 +384,7 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
       await WalletRepository().buyStars(n);
       if (!mounted) return;
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-      setState(() => _msg = (true, '$n ⭐ sotib olindi!'));
+      setState(() => _msg = (true, '$n star sotib olindi!'));
       _stars.clear();
       widget.onDone();
     } on ApiException catch (e) {
@@ -383,14 +402,22 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _FormHead(
-            title: '⭐ Star',
-            tag: '${widget.starBalance} ⭐ mavjud',
+            title: 'Star',
+            titleIcon: const StarGlyph(size: 18),
+            tag: '${widget.starBalance} mavjud',
+            tagStar: true,
             tagColor: WebC.amber,
             tagBg: const Color(0xFFF59E0B).withValues(alpha: 0.15),
           ),
           const SizedBox(height: 8),
-          _Hint("Buyurtmaga ariza yuborish va navbatda yuqoriga chiqish uchun kerak bo'ladi. "
-              "1 ⭐ = ${groupDigits(_starPrice)} so'm, hamyon balansingizdan yechiladi."),
+          Text.rich(
+            TextSpan(children: [
+              const TextSpan(text: "Buyurtmaga ariza yuborish va navbatda yuqoriga chiqish uchun kerak bo'ladi. 1 "),
+              starSpan(size: 12),
+              TextSpan(text: " = ${groupDigits(_starPrice)} so'm, hamyon balansingizdan yechiladi."),
+            ]),
+            style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
+          ),
           const SizedBox(height: 16),
           const WebLabel('Nechta star (dona)'),
           WebInput(
@@ -409,7 +436,7 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
             runSpacing: 8,
             children: [
               for (final q in const [5, 10, 25, 50])
-                _Quick(label: '$q ⭐', onTap: () => setState(() => _stars.text = '$q')),
+                _Quick(label: '$q', star: true, onTap: () => setState(() => _stars.text = '$q')),
             ],
           ),
           if (_msg != null) ...[const SizedBox(height: 16), _Msg(ok: _msg!.$1, text: _msg!.$2)],

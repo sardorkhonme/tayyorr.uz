@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "@/components/icons";
 
 type VideoItem = { id: string; title: string; videoUrl: string };
 type Rect = { top: number; left: number; width: number; height: number };
@@ -174,7 +175,7 @@ export function VideoCard({
                 aria-label="Yopish"
                 className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
               >
-                ✕
+                <Icon name="close" className="h-5 w-5" />
               </button>
             </div>
           )}

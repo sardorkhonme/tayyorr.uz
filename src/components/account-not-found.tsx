@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { AuthShell } from "@/components/auth-shell";
+import { Icon } from "@/components/icons";
 
 export function AccountNotFound() {
   const [busy, setBusy] = useState(false);
@@ -16,8 +17,8 @@ export function AccountNotFound() {
   return (
     <AuthShell width="max-w-md">
       <div className="card p-7 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-3xl text-red-400">
-          👤
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-400">
+          <Icon name="user" className="h-8 w-8" />
         </div>
         <h1 className="text-xl font-semibold text-white">
           Bunday hisob mavjud emas

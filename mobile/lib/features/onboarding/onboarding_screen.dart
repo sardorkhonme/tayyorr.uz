@@ -315,7 +315,7 @@ class _OrderArt extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(children: [
-                    const Text('📝', style: TextStyle(fontSize: 18)),
+                    Icon(Icons.edit_note_rounded, size: 20, color: WebC.indigoSoft),
                     const SizedBox(width: 8),
                     Text('Kurs ishi', style: TextStyle(color: WebC.white, fontWeight: FontWeight.w600, fontSize: 14)),
                   ]),
@@ -341,7 +341,7 @@ class _OrderArt extends StatelessWidget {
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               radius: 99,
-              child: Text('🎓 Diplom', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(Icons.school_rounded, 'Diplom', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
           Positioned(
@@ -350,7 +350,7 @@ class _OrderArt extends StatelessWidget {
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               radius: 99,
-              child: Text('📊 Prezentatsiya', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(Icons.bar_chart_rounded, 'Prezentatsiya', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
         ],
@@ -402,7 +402,7 @@ class _OffersArt extends StatelessWidget {
                     color: const Color(0xFF10B981).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(99),
                   ),
-                  child: Text('tanlandi ✓', style: TextStyle(color: WebC.emerald, fontSize: 10)),
+                  child: IconLabel(Icons.check_rounded, 'tanlandi', gap: 2, style: TextStyle(color: WebC.emerald, fontSize: 10)),
                 ),
             ],
           ),
@@ -483,7 +483,7 @@ class _SafeArt extends StatelessWidget {
             top: 40 + _bob(t, 0.25, 7),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: Text("Ish tayyor ✅", style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(Icons.check_circle_rounded, "Ish tayyor", color: WebC.emerald, style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
           Positioned(
@@ -499,7 +499,7 @@ class _SafeArt extends StatelessWidget {
             bottom: 20 + _bob(t, 0.8, 6),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: Text('💬 Chat', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(Icons.chat_bubble_outline_rounded, 'Chat', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
         ],

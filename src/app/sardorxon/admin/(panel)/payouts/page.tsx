@@ -6,6 +6,7 @@ import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
+import { Icon } from "@/components/icons";
 
 const STATUS: Record<string, string> = {
   PENDING: "O'tkazilishi kutilmoqda",
@@ -96,8 +97,13 @@ export default async function AdminPayouts({
                       <AdminPostButton
                         url={`/api/admin/payouts/${p.id}`}
                         body={{ action: "PAID" }}
-                        label="✅ Kartaga o'tkazdim"
-                        className="rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-500/25"
+                        label={
+                          <>
+                            <Icon name="check-circle" className="h-3.5 w-3.5" />
+                            Kartaga o'tkazdim
+                          </>
+                        }
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-500/25"
                         confirmText="Pul kartaga haqiqatan o'tkazildimi?"
                       />
                       <AdminPostButton

@@ -10,6 +10,7 @@ import {
   HEAR_ABOUT_US_LABELS,
   ChannelBrandIcon,
 } from "@/components/hear-about-us-select";
+import { Icon } from "@/components/icons";
 
 export default async function AdminUsers({
   searchParams,
@@ -72,10 +73,10 @@ export default async function AdminUsers({
                     </Link>
                     {!u.telegramChatId && u.telegramBlockedAt && (
                       <span
-                        className="ml-1.5 text-amber-400"
+                        className="ml-1.5 inline-flex align-[-2px] text-amber-400"
                         title={`Telegram botni bloklagan · ${shortDateTime(u.telegramBlockedAt)}`}
                       >
-                        🚫
+                        <Icon name="ban" className="h-3.5 w-3.5" />
                       </span>
                     )}
                   </td>
@@ -100,8 +101,9 @@ export default async function AdminUsers({
                         </span>
                       )}
                       {u.referralLink && (
-                        <span className="text-emerald-400">
-                          🔗 {u.referralLink.name}
+                        <span className="inline-flex items-center gap-1 text-emerald-400">
+                          <Icon name="link" className="h-3.5 w-3.5 shrink-0" />
+                          {u.referralLink.name}
                         </span>
                       )}
                       {!u.hearAboutUs && !u.referralLink && (

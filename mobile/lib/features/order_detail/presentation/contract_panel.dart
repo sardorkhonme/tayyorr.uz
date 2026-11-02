@@ -75,7 +75,8 @@ class ContractPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('📄 Shartnoma imzolangan', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          IconLabel(Icons.description_outlined, 'Shartnoma imzolangan',
+              color: WebC.emerald, size: 18, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           _rich('Summa: ', som, isOrderer ? ' · tayyorlovchi: ${c.preparerName}' : ''),
           if (c.deadline != null) ...[
@@ -86,7 +87,8 @@ class ContractPanel extends StatelessWidget {
           if (delivered && c.reviewDueAt != null) ...[
             const SizedBox(height: 8),
             _note(
-              "📦 Ish topshirilgan${c.deliveredAt != null ? ' (${shortDateTime(c.deliveredAt!)})' : ''}. "
+              icon: Icons.inventory_2_outlined,
+              "Ish topshirilgan${c.deliveredAt != null ? ' (${shortDateTime(c.deliveredAt!)})' : ''}. "
               "${isOrderer ? 'Tekshirib javob bering' : 'Buyurtmachi tekshirmoqda'} — ${shortDateTime(c.reviewDueAt!)} "
               "gacha javob bo'lmasa, ish muvaffaqiyatli deb topiladi va pul tayyorlovchiga o'tadi.",
             ),
@@ -105,7 +107,7 @@ class ContractPanel extends StatelessWidget {
             _Box(
               color: const Color(0xFFF59E0B),
               children: [
-                Text("⚠️ $requester bekor qilishni so'ra${requester == 'Siz' ? 'dingiz' : 'di'}",
+                IconLabel(Icons.warning_amber_rounded, "$requester bekor qilishni so'ra${requester == 'Siz' ? 'dingiz' : 'di'}",
                     style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text('Sabab: ${c.cancelReason ?? ''}', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
@@ -160,7 +162,7 @@ class ContractPanel extends StatelessWidget {
             _Box(
               color: const Color(0xFFEF4444),
               children: [
-                Text("⚖️ Masala administrator ko'rib chiqmoqda",
+                IconLabel(Icons.balance_rounded, "Masala administrator ko'rib chiqmoqda",
                     style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text('Bekor qilish sababi: ${c.cancelReason ?? ''}',
@@ -180,7 +182,8 @@ class ContractPanel extends StatelessWidget {
             Wrap(spacing: 8, runSpacing: 8, children: [
               if (isOrderer)
                 WebButton(
-                  label: '✅ Ishni yakunlash',
+                  label: 'Ishni yakunlash',
+                  leading: Icons.check_circle_outline_rounded,
                   onPressed: busy
                       ? null
                       : () async {
@@ -195,12 +198,13 @@ class ContractPanel extends StatelessWidget {
                         },
                 ),
               if (isOrderer && delivered && c.cancelState == null)
-                WebButton(label: '🔁 Qayta ishlash', variant: WebBtn.ghost, onPressed: busy ? null : askRevision),
+                WebButton(label: 'Qayta ishlash', leading: Icons.refresh_rounded, variant: WebBtn.ghost, onPressed: busy ? null : askRevision),
               if (!isOrderer && order.status == 'IN_PROGRESS')
-                WebButton(label: '📦 Ishni topshirdim', onPressed: busy ? null : () => cubit.setStatus('DELIVERED')),
+                WebButton(label: 'Ishni topshirdim', leading: Icons.inventory_2_outlined, onPressed: busy ? null : () => cubit.setStatus('DELIVERED')),
               if (c.cancelState == null)
                 WebButton(
-                  label: "✖ Bekor qilishni so'rash",
+                  label: "Bekor qilishni so'rash",
+                  leading: Icons.highlight_off_rounded,
                   variant: WebBtn.ghost,
                   onPressed: busy
                       ? null
@@ -226,11 +230,17 @@ class ContractPanel extends StatelessWidget {
         ],
       ));
 
-  Widget _note(String text) => Container(
+  Widget _note(String text, {IconData? icon}) => Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(color: AppColors.tint(0.04), borderRadius: BorderRadius.circular(8)),
-        child: Text(text, style: TextStyle(color: WebC.zinc400, fontSize: 12, height: 1.4)),
+        child: Text.rich(
+          TextSpan(children: [
+            if (icon != null) iconSpan(icon, size: 13),
+            TextSpan(text: text),
+          ]),
+          style: TextStyle(color: WebC.zinc400, fontSize: 12, height: 1.4),
+        ),
       );
 }
 

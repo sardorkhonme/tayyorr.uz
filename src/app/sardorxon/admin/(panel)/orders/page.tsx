@@ -6,6 +6,7 @@ import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { shortDate } from "@/lib/date";
 import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
+import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,17 @@ export default async function AdminOrders({
               }`}
             >
               <span className="text-white">
-                {d.cancelState === "DISPUTED" ? "⚖️ Nizo — qaror kerak" : "⚠️ Bekor qilish so'ralgan"}
+                {d.cancelState === "DISPUTED" ? (
+                  <>
+                    <Icon name="scale" className="mr-1 inline-block h-4 w-4 align-[-3px] text-red-300" />
+                    Nizo — qaror kerak
+                  </>
+                ) : (
+                  <>
+                    <Icon name="alert" className="mr-1 inline-block h-4 w-4 align-[-3px] text-amber-300" />
+                    Bekor qilish so'ralgan
+                  </>
+                )}
                 {" · "}
                 {d.order.title}
               </span>
@@ -154,7 +165,8 @@ export default async function AdminOrders({
                       className="text-red-300"
                       title={o.deleteReason ?? undefined}
                     >
-                      🗑 O'chirilgan{" "}
+                      <Icon name="trash" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px]" />
+                      O'chirilgan{" "}
                       {o.deletedByRole === "ADMIN" ? "(admin)" : "(buyurtmachi)"}
                     </span>
                   ) : (

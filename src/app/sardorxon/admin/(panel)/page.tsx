@@ -7,6 +7,7 @@ import {
   HEAR_ABOUT_US_LABELS,
   ChannelBrandIcon,
 } from "@/components/hear-about-us-select";
+import { Icon } from "@/components/icons";
 
 export default async function AdminHome() {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -82,8 +83,9 @@ export default async function AdminHome() {
       {/* «Qayerdan eshitgan» statistikasi */}
       {hearAboutUsStats.length > 0 && (
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-          <h2 className="mb-4 font-semibold text-white">
-            📊 Qayerdan eshitgan — statistika
+          <h2 className="mb-4 flex items-center gap-2 font-semibold text-white">
+            <Icon name="chart" className="h-[18px] w-[18px] text-indigo-300" />
+            Qayerdan eshitgan — statistika
           </h2>
           <div className="flex flex-col gap-3">
             {hearAboutUsStats.map((s) => {

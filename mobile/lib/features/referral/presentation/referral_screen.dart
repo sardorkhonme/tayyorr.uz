@@ -64,7 +64,7 @@ class _ReferralViewState extends State<_ReferralView> {
             const WebPageTitle(
               'Referal',
               size: 20,
-              subtitle: "Do'stlaringizni taklif qiling — har bir ro'yxatdan o'tgan uchun 1 ⭐ olasiz.",
+              subtitle: "Do'stlaringizni taklif qiling — har bir ro'yxatdan o'tgan uchun 1 star olasiz.",
             ),
             if (user != null) _linkCard(_link(user.id)),
             Column(
@@ -105,8 +105,15 @@ class _ReferralViewState extends State<_ReferralView> {
                                 color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(99),
                               ),
-                              child: Text('+1 ⭐',
-                                  style: TextStyle(color: WebC.amber, fontSize: 12, fontWeight: FontWeight.w600)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('+1',
+                                      style: TextStyle(color: WebC.amber, fontSize: 12, fontWeight: FontWeight.w600)),
+                                  const SizedBox(width: 2),
+                                  const StarGlyph(size: 12),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -125,13 +132,15 @@ class _ReferralViewState extends State<_ReferralView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text("🎁 Do'stlaringizni taklif qiling",
+          IconLabel(Icons.card_giftcard_rounded, "Do'stlaringizni taklif qiling",
+              color: WebC.indigoSoft, size: 18,
               style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text.rich(
             TextSpan(children: [
               const TextSpan(text: "Havolangiz orqali ro'yxatdan o'tgan har bir yangi foydalanuvchi uchun sizga "),
-              TextSpan(text: '1 ⭐', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
+              TextSpan(text: '1 ', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
+              starSpan(size: 12),
               const TextSpan(text: ' beriladi.'),
             ]),
             style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
@@ -158,7 +167,8 @@ class _ReferralViewState extends State<_ReferralView> {
               ),
               const SizedBox(width: 8),
               WebButton(
-                label: _copied ? 'Nusxalandi ✓' : 'Nusxalash',
+                label: _copied ? 'Nusxalandi' : 'Nusxalash',
+                leading: _copied ? Icons.check_rounded : null,
                 variant: WebBtn.ghost,
                 onPressed: () => _copy(link),
               ),

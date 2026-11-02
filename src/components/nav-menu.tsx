@@ -6,13 +6,13 @@ import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 
 import { useLocale } from "@/components/locale-provider";
-import { PowerIcon } from "@/components/icons";
+import { Icon, PowerIcon, type IconName } from "@/components/icons";
 
 export interface NavLink {
   href: string;
   label: string;
   tkey?: string;
-  icon: string;
+  icon: IconName;
   badge?: number;
 }
 
@@ -133,7 +133,7 @@ export function NavMenu({
                         : "text-zinc-300 hover:bg-white/5 hover:pl-4"
                     }`}
                   >
-                    <span className="text-base">{l.icon}</span>
+                    <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
                     <span className="flex-1">
                       {l.tkey ? t(l.tkey) : l.label}
                     </span>

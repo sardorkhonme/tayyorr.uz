@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "@/components/icons";
 
 export interface Person {
   id: string;
@@ -43,8 +44,9 @@ export function PeopleModal({
             type="button"
             onClick={onClose}
             className="text-zinc-500 hover:text-white"
+            aria-label="Yopish"
           >
-            ✕
+            <Icon name="close" className="h-4 w-4" />
           </button>
         </div>
         <div className="max-h-[calc(70vh-3rem)] overflow-y-auto p-2">

@@ -173,7 +173,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         const Spacer(),
                         GestureDetector(
                           onTap: () => Navigator.of(sheetContext).pop(),
-                          child: Text('✕', style: TextStyle(color: WebC.zinc500, fontSize: 16)),
+                          child: Icon(Icons.close_rounded, size: 18, color: WebC.zinc500),
                         ),
                       ],
                     ),
@@ -323,7 +323,7 @@ class _DashboardViewState extends State<_DashboardView> {
             children: [
               Text(label, style: TextStyle(color: WebC.zinc300, fontSize: 12)),
               const SizedBox(width: 4),
-              GestureDetector(onTap: onRemove, child: Text('✕', style: TextStyle(color: WebC.zinc500, fontSize: 12))),
+              GestureDetector(onTap: onRemove, child: Icon(Icons.close_rounded, size: 14, color: WebC.zinc500)),
             ],
           ),
         );

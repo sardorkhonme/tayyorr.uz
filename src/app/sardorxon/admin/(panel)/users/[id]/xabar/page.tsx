@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
+import { Icon } from "@/components/icons";
 
 export default async function AdminUserSupportMessage({
   params,
@@ -42,7 +43,8 @@ export default async function AdminUserSupportMessage({
         }
         className="btn-primary inline-flex"
       >
-        💬 Chatni ochish
+        <Icon name="message" className="h-4 w-4" />
+        Chatni ochish
       </Link>
     </section>
   );

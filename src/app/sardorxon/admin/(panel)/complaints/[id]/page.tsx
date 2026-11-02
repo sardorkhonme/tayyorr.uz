@@ -6,6 +6,7 @@ import { orderedPair } from "@/lib/chat";
 import { formatSom } from "@/lib/wallet";
 import { ComplaintForm } from "@/components/admin/complaint-form";
 import { shortDateTime, shortDate } from "@/lib/date";
+import { Icon } from "@/components/icons";
 
 function AccountCard({
   title,
@@ -171,7 +172,12 @@ export default async function AdminComplaintDetail({
             {reportedMsg.deletedAt && " · (keyinchalik o'chirilgan)"}
           </p>
           <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-100">
-            {reportedMsg.fileName && `📎 ${reportedMsg.fileName} `}
+            {reportedMsg.fileName && (
+              <span className="mr-1 inline-flex items-center gap-1 text-zinc-300">
+                <Icon name="paperclip" className="h-3.5 w-3.5" />
+                {reportedMsg.fileName}
+              </span>
+            )}
             {reportedMsg.body}
           </p>
           <Link
@@ -191,7 +197,8 @@ export default async function AdminComplaintDetail({
       <div className="flex flex-wrap gap-2">
         {pairConvId ? (
           <Link href={`/sardorxon/admin/chats/${pairConvId}`} className="btn-ghost">
-            💬 Ularning yozishmasini ko'rish
+            <Icon name="messages" className="h-4 w-4" />
+            Ularning yozishmasini ko'rish
           </Link>
         ) : (
           <span className="text-sm text-zinc-500">

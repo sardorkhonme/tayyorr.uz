@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "@/components/icons";
+
 export default function GlobalError({ reset }: { reset: () => void }) {
   return (
     <html lang="uz">
@@ -19,7 +21,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           padding: "1.5rem",
         }}
       >
-        <div style={{ fontSize: "4rem" }}>⚠️</div>
+        <Icon name="alert" className="" width={64} height={64} style={{ color: "#fbbf24" }} />
         <h1 style={{ fontSize: "1.25rem", fontWeight: 600, color: "#fff" }}>
           Xatolik yuz berdi
         </h1>

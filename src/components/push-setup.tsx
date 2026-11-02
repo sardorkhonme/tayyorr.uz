@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
+import { Icon } from "@/components/icons";
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
@@ -101,8 +102,8 @@ export function PushSetup() {
         className="pop-in w-full max-w-sm rounded-2xl border border-white/10 bg-[#14141b] p-6 text-center shadow-2xl shadow-black/50"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/15 text-2xl">
-          🔔
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/15 text-indigo-300">
+          <Icon name="bell" className="h-6 w-6" />
         </div>
         <h3 className="mt-4 font-semibold text-white">
           Bildirishnomalarni yoqasizmi?

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 import { ChatFileView, humanSize } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
-import { RocketIcon } from "@/components/icons";
+import { RocketIcon, Icon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { useDismiss } from "@/components/use-dismiss";
@@ -313,8 +313,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                 />
               )}
               {!it.fileUrl && it.fileName && (
-                <div className="rounded-lg bg-white/15 px-2 py-1 text-xs">
-                  📎 {it.fileName}
+                <div className="flex items-center gap-1 rounded-lg bg-white/15 px-2 py-1 text-xs">
+                  <Icon name="paperclip" className="h-3.5 w-3.5 shrink-0" />
+                  {it.fileName}
                 </div>
               )}
               {it.body && (
@@ -330,7 +331,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                       onClick={() => openPeople(it, "likes")}
                       className="backdrop-blur-sm flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
                     >
-                      👍 {it.likeCount}
+                      <Icon name="thumbs-up" className="h-3.5 w-3.5" /> {it.likeCount}
                     </button>
                   )}
                   {(it.dislikeCount ?? 0) > 0 && (
@@ -339,7 +340,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                       onClick={() => openPeople(it, "dislikes")}
                       className="backdrop-blur-sm flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs hover:bg-white/25"
                     >
-                      👎 {it.dislikeCount}
+                      <Icon name="thumbs-down" className="h-3.5 w-3.5" /> {it.dislikeCount}
                     </button>
                   )}
                 </div>
@@ -360,7 +361,8 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           <div className="mb-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-zinc-300">
             <div className="flex items-center justify-between gap-2">
               <span className="min-w-0 truncate">
-                📎 {attachment?.name ?? uploadName}
+                <Icon name="paperclip" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px]" />
+                {attachment?.name ?? uploadName}
                 {attachment && ` · ${humanSize(attachment.size)}`}
               </span>
               <button
@@ -371,8 +373,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                   setUploadName("");
                 }}
                 className="shrink-0 text-zinc-500 hover:text-white"
+                aria-label="Olib tashlash"
               >
-                ✕
+                <Icon name="close" className="h-4 w-4" />
               </button>
             </div>
             {uploading && (
@@ -407,7 +410,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             disabled={uploading}
             onClick={() => fileRef.current?.click()}
           >
-            {uploading ? "…" : "📎"}
+            {uploading ? "…" : <Icon name="paperclip" className="h-5 w-5" />}
           </button>
           <AutoTextarea
             className="input min-h-[42px]"
@@ -443,9 +446,10 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
               <button
                 type="button"
                 onClick={() => openPeople(menu.item, "reads")}
-                className="backdrop-blur-sm block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
+                className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
               >
-                👁 {menu.item.readCount ?? 0} kishi ko'rdi
+                <Icon name="eye" className="h-4 w-4 shrink-0" />
+                {menu.item.readCount ?? 0} kishi ko'rdi
               </button>
               <button
                 type="button"

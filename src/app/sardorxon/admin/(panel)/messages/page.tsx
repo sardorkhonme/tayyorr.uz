@@ -5,6 +5,7 @@ import { getSupportUserId } from "@/lib/support";
 import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
 import { splitSource, stripSource } from "@/lib/message-source";
+import { Icon } from "@/components/icons";
 
 export default async function AdminMessages({
   searchParams,
@@ -86,7 +87,10 @@ export default async function AdminMessages({
               <span className="min-w-0 flex-1 truncate text-sm text-white">
                 {u.name ?? "—"} <span className="text-zinc-500">@{u.login ?? "—"}</span>
               </span>
-              <span className="shrink-0 text-xs font-medium text-indigo-300">💬 Yozish</span>
+              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-indigo-300">
+                <Icon name="message" className="h-3.5 w-3.5" />
+                Yozish
+              </span>
             </Link>
           ))}
         </div>
@@ -122,11 +126,20 @@ export default async function AdminMessages({
                   )}
                 </div>
                 <div className="truncate text-sm text-zinc-400">
-                  {last
-                    ? `${last.senderId === supportId ? "Support: " : ""}${
-                        (splitSource(last.body).source === "tayyorr+" ? "[tayyorr+] " : "") + (stripSource(last.body) || "📎 fayl")
-                      }`
-                    : "—"}
+                  {last ? (
+                    <>
+                      {last.senderId === supportId ? "Support: " : ""}
+                      {splitSource(last.body).source === "tayyorr+" ? "[tayyorr+] " : ""}
+                      {stripSource(last.body) || (
+                        <>
+                          <Icon name="paperclip" className="mr-0.5 inline-block h-3.5 w-3.5 align-[-2px]" />
+                          fayl
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </div>
               </div>
             </Link>

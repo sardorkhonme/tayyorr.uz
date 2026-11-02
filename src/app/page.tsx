@@ -11,7 +11,7 @@ import { HeroBgVideo } from "@/components/hero-bg-video";
 import { LandingVideos } from "@/components/landing-videos";
 import { LandingFaq } from "@/components/landing-faq";
 import { PhoneScrollShowcase } from "@/components/phone-scroll-showcase";
-import { TelegramIcon, InstagramIcon } from "@/components/icons";
+import { TelegramIcon, InstagramIcon, Icon } from "@/components/icons";
 import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
 
@@ -295,8 +295,8 @@ export default async function Home() {
             className="lq-glass blur-in group relative flex flex-col overflow-hidden rounded-2xl p-7"
           >
             <span className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-2xl">
-              🚀
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white">
+              <Icon name="rocket" className="h-6 w-6" />
             </span>
             <h3 className="font-display mt-5 text-xl font-bold text-white">Tayyorr SMM</h3>
             <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-400">
@@ -308,7 +308,7 @@ export default async function Home() {
             </span>
           </a>
           <div className="blur-in flex flex-col justify-center rounded-2xl border border-dashed border-white/10 p-7 text-center">
-            <span className="text-2xl">✨</span>
+            <Icon name="sparkles" className="mx-auto h-7 w-7 text-indigo-300" />
             <h3 className="font-display mt-3 font-bold text-white">Yangi xizmatlar tez orada</h3>
             <p className="mt-2 text-sm text-zinc-500">tayyorr+ doimiy kengayib boradi.</p>
           </div>
@@ -658,7 +658,7 @@ function RolePanel({
         {points.map((p) => (
           <li key={p} className="flex gap-3 text-sm text-zinc-300">
             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-500/15 text-indigo-300">
-              ✓
+              <Icon name="check" className="h-3 w-3" strokeWidth={2.4} />
             </span>
             {p}
           </li>

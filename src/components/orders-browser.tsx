@@ -6,6 +6,7 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/time-ago";
 import { useDismiss } from "@/components/use-dismiss";
 import { useLocale } from "@/components/locale-provider";
+import { Icon } from "@/components/icons";
 
 const SORT_KEYS = ["new", "old", "offers", "budget"] as const;
 type SortKey = (typeof SORT_KEYS)[number];
@@ -204,8 +205,9 @@ export function OrdersBrowser({
                 type="button"
                 onClick={() => setTypes((s) => toggle(s, t))}
                 className="text-zinc-500 hover:text-white"
+                aria-label="Olib tashlash"
               >
-                ✕
+                <Icon name="close" className="h-3.5 w-3.5" />
               </button>
             </span>
           ))}
@@ -219,8 +221,9 @@ export function OrdersBrowser({
                 type="button"
                 onClick={() => setBuckets((s) => toggle(s, b))}
                 className="text-zinc-500 hover:text-white"
+                aria-label="Olib tashlash"
               >
-                ✕
+                <Icon name="close" className="h-3.5 w-3.5" />
               </button>
             </span>
           ))}
@@ -315,8 +318,9 @@ export function OrdersBrowser({
                 type="button"
                 onClick={() => setOpen(false)}
                 className="text-zinc-500 hover:text-white"
+                aria-label="Yopish"
               >
-                ✕
+                <Icon name="close" className="h-4 w-4" />
               </button>
             </div>
 

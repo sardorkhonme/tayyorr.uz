@@ -9,6 +9,7 @@ import {
   LandingPhoneSlideManager,
   type PhoneSlide,
 } from "@/components/admin/landing-phone-slide-manager";
+import { Icon } from "@/components/icons";
 
 // mobil ilovada onboarding tugaganda REGISTER yozuvi shu belgi bilan yoziladi
 const MOBILE_REGISTER = { action: "REGISTER", summary: { contains: "mobil ilova" } } as const;
@@ -60,8 +61,8 @@ export default async function AdminMobileApp({
   }));
 
   const stats = [
-    { key: "downloads", label: "\"Ilovani yuklab olish\" bosildi", value: downloads, week: downloadsWeek, icon: "⬇️" },
-    { key: "signups", label: "Ilovada ro'yxatdan o'tdi", value: signups, week: signupsWeek, icon: "📱" },
+    { key: "downloads", label: "\"Ilovani yuklab olish\" bosildi", value: downloads, week: downloadsWeek, icon: "download" as const },
+    { key: "signups", label: "Ilovada ro'yxatdan o'tdi", value: signups, week: signupsWeek, icon: "phone" as const },
   ];
 
   return (
@@ -92,8 +93,9 @@ export default async function AdminMobileApp({
                 }`}
               >
                 <div className="flex items-center justify-between text-sm text-zinc-400">
-                  <span>
-                    {s.icon} {s.label}
+                  <span className="flex items-center gap-1.5">
+                    <Icon name={s.icon} className="h-4 w-4" />
+                    {s.label}
                   </span>
                   <span className="text-xs text-indigo-300">
                     {active ? "yopish ▲" : "ro'yxat ▼"}

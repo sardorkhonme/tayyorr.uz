@@ -176,11 +176,20 @@ class ChatContractOrderRef {
   });
 
   /// Qadalgan panel uchun qisqa holat matni (saytdagi pinBadge bilan bir xil).
+  /// Ikonkasi UI'da [badgeKind] bo'yicha qo'yiladi.
   String get badge {
-    if (contractStatus == 'SENT') return '📄 Shartnoma yuborilgan';
-    if (cancelState == 'DISPUTED') return "⚖️ Admin ko'rib chiqmoqda";
-    if (cancelState == 'PENDING') return "⚠️ Bekor qilish so'ralgan";
+    if (contractStatus == 'SENT') return 'Shartnoma yuborilgan';
+    if (cancelState == 'DISPUTED') return "Admin ko'rib chiqmoqda";
+    if (cancelState == 'PENDING') return "Bekor qilish so'ralgan";
     return kOrderStatusLabel[status] ?? status;
+  }
+
+  /// 'contract' | 'disputed' | 'pending' | null — badge ikonkasini tanlash uchun.
+  String? get badgeKind {
+    if (contractStatus == 'SENT') return 'contract';
+    if (cancelState == 'DISPUTED') return 'disputed';
+    if (cancelState == 'PENDING') return 'pending';
+    return null;
   }
 
   factory ChatContractOrderRef.fromJson(Map<String, dynamic> json) {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ProgressRing } from "@/components/progress-ring";
+import { Icon } from "@/components/icons";
 
 export interface ChatFile {
   name: string;
@@ -102,7 +103,10 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
               {dl.pct != null ? `${dl.pct}%` : "Yuklanmoqda…"}
             </>
           ) : (
-            "↓ Yuklab olish"
+            <>
+              <Icon name="download" className="h-4 w-4" />
+              Yuklab olish
+            </>
           )}
         </button>
         <button
@@ -111,7 +115,7 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
           className="backdrop-blur-sm flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg text-white hover:bg-white/20"
           aria-label="Yopish"
         >
-          ✕
+          <Icon name="close" className="h-5 w-5" />
         </button>
       </div>
       <div onClick={(e) => e.stopPropagation()} className="pop-in max-h-full max-w-full">
@@ -169,8 +173,8 @@ export function ChatFileView({ file, mine }: { file: ChatFile; mine: boolean }) 
                 className="max-h-56 w-full rounded-lg object-cover"
               />
               <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-xl text-white">
-                  ▶
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/55 text-white">
+                  <Icon name="play" className="ml-0.5 h-6 w-6" fill="currentColor" />
                 </span>
               </span>
             </>
@@ -217,7 +221,7 @@ function DocFile({ file, mine }: { file: ChatFile; mine: boolean }) {
             mine ? "bg-white text-indigo-600" : "bg-indigo-400 text-white"
           }`}
         >
-          ↓
+          <Icon name="download" className="h-5 w-5" />
         </span>
       )}
       <span className="min-w-0">
@@ -327,7 +331,11 @@ function AudioMessage({ file, mine }: { file: ChatFile; mine: boolean }) {
           mine ? "bg-white text-indigo-600" : "bg-indigo-400 text-white"
         }`}
       >
-        {playing ? "❚❚" : "▶"}
+        {playing ? (
+          <Icon name="pause" className="h-5 w-5" strokeWidth={2.6} />
+        ) : (
+          <Icon name="play" className="ml-0.5 h-5 w-5" fill="currentColor" />
+        )}
       </button>
       <div className="min-w-0 flex-1">
         <div
@@ -368,7 +376,7 @@ function AudioMessage({ file, mine }: { file: ChatFile; mine: boolean }) {
             className="hover:underline"
             aria-label="Yuklab olish"
           >
-            ↓
+            <Icon name="download" className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>

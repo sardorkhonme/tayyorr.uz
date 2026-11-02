@@ -14,6 +14,7 @@ import { shortDateTime } from "@/lib/date";
 import { sweepContracts } from "@/lib/contract-flow";
 import { contractView } from "@/lib/contract-view";
 import { maskName } from "@/lib/mask-name";
+import { Icon } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -158,8 +159,9 @@ export default async function OrderDetailPage({
 
       {deleted && (
         <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-sm">
-          <div className="font-semibold text-red-300">
-            🗑 Bu buyurtma o'chirilgan
+          <div className="flex items-center gap-1.5 font-semibold text-red-300">
+            <Icon name="trash" className="h-4 w-4" />
+            Bu buyurtma o'chirilgan
           </div>
           <div className="mt-1 text-zinc-400">
             {order.deletedByRole === "ADMIN"

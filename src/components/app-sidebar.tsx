@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
 import { useLocale } from "@/components/locale-provider";
 import { useUnread } from "@/components/unread-provider";
+import { Icon, StarIcon } from "@/components/icons";
 
 export interface SidebarUser {
   name: string | null;
@@ -87,8 +88,8 @@ export function AppSidebar({
             className="mt-0.5 text-lg font-semibold text-white"
           />
           {user.role === "PREPARER" && (
-            <div className="mt-1 text-sm font-semibold text-amber-300">
-              {user.starBalance} ⭐
+            <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-amber-300">
+              {user.starBalance} <StarIcon className="h-3.5 w-3.5" />
             </div>
           )}
           {user.walletCode && (
@@ -116,7 +117,7 @@ export function AppSidebar({
                     : "text-zinc-400 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <span className="text-base">{l.icon}</span>
+                <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
                 <span className="flex-1">{l.tkey ? t(l.tkey) : l.label}</span>
                 {!!l.badge && l.badge > 0 && (
                   <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">

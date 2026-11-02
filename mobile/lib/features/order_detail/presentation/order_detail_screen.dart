@@ -148,7 +148,7 @@ class _DeletedNotice extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("🗑 Bu buyurtma o'chirilgan",
+          IconLabel(Icons.delete_outline_rounded, "Bu buyurtma o'chirilgan",
               style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text('$by${order.deletedAt != null ? ' · ${shortDateTime(order.deletedAt!)}' : ''}',
@@ -275,7 +275,9 @@ class _DeleteButton extends StatelessWidget {
           color: const Color(0xFFEF4444).withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(busy ? '...' : "🗑 Buyurtmani o'chirish", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
+        child: busy
+            ? Text('...', style: TextStyle(color: WebC.redSoft, fontSize: 14))
+            : IconLabel(Icons.delete_outline_rounded, "Buyurtmani o'chirish", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
       ),
     );
   }
@@ -390,7 +392,8 @@ class _OrderActionsState extends State<_OrderActions> {
         Align(
           alignment: Alignment.centerLeft,
           child: WebButton(
-            label: '💬 Buyurtmachi bilan yozishish',
+            label: 'Buyurtmachi bilan yozishish',
+            leading: Icons.chat_bubble_outline_rounded,
             variant: WebBtn.ghost,
             onPressed: busy ? null : () => _startChat(o.orderer),
           ),
@@ -404,7 +407,8 @@ class _OrderActionsState extends State<_OrderActions> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('📄 Sizga shartnoma yuborildi',
+              IconLabel(Icons.description_outlined, 'Sizga shartnoma yuborildi',
+                  color: WebC.indigoSoft, size: 18,
                   style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               _rich('Kelishilgan summa: ', "${groupDigits(incoming.amount)} so'm"),
@@ -450,7 +454,7 @@ class _OrderActionsState extends State<_OrderActions> {
                 TextSpan(
                   style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
                   children: [
-                    const TextSpan(text: '📄 '),
+                    iconSpan(Icons.description_outlined, size: 16, color: WebC.indigoSoft),
                     TextSpan(text: sent.preparerName, style: const TextStyle(fontWeight: FontWeight.w700)),
                     TextSpan(text: " ga shartnoma yuborildi — ${groupDigits(sent.amount)} so'm. Javob kutilmoqda."),
                   ],
@@ -582,16 +586,25 @@ class _OrderActionsState extends State<_OrderActions> {
             const WebLabel("Star (navbatdagi boshlang'ich o'rningiz — kamida $_minOfferStars)"),
             WebInput(controller: _offerStars, keyboardType: TextInputType.number, onChanged: (_) => setState(() {})),
             const SizedBox(height: 4),
-            Text(
-              '⭐ Kamida $_minOfferStars star talab qiladi — navbatda yuqoriroqda turish uchun boshidanoq ko\'proq '
-              'yuborishingiz mumkin. Star balansingizdan sarflanadi.',
+            Text.rich(
+              TextSpan(children: [
+                const WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(padding: EdgeInsets.only(right: 4), child: StarGlyph(size: 13)),
+                ),
+                TextSpan(
+                  text: 'Kamida $_minOfferStars star talab qiladi — navbatda yuqoriroqda turish uchun boshidanoq ko\'proq '
+                      'yuborishingiz mumkin. Star balansingizdan sarflanadi.',
+                ),
+              ]),
               style: TextStyle(color: WebC.amber, fontSize: 12, height: 1.4),
             ),
             _link('Star yetarli emasmi? Hamyondan sotib oling →', WebC.amber),
           ],
           const SizedBox(height: 12),
           WebButton(
-            label: myOffer != null ? 'Yangilash' : 'Yuborish (${stars > 0 ? stars : _minOfferStars} ⭐)',
+            label: myOffer != null ? 'Yangilash' : 'Yuborish (${stars > 0 ? stars : _minOfferStars})',
+            icon: myOffer != null ? null : const StarGlyph(size: 16),
             expand: true,
             onPressed: busy
                 ? null
@@ -619,7 +632,8 @@ class _OrderActionsState extends State<_OrderActions> {
                 const TextSpan(text: 'Holat: '),
                 WidgetSpan(alignment: PlaceholderAlignment.middle, child: _OfferBadge(status: myOffer.status)),
                 const TextSpan(text: ' · Jami sarflangan: '),
-                TextSpan(text: '${myOffer.starsSpent} ⭐', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
+                TextSpan(text: '${myOffer.starsSpent} ', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
+                starSpan(size: 13),
               ],
             )),
             const SizedBox(height: 8),
@@ -629,7 +643,8 @@ class _OrderActionsState extends State<_OrderActions> {
                 const SizedBox(width: 8),
                 Flexible(
                   child: WebButton(
-                    label: '🚀 Navbatda yuqoriga chiqish',
+                    label: 'Navbatda yuqoriga chiqish',
+                    leading: Icons.rocket_launch_outlined,
                     variant: WebBtn.ghost,
                     onPressed: busy
                         ? null
@@ -706,7 +721,9 @@ class _OrderActionsState extends State<_OrderActions> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text('${q.starsSpent} ⭐', style: TextStyle(color: WebC.amber, fontSize: 12)),
+                  Text('${q.starsSpent}', style: TextStyle(color: WebC.amber, fontSize: 12)),
+                  const SizedBox(width: 2),
+                  const StarGlyph(size: 12),
                 ],
               ),
             ),
@@ -757,7 +774,9 @@ class _OrderActionsState extends State<_OrderActions> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text('${x.starsSpent} ⭐', style: TextStyle(color: WebC.amber, fontSize: 12)),
+              Text('${x.starsSpent}', style: TextStyle(color: WebC.amber, fontSize: 12)),
+              const SizedBox(width: 2),
+              const StarGlyph(size: 12),
             ],
           ),
           const SizedBox(height: 8),
@@ -790,11 +809,12 @@ class _OrderActionsState extends State<_OrderActions> {
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              WebButton(label: '💬 Chat', variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
-              WebButton(label: '⚠︎ Shikoyat', variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
+              WebButton(label: 'Chat', leading: Icons.chat_bubble_outline_rounded, variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
+              WebButton(label: 'Shikoyat', leading: Icons.warning_amber_rounded, variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
               if (status == 'OPEN' && x.status == 'PENDING' && sent == null) ...[
                 WebButton(
-                  label: '📄 Shartnoma tuzish',
+                  label: 'Shartnoma tuzish',
+                  leading: Icons.description_outlined,
                   onPressed: busy
                       ? null
                       : () => setState(() {

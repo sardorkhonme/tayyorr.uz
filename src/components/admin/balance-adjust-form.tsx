@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/icons";
 
 export function BalanceAdjustForm({ userId }: { userId: string }) {
   const router = useRouter();
@@ -50,24 +51,26 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => setCurrency("SOM")}
-          className={`backdrop-blur-sm flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+          className={`backdrop-blur-sm flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition ${
             currency === "SOM"
               ? "bg-indigo-500/20 text-indigo-300"
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
           }`}
         >
-          💰 So'm
+          <Icon name="coins" className="h-4 w-4" />
+          So'm
         </button>
         <button
           type="button"
           onClick={() => setCurrency("STAR")}
-          className={`backdrop-blur-sm flex-1 rounded-xl px-3 py-2 text-sm font-medium transition ${
+          className={`backdrop-blur-sm flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition ${
             currency === "STAR"
               ? "bg-amber-500/20 text-amber-300"
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
           }`}
         >
-          ⭐ Star
+          <Icon name="star" className="h-4 w-4" fill="currentColor" strokeWidth={1.5} />
+          Star
         </button>
       </div>
       <div className="flex gap-2">

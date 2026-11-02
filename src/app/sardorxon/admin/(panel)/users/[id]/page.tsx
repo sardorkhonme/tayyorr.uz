@@ -5,6 +5,7 @@ import { formatSom } from "@/lib/wallet";
 import { shortDateTime, shortDate } from "@/lib/date";
 import { ageFrom, formatBirthday, googleBirthdayEnabled } from "@/lib/birthday";
 import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
+import { Icon, StarIcon } from "@/components/icons";
 
 export default async function AdminUserOverview({
   params,
@@ -31,7 +32,7 @@ export default async function AdminUserOverview({
   });
   if (!user || user.isSupport) notFound();
 
-  const info: [string, string][] = [
+  const info: [string, React.ReactNode][] = [
     ["ID", user.id],
     ["Ism", `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || "—"],
     ["Login", user.login ?? "—"],
@@ -53,7 +54,7 @@ export default async function AdminUserOverview({
     ],
     ["Hisob kodi", user.walletCode ?? "—"],
     ["Balans", formatSom(user.balance)],
-    ["Star balansi", `${user.starBalance} ⭐`],
+    ["Star balansi", <>{user.starBalance} <StarIcon className="h-3.5 w-3.5" /></>],
     ["Ro'yxatdan", shortDateTime(user.createdAt)],
     [
       "Oferta",
@@ -72,9 +73,19 @@ export default async function AdminUserOverview({
     [
       "Telegram bot",
       user.telegramChatId
-        ? `✅ ulangan${user.telegramUsername ? ` (@${user.telegramUsername})` : ""}`
+        ? (
+            <>
+              <Icon name="check-circle" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px] text-emerald-400" />
+              ulangan{user.telegramUsername ? ` (@${user.telegramUsername})` : ""}
+            </>
+          )
         : user.telegramBlockedAt
-          ? `🚫 bloklagan · ${shortDate(user.telegramBlockedAt)}`
+          ? (
+              <>
+                <Icon name="ban" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px] text-amber-400" />
+                bloklagan · {shortDate(user.telegramBlockedAt)}
+              </>
+            )
           : "ulanmagan",
     ],
     [

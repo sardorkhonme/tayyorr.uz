@@ -1,11 +1,12 @@
 import Link from "next/link";
 import type { Restriction } from "@/lib/restriction";
 import { restrictionText } from "@/lib/restriction";
+import { Icon } from "@/components/icons";
 
 export function RestrictionNotice({ restriction }: { restriction: Restriction }) {
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-amber-400/30 bg-amber-500/10 p-6 text-center">
-      <div className="text-3xl">🚫</div>
+      <Icon name="ban" className="mx-auto h-9 w-9 text-amber-300" />
       <h1 className="mt-3 text-lg font-semibold text-amber-100">
         Bu bo'lim vaqtincha cheklangan
       </h1>

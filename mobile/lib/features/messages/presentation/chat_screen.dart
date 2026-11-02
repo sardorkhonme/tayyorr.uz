@@ -609,9 +609,36 @@ class _PinnedContractCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
                         ),
-                        Text(
-                          '${order.deadline != null ? '⏱ ${shortDateTime(order.deadline!)} · ' : ''}${order.badge}'
-                          '${total > 1 ? " · ${index + 1}/$total" : ""}',
+                        Text.rich(
+                          TextSpan(children: [
+                            if (order.deadline != null) ...[
+                              const WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Padding(
+                                  padding: EdgeInsets.only(right: 3),
+                                  child: Icon(Icons.schedule_rounded, size: 12, color: AppColors.textMuted),
+                                ),
+                              ),
+                              TextSpan(text: '${shortDateTime(order.deadline!)} · '),
+                            ],
+                            if (order.badgeKind != null)
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 3),
+                                  child: Icon(
+                                    switch (order.badgeKind) {
+                                      'contract' => Icons.description_outlined,
+                                      'disputed' => Icons.balance_rounded,
+                                      _ => Icons.warning_amber_rounded,
+                                    },
+                                    size: 12,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ),
+                            TextSpan(text: '${order.badge}${total > 1 ? " · ${index + 1}/$total" : ""}'),
+                          ]),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
@@ -1013,9 +1040,9 @@ class _MessageBubble extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (message.reactions.like > 0) _ReactionCountPill(icon: '👍', count: message.reactions.like),
+                  if (message.reactions.like > 0) _ReactionCountPill(icon: Icons.thumb_up_alt_outlined, count: message.reactions.like),
                   if (message.reactions.like > 0 && message.reactions.dislike > 0) const SizedBox(width: 6),
-                  if (message.reactions.dislike > 0) _ReactionCountPill(icon: '👎', count: message.reactions.dislike),
+                  if (message.reactions.dislike > 0) _ReactionCountPill(icon: Icons.thumb_down_alt_outlined, count: message.reactions.dislike),
                 ],
               ),
             ),
@@ -1083,7 +1110,7 @@ class _ReactionButton extends StatelessWidget {
 
 class _ReactionCountPill extends StatelessWidget {
   const _ReactionCountPill({required this.icon, required this.count});
-  final String icon;
+  final IconData icon;
   final int count;
 
   @override
@@ -1095,7 +1122,14 @@ class _ReactionCountPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(99),
         border: Border.all(color: AppColors.cardBorder),
       ),
-      child: Text('$icon $count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.textSecondary),
+          const SizedBox(width: 4),
+          Text('$count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+        ],
+      ),
     );
   }
 }

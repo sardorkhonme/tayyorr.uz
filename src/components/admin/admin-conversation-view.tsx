@@ -8,6 +8,7 @@ import { Linkify } from "@/components/linkify";
 import { smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
 import type { MessageSource } from "@/lib/message-source";
+import { Icon } from "@/components/icons";
 
 interface Msg {
   id: string;
@@ -200,13 +201,13 @@ export function AdminConversationView({
                     (m.reactions.like > 0 || m.reactions.dislike > 0) && (
                       <div className="flex gap-1.5 pt-1">
                         {m.reactions.like > 0 && (
-                          <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                            👍 {m.reactions.like}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                            <Icon name="thumbs-up" className="h-3.5 w-3.5" /> {m.reactions.like}
                           </span>
                         )}
                         {m.reactions.dislike > 0 && (
-                          <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                            👎 {m.reactions.dislike}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                            <Icon name="thumbs-down" className="h-3.5 w-3.5" /> {m.reactions.dislike}
                           </span>
                         )}
                       </div>

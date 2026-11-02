@@ -7,29 +7,29 @@ import {
   ChannelBrandIcon,
 } from "@/components/hear-about-us-select";
 import { LiveSearch } from "@/components/admin/live-search";
+import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
-const CHANNEL_ICONS: Record<string, string> = {
-  instagram: "📸",
-  telegram: "✈️",
-  ai: "🤖",
-  google: "🔍",
-  friend: "👥",
-  other: "💬",
-};
-
 const CHANNELS = [
-  { key: "all", label: "Barchasi", icon: "🌐" },
-  { key: "instagram", label: "Instagram", icon: "📸" },
-  { key: "telegram", label: "Telegram", icon: "✈️" },
-  { key: "ai", label: "Suniy intellekt tavsiyasi", icon: "🤖" },
-  { key: "google", label: "Google", icon: "🔍" },
-  { key: "friend", label: "Do'stimdan", icon: "👥" },
-  { key: "other", label: "Boshqa", icon: "💬" },
-  { key: "referral", label: "Referral havola orqali", icon: "🔗" },
-  { key: "unknown", label: "Ko'rsatilmagan", icon: "❓" },
+  { key: "all", label: "Barchasi" },
+  { key: "instagram", label: "Instagram" },
+  { key: "telegram", label: "Telegram" },
+  { key: "ai", label: "Suniy intellekt tavsiyasi" },
+  { key: "google", label: "Google" },
+  { key: "friend", label: "Do'stimdan" },
+  { key: "other", label: "Boshqa" },
+  { key: "referral", label: "Referral havola orqali" },
+  { key: "unknown", label: "Ko'rsatilmagan" },
 ];
+
+/** Kanal belgisi: brendlar — o'z logotipi, qolganlari — umumiy ikonka. */
+function ChannelIcon({ channel, className }: { channel: string; className: string }) {
+  if (channel === "all") return <Icon name="globe" className={className} />;
+  if (channel === "referral") return <Icon name="link" className={className} />;
+  if (channel === "unknown") return <Icon name="help" className={className} />;
+  return <ChannelBrandIcon name={channel} className={className} />;
+}
 
 export default async function AdminSourcesPage({
   searchParams,
@@ -142,13 +142,10 @@ export default async function AdminSourcesPage({
             >
               <div className="flex items-center justify-between">
                 <span className="flex items-center">
-                  {c.key === "referral" ? (
-                    <span className="text-xl">🔗</span>
-                  ) : c.key === "unknown" ? (
-                    <span className="text-xl">❓</span>
-                  ) : (
-                    <ChannelBrandIcon name={c.key} className="h-6 w-6" />
-                  )}
+                  <ChannelIcon
+                    channel={c.key}
+                    className={`h-6 w-6 ${c.key === "referral" ? "text-emerald-400" : c.key === "unknown" ? "text-zinc-400" : ""}`}
+                  />
                 </span>
                 <span className="text-xs font-semibold text-zinc-400">{pct}%</span>
               </div>
@@ -184,7 +181,7 @@ export default async function AdminSourcesPage({
                     : "border-white/10 bg-white/[0.02] text-zinc-400 hover:bg-white/[0.05] hover:text-white"
                 }`}
               >
-                <span>{c.icon}</span>
+                <ChannelIcon channel={c.key} className="h-3.5 w-3.5 shrink-0" />
                 <span>{c.label}</span>
                 <span
                   className={`rounded-full px-1.5 py-0.2 text-[10px] ${
@@ -220,7 +217,6 @@ export default async function AdminSourcesPage({
               const hearLabel = hearKey
                 ? HEAR_ABOUT_US_LABELS[hearKey] ?? hearKey
                 : null;
-              const hearIcon = hearKey ? CHANNEL_ICONS[hearKey] ?? "💬" : null;
 
               return (
                 <tr key={u.id} className="border-t border-white/5 hover:bg-white/[0.02]">
@@ -256,7 +252,7 @@ export default async function AdminSourcesPage({
                         href={`/sardorxon/admin/referrals/${u.referralLink.id}`}
                         className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:underline"
                       >
-                        <span>🔗</span>
+                        <Icon name="link" className="h-3.5 w-3.5 shrink-0" />
                         <span>{u.referralLink.name}</span>
                         <span className="font-mono text-zinc-500">
                           ({u.referralLink.code})

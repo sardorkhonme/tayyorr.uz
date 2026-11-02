@@ -11,21 +11,21 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 const BASE: NavLink[] = [
-  { href: "/sardorxon/admin", label: "Bosh", icon: "🏠" },
-  { href: "/sardorxon/admin/orders", label: "Buyurtmalar", icon: "📦" },
-  { href: "/sardorxon/admin/messages", label: "Xabarlar", icon: "💬" },
-  { href: "/sardorxon/admin/broadcast", label: "Ommaviy xabar", icon: "📣" },
-  { href: "/sardorxon/admin/announcement", label: "E'lon banneri", icon: "📌" },
-  { href: "/sardorxon/admin/payments", label: "To'lovlar", icon: "💳" },
-  { href: "/sardorxon/admin/payouts", label: "Yechib olish", icon: "🏧" },
-  { href: "/sardorxon/admin/complaints", label: "Shikoyatlar", icon: "⚠️" },
-  { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "👥" },
-  { href: "/sardorxon/admin/sources", label: "Qayerdan eshitgan", icon: "📊" },
-  { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "🗨️" },
-  { href: "/sardorxon/admin/referrals", label: "Tashriflar", icon: "🔗" },
-  { href: "/sardorxon/admin/landing", label: "Sayt kontenti", icon: "🎬" },
-  { href: "/sardorxon/admin/app", label: "Mobil ilova", icon: "📱" },
-  { href: "/sardorxon/admin/smm", label: "tayyorr+", icon: "🚀" },
+  { href: "/sardorxon/admin", label: "Bosh", icon: "home" },
+  { href: "/sardorxon/admin/orders", label: "Buyurtmalar", icon: "package" },
+  { href: "/sardorxon/admin/messages", label: "Xabarlar", icon: "message" },
+  { href: "/sardorxon/admin/broadcast", label: "Ommaviy xabar", icon: "megaphone" },
+  { href: "/sardorxon/admin/announcement", label: "E'lon banneri", icon: "pin" },
+  { href: "/sardorxon/admin/payments", label: "To'lovlar", icon: "card" },
+  { href: "/sardorxon/admin/payouts", label: "Yechib olish", icon: "banknote" },
+  { href: "/sardorxon/admin/complaints", label: "Shikoyatlar", icon: "alert" },
+  { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "users" },
+  { href: "/sardorxon/admin/sources", label: "Qayerdan eshitgan", icon: "chart" },
+  { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "messages" },
+  { href: "/sardorxon/admin/referrals", label: "Tashriflar", icon: "link" },
+  { href: "/sardorxon/admin/landing", label: "Sayt kontenti", icon: "film" },
+  { href: "/sardorxon/admin/app", label: "Mobil ilova", icon: "phone" },
+  { href: "/sardorxon/admin/smm", label: "tayyorr+", icon: "rocket" },
 ];
 
 export const metadata: Metadata = {

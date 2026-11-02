@@ -5,6 +5,7 @@ import type { OrderStatus } from "@prisma/client";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
+import { StarIcon } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -127,8 +128,8 @@ export default async function MyOffersPage({
                       {ORDER_STATUS_LABEL[o.order.status] ?? o.order.status}
                     </div>
                   </div>
-                  <span className="shrink-0 text-xs text-amber-300">
-                    {o.starsSpent} ⭐
+                  <span className="inline-flex shrink-0 items-center gap-0.5 text-xs text-amber-300">
+                    {o.starsSpent} <StarIcon className="h-3 w-3" />
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
