@@ -17,6 +17,15 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   // yangi javob kelganda — tugma ustida qisqa bildirishnoma + "tin"
   const [toast, setToast] = useState<string | null>(null);
   const prevUnread = useRef<number | null>(null);
+  const toggleRef = useRef<() => void>(() => {});
+  // push obunasi bo'lsa bildirishnomani service worker chiqaradi — sahifadan takrorlamaymiz
+  const hasPushRef = useRef(false);
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.getRegistration().then(async (reg) => {
+      hasPushRef.current = !!(await reg?.pushManager.getSubscription());
+    }).catch(() => {});
+  }, []);
   const panelRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
@@ -32,7 +41,26 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
     // birinchi tekshiruvda emas, faqat yangi javob qo'shilganda
     if (prevUnread.current !== null && n > prevUnread.current && data.latest) {
       setToast(data.latest);
+      // tayyorr.uz dagidek — sayt boshqa yorliqda bo'lsa ham "tin"
       new Audio("/sounds/tin.wav").play().catch(() => {});
+      // yorliq ko'rinmayotgan bo'lsa — kompyuter bildirishnomasi (ruxsat berilgan bo'lsa)
+      if (
+        !hasPushRef.current &&
+        document.visibilityState !== "visible" &&
+        "Notification" in window &&
+        Notification.permission === "granted"
+      ) {
+        const n2 = new Notification("tayyorr support", {
+          body: data.latest,
+          icon: "/icon-192.png",
+          tag: "plus-support",
+        });
+        n2.onclick = () => {
+          window.focus();
+          n2.close();
+          toggleRef.current();
+        };
+      }
     }
     prevUnread.current = n;
     setUnread(n);
@@ -41,9 +69,8 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   useEffect(() => {
     if (open) return;
     poll();
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") poll();
-    }, 5000);
+    // yorliq yashirin bo'lsa ham tekshiramiz (ovoz va bildirishnoma uchun) — tayyorr.uz dagidek
+    const id = setInterval(poll, 5000);
     const onVisible = () => document.visibilityState === "visible" && poll();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
@@ -89,6 +116,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   // /support sahifasining o'zida tugma kerak emas
   if (pathname === "/support") return null;
 
+  toggleRef.current = () => toggle();
   function toggle() {
     // telefon va planshet — alohida sahifa, kompyuter — popup
     if (window.matchMedia("(max-width: 1023px)").matches) {
