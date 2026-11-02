@@ -4,14 +4,14 @@ import { Logo } from "@/components/logo";
 import { MAIN_URL } from "@/lib/format";
 
 const POINTS = [
-  "Obunachi, layk va ko'rishlar — bir necha daqiqada",
-  "Bajarilmasa — pul hamyonga avtomatik qaytadi",
-  "Parolingiz hech qachon so'ralmaydi",
   "tayyorr.uz bilan bitta hisob va bitta hamyon",
+  "Tayyorr SMM — obunachi, layk va ko'rishlar",
+  "Bajarilmagan xizmat uchun pul avtomatik qaytadi",
+  "Yangi xizmatlar doimiy qo'shib boriladi",
 ];
 
 /** Kirish / ro'yxatdan o'tish sahifalari uchun umumiy ramka (yorliqlar bilan). */
-export function AuthShell({ mode, children }: { mode: "login" | "register"; children: React.ReactNode }) {
+export function AuthShell({ mode, children }: { mode: "login" | "register" | "none"; children: React.ReactNode }) {
   return (
     <main className="grid min-h-dvh lg:grid-cols-[1fr_1.1fr]">
       {/* chap — brend paneli (kompyuterda) */}
@@ -20,7 +20,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register"; chil
           tayyorr<span className="text-amber-300">+</span>
         </Link>
         <div className="my-auto max-w-md">
-          <h2 className="font-display text-4xl font-bold leading-tight">Sahifangizni bugunoq o&apos;stirishni boshlang</h2>
+          <h2 className="font-display text-4xl font-bold leading-tight">Bitta hisob — ko&apos;p xizmat</h2>
           <ul className="mt-10 space-y-4 text-lg text-indigo-50">
             {POINTS.map((p) => (
               <li key={p} className="flex items-start gap-3">
@@ -42,6 +42,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register"; chil
           </Link>
 
           <div className="card !rounded-3xl p-6 sm:p-8">
+            {mode !== "none" && (
             <div className="mb-7 grid grid-cols-2 rounded-2xl bg-zinc-100 p-1 text-[15px] font-semibold">
               <Link
                 href="/login"
@@ -60,6 +61,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register"; chil
                 Ro&apos;yxatdan o&apos;tish
               </Link>
             </div>
+            )}
             {children}
           </div>
 

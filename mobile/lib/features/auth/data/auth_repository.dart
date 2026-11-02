@@ -104,6 +104,12 @@ class AuthRepository {
     return _user(res);
   }
 
+  /// tayyorr+ da ro'yxatdan o'tgan (login bor, rol yo'q) hisob — faqat rol tanlash.
+  Future<UserModel> chooseRole(String role) async {
+    final res = await _api.post('/mobile/onboarding/role', data: {'role': role});
+    return _user(res);
+  }
+
   /// Saqlangan token bormi (xatoga chidamli).
   Future<String?> readToken() => _storage.readToken();
 

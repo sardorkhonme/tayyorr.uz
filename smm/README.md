@@ -77,6 +77,7 @@ Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har
 | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` | tayyorr.uz dagi Click qiymatlari (secret key shart emas) |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_LOG_GROUP_ID` | tayyorr.uz dagi bilan bir xil — buyurtma va balans xabarlari |
 | `TELEGRAM_TOPIC_SMM_ORDERS` / `_SYSTEM` | ixtiyoriy: topik id (standart 498 / 500) |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET_PUBLIC`, `R2_PUBLIC_URL` | tayyorr.uz dagi bilan bir xil — ro'yxatdan o'tishdagi profil rasmi |
 | `CRON_SECRET` | `/api/cron/sync` uchun |
 | `NEXT_PUBLIC_MAIN_URL` | `https://tayyorr.uz` |
 

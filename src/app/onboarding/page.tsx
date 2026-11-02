@@ -125,6 +125,67 @@ function OnboardingInner() {
     }
   }
 
+  // tayyorr+ da ro'yxatdan o'tgan (login bor, rol yo'q) — faqat rolni so'raymiz
+  const roleOnly = status === "authenticated" && !!session.user.login && !session.user.role;
+
+  async function submitRole() {
+    setErr(null);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/onboarding/role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Xatolik");
+      await update();
+      window.location.assign("/dashboard");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Xatolik");
+      setBusy(false);
+    }
+  }
+
+  if (roleOnly) {
+    return (
+      <AuthShell>
+        <div className="card p-7">
+          <h1 className="text-xl font-semibold text-white">Xush kelibsiz, {session.user.name?.split(" ")[0] || `@${session.user.login}`}!</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            Hisobingiz tayyor. tayyorr.uz da qanday foydalanasiz? Rolni bir marta tanlaysiz.
+          </p>
+          <div className="mt-6 grid gap-3">
+            {(
+              [
+                ["ORDERER", "Buyurtma beruvchi", "Prezentatsiya, kurs ishi va boshqalarni buyurtma qilaman"],
+                ["PREPARER", "Tayyorlovchi", "Ish tayyorlab beraman va daromad qilaman"],
+              ] as [Role, string, string][]
+            ).map(([r, title, desc]) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRole(r)}
+                className={`rounded-xl border p-4 text-left transition ${
+                  role === r
+                    ? "border-indigo-400/70 bg-indigo-500/10 text-white"
+                    : "border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]"
+                }`}
+              >
+                <span className="block font-semibold">{title}</span>
+                <span className="mt-1 block text-xs text-zinc-400">{desc}</span>
+              </button>
+            ))}
+          </div>
+          {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
+          <button type="button" onClick={submitRole} disabled={busy} className="btn-primary mt-6 w-full py-3 text-sm font-semibold">
+            {busy ? "..." : "Davom etish →"}
+          </button>
+        </div>
+      </AuthShell>
+    );
+  }
+
   if (status === "loading") {
     return (
       <AuthShell>

@@ -1,21 +1,31 @@
 import { db } from "@/lib/db";
-import { notifyAdmins, adminUserUrl } from "@/lib/telegram";
+import { HEAR_ABOUT_US } from "@/lib/hear-about-us";
+import { adminUserUrl, notifyAdmins } from "@/lib/telegram";
 
 /** tayyorr.uz dagi src/lib/terms.ts bilan bir xil. */
 export const TERMS_VERSION = "2026-09-04";
 
-/** Yangi foydalanuvchi: faoliyat jurnali + admin guruhining "Ro'yxatdan o'tish" topigi. */
+/** Ro'yxatdan o'tish yakunlandi: faoliyat jurnali + admin guruhining "Ro'yxatdan o'tish" topigi. */
 export async function logRegistration(
-  user: { id: string; firstName: string | null; lastName?: string | null; email: string | null },
+  user: {
+    id: string;
+    login: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    hearAboutUs: string | null;
+    hearAboutUsDetail: string | null;
+  },
   how: "email" | "Google",
 ) {
   const full = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+  const source = HEAR_ABOUT_US.find((h) => h.value === user.hearAboutUs)?.label ?? user.hearAboutUs;
   await db.activityLog
     .create({
       data: {
         userId: user.id,
         action: "REGISTER",
-        summary: `Ro'yxatdan o'tdi — tayyorr+ orqali (${how})`,
+        summary: `Ro'yxatdan o'tdi — @${user.login} — tayyorr+ orqali (${how})`,
       },
     })
     .catch(() => {});
@@ -24,9 +34,12 @@ export async function logRegistration(
     "🆕 Yangi ro'yxatdan o'tish (tayyorr+ orqali)",
     [
       "Manba: tayyorr+ (smm.tayyorr.uz)",
-      `Usul: ${how === "Google" ? "Google" : "email + parol"}`,
+      `Login: @${user.login}`,
       full ? `Ism: ${full}` : "",
       user.email ? `Email: ${user.email}` : "",
+      `Usul: ${how === "Google" ? "Google" : "email + parol"}`,
+      "Rol: tanlanmagan (tayyorr.uz ga kirganda so'raladi)",
+      source ? `Qayerdan: ${source}${user.hearAboutUsDetail ? ` (${user.hearAboutUsDetail})` : ""}` : "",
       `Foydalanuvchi ID: ${user.id}`,
     ],
     { text: "Foydalanuvchi", href: adminUserUrl(user.id) },

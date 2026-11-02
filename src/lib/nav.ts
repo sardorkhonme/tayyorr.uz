@@ -30,8 +30,9 @@ const REFERRAL_LINK: NavLink = {
 
 /** Rolga qarab navigatsiya ro'yxati — "Mening takliflarim" va "Referal" faqat tayyorlovchiga. */
 export function navForRole(role: string | null | undefined): NavLink[] {
-  if (role !== "PREPARER") return [...BASE_NAV, TAYYORR_PLUS_LINK];
-  return [BASE_NAV[0], MY_OFFERS_LINK, REFERRAL_LINK, ...BASE_NAV.slice(1), TAYYORR_PLUS_LINK];
+  // tayyorr+ — "Asosiy menyu"dan keyin, ko'zga tashlanib tursin
+  if (role !== "PREPARER") return [BASE_NAV[0], TAYYORR_PLUS_LINK, ...BASE_NAV.slice(1)];
+  return [BASE_NAV[0], TAYYORR_PLUS_LINK, MY_OFFERS_LINK, REFERRAL_LINK, ...BASE_NAV.slice(1)];
 }
 
 /** Orqaga moslik uchun — rolsiz joylarda standart ro'yxat. */

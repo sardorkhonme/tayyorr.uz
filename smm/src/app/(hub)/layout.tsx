@@ -1,9 +1,13 @@
+import { redirect } from "next/navigation";
+
 import { currentUser } from "@/auth";
 import { HubMobileBar, HubSidebar, type HubUser } from "@/components/hub-nav";
 
 /** tayyorr+ kabineti: chapda panel (kompyuter), tepada popup menyu (telefon). */
 export default async function HubLayout({ children }: { children: React.ReactNode }) {
   const u = await currentUser();
+  // profili to'liq bo'lmagan (Google orqali yangi kirgan) — avval ro'yxatdan o'tishni yakunlasin
+  if (u && !u.login) redirect("/onboarding");
   const user: HubUser = u
     ? {
         name: u.firstName || u.name || (u.login ? `@${u.login}` : "Foydalanuvchi"),

@@ -23,6 +23,15 @@ class AuthGoogleSignInRequested extends AuthEvent {
   const AuthGoogleSignInRequested();
 }
 
+/// tayyorr+ hisobi (login bor, rol yo'q) — faqat rol tanlash.
+class AuthRoleChosen extends AuthEvent {
+  const AuthRoleChosen(this.role);
+  final String role;
+
+  @override
+  List<Object?> get props => [role];
+}
+
 class AuthOnboardingCompleted extends AuthEvent {
   const AuthOnboardingCompleted({
     required this.role,

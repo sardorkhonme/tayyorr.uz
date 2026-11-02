@@ -323,7 +323,7 @@ class _MenuPanel extends StatelessWidget {
                   builder: (context, unread, _) => Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      for (final it in items)
+                      for (final it in items) ...[
                         _Row(
                           icon: it.icon,
                           label: it.label,
@@ -333,17 +333,19 @@ class _MenuPanel extends StatelessWidget {
                               : null,
                           onTap: () => _go(context, it.section),
                         ),
+                        // tayyorr+ (smm.tayyorr.uz) — "Asosiy menyu"dan keyin, saytdagidek
+                        if (it.section == AppSection.dashboard)
+                          _Row(
+                            icon: '✨',
+                            label: 'tayyorr+',
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              launchUrl(Uri.parse('https://smm.tayyorr.uz'), mode: LaunchMode.externalApplication);
+                            },
+                          ),
+                      ],
                     ],
                   ),
-                ),
-                // tayyorr+ (smm.tayyorr.uz) — umumiy hisob va hamyon bilan qo'shimcha xizmatlar
-                _Row(
-                  icon: '✨',
-                  label: 'tayyorr+',
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    launchUrl(Uri.parse('https://smm.tayyorr.uz'), mode: LaunchMode.externalApplication);
-                  },
                 ),
                 divider,
                 const Padding(

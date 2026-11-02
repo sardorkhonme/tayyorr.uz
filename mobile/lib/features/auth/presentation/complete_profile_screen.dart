@@ -256,6 +256,47 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
+  Widget _buildRoleOnly({required bool busy, String? error}) {
+    final name = context.read<AuthBloc>().state.user?.firstName;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          name != null && name.isNotEmpty ? 'Xush kelibsiz, $name!' : 'Xush kelibsiz!',
+          style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Hisobingiz tayyor. tayyorr.uz da qanday foydalanasiz? Rolni bir marta tanlaysiz.',
+          style: TextStyle(color: WebC.zinc400, fontSize: 14),
+        ),
+        const SizedBox(height: 20),
+        _RoleButton(
+          label: 'Buyurtma beruvchi — ish buyuraman',
+          selected: _role == 'ORDERER',
+          onTap: () => setState(() => _role = 'ORDERER'),
+        ),
+        const SizedBox(height: 10),
+        _RoleButton(
+          label: 'Tayyorlovchi — ish tayyorlab beraman',
+          selected: _role == 'PREPARER',
+          onTap: () => setState(() => _role = 'PREPARER'),
+        ),
+        if (error != null) ...[
+          const SizedBox(height: 14),
+          Text(error, style: const TextStyle(color: Color(0xFFF87171), fontSize: 13)),
+        ],
+        const SizedBox(height: 20),
+        WebButton(
+          label: 'Davom etish →',
+          expand: true,
+          busy: busy,
+          onPressed: busy ? null : () => context.read<AuthBloc>().add(AuthRoleChosen(_role)),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final image = context.select((AuthBloc b) => b.state.user?.image);
@@ -278,6 +319,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         builder: (context, state) {
                           final busy = state.status == AuthStatus.authenticating;
                           final error = _err ?? state.error;
+
+                          // tayyorr+ da ro'yxatdan o'tgan (login bor, rol yo'q) — faqat rol, saytdagidek
+                          final u = state.user;
+                          if (u != null && u.login != null && u.role == null) {
+                            return _buildRoleOnly(busy: busy, error: error);
+                          }
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,

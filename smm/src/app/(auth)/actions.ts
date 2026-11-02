@@ -1,12 +1,10 @@
 "use server";
 
-import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
-import { z } from "zod";
 
-import { signIn } from "@/auth";
-import { db } from "@/lib/db";
-import { logRegistration, TERMS_VERSION } from "@/lib/register";
+import { auth, signIn } from "@/auth";
+import { completeProfile, ProfileError, registerWithEmail, type ProfileInput } from "@/lib/profile";
 
 export type AuthState = { error?: string; values?: Record<string, string> };
 
@@ -34,44 +32,32 @@ export async function loginAction(_prev: AuthState, form: FormData): Promise<Aut
   }
 }
 
-const registerSchema = z.object({
-  firstName: z.string().trim().min(2, "Ismingizni kiriting").max(50),
-  email: z.string().trim().toLowerCase().email("Email manzil noto'g'ri"),
-  password: z.string().min(6, "Parol kamida 6 belgidan iborat bo'lsin").max(100),
-});
-
-export async function registerAction(_prev: AuthState, form: FormData): Promise<AuthState> {
-  const values = {
-    firstName: String(form.get("firstName") ?? ""),
-    email: String(form.get("email") ?? ""),
-  };
-  // bot tuzog'i — odam bu maydonni ko'rmaydi
-  if (String(form.get("website") ?? "")) return { values };
-
-  const parsed = registerSchema.safeParse({ ...values, password: String(form.get("password") ?? "") });
-  if (!parsed.success) return { values, error: parsed.error.issues[0]?.message ?? "Ma'lumotlar noto'g'ri" };
-  const { firstName, email, password } = parsed.data;
-
-  const taken = await db.user.findUnique({ where: { email }, select: { id: true } });
-  if (taken) return { values, error: "Bu email bilan hisob allaqachon bor — «Kirish» bo'limidan kiring" };
-
-  const user = await db.user
-    .create({
-      data: {
-        firstName,
-        name: firstName,
-        email,
-        passwordHash: await bcrypt.hash(password, 10),
-        termsAcceptedAt: new Date(),
-        termsVersion: TERMS_VERSION,
-      },
-    })
-    .catch(() => null);
-  if (!user) return { values, error: "Bu email bilan hisob allaqachon bor — «Kirish» bo'limidan kiring" };
-
-  await logRegistration(user, "email");
-  await signIn("credentials", { identifier: email, password, redirectTo: "/?welcome=1" });
+/** Email + parol bilan to'liq ro'yxatdan o'tish (tayyorr.uz dagi maydonlar, rolsiz). */
+export async function registerAction(input: ProfileInput): Promise<AuthState> {
+  let creds: { email: string; password: string };
+  try {
+    creds = await registerWithEmail(input);
+  } catch (e) {
+    if (e instanceof ProfileError) return { error: e.message };
+    console.error("[plus] register", e);
+    return { error: "Kutilmagan xatolik, qayta urinib ko'ring" };
+  }
+  await signIn("credentials", { identifier: creds.email, password: creds.password, redirectTo: "/?welcome=1" });
   return {};
+}
+
+/** Google orqali kirgan hisobning profilini to'ldirish. */
+export async function completeProfileAction(input: ProfileInput): Promise<AuthState> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Avval kiring" };
+  try {
+    await completeProfile(session.user.id, input);
+  } catch (e) {
+    if (e instanceof ProfileError) return { error: e.message };
+    console.error("[plus] complete", e);
+    return { error: "Kutilmagan xatolik, qayta urinib ko'ring" };
+  }
+  redirect("/?welcome=1");
 }
 
 export async function googleAction() {

@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { logRegistration, TERMS_VERSION } from "@/lib/register";
+import { TERMS_VERSION } from "@/lib/register";
 
 /**
  * smm.tayyorr.uz — alohida sessiya, lekin foydalanuvchilar tayyorr.uz bazasidan
@@ -72,7 +72,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // yangi foydalanuvchi — Google orqali ro'yxatdan o'tish
       const firstName = typeof profile.given_name === "string" ? profile.given_name : null;
       const lastName = typeof profile.family_name === "string" ? profile.family_name : null;
-      const created = await db.user
+      // yangi foydalanuvchi — profil (login, ism, rasm...) /onboarding da to'ldiriladi,
+      // ro'yxatdan o'tish logi o'shanda yoziladi
+      await db.user
         .create({
           data: {
             email,
@@ -86,7 +88,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         })
         .catch(() => null); // parallel so'rovda allaqachon yaratilgan bo'lishi mumkin
-      if (created) await logRegistration(created, "Google");
       return true;
     },
     async jwt({ token, user, account, profile }) {

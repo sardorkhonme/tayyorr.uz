@@ -105,7 +105,7 @@ export default async function Home() {
           <a href="#imkoniyat" className="transition hover:text-white">
             Imkoniyatlar
           </a>
-          <a href="#tayyorr-plus" className="transition hover:text-white">
+          <a href={TAYYORR_PLUS_URL} className="transition hover:text-white">
             tayyorr<span className="text-fuchsia-400">+</span>
           </a>
           <a href="#ilova" className="transition hover:text-white">
