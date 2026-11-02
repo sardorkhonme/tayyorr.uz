@@ -1,33 +1,30 @@
 import { redirect } from "next/navigation";
 
+import { saveAccountAction } from "@/app/(hub)/account/actions";
 import { signOutAction } from "@/app/(hub)/actions";
 import { currentUser } from "@/auth";
+import { AccountEditor } from "@/components/account-editor";
 import { Icon } from "@/components/icons";
+import { getAccount } from "@/lib/account";
 import { db } from "@/lib/db";
 import { SMM_URL } from "@/lib/hub-nav";
-import { som } from "@/lib/format";
-import { ensureWalletCode } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Hisoblar" };
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz";
 
-/** Hisoblar — bitta tayyorr hisobi va u ishlaydigan platformalar. */
+/** Hisoblar — akkaunt ma'lumotlari (tahrirlanadi) va u ishlaydigan platformalar. */
 export default async function AccountPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
 
-  const [walletCode, full, smmOrders] = await Promise.all([
-    user.walletCode ?? ensureWalletCode(user.id),
-    db.user.findUnique({ where: { id: user.id }, select: { role: true, createdAt: true } }),
+  const [account, full, smmOrders] = await Promise.all([
+    getAccount(user.id),
+    db.user.findUnique({ where: { id: user.id }, select: { role: true } }),
     db.smmOrder.count({ where: { userId: user.id } }),
   ]);
-  const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.name || user.login || "Foydalanuvchi";
-  const avatar = user.avatarUrl ?? user.image;
-  const since = full?.createdAt
-    ? new Intl.DateTimeFormat("uz-UZ", { timeZone: "Asia/Tashkent", month: "long", year: "numeric" }).format(full.createdAt)
-    : null;
+  if (!account) redirect("/login");
 
   const platforms = [
     {
@@ -50,36 +47,11 @@ export default async function AccountPage() {
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <h1 className="font-display text-3xl font-bold text-zinc-900">Hisoblar</h1>
-        <p className="mt-2 text-zinc-500">Bitta tayyorr hisobi — barcha platformalarda bir xil ishlaydi.</p>
+        <p className="mt-2 text-zinc-500">Bitta tayyorr hisobi — o&apos;zgarishlar barcha platformalarda bir xil ko&apos;rinadi.</p>
       </header>
 
-      {/* asosiy hisob */}
-      <section className="card flex flex-col gap-5 !rounded-3xl p-6 sm:flex-row sm:items-center">
-        {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
-        ) : (
-          <span className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-indigo-100 font-display text-3xl font-bold text-indigo-700">
-            {name.slice(0, 1).toUpperCase()}
-          </span>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-2xl font-bold text-zinc-900">{name}</p>
-          <p className="mt-1 truncate text-zinc-500">
-            {user.login ? `@${user.login}` : null}
-            {user.login && user.email ? " · " : null}
-            {user.email}
-          </p>
-          {since && <p className="mt-1 text-sm text-zinc-400">{since} dan beri a&apos;zo</p>}
-        </div>
-        <div className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm">
-          <p className="text-zinc-500">Hamyon</p>
-          <p className="font-display text-lg font-bold text-zinc-900">{som(user.balance)}</p>
-          <p className="text-xs text-zinc-400">kod: {walletCode}</p>
-        </div>
-      </section>
+      <AccountEditor initial={account} save={saveAccountAction} />
 
-      {/* platformalar */}
       <section>
         <h2 className="font-display text-lg font-bold text-zinc-900">Ulangan platformalar</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">

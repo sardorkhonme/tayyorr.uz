@@ -29,7 +29,8 @@ const dateFmt = new Intl.DateTimeFormat("ru-RU", {
 });
 
 /** Hamyon — tayyorr.uz dagi bilan bir xil hisob va amallar tarixi (bitta hamyon). */
-export default async function WalletPage() {
+export default async function WalletPage({ searchParams }: { searchParams: Promise<{ topup?: string }> }) {
+  const { topup } = await searchParams;
   const user = await currentUser();
   if (!user) redirect("/login");
 
@@ -50,6 +51,12 @@ export default async function WalletPage() {
         <h1 className="font-display text-3xl font-bold text-zinc-900">Hamyon</h1>
         <p className="mt-2 text-zinc-500">tayyorr.uz va tayyorr+ uchun bitta hamyon — amallar ikkala joyda bir xil.</p>
       </header>
+
+      {topup && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
+          To&apos;lov tekshirilmoqda — o&apos;tgan bo&apos;lsa, balans bir necha soniyada yangilanadi. Sahifani yangilang.
+        </div>
+      )}
 
       {/* balans */}
       <section className="shine relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-7 text-white shadow-xl shadow-violet-500/25">

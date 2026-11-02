@@ -4,19 +4,32 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { buildClickPayUrl, CLICK_MAX, CLICK_MIN, clickConfigured } from "@/lib/click";
 import { db } from "@/lib/db";
+import { payPlatform } from "@/lib/pay";
+import { safeNext } from "@/lib/sso";
 
-const schema = z.object({ amount: z.coerce.number().int() });
+const schema = z.object({
+  amount: z.coerce.number().int(),
+  method: z.enum(["click", "payme", "uzum"]).default("click"),
+  returnTo: z.string().optional(),
+});
 
-/** Click to'lovini boshlaydi: PENDING TOPUP yaratadi va to'lov havolasini qaytaradi. */
+/**
+ * Yagona to'lov sahifasi (/pay) uchun: PENDING TOPUP yaratadi va to'lov tizimi havolasini qaytaradi.
+ * Hozircha faqat Click; Payme va Uzum ulanguncha rad etiladi.
+ */
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
+
+  const parsed = schema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Noto'g'ri ma'lumot" }, { status: 400 });
+  const { amount, method } = parsed.data;
+  if (method !== "click") {
+    return NextResponse.json({ error: "Bu to'lov usuli tez orada ulanadi" }, { status: 400 });
+  }
   if (!clickConfigured()) {
     return NextResponse.json({ error: "To'lov vaqtincha ishlamayapti" }, { status: 503 });
   }
-
-  const parsed = schema.safeParse(await req.json().catch(() => null));
-  const amount = parsed.success ? parsed.data.amount : 0;
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return NextResponse.json(
       {
@@ -26,6 +39,10 @@ export async function POST(req: Request) {
     );
   }
 
+  const origin = new URL(req.url).origin;
+  const returnTo = safeNext(parsed.data.returnTo) ?? `${origin}/wallet`;
+  const platform = payPlatform(returnTo);
+
   const wtx = await db.walletTransaction.create({
     data: {
       userId: session.user.id,
@@ -33,15 +50,14 @@ export async function POST(req: Request) {
       status: "PENDING",
       amount,
       method: "CLICK",
-      note: "Click orqali to'ldirish (tayyorr+)",
-      meta: { source: "smm" },
+      note: `Click orqali to'ldirish (${platform.label})`,
+      // source: "smm" — tayyorr+ va SMM to'lovlari alohida Telegram topikka tushadi
+      meta: { source: platform.key === "app" ? "uz" : "smm", platform: platform.key, returnTo },
     },
   });
 
-  const payUrl = buildClickPayUrl({
-    amount,
-    transactionParam: wtx.id,
-    returnUrl: `${new URL(req.url).origin}/?topup=1`,
-  });
+  const back = new URL(returnTo);
+  back.searchParams.set("topup", "1");
+  const payUrl = buildClickPayUrl({ amount, transactionParam: wtx.id, returnUrl: back.toString() });
   return NextResponse.json({ payUrl });
 }

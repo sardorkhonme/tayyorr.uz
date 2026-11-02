@@ -1,3 +1,4 @@
+import { safeNext } from "@/lib/sso";
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
@@ -75,6 +76,8 @@ export async function POST(req: Request) {
   const actionNum = Number(action);
   // tayyorr+ (plus.tayyorr.uz) da boshlangan to'lov — alohida topik va SMM havolalari
   const fromSmm = meta.source === "smm";
+  // yagona to'lov sahifasi (plus.tayyorr.uz/pay) qaytish manzilini yozadi — xabar o'sha platformaga olib boradi
+  const returnTo = safeNext(typeof meta.returnTo === "string" ? meta.returnTo : null);
   const payTopic = fromSmm ? "smmTopups" : "payments";
   const smmTag = fromSmm ? " — tayyorr+" : "";
 
@@ -160,7 +163,7 @@ export async function POST(req: Request) {
   await sendTelegramToUser(wtx.userId, {
     title: "💳 Hisob to'ldirildi",
     body: `${wtx.amount.toLocaleString("ru-RU")} so'm Click orqali hamyoningizga tushdi.`,
-    url: fromSmm ? SMM_SITE_URL : siteUrl("/wallet"),
+    url: returnTo ?? (fromSmm ? SMM_SITE_URL : siteUrl("/wallet")),
     buttonLabel: "Tranzaksiyalarni ko'rish",
   });
   await logToGroup(

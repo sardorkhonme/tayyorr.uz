@@ -31,12 +31,14 @@ const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
 export default async function WalletPage({
   searchParams,
 }: {
-  searchParams: Promise<{ click?: string }>;
+  searchParams: Promise<{ click?: string; topup?: string }>;
 }) {
   const session = await auth();
   const userId = session!.user.id;
   const t = await getT();
-  const fromClick = (await searchParams).click === "1";
+  const sp = await searchParams;
+  // yagona to'lov sahifasidan (plus.tayyorr.uz/pay) qaytganda ?topup=1
+  const fromClick = sp.click === "1" || sp.topup === "1";
   const PAYOUT_STATUS: Record<string, string> = {
     PENDING: t("payout.PENDING"),
     PAID: t("payout.PAID"),
@@ -124,7 +126,7 @@ export default async function WalletPage({
         <WalletBuyStars starBalance={user?.starBalance ?? 0} />
       )}
 
-      <WalletTopUp myCode={walletCode} />
+      <WalletTopUp />
 
       <WalletPayout balance={balance} />
 
