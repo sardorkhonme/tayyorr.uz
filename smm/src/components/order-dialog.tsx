@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import type { BoardService } from "@/components/services-board";
-import { chargeFor, MAIN_URL, num, som } from "@/lib/format";
+import { TopupButton } from "@/components/topup-button";
+import { chargeFor, num, som } from "@/lib/format";
 
 export function OrderDialog({
   service,
@@ -143,7 +144,7 @@ export function OrderDialog({
             {qtyOk && !enough && (
               <p className="text-sm text-amber-300">
                 Mablag' yetarli emas.{" "}
-                <a href={`${MAIN_URL}/wallet`} className="underline">tayyorr.uz da hamyonni to'ldiring</a>
+                <TopupButton className="underline">Hamyonni to'ldirish</TopupButton>
               </p>
             )}
             {error && <p className="text-sm text-red-400">{error}</p>}

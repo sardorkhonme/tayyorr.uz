@@ -1,12 +1,18 @@
 import { currentUser } from "@/auth";
 import { Header } from "@/components/header";
 import { ServicesBoard } from "@/components/services-board";
+import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
 import { MAIN_URL, som } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ topup?: string }>;
+}) {
+  const { topup } = await searchParams;
   const [user, services] = await Promise.all([
     currentUser(),
     db.smmService.findMany({
@@ -38,6 +44,11 @@ export default async function DashboardPage() {
       <div className="pointer-events-none absolute left-1/2 top-[-180px] -z-10 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[120px]" />
 
       <main className="mx-auto max-w-6xl space-y-10 px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
+        {topup && user && (
+          <div className="animate-rise rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            Click to'lovi tekshirilmoqda. To'lov o'tgan bo'lsa, balans bir necha soniyada yangilanadi — sahifani yangilang.
+          </div>
+        )}
         <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
           <div className="animate-rise">
             <p className="text-sm text-indigo-300">{greet ? `Salom, ${greet} 👋` : "tayyorr.uz oilasidan"}</p>
@@ -61,7 +72,7 @@ export default async function DashboardPage() {
                   {user.walletCode && <p className="mt-1 text-xs text-zinc-500">Hisob kodi: {user.walletCode}</p>}
                 </div>
                 <div className="flex items-center gap-2">
-                  <a href={`${MAIN_URL}/wallet`} className="btn-primary flex-1">Hamyonni to'ldirish</a>
+                  <TopupButton className="btn-primary flex-1">Hamyonni to'ldirish</TopupButton>
                   <a href="/orders" className="btn-ghost">
                     Faol: <span className="font-semibold text-white">{active}</span>
                   </a>

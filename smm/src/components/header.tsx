@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { signOut } from "@/auth";
-import { MAIN_URL, som } from "@/lib/format";
+import { TopupButton } from "@/components/topup-button";
+import { som } from "@/lib/format";
 
 type HeaderUser = {
   firstName: string | null;
@@ -41,16 +42,15 @@ export function Header({ user }: { user: HeaderUser }) {
         <div className="ml-auto flex items-center gap-2">
           {user ? (
             <>
-              <a
-                href={`${MAIN_URL}/wallet`}
+              <TopupButton
                 className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-1.5 pl-3 pr-1.5 text-sm hover:bg-white/[0.08]"
-                title="Hamyonni tayyorr.uz da to'ldirish"
+                title="Hamyonni to'ldirish"
               >
                 <span className="font-medium text-white">{som(user.balance)}</span>
                 <span className="grid h-6 w-6 place-items-center rounded-lg bg-indigo-500 text-base leading-none text-white">
                   +
                 </span>
-              </a>
+              </TopupButton>
               <Link href="/orders" className="sm:hidden btn-ghost !px-3 !py-1.5">
                 Buyurtmalar
               </Link>

@@ -29,6 +29,9 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 - Buyurtma: `balance >= charge` sharti bilan atomik yechiladi → `WalletTransaction` `SPEND`, `method: "SMM"`.
 - Provayder rad etsa — darhol to'liq qaytadi (`REFUND`, `method: "SMM"`).
 - `Partial` — bajarilmagan qismi, `Canceled` — to'liq summa qaytadi. Har buyurtma faqat bir marta yakunlanadi.
+- To'ldirish: Click ([/api/wallet/topup](src/app/api/wallet/topup/route.ts)) — `PENDING` `TOPUP` yaratiladi,
+  Click'ning Prepare/Complete webhook'lari **tayyorr.uz** ga keladi va umumiy bazadagi shu tranzaksiyani
+  tasdiqlaydi. Click kabinetida hech narsa o'zgarmaydi.
 - Barcha amallar tayyorr.uz admin → To'lovlar va foydalanuvchi hamyonida ko'rinadi.
 
 ## Env (Vercel → smm loyihasi)
@@ -43,6 +46,7 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 | `SMM_PROVIDER_URL`, `SMM_PROVIDER_KEY` | SMM panel API |
 | `SMM_PROVIDER_RATE_UZS` | provayder valyutasi kursi (masalan 12800) |
 | `SMM_MARKUP` | ustama (1.5 = +50%) |
+| `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` | tayyorr.uz dagi Click qiymatlari (secret key shart emas) |
 | `CRON_SECRET` | `/api/cron/sync` uchun |
 | `NEXT_PUBLIC_MAIN_URL` | `https://tayyorr.uz` |
 
