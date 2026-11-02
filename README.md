@@ -72,20 +72,16 @@ src/
       upload/presign, upload/complete
 ```
 
-## Hamyon (balans) — DEMO
+## Hamyon (balans)
 
 Har foydalanuvchida `balance` (so'm) va qisqa `walletCode` (masalan `TYR-8FK2`).
 Kabinet va `/wallet` sahifasida balans ko'rinadi.
 
-- **[/wallet](src/app/(app)/wallet/page.tsx)** — Click uslubidagi to'ldirish oynasi: hisob kodi,
-  karta raqami, amal qilish muddati (MM/YY), summa → "To'lash".
-- **[/api/wallet/topup](src/app/api/wallet/topup/route.ts)** — DEMO: haqiqiy pul yechilmaydi,
-  faqat Luhn/muddat tekshiriladi, `WalletTransaction` (`method: "DEMO"`) yoziladi va balans oshadi.
-- `WalletTransaction` sxemasi (`type`, `status`, `method`, `meta`) Click ulanishiga tayyor.
-
-**Click ulanganda:** `/api/wallet/topup` o'rniga `Prepare` / `Complete` webhook route'lari
-qo'shiladi; ular ham xuddi shu `WalletTransaction` + `balance` increment mantiqini
-ishlatadi (`method: "CLICK"`, `status: PENDING → SUCCESS`). Sxema o'zgarmaydi.
+- To'ldirish faqat **Click** orqali: [/api/wallet/topup/click](src/app/api/wallet/topup/click/route.ts)
+  `PENDING` amal yaratadi, [Prepare](src/app/api/payments/click/prepare/route.ts) /
+  [Complete](src/app/api/payments/click/complete/route.ts) webhook'lari uni `SUCCESS` qilib balansni oshiradi
+  (`method: "CLICK"`). Mobil ilova: `/api/mobile/wallet/topup` (xuddi shu Click oqimi).
+- Eski DEMO to'ldirish endpoint'i (`/api/wallet/topup`) xavfsizlik sababli olib tashlangan.
 
 ## Admin panel — `/sardorxon/admin`
 
