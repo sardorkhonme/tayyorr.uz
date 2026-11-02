@@ -30,7 +30,8 @@ export default async function AdminPayouts({
     where: q
       ? { OR: [{ user: userSearchWhere(q) }, ...(idPrefixWhere(q) ? [idPrefixWhere(q)!] : [])] }
       : undefined,
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    // faqat sana bo'yicha — eng yangisi tepada (holat bo'yicha guruhlanmaydi)
+    orderBy: { createdAt: "desc" },
     take: 150,
     include: { user: { select: { id: true, login: true, name: true } } },
   });
