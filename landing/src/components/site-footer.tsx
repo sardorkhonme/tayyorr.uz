@@ -1,14 +1,14 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/logo";
-import { APP_URL, INSTAGRAM_URL, PLUS_URL, TELEGRAM_URL } from "@/lib/links";
+import { APP_URL, INSTAGRAM_URL, PLUS_URL, SMM_URL, TELEGRAM_URL } from "@/lib/links";
 
 const COLS = [
   {
     title: "Xizmatlar",
     links: [
       { href: `${APP_URL}/dashboard`, label: "Ilmiy ishlar" },
-      { href: `${PLUS_URL}/smm`, label: "Tayyorr SMM" },
+      { href: SMM_URL, label: "Tayyorr SMM" },
       { href: PLUS_URL, label: "tayyorr+" },
       { href: "/xizmatlar", label: "Ish turlari" },
     ],

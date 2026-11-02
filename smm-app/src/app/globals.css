@@ -1,0 +1,268 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f7f7fb;
+  color: #16161d;
+}
+
+/* ===== UI primitivlari (yorug' mavzu) ===== */
+
+.btn-primary,
+.btn-ghost,
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.9rem;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+  cursor: pointer;
+}
+.btn-primary:active,
+.btn-ghost:active,
+.btn-dark:active {
+  transform: translateY(1px);
+}
+.btn-primary:disabled,
+.btn-ghost:disabled,
+.btn-dark:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+/* asosiy tugma — hover'da gradient chapdan o'ngga "oqib" o'tadi */
+.btn-primary {
+  background: linear-gradient(120deg, #6366f1, #8b5cf6 35%, #d946ef 65%, #6366f1);
+  background-size: 300% 100%;
+  background-position: 0% 50%;
+  color: #fff;
+  box-shadow: 0 10px 24px -10px rgba(99, 102, 241, 0.65);
+  transition: background-position 0.7s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.btn-primary:hover {
+  background-position: 100% 50%;
+  box-shadow: 0 16px 34px -12px rgba(217, 70, 239, 0.6);
+}
+.btn-dark {
+  background: #16161d;
+  color: #fff;
+}
+.btn-dark:hover {
+  background: #2a2a35;
+}
+.btn-ghost {
+  background: #fff;
+  border: 1px solid #e5e5ee;
+  color: #2b2b36;
+}
+.btn-ghost:hover {
+  border-color: #c7d2fe;
+  background: linear-gradient(135deg, #eef2ff, #fdf4ff);
+  color: #3730a3;
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid #e3e3ec;
+  background: #fff;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  color: #16161d;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input::placeholder {
+  color: #a1a1b0;
+}
+.input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.18);
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2b2b36;
+}
+
+.card {
+  border-radius: 1.25rem;
+  border: 1px solid #ececf3;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 16, 40, 0.04), 0 8px 24px -16px rgba(16, 16, 40, 0.12);
+}
+
+/* fon: yumshoq rangli dog'lar + nozik nuqtalar */
+.hero-bg {
+  background:
+    radial-gradient(40% 50% at 15% 10%, rgba(129, 140, 248, 0.28), transparent 70%),
+    radial-gradient(35% 45% at 85% 5%, rgba(244, 114, 182, 0.22), transparent 70%),
+    radial-gradient(40% 40% at 60% 60%, rgba(251, 191, 36, 0.12), transparent 70%);
+}
+.dots {
+  background-image: radial-gradient(rgba(22, 22, 29, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, #000, transparent 85%);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes pop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-rise { animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-pop { animation: pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@layer components {
+/*
+ * Kartalar: hover'da sichqoncha ortidan yuradigan rangli yorug'lik (--mx/--my,
+ * GlowPointer yozadi) + gradient chegara + yumshoq rangli soya.
+ * Rang — --glow (masalan platformaning o'z rangi).
+ */
+.glow-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background:
+    radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--glow, #818cf8) 24%, transparent), transparent 65%),
+    linear-gradient(135deg, color-mix(in srgb, var(--glow, #818cf8) 7%, #fff), color-mix(in srgb, #f0abfc 14%, #fff));
+}
+.glow-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--glow, #818cf8), #e879f9 55%, #fbbf24);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.glow-card:hover::before,
+.glow-card:hover::after {
+  opacity: 1;
+}
+.glow-card:hover {
+  border-color: transparent;
+  box-shadow: 0 22px 44px -26px color-mix(in srgb, var(--glow, #6366f1) 75%, transparent);
+}
+
+/* menyu bandlari — hover'da yumshoq gradient chapdan to'ladi */
+.nav-item {
+  background-image: linear-gradient(90deg, #eef2ff, #fdf4ff);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
+}
+.nav-item:hover {
+  background-size: 100% 100%;
+  color: #3730a3;
+}
+}
+
+/* platforma bloki */
+.platform-tile {
+  position: relative;
+}
+.platform-tile[data-active="true"] {
+  border-color: var(--from);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--from) 18%, transparent);
+}
+
+/*
+ * Skeleton-loading — tayyorr.uz dagidek qiya yorug' chiziq (yorug' mavzu uchun):
+ * sahifa yuklanguncha haqiqiy shakldagi qutichalar ustidan nur o'tadi.
+ */
+@keyframes skel-sweep {
+  0% { transform: translateX(-60%); }
+  100% { transform: translateX(60%); }
+}
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(24, 24, 40, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(24, 24, 40, 0.07);
+}
+.skel::after {
+  content: "";
+  position: absolute;
+  inset: 0 -100%;
+  transform: translateX(-60%);
+  background: linear-gradient(120deg, transparent 40%, rgba(129, 140, 248, 0.22) 50%, transparent 60%);
+  animation: skel-sweep 1.6s ease-in-out infinite;
+}
+
+@layer components {
+/* Rangli elementlarda vaqti-vaqti bilan o'tuvchi nur (hamyon kartasi, ikonka bloklari, tugmalar).
+   @layer components — `fixed` kabi utility klasslar ustun tursin (support tugmasi joyida qolsin). */
+@keyframes shine-sweep {
+  0% { transform: translateX(-130%) rotate(20deg); opacity: 0; }
+  10% { opacity: 1; }
+  45% { opacity: 1; }
+  60%, 100% { transform: translateX(230%) rotate(20deg); opacity: 0; }
+}
+.shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(100deg, transparent 25%, rgba(255, 255, 255, 0.38) 50%, transparent 75%);
+  animation: shine-sweep 4.5s ease-in-out infinite;
+  animation-delay: var(--shine-delay, 0s);
+  pointer-events: none;
+  z-index: 1;
+}
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-rise, .animate-float, .animate-pop, .skel::after { animation: none; }
+  .shine::after { display: none; }
+  .btn-primary, .nav-item, .glow-card, .glow-card::before, .glow-card::after { transition: none; }
+}

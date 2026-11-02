@@ -1,6 +1,6 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { APP_URL, PLUS_URL, START_URL } from "@/lib/links";
+import { APP_URL, PLUS_URL, SMM_URL, START_URL } from "@/lib/links";
 
 const SERVICES = [
   {
@@ -15,8 +15,8 @@ const SERVICES = [
   {
     mark: "/smm-mark.png",
     title: "Tayyorr SMM",
-    domain: "plus.tayyorr.uz/smm",
-    href: `${PLUS_URL}/smm`,
+    domain: "smm.tayyorr.uz",
+    href: SMM_URL,
     glow: "rgba(217, 70, 239, 0.22)",
     text: "Instagram, Telegram, TikTok va YouTube uchun obunachi, layk va ko'rishlar — buyurtma bir necha daqiqada avtomatik boshlanadi.",
     points: ["Bajarilmasa — pul avtomatik qaytadi", "Parol so'ralmaydi, faqat havola"],

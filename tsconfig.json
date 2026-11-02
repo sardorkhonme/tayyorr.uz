@@ -36,7 +36,8 @@
   ],
   "exclude": [
     "node_modules",
-    "smm",
+    "plus",
+    "smm-app",
     "admin",
     "landing"
   ]
