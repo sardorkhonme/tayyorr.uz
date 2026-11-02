@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 
-import { currentUser } from "@/auth";
+import { auth, currentUser } from "@/auth";
+import { AccountNotFound } from "@/components/account-not-found";
 import { HubMobileBar, HubSidebar, type HubUser } from "@/components/hub-nav";
 
 /** tayyorr+ kabineti: chapda panel (kompyuter), tepada popup menyu (telefon). */
 export default async function HubLayout({ children }: { children: React.ReactNode }) {
-  const u = await currentUser();
+  const [session, u] = await Promise.all([auth(), currentUser()]);
+  // brauzerda sessiya qolgan, lekin hisob o'chirilgan — tayyorr.uz dagidek xabar
+  if (session?.user?.id && !u) return <AccountNotFound />;
   // profili to'liq bo'lmagan (Google orqali yangi kirgan) — avval ro'yxatdan o'tishni yakunlasin
   if (u && !u.login) redirect("/onboarding");
   const user: HubUser = u

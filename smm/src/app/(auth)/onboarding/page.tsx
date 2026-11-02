@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { AccountNotFound } from "@/components/account-not-found";
 import { db } from "@/lib/db";
 
 import { AuthShell } from "../auth-shell";
@@ -16,7 +17,7 @@ export default async function OnboardingPage() {
     where: { id: session.user.id },
     select: { login: true, firstName: true, lastName: true, name: true, image: true, avatarUrl: true, passwordHash: true },
   });
-  if (!u) redirect("/login");
+  if (!u) return <AccountNotFound />;
   if (u.login) redirect("/");
 
   const [first, ...rest] = (u.name ?? "").trim().split(/\s+/);

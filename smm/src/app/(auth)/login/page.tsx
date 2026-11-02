@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { currentUser } from "@/auth";
 
 import { LoginForm } from "../auth-forms";
 import { AuthShell } from "../auth-shell";
@@ -8,7 +8,8 @@ import { AuthShell } from "../auth-shell";
 export const metadata = { title: "Kirish" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  if ((await auth())?.user?.id) redirect("/");
+  // sessiya cookie'si qolgan, lekin hisob o'chirilgan bo'lsa — forma ochiladi
+  if (await currentUser()) redirect("/");
   const { error } = await searchParams;
   return (
     <AuthShell mode="login">

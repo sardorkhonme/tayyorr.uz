@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { currentUser } from "@/auth";
 
 import { RegisterForm } from "../auth-forms";
 import { AuthShell } from "../auth-shell";
@@ -8,7 +8,8 @@ import { AuthShell } from "../auth-shell";
 export const metadata = { title: "Ro'yxatdan o'tish" };
 
 export default async function RegisterPage() {
-  if ((await auth())?.user?.id) redirect("/");
+  // sessiya cookie'si qolgan, lekin hisob o'chirilgan bo'lsa — forma ochiladi
+  if (await currentUser()) redirect("/");
   return (
     <AuthShell mode="register">
       <RegisterForm />
