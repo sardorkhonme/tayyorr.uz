@@ -22,7 +22,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // yopiq turganda — 15 soniyada bir yangi javob bormi
+  // yopiq turganda — tayyorr.uz dagidek doimiy tekshirish (5 soniyada + yorliqqa qaytganda)
   const poll = useCallback(async () => {
     if (!loggedIn) return;
     const res = await fetch("/api/support", { cache: "no-store" }).catch(() => null);
@@ -41,8 +41,17 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   useEffect(() => {
     if (open) return;
     poll();
-    const id = setInterval(poll, 15000);
-    return () => clearInterval(id);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") poll();
+    }, 5000);
+    const onVisible = () => document.visibilityState === "visible" && poll();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
   }, [open, poll]);
 
   // bildirishnoma 7 soniyadan keyin yo'qoladi
@@ -115,11 +124,14 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
         type="button"
         onClick={toggle}
         aria-label="Yordam (support)"
-        className="shine fixed bottom-5 right-5 z-[45] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-xl shadow-violet-500/40 transition hover:shadow-2xl hover:shadow-fuchsia-500/40"
+        className="fixed bottom-5 right-5 z-[45] h-14 w-14 rounded-full shadow-xl shadow-violet-500/40 transition hover:shadow-2xl hover:shadow-fuchsia-500/40"
       >
-        <Icon name={open ? "close" : "headset"} className="h-6 w-6" />
+        {/* nur effekti ichki doirada — o'qilmaganlar soni tashqarida to'liq ko'rinsin */}
+        <span className="shine grid h-full w-full place-items-center rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white">
+          <Icon name={open ? "close" : "headset"} className="h-6 w-6" />
+        </span>
         {!open && unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[11px] font-bold ring-2 ring-white">
+          <span className="absolute -right-1 -top-1 z-[3] grid h-6 min-w-6 place-items-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white ring-2 ring-white">
             {unread > 9 ? "9+" : unread}
           </span>
         )}

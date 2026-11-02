@@ -13,7 +13,7 @@ const timeFmt = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", ho
 
 /**
  * Support chati (sarlavha, xabarlar, yozish maydoni). Kompyuterda popup ichida,
- * telefonda alohida /support sahifasida ishlatiladi. Ochiq turganda har 4 soniyada
+ * telefonda alohida /support sahifasida ishlatiladi. Ochiq turganda har 3 soniyada
  * yangilanadi va support javoblari o'qilgan deb belgilanadi.
  * Xabarlar tayyorr.uz admin paneliga ("tayyorr.uz support") boradi.
  */
@@ -44,10 +44,20 @@ export function SupportChat({
     if (res?.ok && data) setMsgs(data.messages ?? []);
   }, [loggedIn]);
 
+  // ochiq chat: 3 soniyada + yorliqqa qaytganda darhol (tayyorr.uz chati kabi)
   useEffect(() => {
     load();
-    const id = setInterval(load, 4000);
-    return () => clearInterval(id);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 3000);
+    const onVisible = () => document.visibilityState === "visible" && load();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
   }, [load]);
 
   useEffect(() => {
