@@ -3,9 +3,11 @@ import { redirect } from "next/navigation";
 
 import { currentUser } from "@/auth";
 import { Icon } from "@/components/icons";
+import { PayoutCancelButton, PayoutForm } from "@/components/payout-form";
 import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
-import { MAIN_URL, som } from "@/lib/format";
+import { som } from "@/lib/format";
+import { PAYOUT_STATUS } from "@/lib/payout";
 import {
   ensureWalletCode,
   expireStaleClickTopups,
@@ -33,11 +35,14 @@ export default async function WalletPage() {
 
   const walletCode = user.walletCode ?? (await ensureWalletCode(user.id));
   await expireStaleClickTopups(user.id);
-  const txns = await db.walletTransaction.findMany({
-    where: { userId: user.id, ...HIDE_UNFINISHED_TOPUPS },
-    orderBy: { createdAt: "desc" },
-    take: 30,
-  });
+  const [txns, payouts] = await Promise.all([
+    db.walletTransaction.findMany({
+      where: { userId: user.id, ...HIDE_UNFINISHED_TOPUPS },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    }),
+    db.payoutRequest.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 10 }),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -60,13 +65,48 @@ export default async function WalletPage() {
             <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} /> Hamyonni to&apos;ldirish
           </TopupButton>
           <a
-            href={`${MAIN_URL}/wallet`}
+            href="#payout"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 px-5 py-3 font-semibold text-white transition hover:bg-white/10"
           >
-            Kartaga yechish — tayyorr.uz <Icon name="external" className="h-4 w-4" />
+            <Icon name="wallet" className="h-4 w-4" /> Kartaga yechish
           </a>
         </div>
       </section>
+
+      <PayoutForm balance={user.balance} />
+
+      {payouts.length > 0 && (
+        <section>
+          <h2 className="font-display text-xl font-bold text-zinc-900">Yechib olish so&apos;rovlari</h2>
+          <ul className="mt-4 space-y-2.5">
+            {payouts.map((p) => (
+              <li key={p.id} className="card flex items-center gap-4 !rounded-2xl p-4">
+                <div className="min-w-0 flex-1">
+                  <p className="flex flex-wrap items-center gap-2 font-medium text-zinc-900">
+                    {som(p.amount)}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        p.status === "PAID"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : p.status === "PENDING"
+                            ? "bg-amber-50 text-amber-700"
+                            : "bg-zinc-100 text-zinc-500"
+                      }`}
+                    >
+                      {PAYOUT_STATUS[p.status] ?? p.status}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 truncate text-sm text-zinc-500">
+                    {dateFmt.format(p.createdAt)} · {p.card.slice(0, 4)} **** {p.card.slice(-4)}
+                    {p.adminNote ? ` · ${p.adminNote}` : ""}
+                  </p>
+                </div>
+                {p.status === "PENDING" && <PayoutCancelButton id={p.id} />}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* amallar tarixi */}
       <section>
