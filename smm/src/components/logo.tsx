@@ -1,4 +1,4 @@
-/** tayyorr+ logotipi: rangli "T" belgisi + "tayyorr+" yozuvi. */
+/** tayyorr+ logotipi: rangli "T+" belgisi + "tayyorr+" yozuvi. */
 export function Logo({
   className = "text-xl",
   markClassName = "h-[1.5em]",
@@ -19,11 +19,11 @@ export function Logo({
         // rangli fonda belgi oq kartochka ichida turadi — ranglari yo'qolib ketmaydi
         <span className="grid h-[1.6em] w-[1.6em] shrink-0 place-items-center rounded-[0.45em] bg-white shadow-sm">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.png" alt="" aria-hidden className="h-[1.1em] w-auto" draggable={false} />
+          <img src="/plus-mark.png" alt="" aria-hidden className="h-[1.3em] w-auto" draggable={false} />
         </span>
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/logo-mark.png" alt="" aria-hidden className={`w-auto shrink-0 ${markClassName}`} draggable={false} />
+        <img src="/plus-mark.png" alt="" aria-hidden className={`w-auto shrink-0 ${markClassName}`} draggable={false} />
       )}
       <span>
         tayyorr

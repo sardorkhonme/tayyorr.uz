@@ -393,7 +393,7 @@ class _PlusCard extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: Image.asset('assets/logo-mark.png', filterQuality: FilterQuality.high),
+              child: Image.asset('assets/plus-mark.png', filterQuality: FilterQuality.high),
             ),
             const SizedBox(width: 10),
             const Expanded(

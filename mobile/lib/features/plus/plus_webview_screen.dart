@@ -105,7 +105,7 @@ class _PlusWebViewScreenState extends State<PlusWebViewScreen> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/logo-mark.png', height: 28, filterQuality: FilterQuality.high),
+              Image.asset('assets/plus-mark.png', height: 28, filterQuality: FilterQuality.high),
               const SizedBox(width: 8),
               const Text.rich(
                 TextSpan(children: [
