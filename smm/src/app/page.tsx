@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 import { currentUser } from "@/auth";
 import { Header } from "@/components/header";
 import { ServicesBoard } from "@/components/services-board";
@@ -5,8 +7,10 @@ import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
 import { MAIN_URL, som } from "@/lib/format";
 import { getPricing, rateFor } from "@/lib/pricing";
+import { maybeSyncServices } from "@/lib/sync-services";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const STEPS = [
   { title: "Tarmoqni tanlang", text: "Instagram, Telegram, TikTok, YouTube va boshqalar." },
@@ -39,6 +43,11 @@ export default async function HomePage({
   searchParams: Promise<{ topup?: string; p?: string; k?: string }>;
 }) {
   const { topup, p, k } = await searchParams;
+
+  // xizmatlar provayderdan avtomatik tortiladi: baza bo'sh bo'lsa — darhol,
+  // aks holda 6 soatda bir marta, javob qaytgandan keyin (foydalanuvchi kutmaydi)
+  if ((await db.smmService.count({ where: { active: true } })) === 0) await maybeSyncServices();
+  else after(() => maybeSyncServices());
   const [user, rows, pricing] = await Promise.all([
     currentUser(),
     db.smmService.findMany({

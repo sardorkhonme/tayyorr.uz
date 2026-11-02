@@ -19,10 +19,17 @@ smm/
   src/app/login            kirish
   src/app/api/orders       POST buyurtma, GET ro'yxat
   src/app/api/cron/sync    faol buyurtmalar holati (CRON_SECRET bilan)
-  scripts/sync-services.mjs  provayder xizmatlarini import / narx yangilash
+  src/lib/sync-services.ts  provayder xizmatlarini avtomatik tortish (6 soatda bir)
 ```
 
 Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
+
+## Xizmatlar ro'yxati
+
+Provayderdan **avtomatik** tortiladi ([sync-services.ts](src/lib/sync-services.ts)): baza bo'sh bo'lsa —
+sayt birinchi ochilganda, keyin 6 soatda bir (bosh sahifa ochilganda yoki cron'da). Yangilari qo'shiladi,
+narx/limit yangilanadi, provayderda yo'qolganlari yashiriladi. Hozir majburan yangilash:
+`GET /api/cron/sync?services=1` (`Authorization: Bearer <CRON_SECRET>`).
 
 ## Narx
 
@@ -79,7 +86,6 @@ Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har
 cd smm
 npm install
 cp ../.env .env.local        # va yuqoridagi SMM_* qiymatlarni qo'shing
-npm run sync-services        # xizmatlarni import qilish
 npm run dev                  # http://localhost:3010
 ```
 

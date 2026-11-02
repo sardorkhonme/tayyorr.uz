@@ -52,7 +52,7 @@ export default async function AdminSmm() {
   const stats = [
     { label: "Buyurtmalar", value: total.toLocaleString("ru-RU"), sub: `24 soatda: ${today}` },
     { label: "Aylanma (qaytarilganlarsiz)", value: som(turnover), sub: "mijozlar to'lagan summa" },
-    { label: "Faol xizmatlar", value: services.toLocaleString("ru-RU"), sub: "npm run sync-services" },
+    { label: "Faol xizmatlar", value: services.toLocaleString("ru-RU"), sub: "provayderdan 6 soatda avtomatik yangilanadi" },
   ];
 
   return (
