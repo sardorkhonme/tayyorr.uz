@@ -12,9 +12,9 @@ export function payPlatform(returnTo: string): { key: "app" | "smm" | "plus"; la
 }
 
 export const PAY_METHODS = [
-  { key: "click", name: "Click", color: "#0080ff", ready: true },
-  { key: "payme", name: "Payme", color: "#00b8c2", ready: false },
-  { key: "uzum", name: "Uzum Bank", color: "#7000ff", ready: false },
+  { key: "click", name: "Click", logo: "/pay/click.svg", logoClass: "h-7", showName: false, ready: true },
+  { key: "payme", name: "Payme", logo: "/pay/payme.svg", logoClass: "h-6", showName: false, ready: false },
+  { key: "uzum", name: "Uzum Bank", logo: "/pay/uzum.png", logoClass: "h-10 rounded-xl", showName: true, ready: false },
 ] as const;
 
 export type PayMethod = (typeof PAY_METHODS)[number]["key"];
