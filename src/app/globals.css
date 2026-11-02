@@ -776,6 +776,18 @@ html.js-reveal .blur-in.reveal-in {
   44% { background-color: rgba(99, 102, 241, 0.28); }
   100% { background-color: rgba(99, 102, 241, 0); }
 }
+/* Nur alohida qatlamda (::before) — xabar qatoridagi blur-in/reveal animatsiyasi uni bekor qilmasin.
+   Mobil ilovadagi _FlashHighlight bilan bir xil: indigo, ikki marta yonadi, 1.4s. */
 .msg-flash {
+  position: relative;
+  isolation: isolate;
+}
+.msg-flash::before {
+  content: "";
+  position: absolute;
+  inset: -4px -6px;
+  z-index: -1;
+  border-radius: 1rem;
+  pointer-events: none;
   animation: msg-flash 1.4s ease-out;
 }

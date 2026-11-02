@@ -19,6 +19,7 @@ import { presenceText } from "@/lib/presence";
 import { shortDateTime, smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
 import { SOURCE_OPTIONS, type MessageSource } from "@/lib/message-source";
+import { flashMessage } from "@/lib/flash-message";
 
 interface ReplyPreview {
   id: string;
@@ -523,14 +524,8 @@ export function ChatRoom({
       setTimeout(() => setJumpMiss(false), 2500);
       return;
     }
-    {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Telegramdagidek ikki marta "lip-lip" yonadigan nur (mobil ilova bilan bir xil)
-      el.classList.remove("msg-flash");
-      void el.offsetWidth;
-      el.classList.add("msg-flash");
-      setTimeout(() => el.classList.remove("msg-flash"), 1500);
-    }
+    // Telegramdagidek ikki marta "lip-lip" yonadigan nur (mobil ilova bilan bir xil)
+    flashMessage(el);
   }
 
   function reportMsg(m: Msg) {

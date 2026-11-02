@@ -9,6 +9,7 @@ import { smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
 import type { MessageSource } from "@/lib/message-source";
 import { Icon } from "@/components/icons";
+import { flashMessage } from "@/lib/flash-message";
 
 interface Msg {
   id: string;
@@ -58,11 +59,7 @@ export function AdminConversationView({
       setTimeout(() => setJumpMiss(false), 2500);
       return;
     }
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.remove("msg-flash");
-    void el.offsetWidth;
-    el.classList.add("msg-flash");
-    setTimeout(() => el.classList.remove("msg-flash"), 1500);
+    flashMessage(el);
   }
 
   const nameOf = (senderId: string) =>
