@@ -238,6 +238,8 @@ export function ChatRoom({
   }
   const [peerRead, setPeerRead] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // javob (reply) bosilganda asl xabar sahifada bo'lmasa — mobil ilovadagidek xabar
+  const [jumpMiss, setJumpMiss] = useState(false);
 
   // biriktirilgan fayl (hali yuborilmagan)
   const [attachment, setAttachment] = useState<PreparedChatFile | null>(null);
@@ -516,7 +518,12 @@ export function ChatRoom({
 
   function scrollToMessage(id: string) {
     const el = document.getElementById(`msg-${id}`);
-    if (el) {
+    if (!el) {
+      setJumpMiss(true);
+      setTimeout(() => setJumpMiss(false), 2500);
+      return;
+    }
+    {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       // Telegramdagidek ikki marta "lip-lip" yonadigan nur (mobil ilova bilan bir xil)
       el.classList.remove("msg-flash");
@@ -1095,9 +1102,21 @@ export function ChatRoom({
               </div>
             )}
 
+            {jumpMiss && (
+              <div className="pointer-events-none mb-2 flex justify-center">
+                <span className="rounded-full bg-zinc-900/90 px-3 py-1.5 text-xs text-white shadow-lg">
+                  Asl xabar topilmadi (o&apos;chirilgan yoki juda eski)
+                </span>
+              </div>
+            )}
             {replyingTo && !editing && (
               <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border-l-2 border-indigo-400/70 bg-white/5 px-3 py-1.5 text-xs">
-                <div className="min-w-0">
+                {/* bosilsa — asl xabarga o'tadi (mobil ilovadagidek) */}
+                <button
+                  type="button"
+                  onClick={() => scrollToMessage(replyingTo.id)}
+                  className="min-w-0 flex-1 text-left"
+                >
                   <div className="text-indigo-300">
                     Javob:{" "}
                     {replyingTo.authorId === meId ? "Siz" : other.name}
@@ -1105,7 +1124,7 @@ export function ChatRoom({
                   <div className="truncate text-zinc-400">
                     <ReplyText text={replyingTo.text} />
                   </div>
-                </div>
+                </button>
                 <button
                   type="button"
                   onClick={() => setReplyingTo(null)}

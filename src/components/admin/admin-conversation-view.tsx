@@ -49,6 +49,22 @@ export function AdminConversationView({
   revisions: Record<string, string[]>;
 }) {
   const router = useRouter();
+  const [jumpMiss, setJumpMiss] = useState(false);
+
+  function scrollToMessage(id: string) {
+    const el = document.getElementById(`msg-${id}`);
+    if (!el) {
+      setJumpMiss(true);
+      setTimeout(() => setJumpMiss(false), 2500);
+      return;
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.remove("msg-flash");
+    void el.offsetWidth;
+    el.classList.add("msg-flash");
+    setTimeout(() => el.classList.remove("msg-flash"), 1500);
+  }
+
   const nameOf = (senderId: string) =>
     senderId === left.id ? left.label : senderId === right.id ? right.label : "—";
 
@@ -133,6 +149,13 @@ export function AdminConversationView({
 
   return (
     <div className="flex flex-col gap-2">
+      {jumpMiss && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
+          <span className="rounded-full bg-zinc-900/90 px-3 py-1.5 text-xs text-white shadow-lg">
+            Asl xabar topilmadi (o&apos;chirilgan yoki juda eski)
+          </span>
+        </div>
+      )}
       <div className="flex items-center gap-1.5 px-1 text-[11px] text-zinc-500">
         <span
           className={`h-1.5 w-1.5 rounded-full ${live ? "bg-emerald-400" : "bg-zinc-600"}`}
@@ -157,7 +180,8 @@ export function AdminConversationView({
           return (
             <div
               key={m.id}
-              className={`flex ${m.mine ? "justify-end" : "justify-start"}`}
+              id={`msg-${m.id}`}
+              className={`flex rounded-xl transition ${m.mine ? "justify-end" : "justify-start"}`}
             >
               <div className="max-w-[78%]">
                 <div className="mb-0.5 flex items-center gap-2 px-1 text-[10px] text-zinc-500">
@@ -186,10 +210,15 @@ export function AdminConversationView({
                     </div>
                   )}
                   {m.replyTo && (
-                    <div className="rounded-md border-l-2 border-white/30 bg-black/10 py-1 pl-2 text-xs opacity-80">
+                    // bosilsa — asl xabarga o'tib, nur bilan yoritadi (foydalanuvchi chati va ilovadagidek)
+                    <button
+                      type="button"
+                      onClick={() => scrollToMessage(m.replyTo!.id)}
+                      className="block w-full rounded-md border-l-2 border-white/30 bg-black/10 py-1 pl-2 text-left text-xs opacity-80 transition hover:opacity-100"
+                    >
                       <div className="font-medium">{nameOf(m.replyTo.authorId)}</div>
                       <div className="truncate">{m.replyTo.text}</div>
-                    </div>
+                    </button>
                   )}
                   {m.file && <ChatFileView file={m.file} mine={m.mine} />}
                   {m.body && (

@@ -34,10 +34,12 @@ export async function GET(
       // tayyorr+ ga xos xabarlar foydalanuvchiga tayyorr.uz da ko'rinmaydi (admin — hammasi)
       ...(actor.support ? {} : VISIBLE_ON_UZ),
     },
-    orderBy: { createdAt: "asc" },
+    // `since` bo'lmasa — eng yangi 300 ta (eskilari emas), keyin to'g'ri tartibda
+    orderBy: { createdAt: since ? "asc" : "desc" },
     take: 300,
     include: { reactions: true },
   });
+  if (!since) rows.reverse();
 
   const otherId = otherUserId(conv, me);
   const [other, bs] = await Promise.all([

@@ -32,7 +32,8 @@ export default async function AdminMessageThread({
     }),
     db.message.findMany({
       where: { conversationId: id },
-      orderBy: { createdAt: "asc" },
+      // eng yangi 300 ta (uzun suhbatda so'nggi xabarlar ham ko'rinsin), keyin to'g'ri tartibda
+      orderBy: { createdAt: "desc" },
       take: 300,
       include: { reactions: true },
     }),
@@ -55,7 +56,7 @@ export default async function AdminMessageThread({
           isSupport: false,
           lastSeenAt: other?.lastSeenAt?.toISOString() ?? null,
         }}
-        initialMessages={await toClientMessages(messages, supportId)}
+        initialMessages={await toClientMessages([...messages].reverse(), supportId)}
       />
     </>
   );

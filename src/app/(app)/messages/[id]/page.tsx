@@ -39,7 +39,8 @@ export default async function ChatPage({
     }),
     db.message.findMany({
       where: { conversationId: id, ...VISIBLE_ON_UZ },
-      orderBy: { createdAt: "asc" },
+      // eng yangi 200 ta (uzun suhbatda so'nggi xabarlar ham ko'rinsin), keyin to'g'ri tartibda
+      orderBy: { createdAt: "desc" },
       take: 200,
       include: { reactions: true },
     }),
@@ -74,7 +75,7 @@ export default async function ChatPage({
               ? null
               : other.lastSeenAt.toISOString(),
         }}
-        initialMessages={await toClientMessages(messages, me)}
+        initialMessages={await toClientMessages([...messages].reverse(), me)}
       />
     </>
   );

@@ -41,10 +41,12 @@ export async function GET(
       ...(since ? { updatedAt: { gt: new Date(Number(since)) } } : {}),
       ...VISIBLE_ON_UZ,
     },
-    orderBy: { createdAt: "asc" },
+    // `since` bo'lmasa — eng yangi 300 ta (eskilari emas), keyin to'g'ri tartibda
+    orderBy: { createdAt: since ? "asc" : "desc" },
     take: 300,
     include: { reactions: true },
   });
+  if (!since) rows.reverse();
 
   const otherId = otherUserId(conv, me);
   const [other, bs, activeContracts] = await Promise.all([
