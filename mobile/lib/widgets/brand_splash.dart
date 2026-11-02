@@ -47,15 +47,15 @@ class _BrandSplashState extends State<BrandSplash> with TickerProviderStateMixin
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
-                      width: 260,
-                      height: 120,
+                      width: 280,
+                      height: 190,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           // nafas oluvchi nur
                           Container(
                             width: 200 + 40 * breathe,
-                            height: 90 + 20 * breathe,
+                            height: 160 + 30 * breathe,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(999),
                               gradient: RadialGradient(
@@ -87,7 +87,18 @@ class _BrandSplashState extends State<BrandSplash> with TickerProviderStateMixin
                                   stops: const [0.35, 0.48, 0.52, 0.65],
                                 ).createShader(rect);
                               },
-                              child: const AppLogo(height: 34),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/logo-mark.png',
+                                    height: 84,
+                                    filterQuality: FilterQuality.high,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const AppLogo(height: 26, showMark: false),
+                                ],
+                              ),
                             ),
                           ),
                         ],

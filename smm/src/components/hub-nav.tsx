@@ -104,8 +104,9 @@ function MainSiteCard() {
       href={MAIN_SITE_URL}
       className="shine group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-indigo-950 to-indigo-700 p-3 text-white shadow-lg shadow-indigo-900/25 transition hover:shadow-indigo-700/40"
     >
-      <span className="relative z-[2] grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/15 font-display text-lg font-bold">
-        T
+      <span className="relative z-[2] grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white shadow-sm">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.png" alt="" className="h-6 w-6 object-contain" />
       </span>
       <span className="relative z-[2] min-w-0 flex-1">
         <span className="block font-display text-sm font-bold leading-tight">

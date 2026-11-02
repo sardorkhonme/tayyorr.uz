@@ -91,7 +91,7 @@ export default async function Home() {
 
       {/* ---------- nav (fixed) ---------- */}
       <ScrollHeader>
-        <Logo className="h-4 sm:h-6" />
+        <Logo className="h-4 sm:h-6" markClassName="h-7 sm:h-9" />
         <div className="hidden items-center gap-7 text-sm text-zinc-400 sm:flex">
           <Link href="/xizmatlar" className="transition hover:text-white">
             Xizmatlar
@@ -483,7 +483,7 @@ export default async function Home() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             {/* brend + ijtimoiy tarmoqlar */}
             <div>
-              <Logo className="h-4 sm:h-6" />
+              <Logo className="h-4 sm:h-6" markClassName="h-7 sm:h-9" />
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
                 Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli
                 tayyorlovchilarga buyurtma qiling yoki o&apos;zingiz tayyorlab

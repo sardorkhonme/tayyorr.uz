@@ -145,8 +145,9 @@ export default async function DashboardPage({
         >
           <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">
-            <span className="shine grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-zinc-900 via-indigo-950 to-indigo-700 font-display text-2xl font-bold text-white shadow-lg shadow-indigo-900/30">
-              T
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-indigo-500/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-mark.png" alt="tayyorr.uz" className="h-10 w-10 object-contain" />
             </span>
             <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">Asosiy platforma</span>
           </div>
