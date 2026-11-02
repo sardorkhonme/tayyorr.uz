@@ -11,7 +11,7 @@ type Msg = { id: string; mine: boolean; body: string; createdAt: string };
 const timeFmt = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
 
 /**
- * Pastki o'ng burchakdagi support tugmasi → blur fondagi chat oynasi.
+ * Pastki o'ng burchakdagi support tugmasi → chat oynasi (fon xiralashtirilmaydi).
  * Xabarlar tayyorr.uz admin paneliga ("tayyorr.uz support") boradi.
  */
 export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
@@ -22,6 +22,8 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const load = useCallback(
     async (markRead: boolean) => {
@@ -45,8 +47,17 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    // fon xiralashtirilmaydi — oynadan tashqariga bosilsa yopiladi
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!panelRef.current?.contains(t) && !btnRef.current?.contains(t)) setOpen(false);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -74,6 +85,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   return (
     <>
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Yordam (support)"
@@ -90,12 +102,11 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
       {open &&
         typeof document !== "undefined" &&
         createPortal(
-          <div className="fixed inset-0 z-[44]">
-            <div className="absolute inset-0 bg-zinc-900/20 backdrop-blur-md" onClick={() => setOpen(false)} />
             <div
+              ref={panelRef}
               role="dialog"
               aria-label="Support chati"
-              className="animate-pop absolute bottom-24 right-3 flex h-[min(560px,calc(100dvh-8rem))] w-[min(390px,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/85 shadow-2xl backdrop-blur-2xl sm:right-5"
+              className="animate-pop fixed bottom-24 right-3 z-[44] flex h-[min(560px,calc(100dvh-8rem))] w-[min(390px,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl shadow-zinc-900/15 sm:right-5"
             >
               {/* sarlavha */}
               <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-4 text-white">
@@ -142,7 +153,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
                     ))}
                   </div>
 
-                  <form onSubmit={send} className="border-t border-zinc-100 bg-white/90 p-3">
+                  <form onSubmit={send} className="border-t border-zinc-100 bg-white p-3">
                     {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
                     <div className="flex items-end gap-2">
                       <textarea
@@ -183,8 +194,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
                   </div>
                 </div>
               )}
-            </div>
-          </div>,
+            </div>,
           document.body,
         )}
     </>
