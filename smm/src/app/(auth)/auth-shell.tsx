@@ -13,9 +13,9 @@ const POINTS = [
 /** Kirish / ro'yxatdan o'tish sahifalari uchun umumiy ramka (yorliqlar bilan). */
 export function AuthShell({ mode, children }: { mode: "login" | "register" | "none"; children: React.ReactNode }) {
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[1fr_1.1fr]">
-      {/* chap — brend paneli (kompyuterda) */}
-      <aside className="relative hidden overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-12 text-white lg:flex lg:flex-col">
+    <main className="min-h-dvh">
+      {/* chap — brend paneli (kompyuterda): ekranga qotib turadi, aylanmaydi */}
+      <aside className="fixed inset-y-0 left-0 hidden w-[46%] flex-col overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-12 text-white lg:flex">
         <Link href="/" className="font-display text-2xl font-bold">
           tayyorr<span className="text-amber-300">+</span>
         </Link>
@@ -34,8 +34,8 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
       </aside>
 
-      {/* o'ng — forma */}
-      <section className="hero-bg relative flex flex-col items-center justify-center px-5 py-10 sm:px-8">
+      {/* o'ng — forma (faqat shu qism aylanadi) */}
+      <section className="hero-bg relative flex min-h-dvh flex-col items-center justify-center px-5 py-10 sm:px-8 lg:ml-[46%]">
         <div className="animate-rise w-full max-w-md">
           <Link href="/" className="mb-8 flex justify-center lg:hidden">
             <Logo className="text-3xl" />

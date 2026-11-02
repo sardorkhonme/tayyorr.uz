@@ -25,7 +25,6 @@ export default async function OnboardingPage() {
       <h1 className="font-display text-2xl font-bold text-zinc-900">Deyarli tayyor!</h1>
       <p className="mb-6 mt-1.5 text-zinc-500">Ro&apos;yxatdan o&apos;tishni yakunlash uchun bir necha savol.</p>
       <ProfileWizard
-        mode="complete"
         needsPassword={!u.passwordHash}
         initial={{
           firstName: u.firstName ?? first ?? "",

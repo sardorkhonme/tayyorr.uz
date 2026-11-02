@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 
 import { HEAR_ABOUT_US } from "@/lib/hear-about-us";
 
-import { completeProfileAction, registerAction } from "./actions";
+import { completeProfileAction } from "./actions";
 
 const MONTHS = [
   "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
@@ -46,19 +46,15 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 /**
- * tayyorr.uz dagi ro'yxatdan o'tish bilan bir xil 2 qadam (rolsiz):
+ * Ro'yxatdan o'tishni yakunlash (Google yoki email bilan kirgandan keyin) —
+ * tayyorr.uz dagi bilan bir xil 2 qadam (rolsiz):
  * 1) bizni qayerdan eshitdingiz  2) profil — ism, familiya, tug'ilgan sana,
- * login, (email), parol, o'zingiz haqingizda, rasm.
+ * login, (parol — Google hisobida), o'zingiz haqingizda, rasm.
  */
 export function ProfileWizard({
-  mode,
   initial,
   needsPassword = true,
-  intro,
 }: {
-  mode: "register" | "complete";
-  /** faqat 1-qadamda, ko'rsatkich ustida (masalan Google tugmasi) */
-  intro?: React.ReactNode;
   initial?: { firstName?: string; lastName?: string; avatar?: string | null };
   needsPassword?: boolean;
 }) {
@@ -69,7 +65,6 @@ export function ProfileWizard({
     firstName: initial?.firstName ?? "",
     lastName: initial?.lastName ?? "",
     login: "",
-    email: "",
     password: "",
     about: "",
   });
@@ -120,11 +115,10 @@ export function ProfileWizard({
       login: form.login,
       about: form.about,
       avatar,
-      email: mode === "register" ? form.email : undefined,
-      password: mode === "register" || needsPassword ? form.password : undefined,
+      password: needsPassword ? form.password : undefined,
     };
     start(async () => {
-      const res = await (mode === "register" ? registerAction(payload) : completeProfileAction(payload));
+      const res = await completeProfileAction(payload);
       if (res?.error) fail(res.error);
     });
   }
@@ -133,7 +127,6 @@ export function ProfileWizard({
 
   return (
     <div ref={topRef} className="scroll-mt-6">
-      {step === 1 && intro}
       {/* qadamlar ko'rsatkichi */}
       <div className="mb-6 flex items-center justify-between">
         <span className="text-sm font-semibold text-indigo-600">{step}-qadam / 2</span>
@@ -265,13 +258,8 @@ export function ProfileWizard({
             </div>
           </Field>
 
-          {mode === "register" && (
-            <Field label="Email">
-              <input className="input" type="email" value={form.email} onChange={set("email")} autoComplete="email" placeholder="siz@gmail.com" required />
-            </Field>
-          )}
 
-          {(mode === "register" || needsPassword) && (
+          {needsPassword && (
             <Field label="Parol" hint="(kamida 6 belgi)">
               <div className="relative">
                 <input
@@ -309,7 +297,7 @@ export function ProfileWizard({
           {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
           <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
-            {pending ? "Saqlanmoqda…" : mode === "register" ? "Ro'yxatdan o'tish" : "Saqlash va davom etish"}
+            {pending ? "Saqlanmoqda…" : "Ro'yxatdan o'tishni yakunlash"}
           </button>
           <button
             type="button"

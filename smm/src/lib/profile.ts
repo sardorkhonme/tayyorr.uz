@@ -51,7 +51,6 @@ export const profileSchema = z
       .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat lotin harf, raqam, _ va . dan iborat bo'lsin"),
     about: z.string().trim().min(5, "O'zingiz haqingizda kamida 5 belgi yozing").max(1000),
     avatar: z.string().min(1, "Profil rasmini yuklang"),
-    email: z.string().trim().toLowerCase().email("Email manzil noto'g'ri").optional(),
     password: z.string().min(6, "Parol kamida 6 belgidan iborat bo'lsin").max(100).optional(),
   })
   .refine((v) => v.hearAboutUs !== "other" || !!v.hearAboutUsDetail, {
@@ -103,44 +102,38 @@ const LOG_SELECT = {
   hearAboutUsDetail: true,
 } as const;
 
-/** Email + parol bilan yangi hisob (barcha maydonlar bilan). */
-export async function registerWithEmail(input: ProfileInput) {
-  const v = parse(input);
-  if (!v.email) throw new ProfileError("Email manzilni kiriting");
-  if (!v.password) throw new ProfileError("Parolni kiriting");
-  if (await db.user.findUnique({ where: { email: v.email }, select: { id: true } })) {
+const accountSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Email manzil noto'g'ri"),
+  password: z.string().min(6, "Parol kamida 6 belgidan iborat bo'lsin").max(100),
+});
+
+/**
+ * Email + parol bilan hisob ochadi. Qolgan ma'lumotlar (qayerdan eshitgan, ism,
+ * login, rasm...) keyingi sahifada — /onboarding da, Google bilan kirgandagidek.
+ */
+export async function createEmailAccount(input: { email: string; password: string }) {
+  const parsed = accountSchema.safeParse(input);
+  if (!parsed.success) throw new ProfileError(parsed.error.issues[0]?.message ?? "Ma'lumotlar noto'g'ri");
+  const { email, password } = parsed.data;
+  if (await db.user.findUnique({ where: { email }, select: { id: true } })) {
     throw new ProfileError("Bu email bilan hisob allaqachon bor — «Kirish» bo'limidan kiring");
   }
-  if (await loginTaken(v.login)) throw new ProfileError("Bu login band — boshqasini tanlang");
-
-  const avatarUrl = await resolveAvatar(v.avatar, []);
-  const user = await db.user
+  const created = await db.user
     .create({
       data: {
-        email: v.email,
-        passwordHash: await bcrypt.hash(v.password, 10),
-        login: v.login,
-        firstName: v.firstName,
-        lastName: v.lastName,
-        name: `${v.firstName} ${v.lastName}`,
-        birthDate: v.birthDate,
-        about: v.about,
-        avatarUrl,
-        hearAboutUs: v.hearAboutUs,
-        hearAboutUsDetail: v.hearAboutUs === "other" ? v.hearAboutUsDetail : null,
+        email,
+        passwordHash: await bcrypt.hash(password, 10),
         termsAcceptedAt: new Date(),
         termsVersion: TERMS_VERSION,
       },
-      select: LOG_SELECT,
+      select: { id: true },
     })
     .catch(() => null);
-  if (!user) throw new ProfileError("Bu email yoki login band");
-
-  await logRegistration(user, "email");
-  return { email: v.email, password: v.password };
+  if (!created) throw new ProfileError("Bu email bilan hisob allaqachon bor — «Kirish» bo'limidan kiring");
+  return parsed.data;
 }
 
-/** Google orqali kirgan (profili to'liq bo'lmagan) hisobni to'ldirish. */
+/** Ro'yxatdan o'tishni yakunlash: Google yoki email bilan ochilgan, profili to'liq bo'lmagan hisob. */
 export async function completeProfile(userId: string, input: ProfileInput) {
   const v = parse(input);
   const me = await db.user.findUnique({
@@ -171,5 +164,6 @@ export async function completeProfile(userId: string, input: ProfileInput) {
     },
     select: LOG_SELECT,
   });
-  await logRegistration(user, "Google");
+  // parol ro'yxatdan o'tishda kiritilgan bo'lsa — email bilan ochilgan hisob
+  await logRegistration(user, me.passwordHash ? "email" : "Google");
 }
