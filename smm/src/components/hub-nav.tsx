@@ -10,7 +10,7 @@ import { Icon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { TopupButton } from "@/components/topup-button";
 import { som } from "@/lib/format";
-import { HUB_NAV, isActive } from "@/lib/hub-nav";
+import { HUB_NAV, isActive, MAIN_SITE_URL } from "@/lib/hub-nav";
 
 export type HubUser = {
   name: string;
@@ -97,6 +97,30 @@ function GuestCard() {
   );
 }
 
+/** Menyuning eng pastidagi tayyorr.uz kartochkasi — to'q gradient, ajralib turadi. */
+function MainSiteCard() {
+  return (
+    <a
+      href={MAIN_SITE_URL}
+      className="shine group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-900 via-indigo-950 to-indigo-700 p-3 text-white shadow-lg shadow-indigo-900/25 transition hover:shadow-indigo-700/40"
+    >
+      <span className="relative z-[2] grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/15 font-display text-lg font-bold">
+        T
+      </span>
+      <span className="relative z-[2] min-w-0 flex-1">
+        <span className="block font-display text-sm font-bold leading-tight">
+          tayyorr<span className="text-indigo-300">.uz</span>
+        </span>
+        <span className="block truncate text-[11px] text-white/70">Prezentatsiya, kurs ishi</span>
+      </span>
+      <Icon
+        name="external"
+        className="relative z-[2] h-4 w-4 opacity-80 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+      />
+    </a>
+  );
+}
+
 function SignOut() {
   return (
     <form action={signOutAction}>
@@ -136,11 +160,10 @@ export function HubSidebar({ user }: { user: HubUser }) {
 
         <NavLinks user={user} />
       </div>
-      {user && (
-        <div className="border-t border-zinc-100 p-3">
-          <SignOut />
-        </div>
-      )}
+      <div className="space-y-2 border-t border-zinc-100 p-3">
+        <MainSiteCard />
+        {user && <SignOut />}
+      </div>
     </aside>
   );
 }
@@ -211,11 +234,10 @@ export function HubMobileBar({ user }: { user: HubUser }) {
                 <GuestCard />
               )}
               <NavLinks user={user} mobile onNavigate={() => setOpen(false)} />
-              {user && (
-                <div className="border-t border-zinc-100 pt-2">
-                  <SignOut />
-                </div>
-              )}
+              <div className="space-y-2 border-t border-zinc-100 pt-3">
+                <MainSiteCard />
+                {user && <SignOut />}
+              </div>
             </div>
           </div>,
           document.body,
