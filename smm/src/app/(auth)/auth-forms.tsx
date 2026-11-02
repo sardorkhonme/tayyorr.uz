@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
-import { googleAction, loginAction, registerAction, type AuthState } from "./actions";
+import { googleAction, loginAction, type AuthState } from "./actions";
 
 function GoogleButton({ label }: { label: string }) {
   return (
@@ -100,46 +100,19 @@ export function LoginForm({ initialError }: { initialError?: string }) {
   );
 }
 
+/** tayyorr.uz dagidek: ro'yxatdan o'tish faqat Google orqali, qolgani keyingi sahifada. */
 export function RegisterForm() {
-  const [state, action, pending] = useActionState<AuthState, FormData>(registerAction, {});
   return (
     <>
       <h1 className="font-display text-2xl font-bold text-zinc-900">Hisob yarating</h1>
-      <p className="mb-6 mt-1.5 text-zinc-500">tayyorr.uz va tayyorr+ uchun bitta hisob.</p>
+      <p className="mb-7 mt-1.5 text-zinc-500">
+        Google bilan davom eting. Keyingi qadamda bir necha savol beramiz: qayerdan eshitganingiz, ism,
+        login, parol va rasm.
+      </p>
 
-      <GoogleButton label="Google bilan davom etish" />
-      <Divider label="yoki email bilan" />
+      <GoogleButton label="Google bilan ro'yxatdan o'tish" />
 
-      <form action={action} className="space-y-5">
-        {/* bot tuzog'i */}
-        <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-        <div>
-          <label className="label" htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            className="input"
-            autoComplete="email"
-            placeholder="siz@gmail.com"
-            defaultValue={state.values?.email}
-            required
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="password">
-            Parol <span className="font-normal text-zinc-400">(kamida 6 belgi)</span>
-          </label>
-          <PasswordInput autoComplete="new-password" />
-        </div>
-        <ErrorBox text={state.error} />
-        <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
-          {pending ? "Yaratilmoqda…" : "Davom etish →"}
-        </button>
-        <p className="text-center text-xs text-zinc-500">Keyingi qadamda bir necha savol beramiz.</p>
-      </form>
-
-      <p className="mt-6 text-center text-[15px] text-zinc-500">
+      <p className="mt-7 text-center text-[15px] text-zinc-500">
         Hisobingiz bormi?{" "}
         <Link href="/login" className="font-semibold text-indigo-600 hover:underline">
           Kirish

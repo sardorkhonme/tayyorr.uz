@@ -102,37 +102,6 @@ const LOG_SELECT = {
   hearAboutUsDetail: true,
 } as const;
 
-const accountSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Email manzil noto'g'ri"),
-  password: z.string().min(6, "Parol kamida 6 belgidan iborat bo'lsin").max(100),
-});
-
-/**
- * Email + parol bilan hisob ochadi. Qolgan ma'lumotlar (qayerdan eshitgan, ism,
- * login, rasm...) keyingi sahifada — /onboarding da, Google bilan kirgandagidek.
- */
-export async function createEmailAccount(input: { email: string; password: string }) {
-  const parsed = accountSchema.safeParse(input);
-  if (!parsed.success) throw new ProfileError(parsed.error.issues[0]?.message ?? "Ma'lumotlar noto'g'ri");
-  const { email, password } = parsed.data;
-  if (await db.user.findUnique({ where: { email }, select: { id: true } })) {
-    throw new ProfileError("Bu email bilan hisob allaqachon bor — «Kirish» bo'limidan kiring");
-  }
-  const created = await db.user
-    .create({
-      data: {
-        email,
-        passwordHash: await bcrypt.hash(password, 10),
-        termsAcceptedAt: new Date(),
-        termsVersion: TERMS_VERSION,
-      },
-      select: { id: true },
-    })
-    .catch(() => null);
-  if (!created) throw new ProfileError("Bu email bilan hisob allaqachon bor — «Kirish» bo'limidan kiring");
-  return parsed.data;
-}
-
 /** Ro'yxatdan o'tishni yakunlash: Google yoki email bilan ochilgan, profili to'liq bo'lmagan hisob. */
 export async function completeProfile(userId: string, input: ProfileInput) {
   const v = parse(input);

@@ -5,7 +5,7 @@ avtomatik SMM xizmatlari (obunachi, layk, ko'rish…).
 
 **Asosiy sayt bilan nima umumiy:** baza (Neon). Foydalanuvchi tayyorr.uz login/email + parol
 yoki Google bilan kiradi; hamyon (`User.balance`) bitta — tayyorr.uz da to'ldirilgan pul shu yerda sarflanadi.
-Ro'yxatdan o'tish shu yerda ham bor (`/register`: ism + email + parol, yoki Google) — yangi `User` umumiy bazaga yoziladi, logi "Ro'yxatdan o'tish" topigiga (3) ketadi. tayyorr.uz ga ham shu email + parol bilan kiriladi.
+Ro'yxatdan o'tish shu yerda ham bor (`/register`: tayyorr.uz dagidek faqat Google, keyin `/onboarding` — qayerdan eshitgan + profil, rolsiz) — yangi `User` umumiy bazaga yoziladi, logi "Ro'yxatdan o'tish" topigiga (3) ketadi. tayyorr.uz ga ham shu email + parol bilan kiriladi.
 
 ## Tuzilma
 
