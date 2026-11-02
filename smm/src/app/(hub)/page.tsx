@@ -104,8 +104,9 @@ export default async function DashboardPage({
         >
           <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">
-            <span className="shine grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
-              <Icon name="rocket" className="h-7 w-7" />
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-violet-500/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/smm-mark.png" alt="Tayyorr SMM" className="h-10 w-10 object-contain" />
             </span>
             {smmCount > 0 && (
               <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">

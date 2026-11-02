@@ -295,8 +295,9 @@ export default async function Home() {
             className="lq-glass blur-in group relative flex flex-col overflow-hidden rounded-2xl p-7"
           >
             <span className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white">
-              <Icon name="rocket" className="h-6 w-6" />
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff] shadow-lg shadow-fuchsia-500/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/smm-mark.png" alt="" className="h-9 w-9 object-contain" />
             </span>
             <h3 className="font-display mt-5 text-xl font-bold text-white">Tayyorr SMM</h3>
             <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-400">

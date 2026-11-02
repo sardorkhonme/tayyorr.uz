@@ -46,7 +46,12 @@ function NavLinks({ user, onNavigate, mobile = false }: { user: HubUser; onNavig
                 active ? "bg-white text-indigo-600 shadow-sm" : "bg-zinc-100/80 text-zinc-500"
               }`}
             >
-              <Icon name={l.icon} className="h-[18px] w-[18px]" />
+              {l.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={l.image} alt="" className="h-6 w-6 object-contain" />
+              ) : (
+                <Icon name={l.icon} className="h-[18px] w-[18px]" />
+              )}
             </span>
             <span className="flex-1">{l.label}</span>
           </>
