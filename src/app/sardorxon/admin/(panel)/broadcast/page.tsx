@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { BroadcastConsole } from "@/components/admin/broadcast-console";
+import { splitSource, stripSource } from "@/lib/message-source";
 
 export default async function AdminBroadcast() {
   const rows = await db.broadcast.findMany({
@@ -35,7 +36,8 @@ export default async function AdminBroadcast() {
   const initial = await Promise.all(
     rows.reverse().map(async (b) => ({
       id: b.id,
-      body: b.body,
+      body: stripSource(b.body),
+      source: splitSource(b.body).source,
       fileName: b.fileName,
       fileType: b.fileType,
       fileUrl: b.fileKey

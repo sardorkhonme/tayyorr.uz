@@ -1,17 +1,40 @@
 /**
- * Xabar qaysi tizimdan yozilgani. tayyorr+ (smm.tayyorr.uz) dan yozilgan xabar
- * matni "[tayyorr+] " bilan boshlanadi (smm/src/lib/support.ts). Foydalanuvchiga
- * belgi ko'rsatilmaydi — faqat admin xabar ostida kichik status ko'radi.
+ * Xabar qaysi platformaga tegishli — matn boshidagi belgi (foydalanuvchiga ko'rsatilmaydi):
+ *   "[tayyorr+]" — faqat tayyorr+ (smm.tayyorr.uz) da: SMM, buyurtmalar, u yerdan yozilganlar
+ *   "[all]"      — ikkala platformada: hisob / pul haqida, admin tanlasa
+ *   belgisiz     — faqat tayyorr.uz da
+ * Admin har bir xabar ostida kichik status ko'radi. tayyorr+ tomoni: smm/src/lib/support.ts.
  */
-export type MessageSource = "tayyorr.uz" | "tayyorr+";
+export type MessageSource = "tayyorr.uz" | "tayyorr+" | "ikkalasi";
 
-const TAG = /^\[tayyorr\+\]\s*/;
+export const PLUS_TAG = "[tayyorr+]";
+export const ALL_TAG = "[all]";
+const TAG = /^\[(tayyorr\+|all)\]\s*/;
 
 export function splitSource(body: string): { source: MessageSource; body: string } {
-  return TAG.test(body) ? { source: "tayyorr+", body: body.replace(TAG, "") } : { source: "tayyorr.uz", body };
+  const m = TAG.exec(body);
+  if (!m) return { source: "tayyorr.uz", body };
+  return { source: m[1] === "all" ? "ikkalasi" : "tayyorr+", body: body.slice(m[0].length) };
 }
 
 /** Faqat matn (ro'yxatdagi qisqa ko'rinish va h.k. uchun). */
 export function stripSource(body: string): string {
   return body.replace(TAG, "");
 }
+
+/** Matnga platforma belgisini qo'yadi (admin tanlovi, ommaviy xabar va h.k.). */
+export function withSource(body: string, source: MessageSource): string {
+  const clean = stripSource(body);
+  if (source === "tayyorr+") return `${PLUS_TAG} ${clean}`;
+  if (source === "ikkalasi") return `${ALL_TAG} ${clean}`;
+  return clean;
+}
+
+/** tayyorr.uz da ko'rinadigan xabarlar (Prisma `where`): tayyorr+ ga xoslari yashirin. */
+export const VISIBLE_ON_UZ = { NOT: { body: { startsWith: PLUS_TAG } } };
+
+export const SOURCE_OPTIONS: { value: MessageSource; label: string }[] = [
+  { value: "tayyorr.uz", label: "tayyorr.uz" },
+  { value: "tayyorr+", label: "tayyorr+" },
+  { value: "ikkalasi", label: "Ikkalasi" },
+];

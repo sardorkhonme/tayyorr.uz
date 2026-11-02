@@ -15,6 +15,7 @@ import { toClientMessages, toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
+import { VISIBLE_ON_UZ } from "@/lib/message-source";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -38,6 +39,7 @@ export async function GET(
     where: {
       conversationId: id,
       ...(since ? { updatedAt: { gt: new Date(Number(since)) } } : {}),
+      ...VISIBLE_ON_UZ,
     },
     orderBy: { createdAt: "asc" },
     take: 300,

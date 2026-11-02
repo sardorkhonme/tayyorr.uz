@@ -8,6 +8,7 @@ import { listConversations } from "@/lib/conversations";
 import { chatContractPins } from "@/lib/chat-pins";
 import { ChatRoom } from "@/components/chat-room";
 import { ChatContactsRail } from "@/components/chat-contacts-rail";
+import { VISIBLE_ON_UZ } from "@/lib/message-source";
 
 export default async function ChatPage({
   params,
@@ -37,7 +38,7 @@ export default async function ChatPage({
       },
     }),
     db.message.findMany({
-      where: { conversationId: id },
+      where: { conversationId: id, ...VISIBLE_ON_UZ },
       orderBy: { createdAt: "asc" },
       take: 200,
       include: { reactions: true },

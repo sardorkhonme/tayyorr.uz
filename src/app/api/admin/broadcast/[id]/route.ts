@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { splitSource, stripSource, withSource } from "@/lib/message-source";
 
 /** Ommaviy xabarni hamma uchun o'chiradi (barcha qabul qiluvchilardan). */
 export async function DELETE(
@@ -37,11 +38,14 @@ export async function PATCH(
   const body = typeof data.body === "string" ? data.body.trim() : "";
   if (!body) return NextResponse.json({ error: "Matn bo'sh" }, { status: 400 });
 
-  await db.broadcast.update({ where: { id }, data: { body } });
+  // platforma belgisi ([tayyorr+] / [all]) tahrirdan keyin ham saqlanadi
+  const prev = await db.broadcast.findUnique({ where: { id }, select: { body: true } });
+  const tagged = withSource(body, splitSource(prev?.body ?? "").source);
+  await db.broadcast.update({ where: { id }, data: { body: tagged } });
   const upd = await db.message.updateMany({
     where: { broadcastId: id },
-    data: { body, editedAt: new Date() },
+    data: { body: tagged, editedAt: new Date() },
   });
 
-  return NextResponse.json({ ok: true, updated: upd.count, body });
+  return NextResponse.json({ ok: true, updated: upd.count, body: stripSource(tagged) });
 }

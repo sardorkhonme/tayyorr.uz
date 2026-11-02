@@ -8,10 +8,14 @@ import { logToGroup } from "@/lib/telegram-log";
 import { SUPPORT_NAME, getSupportUserId } from "@/lib/support";
 import { sendMobilePush } from "@/lib/fcm";
 import { sendPushToUser } from "@/lib/push";
+import { splitSource, stripSource } from "@/lib/message-source";
+
+const PLUS_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
 
 function snippet(m: Message) {
   if (m.deletedAt) return "xabar";
-  if (m.body) return m.body.length > 120 ? m.body.slice(0, 120) + "…" : m.body;
+  const body = stripSource(m.body);
+  if (body) return body.length > 120 ? body.slice(0, 120) + "…" : body;
   if (m.fileName) return `📎 ${m.fileName}`;
   return "yangi xabar";
 }
@@ -44,8 +48,12 @@ export async function deliverMessage(m: Message) {
       sender?.firstName ||
       (sender?.login ? `@${sender.login}` : "Yangi xabar");
 
+  // tayyorr+ ga xos xabar — tayyorr.uz ilovasi/brauzeriga push yubormaymiz (u yerda ko'rinmaydi),
+  // Telegram'dagi tugma tayyorr+ ni ochadi
+  const plusOnly = splitSource(m.body).source === "tayyorr+";
+
   // mobil ilova (FCM) va brauzer (web-push) — xatosi xabar yuborishni to'xtatmasin
-  await Promise.allSettled([
+  if (!plusOnly) await Promise.allSettled([
     sendMobilePush(recipientId, {
       title,
       body: snippet(m),
@@ -70,8 +78,8 @@ export async function deliverMessage(m: Message) {
   await sendTelegramToUser(recipientId, {
     title,
     body: snippet(m),
-    url: siteUrl(`/messages/${m.conversationId}`),
-    buttonLabel: "Xabarni ko'rish",
+    url: plusOnly ? PLUS_URL : siteUrl(`/messages/${m.conversationId}`),
+    buttonLabel: plusOnly ? "tayyorr+ da ko'rish" : "Xabarni ko'rish",
   });
 
   // foydalanuvchi support'ga yozgan bo'lsa — admin loglar guruhiga ham tushadi

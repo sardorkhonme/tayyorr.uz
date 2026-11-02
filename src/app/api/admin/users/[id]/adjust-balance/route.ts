@@ -7,6 +7,7 @@ import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { withSource } from "@/lib/message-source";
 
 const schema = z.object({
   direction: z.enum(["ADD", "SUBTRACT"]),
@@ -81,8 +82,12 @@ export async function POST(
       body: isStar
         ? `⭐ Hisobingiz${positive ? "ga" : "dan"} ${amount} star ` +
           `${positive ? "qo'shildi" : "ayirildi"}.\n\nSabab: ${reason}`
-        : `💰 Hisobingiz${positive ? "ga" : "dan"} ${amount.toLocaleString("ru-RU")} so'm ` +
-          `${positive ? "qo'shildi" : "ayirildi"}.\n\nSabab: ${reason}`,
+        : // hamyon umumiy — xabar tayyorr.uz va tayyorr+ da ko'rinadi
+          withSource(
+            `💰 Hisobingiz${positive ? "ga" : "dan"} ${amount.toLocaleString("ru-RU")} so'm ` +
+              `${positive ? "qo'shildi" : "ayirildi"}.\n\nSabab: ${reason}`,
+            "ikkalasi",
+          ),
       system: false,
     });
     await deliverMessage(msg);

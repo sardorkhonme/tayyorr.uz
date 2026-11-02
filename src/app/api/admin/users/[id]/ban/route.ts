@@ -7,6 +7,7 @@ import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { getSupportUserId } from "@/lib/support";
 import { shortDateTime } from "@/lib/date";
 import { deliverMessage } from "@/lib/chat-notify";
+import { withSource } from "@/lib/message-source";
 
 const schema = z.object({
   // aniq sana+soat (datetime-local'dan); bo'lmasa/indefinite=true -> muddatsiz
@@ -65,7 +66,7 @@ export async function POST(
     const m = await createMessage({
       conversationId: conv.id,
       senderId: supportId,
-      body,
+      body: withSource(body, "ikkalasi"), // hisob cheklovi — ikkala platformada
       system: false, // support xabari — oddiy bubble
     });
     await deliverMessage(m);

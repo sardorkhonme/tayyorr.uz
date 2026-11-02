@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { chatActor, conversationForActor } from "@/lib/chat-actor";
 import { db } from "@/lib/db";
 import { publishToConversation } from "@/lib/chat-bus";
+import { VISIBLE_ON_UZ } from "@/lib/message-source";
 
 export async function POST(
   req: Request,
@@ -21,7 +22,8 @@ export async function POST(
   }
 
   const res = await db.message.updateMany({
-    where: { conversationId: id, senderId: { not: me }, readAt: null },
+    // foydalanuvchi tayyorr.uz da o'qiganda tayyorr+ ga xos xabarlar o'qilmagan bo'lib qoladi
+    where: { conversationId: id, senderId: { not: me }, readAt: null, ...(actor.support ? {} : VISIBLE_ON_UZ) },
     data: { readAt: new Date() },
   });
 

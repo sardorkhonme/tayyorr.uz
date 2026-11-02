@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
-import { stripSource } from "@/lib/message-source";
+import { stripSource, VISIBLE_ON_UZ } from "@/lib/message-source";
 
 export interface ConvRow {
   id: string;
@@ -36,7 +36,7 @@ export async function listConversations(
         userB: {
           select: { id: true, name: true, login: true, avatarUrl: true, image: true },
         },
-        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        messages: { ...(opts.asSupport ? {} : { where: VISIBLE_ON_UZ }), orderBy: { createdAt: "desc" }, take: 1 },
       },
     }),
     getSupportUserId(),
@@ -50,7 +50,7 @@ export async function listConversations(
       const other = c.userAId === meId ? c.userB : c.userA;
       const isSupport = other.id === supportId;
       const unread = await db.message.count({
-        where: { conversationId: c.id, senderId: { not: meId }, readAt: null },
+        where: { conversationId: c.id, senderId: { not: meId }, readAt: null, ...(opts.asSupport ? {} : VISIBLE_ON_UZ) },
       });
       const last = c.messages[0] ?? null;
       const blockedMe = blockedMeBy.has(other.id) && !isSupport;

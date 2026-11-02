@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { VISIBLE_ON_UZ } from "@/lib/message-source";
 
 /** Foydalanuvchining o'qilmagan xabarlari: umumiy son + suhbatlar bo'yicha. */
 export async function GET() {
@@ -16,6 +17,7 @@ export async function GET() {
     where: {
       senderId: { not: uid },
       readAt: null,
+      ...VISIBLE_ON_UZ,
       conversation: {
         OR: [{ userAId: uid }, { userBId: uid }],
         deletedByUsersAt: null,

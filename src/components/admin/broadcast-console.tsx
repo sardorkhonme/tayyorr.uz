@@ -11,10 +11,14 @@ import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { useDismiss } from "@/components/use-dismiss";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 import { smartTime } from "@/lib/date";
+import { SOURCE_OPTIONS, type MessageSource } from "@/lib/message-source";
+import { MessageSourceBadge } from "@/components/message-source-badge";
 
 interface Item {
   id: string;
   body: string;
+  /** qaysi platformaga yuborilgan */
+  source?: MessageSource;
   fileName?: string | null;
   fileType?: string | null;
   fileUrl?: string | null;
@@ -35,6 +39,8 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial);
   const [text, setText] = useState("");
   const [role, setRole] = useState("");
+  // qaysi platformada ko'rinadi: tayyorr.uz | tayyorr+ | ikkalasi
+  const [source, setSource] = useState<MessageSource>("tayyorr.uz");
   const [balanceMin, setBalanceMin] = useState("");
   const [balanceMax, setBalanceMax] = useState("");
   const [from, setFrom] = useState("");
@@ -201,6 +207,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             ? { key: file.key, name: file.name, type: file.type, size: file.size }
             : undefined,
           ...filters(),
+          source,
         }),
       });
       const data = await res.json();
@@ -226,6 +233,27 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
     >
       {/* ---- filtr (yuqorida) ---- */}
       <div className="shrink-0 border-b border-white/10 bg-white/[0.03] p-3">
+        <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-zinc-400">Qaysi platformaga:</span>
+          <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+            {SOURCE_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => setSource(o.value)}
+                className={`rounded-md px-3 py-1 font-medium transition ${
+                  source === o.value
+                    ? o.value === "tayyorr+"
+                      ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white"
+                      : "bg-indigo-500 text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="grid gap-2 sm:grid-cols-3">
           <select
             className="input"
@@ -318,6 +346,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                   {it.fileName}
                 </div>
               )}
+              <div className="mb-1">
+                <MessageSourceBadge source={it.source} />
+              </div>
               {it.body && (
                 <div className="whitespace-pre-wrap break-words">
                   <Linkify text={it.body} mine />

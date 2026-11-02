@@ -18,7 +18,7 @@ import { prepareAdminChatFile, prepareChatFile, type PreparedChatFile } from "@/
 import { presenceText } from "@/lib/presence";
 import { shortDateTime, smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
-import type { MessageSource } from "@/lib/message-source";
+import { SOURCE_OPTIONS, type MessageSource } from "@/lib/message-source";
 
 interface ReplyPreview {
   id: string;
@@ -163,6 +163,13 @@ export function ChatRoom({
     initialMessages.filter((m) => !m.deleted),
   );
   const [text, setText] = useState("");
+  // admin (support) javobi qaysi platformaga — standart: oxirgi kiruvchi xabar qayerdan kelgan bo'lsa
+  const lastIncomingSource =
+    [...messages].reverse().find((m) => !m.mine && !m.system)?.source ?? "tayyorr.uz";
+  const [sendSource, setSendSource] = useState<MessageSource>(lastIncomingSource);
+  useEffect(() => {
+    setSendSource(lastIncomingSource);
+  }, [lastIncomingSource]);
   const [live, setLive] = useState(false);
   const [iBlocked, setIBlocked] = useState(blockedByMe);
   const [theyBlocked, setTheyBlocked] = useState(blockedMe);
@@ -332,6 +339,8 @@ export function ChatRoom({
         }
         if (data.type === "message" || data.type === "edit") {
           const m = data.message;
+          // tayyorr+ ga xos xabar foydalanuvchining tayyorr.uz chatida ko'rinmaydi
+          if (!asSupport && m.source === "tayyorr+") return;
           // boshqa tomondan kelgan yangi xabar — "tin"
           if (data.type === "message" && m.senderId !== meId && !m.system) playTin();
           merge([
@@ -628,6 +637,7 @@ export function ChatRoom({
         updatedAt: Date.now(),
         mine: true,
         pending: true,
+        source: asSupport ? sendSource : undefined,
         replyTo,
         file: sentFile
           ? { name: sentFile.name, type: sentFile.type, size: sentFile.size, url: sentLocal?.url ?? "" }
@@ -642,6 +652,7 @@ export function ChatRoom({
         body: JSON.stringify({
           body: body || undefined,
           replyToId: replyTo?.id,
+          source: asSupport ? sendSource : undefined,
           file: sentFile
             ? {
                 key: sentFile.key,
@@ -1208,6 +1219,29 @@ export function ChatRoom({
                 </button>
               )}
             </form>
+            {asSupport && !editing && (
+              <div className="mt-2 flex items-center gap-2 text-xs">
+                <span className="text-zinc-500">Qayerga:</span>
+                <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+                  {SOURCE_OPTIONS.map((o) => (
+                    <button
+                      key={o.value}
+                      type="button"
+                      onClick={() => setSendSource(o.value)}
+                      className={`rounded-md px-2.5 py-1 font-medium transition ${
+                        sendSource === o.value
+                          ? o.value === "tayyorr+"
+                            ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white"
+                            : "bg-indigo-500 text-white"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
               </>
             )}
           </div>

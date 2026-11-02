@@ -7,7 +7,7 @@ import { getT } from "@/lib/i18n-server";
 import { BlockedIcon, Icon } from "@/components/icons";
 import { LiveConvBadge } from "@/components/live-conv-badge";
 import { shortDate } from "@/lib/date";
-import { stripSource } from "@/lib/message-source";
+import { stripSource, VISIBLE_ON_UZ } from "@/lib/message-source";
 
 function timeAgo(d: Date) {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -32,7 +32,7 @@ export default async function MessagesPage() {
     include: {
       userA: { select: { id: true, name: true, login: true, avatarUrl: true, image: true } },
       userB: { select: { id: true, name: true, login: true, avatarUrl: true, image: true } },
-      messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      messages: { where: VISIBLE_ON_UZ, orderBy: { createdAt: "desc" }, take: 1 },
     },
   });
 
@@ -48,7 +48,7 @@ export default async function MessagesPage() {
     convs.map(async (c) => {
       const other = c.userAId === me ? c.userB : c.userA;
       const unread = await db.message.count({
-        where: { conversationId: c.id, senderId: { not: me }, readAt: null },
+        where: { conversationId: c.id, senderId: { not: me }, readAt: null, ...VISIBLE_ON_UZ },
       });
       return {
         c,

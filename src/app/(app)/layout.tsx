@@ -16,6 +16,7 @@ import { RestrictionBanner } from "@/components/restriction-banner";
 import { UnreadProvider } from "@/components/unread-provider";
 import { AccountNotFound } from "@/components/account-not-found";
 import { getRestriction, restrictionText } from "@/lib/restriction";
+import { VISIBLE_ON_UZ } from "@/lib/message-source";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -56,6 +57,7 @@ export default async function AppLayout({
       where: {
         senderId: { not: session.user.id },
         readAt: null,
+        ...VISIBLE_ON_UZ,
         conversation: {
           OR: [{ userAId: session.user.id }, { userBId: session.user.id }],
           deletedByUsersAt: null,

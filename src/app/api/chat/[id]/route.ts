@@ -5,6 +5,7 @@ import { chatActor, conversationForActor } from "@/lib/chat-actor";
 import { db } from "@/lib/db";
 import { getConversationForUser, otherUserId, blockState } from "@/lib/chat";
 import { toClientMessages } from "@/lib/chat-messages";
+import { VISIBLE_ON_UZ } from "@/lib/message-source";
 
 export async function GET(
   req: Request,
@@ -30,6 +31,8 @@ export async function GET(
     where: {
       conversationId: id,
       ...(since ? { updatedAt: { gt: new Date(Number(since)) } } : {}),
+      // tayyorr+ ga xos xabarlar foydalanuvchiga tayyorr.uz da ko'rinmaydi (admin — hammasi)
+      ...(actor.support ? {} : VISIBLE_ON_UZ),
     },
     orderBy: { createdAt: "asc" },
     take: 300,

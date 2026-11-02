@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { sendSupportMessage } from "@/lib/support-actions";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+import { stripSource, withSource, type MessageSource } from "@/lib/message-source";
 
 const MAX = 5000;
 
@@ -25,8 +26,11 @@ export async function POST(req: Request) {
   const body = str(raw.body) ?? "";
   const bodyRu = str(raw.bodyRu);
   const bodyEn = str(raw.bodyEn);
+  // qaysi platformaga: tayyorr.uz | tayyorr+ | ikkalasi (xabarga belgi qo'yiladi)
+  const source: MessageSource =
+    raw.source === "tayyorr+" || raw.source === "ikkalasi" ? raw.source : "tayyorr.uz";
   const textFor = (loc: string | null | undefined) =>
-    (loc === "ru" ? bodyRu : loc === "en" ? bodyEn : undefined) ?? body;
+    withSource((loc === "ru" ? bodyRu : loc === "en" ? bodyEn : undefined) ?? body, source);
   const rf = raw.file as
     | { key?: string; name?: string; type?: string; size?: number }
     | undefined;
@@ -86,7 +90,7 @@ export async function POST(req: Request) {
 
   const record = await db.broadcast.create({
     data: {
-      body,
+      body: withSource(body, source),
       bodyRu: bodyRu ?? null,
       bodyEn: bodyEn ?? null,
       fileKey: file?.key ?? null,
@@ -127,7 +131,8 @@ export async function POST(req: Request) {
     sent,
     broadcast: {
       id: record.id,
-      body: record.body,
+      body: stripSource(record.body),
+      source,
       fileName: record.fileName,
       fileType: record.fileType,
       fileUrl,

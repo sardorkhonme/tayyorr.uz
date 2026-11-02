@@ -5,6 +5,7 @@ import { chatActor, conversationForActor } from "@/lib/chat-actor";
 import { db } from "@/lib/db";
 import { publishToConversation } from "@/lib/chat-bus";
 import { toClientMessage, toSerializedMessage } from "@/lib/chat-messages";
+import { splitSource, withSource } from "@/lib/message-source";
 
 async function loadOwn(convId: string, msgId: string, actor: { id: string; support: boolean }) {
   const meId = actor.id;
@@ -45,7 +46,9 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: "Matn bo'sh bo'lmasin" }, { status: 400 });
   }
-  if (parsed.data.body === found.msg.body) {
+  // platforma belgisi ([tayyorr+] / [all]) tahrirdan keyin ham saqlanadi
+  const nextBody = withSource(parsed.data.body, splitSource(found.msg.body).source);
+  if (nextBody === found.msg.body) {
     return NextResponse.json({ message: await toClientMessage(found.msg, me) });
   }
 
@@ -55,7 +58,7 @@ export async function PATCH(
     });
     return tx.message.update({
       where: { id: msgId },
-      data: { body: parsed.data.body, editedAt: new Date() },
+      data: { body: nextBody, editedAt: new Date() },
     });
   });
 

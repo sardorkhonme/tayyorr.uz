@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { stripSource } from "@/lib/message-source";
+import { stripSource, VISIBLE_ON_UZ } from "@/lib/message-source";
 
 /** Mening barcha suhbatlarim: oxirgi xabar + o'qilmaganlar soni. */
 export async function GET() {
@@ -22,7 +22,7 @@ export async function GET() {
     include: {
       userA: { select: { id: true, name: true, login: true, avatarUrl: true, image: true } },
       userB: { select: { id: true, name: true, login: true, avatarUrl: true, image: true } },
-      messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      messages: { where: VISIBLE_ON_UZ, orderBy: { createdAt: "desc" }, take: 1 },
     },
   });
 
@@ -30,7 +30,7 @@ export async function GET() {
     convs.map(async (c) => {
       const other = c.userAId === me ? c.userB : c.userA;
       const unread = await db.message.count({
-        where: { conversationId: c.id, senderId: { not: me }, readAt: null },
+        where: { conversationId: c.id, senderId: { not: me }, readAt: null, ...VISIBLE_ON_UZ },
       });
       const last = c.messages[0];
       return {

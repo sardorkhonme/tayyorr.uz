@@ -11,10 +11,13 @@ import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
 import { toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
+import { withSource } from "@/lib/message-source";
 
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
   replyToId: z.string().optional(),
+  /** faqat admin (support) — qaysi platformaga: tayyorr.uz | tayyorr+ | ikkalasi */
+  source: z.enum(["tayyorr.uz", "tayyorr+", "ikkalasi"]).optional(),
   file: z
     .object({
       key: z.string().min(1),
@@ -79,7 +82,10 @@ export async function POST(
   const msg = await createMessage({
     conversationId: id,
     senderId: me,
-    body: parsed.data.body ?? "",
+    body:
+      actor.support && parsed.data.source
+        ? withSource(parsed.data.body ?? "", parsed.data.source)
+        : parsed.data.body ?? "",
     replyToId: parsed.data.replyToId ?? null,
     file: parsed.data.file ?? null,
   });

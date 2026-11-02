@@ -7,6 +7,7 @@ import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { withSource } from "@/lib/message-source";
 
 const schema = z.object({
   action: z.enum(["PAID", "REJECT"]),
@@ -97,7 +98,7 @@ export async function POST(
   const msg = await createMessage({
     conversationId: conv.id,
     senderId: supportId,
-    body,
+    body: withSource(body, "ikkalasi"), // pul haqida — ikkala platformada
     system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(msg);
