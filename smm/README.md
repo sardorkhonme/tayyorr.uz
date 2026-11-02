@@ -43,8 +43,9 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 | `AUTH_URL` | `https://smm.tayyorr.uz` |
 | `AUTH_TRUST_HOST` | `true` |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | tayyorr.uz dagi OAuth client |
-| `SMM_PROVIDER_URL`, `SMM_PROVIDER_KEY` | SMM panel API |
-| `SMM_PROVIDER_RATE_UZS` | provayder valyutasi kursi (masalan 12800) |
+| `SMM_PROVIDER_URL` | `https://zosmm.com/api/v2` |
+| `SMM_PROVIDER_KEY` | ZOSMM → Account → API key |
+| `SMM_PROVIDER_RATE_UZS` | ZOSMM narxlari USD da — 1 USD kursi (masalan 12800) |
 | `SMM_MARKUP` | ustama (1.5 = +50%) |
 | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` | tayyorr.uz dagi Click qiymatlari (secret key shart emas) |
 | `CRON_SECRET` | `/api/cron/sync` uchun |

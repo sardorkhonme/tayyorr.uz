@@ -3,6 +3,10 @@
  *
  *   npm run sync-services                       — hammasi
  *   npm run sync-services -- instagram,telegram — faqat shu platformalar
+ *   npm run sync-services -- --dry              — bazaga yozmasdan hisobot
+ *
+ * Faqat "Default" turdagi xizmatlar olinadi (havola + miqdor). Izoh, username,
+ * so'rovnoma kabi qo'shimcha maydon talab qiladigan turlar hozircha o'tkazib yuboriladi.
  *
  * Narx: provayder rate × SMM_PROVIDER_RATE_UZS × SMM_MARKUP (100 so'mgacha yaxlitlanadi).
  * Mavjud xizmatning `active`, `sort` va `name` qiymatlariga tegilmaydi
@@ -31,7 +35,13 @@ const PLATFORMS = [
 ];
 const detect = (t) => PLATFORMS.find(([, re]) => re.test(t))?.[0] ?? "other";
 
-const only = process.argv[2]?.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+const args = process.argv.slice(2);
+const dry = args.includes("--dry");
+const only = args
+  .find((a) => !a.startsWith("--"))
+  ?.split(",")
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
 
 const res = await fetch(url, { method: "POST", body: new URLSearchParams({ key, action: "services" }) });
 const list = await res.json();
@@ -40,10 +50,12 @@ if (!Array.isArray(list)) {
   process.exit(1);
 }
 
-const db = new PrismaClient();
+const db = dry ? null : new PrismaClient();
 let created = 0;
 let updated = 0;
 let skipped = 0;
+let unsupported = 0;
+const perPlatform = {};
 
 for (const s of list) {
   const providerId = Number(s.service);
@@ -52,6 +64,10 @@ for (const s of list) {
   const max = Number(s.max);
   if (!providerId || !Number.isFinite(providerRate) || !min || !max) {
     skipped++;
+    continue;
+  }
+  if (s.type && String(s.type).toLowerCase() !== "default") {
+    unsupported++;
     continue;
   }
   const platform = detect(`${s.category} ${s.name}`);
@@ -71,6 +87,9 @@ for (const s of list) {
     refill: !!s.refill,
   };
 
+  perPlatform[platform] = (perPlatform[platform] ?? 0) + 1;
+  if (dry) continue;
+
   const exists = await db.smmService.findUnique({ where: { providerId }, select: { id: true } });
   if (exists) {
     await db.smmService.update({ where: { providerId }, data: common });
@@ -81,5 +100,9 @@ for (const s of list) {
   }
 }
 
-await db.$disconnect();
-console.log(`Tayyor: ${created} yangi, ${updated} yangilandi, ${skipped} o'tkazib yuborildi`);
+await db?.$disconnect();
+console.log("Platformalar bo'yicha:", perPlatform);
+console.log(
+  `${dry ? "[DRY] " : ""}Tayyor: ${created} yangi, ${updated} yangilandi, ` +
+    `${skipped} o'tkazib yuborildi, ${unsupported} qo'llanmaydigan tur`,
+);
