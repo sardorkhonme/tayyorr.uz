@@ -5,6 +5,8 @@
 const TOPICS = {
   // tayyorr.uz dagi "Ro'yxatdan o'tish" topigi
   registrations: process.env.TELEGRAM_TOPIC_REGISTRATIONS || "3",
+  // tayyorr.uz dagi "Support" topigi
+  support: process.env.TELEGRAM_TOPIC_SUPPORT || "35",
   // SMM buyurtmalar
   orders: process.env.TELEGRAM_TOPIC_SMM_ORDERS || "498",
   // SMM tizim balansi (provayder): to'ldirish, yechilish, ogohlantirishlar

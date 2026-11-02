@@ -162,7 +162,7 @@ export function HubMobileBar({ user }: { user: HubUser }) {
 
   return (
     <>
-      <div className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-zinc-200/70 bg-white/85 px-4 backdrop-blur-xl lg:hidden">
+      <div className="sticky top-0 z-[60] flex h-16 items-center gap-2 border-b border-zinc-200/70 bg-white/90 px-4 backdrop-blur-xl lg:hidden">
         <Link href="/">
           <Logo className="text-2xl" />
         </Link>
@@ -192,10 +192,11 @@ export function HubMobileBar({ user }: { user: HubUser }) {
       </div>
 
       {open &&
+        typeof document !== "undefined" &&
         createPortal(
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-zinc-900/30 backdrop-blur-sm" onClick={() => setOpen(false)} />
-            <div className="animate-pop absolute right-3 top-[4.5rem] w-[min(20rem,calc(100vw-1.5rem))] space-y-4 rounded-3xl border border-zinc-200 bg-white p-4 shadow-2xl">
+          <div className="fixed inset-x-0 bottom-0 top-16 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-zinc-900/25 backdrop-blur-sm" onClick={() => setOpen(false)} />
+            <div className="animate-pop absolute right-3 top-2 max-h-[calc(100dvh-5.5rem)] w-[min(20rem,calc(100vw-1.5rem))] space-y-4 overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-4 shadow-2xl">
               {user ? (
                 <>
                   <div className="flex items-center gap-3 px-1">

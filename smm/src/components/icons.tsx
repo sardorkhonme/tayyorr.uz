@@ -30,7 +30,9 @@ export type IconName =
   | "party"
   | "search"
   | "shield"
-  | "bolt";
+  | "bolt"
+  | "headset"
+  | "send";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   home: (
@@ -182,6 +184,20 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   bolt: <path d="M13 3 5 13.5h6L10 21l8-10.5h-6z" />,
+  headset: (
+    <>
+      <path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2" />
+      <rect x="3.5" y="13" width="4" height="6" rx="1.8" />
+      <rect x="16.5" y="13" width="4" height="6" rx="1.8" />
+      <path d="M18.5 19v.5a2 2 0 0 1-2 2H13" />
+    </>
+  ),
+  send: (
+    <>
+      <path d="M20.5 3.5 10.5 13.5" />
+      <path d="M20.5 3.5 14 20.5l-3.5-7-7-3.5z" />
+    </>
+  ),
 };
 
 export function Icon({
