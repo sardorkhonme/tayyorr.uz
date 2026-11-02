@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 
+import { HearLogo } from "@/components/hear-logos";
 import { HEAR_ABOUT_US } from "@/lib/hear-about-us";
 
 import { completeProfileAction } from "./actions";
@@ -154,7 +155,7 @@ export function ProfileWizard({
                     : "border-zinc-200 bg-white text-zinc-700"
                 }`}
               >
-                <span className="text-lg">{h.icon}</span>
+                <HearLogo value={h.value} className="h-7 w-7 shrink-0" />
                 <span className="leading-tight">{h.label}</span>
               </button>
             ))}
@@ -162,7 +163,7 @@ export function ProfileWizard({
           {hear === "other" && (
             <input
               className="input"
-              placeholder="Qayerdan eshitdingiz?"
+              placeholder="Masalan: YouTube, TikTok, universitetda, ko'cha banneridan..."
               value={hearDetail}
               onChange={(e) => setHearDetail(e.target.value)}
               maxLength={200}

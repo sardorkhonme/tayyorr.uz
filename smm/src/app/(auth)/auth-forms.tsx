@@ -105,10 +105,7 @@ export function RegisterForm() {
   return (
     <>
       <h1 className="font-display text-2xl font-bold text-zinc-900">Hisob yarating</h1>
-      <p className="mb-7 mt-1.5 text-zinc-500">
-        Google bilan davom eting. Keyingi qadamda bir necha savol beramiz: qayerdan eshitganingiz, ism,
-        login, parol va rasm.
-      </p>
+      <p className="mb-7 mt-1.5 text-zinc-500">Google bilan davom eting.</p>
 
       <GoogleButton label="Google bilan ro'yxatdan o'tish" />
 
