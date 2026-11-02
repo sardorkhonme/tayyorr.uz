@@ -76,6 +76,23 @@ export function ssoCookieOptions(host: string | null, secure: boolean) {
   };
 }
 
+/**
+ * Loyihalar o'rtasidagi server-server so'rovlar uchun imzo (masalan tayyorr+/SMM chekni
+ * app.tayyorr.uz dan so'raydi — Click maxfiy kaliti faqat o'sha yerda turadi).
+ */
+export async function signInternal(payload: string) {
+  return hmac(`internal:${payload}`);
+}
+
+export async function verifyInternal(payload: string, sig: string) {
+  if (!ssoEnabled() || !sig) return false;
+  const expected = await signInternal(payload);
+  if (expected.length !== sig.length) return false;
+  let diff = 0;
+  for (let i = 0; i < sig.length; i++) diff |= sig.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+
 /** Belgini o'chirish (chiqishda) — barcha brauzerlarda ishonchli bo'lishi uchun expires ham. */
 export function ssoClearOptions(host: string | null, secure: boolean) {
   return { ...ssoCookieOptions(host, secure), maxAge: 0, expires: new Date(0) };

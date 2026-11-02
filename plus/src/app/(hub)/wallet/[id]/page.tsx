@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { currentUser } from "@/auth";
+import { ClickReceiptButton } from "@/components/click-receipt-button";
 import { Icon } from "@/components/icons";
 import { db } from "@/lib/db";
-import { APP_URL, som } from "@/lib/format";
+import { som } from "@/lib/format";
 import { TXN_LABEL } from "@/lib/wallet";
 
 export const metadata = { title: "Chek" };
@@ -62,18 +63,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         </dl>
       </div>
 
-      {t.method === "CLICK" && (
-        <a
-          href={`${APP_URL}/wallet/${t.id}`}
-          className="card glow-card flex items-center justify-between gap-3 !rounded-2xl p-5"
-        >
-          <span>
-            <span className="block font-semibold text-zinc-900">Click rasmiy cheki</span>
-            <span className="text-sm text-zinc-500">tayyorr.uz da ochiladi</span>
-          </span>
-          <Icon name="external" className="h-5 w-5 text-indigo-600" />
-        </a>
-      )}
+      {t.method === "CLICK" && <ClickReceiptButton id={t.id} />}
     </div>
   );
 }
