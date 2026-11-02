@@ -26,14 +26,16 @@ if (!url || !key) {
 
 // src/lib/platforms.ts bilan bir xil
 const PLATFORMS = [
-  ["instagram", /insta/i],
+  ["instagram", /instagram|\big\b|\breels?\b/i],
   ["telegram", /telegram|\btg\b/i],
   ["tiktok", /tik ?tok/i],
   ["youtube", /you ?tube|\byt\b/i],
   ["facebook", /facebook|\bfb\b/i],
   ["twitter", /twitter|\bx\.com\b/i],
 ];
-const detect = (t) => PLATFORMS.find(([, re]) => re.test(t))?.[0] ?? "other";
+const match = (t) => PLATFORMS.find(([, re]) => re.test(t))?.[0] ?? null;
+// avval kategoriyadan, topilmasa nomdan ("Instant Start" kabi so'zlar adashtirmasin)
+const detect = (category, name) => match(category) ?? match(name) ?? "other";
 
 const args = process.argv.slice(2);
 const dry = args.includes("--dry");
@@ -78,7 +80,7 @@ for (const s of list) {
     unsupported++;
     continue;
   }
-  const platform = detect(`${s.category} ${s.name}`);
+  const platform = detect(String(s.category), String(s.name));
   if (only?.length && !only.includes(platform)) {
     skipped++;
     continue;

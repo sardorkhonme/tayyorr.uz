@@ -1,4 +1,4 @@
-# TayyorrSMM — smm.tayyorr.uz
+# tayyorr+ — smm.tayyorr.uz
 
 tayyorr.uz oilasidagi alohida sayt: Instagram, Telegram, TikTok, YouTube va boshqalar uchun
 avtomatik SMM xizmatlari (obunachi, layk, ko'rish…).
@@ -28,7 +28,7 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 
 `provayder narxi (USD/1000) × dollar kursi × (1 + ustama%)`, 100 so'mgacha yuqoriga yaxlitlanadi
 ([pricing.ts](src/lib/pricing.ts)). Kurs — Markaziy bank (cbu.uz), 6 soatda avtomatik yangilanadi.
-Ustama — tayyorr.uz admin → **TayyorrSMM** sahifasi (standart 50%).
+Ustama — tayyorr.uz admin → **tayyorr+** sahifasi (standart 50%).
 
 ## Pul oqimi
 
@@ -49,7 +49,7 @@ Ustama — tayyorr.uz admin → **TayyorrSMM** sahifasi (standart 50%).
 | 500 — SMM tizim balansi | provayder hisobi to'ldirildi / yechildi; 100k/50k/40k/30k/20k/10k so'mdan tushish ogohlantirishi |
 
 Ro'yxatdan o'tish: SMM dagi havola `tayyorr.uz/register?from=smm` — registratsiya logida
-"TayyorrSMM orqali" deb chiqadi va tugagach foydalanuvchi SMM ga qaytadi.
+"tayyorr+ orqali" deb chiqadi va tugagach foydalanuvchi SMM ga qaytadi.
 
 Balans [balance-alert.ts](src/lib/balance-alert.ts) da tekshiriladi.
 Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har 10 daqiqa:

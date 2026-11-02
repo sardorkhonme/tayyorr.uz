@@ -73,10 +73,10 @@ export async function POST(req: Request) {
   }
 
   const actionNum = Number(action);
-  // TayyorrSMM (smm.tayyorr.uz) da boshlangan to'lov — alohida topik va SMM havolalari
+  // tayyorr+ (smm.tayyorr.uz) da boshlangan to'lov — alohida topik va SMM havolalari
   const fromSmm = meta.source === "smm";
   const payTopic = fromSmm ? "smmTopups" : "payments";
-  const smmTag = fromSmm ? " — TayyorrSMM" : "";
+  const smmTag = fromSmm ? " — tayyorr+" : "";
 
   // Click bekor qilish/qaytarish haqida xabar bermoqda (action=0 yoki manfiy xato kodi).
   // Bu allaqachon SUCCESS bo'lgan to'lov uchun ham kelishi mumkin — Click.uz'da

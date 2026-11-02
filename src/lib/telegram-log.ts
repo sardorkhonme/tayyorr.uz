@@ -29,9 +29,9 @@ const TOPICS = {
   referrals: process.env.TELEGRAM_TOPIC_REFERRALS,
   support: process.env.TELEGRAM_TOPIC_SUPPORT,
   stars: process.env.TELEGRAM_TOPIC_STARS,
-  // TayyorrSMM (smm.tayyorr.uz) orqali hamyonni to'ldirish
+  // tayyorr+ (smm.tayyorr.uz) orqali hamyonni to'ldirish
   smmTopups: process.env.TELEGRAM_TOPIC_SMM_TOPUPS || "499",
-  // TayyorrSMM tizim (provayder balansi, narx sozlamalari)
+  // tayyorr+ tizim (provayder balansi, narx sozlamalari)
   smmSystem: process.env.TELEGRAM_TOPIC_SMM_SYSTEM || "500",
 } as const;
 

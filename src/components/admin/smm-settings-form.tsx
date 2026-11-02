@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-/** TayyorrSMM: ustama (%) va dollar kursini yangilash. */
+/** tayyorr+: ustama (%) va dollar kursini yangilash. */
 export function SmmSettingsForm({
   markupPercent,
   markupIsDefault,

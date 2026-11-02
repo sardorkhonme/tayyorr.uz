@@ -23,7 +23,7 @@ const credentialsSchema = z.object({
 
 async function logLogin(userId: string, how: string) {
   await db.activityLog
-    .create({ data: { userId, action: "AUTH_LOGIN", summary: `TayyorrSMM ga ${how} bilan kirdi` } })
+    .create({ data: { userId, action: "AUTH_LOGIN", summary: `tayyorr+ ga ${how} bilan kirdi` } })
     .catch(() => {});
 }
 

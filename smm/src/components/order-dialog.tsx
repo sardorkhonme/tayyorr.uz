@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { BoardService } from "@/components/services-board";
 import { TopupButton } from "@/components/topup-button";
 import { chargeFor, num, som } from "@/lib/format";
+import { LINK_HINTS } from "@/lib/kinds";
 
 export function OrderDialog({
   service,
@@ -31,6 +32,11 @@ export function OrderDialog({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  const presets = [service.min, 100, 500, 1000, 5000, 10000]
+    .filter((v, i, a) => v >= service.min && v <= service.max && a.indexOf(v) === i)
+    .sort((a, b) => a - b)
+    .slice(0, 5);
 
   const qty = Number(quantity) || 0;
   const qtyOk = qty >= service.min && qty <= service.max;
@@ -64,7 +70,7 @@ export function OrderDialog({
       <div
         role="dialog"
         aria-modal="true"
-        className="animate-rise w-full max-w-md rounded-t-2xl border border-white/10 bg-[#0e0e16] p-5 shadow-2xl sm:rounded-2xl"
+        className="animate-rise max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[#0e0e16] p-6 shadow-2xl sm:rounded-3xl sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -95,17 +101,19 @@ export function OrderDialog({
           </div>
         ) : !loggedIn ? (
           <div className="space-y-3 text-center">
-            <p className="text-sm text-zinc-400">Buyurtma berish uchun tayyorr.uz hisobingiz bilan kiring.</p>
+            <p className="text-zinc-400">
+              Buyurtma berish uchun hisobingizga kiring. tayyorr.uz dagi login va parolingiz shu yerda ham ishlaydi.
+            </p>
             <Link href="/login" className="btn-primary w-full">Kirish</Link>
           </div>
         ) : (
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-6">
             <div>
-              <label className="label" htmlFor="link">Havola (link)</label>
+              <label className="label !text-sm" htmlFor="link">1. Havolani kiriting</label>
               <input
                 id="link"
-                className="input"
-                placeholder="https://instagram.com/username"
+                className="input !py-3"
+                placeholder={LINK_HINTS[service.platform] ?? LINK_HINTS.other}
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 required
@@ -113,31 +121,52 @@ export function OrderDialog({
               />
             </div>
             <div>
-              <label className="label" htmlFor="qty">
-                Miqdor <span className="text-zinc-600">({num(service.min)} – {num(service.max)})</span>
+              <label className="label !text-sm" htmlFor="qty">
+                2. Nechta kerak? <span className="font-normal text-zinc-600">({num(service.min)} – {num(service.max)})</span>
               </label>
               <input
                 id="qty"
-                className="input"
+                className="input !py-3"
                 inputMode="numeric"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ""))}
                 required
               />
+              <div className="mt-2 flex flex-wrap gap-2">
+                {presets.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setQuantity(String(v))}
+                    className={`rounded-lg border px-3 py-1.5 text-sm transition ${
+                      qty === v
+                        ? "border-indigo-400 bg-indigo-500/20 text-white"
+                        : "border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {num(v)}
+                  </button>
+                ))}
+              </div>
+              {quantity && !qtyOk && (
+                <p className="mt-2 text-sm text-amber-300">
+                  {num(service.min)} dan {num(service.max)} gacha son kiriting
+                </p>
+              )}
             </div>
 
-            <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-3 text-sm">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm">
               <div className="flex justify-between text-zinc-400">
-                <span>Narx (1000 dona)</span>
+                <span>Narx (har 1000 tasi)</span>
                 <span>{som(service.rate)}</span>
               </div>
-              <div className="mt-1 flex justify-between text-zinc-400">
-                <span>Hamyonda</span>
+              <div className="mt-2 flex justify-between text-zinc-400">
+                <span>Hamyoningizda</span>
                 <span>{som(balance)}</span>
               </div>
-              <div className="mt-2 flex justify-between border-t border-white/[0.07] pt-2 font-medium text-white">
-                <span>Jami</span>
-                <span>{qtyOk ? som(total) : "—"}</span>
+              <div className="mt-3 flex items-end justify-between border-t border-white/[0.08] pt-3">
+                <span className="text-zinc-300">To&apos;lanadi</span>
+                <span className="font-display text-2xl font-semibold text-white">{qtyOk ? som(total) : "—"}</span>
               </div>
             </div>
 
@@ -149,9 +178,12 @@ export function OrderDialog({
             )}
             {error && <p className="text-sm text-red-400">{error}</p>}
 
-            <button className="btn-primary w-full !py-3" disabled={busy || !qtyOk || !enough || !link.trim()}>
-              {busy ? "Yuborilmoqda…" : qtyOk ? `${som(total)} — Buyurtma berish` : "Buyurtma berish"}
+            <button className="btn-primary w-full !py-3.5 !text-base" disabled={busy || !qtyOk || !enough || !link.trim()}>
+              {busy ? "Yuborilmoqda…" : "Buyurtma berish"}
             </button>
+            <p className="text-center text-xs text-zinc-500">
+              Buyurtma bajarilmasa yoki qisman bajarilsa — pul hamyoningizga avtomatik qaytadi.
+            </p>
           </form>
         )}
       </div>

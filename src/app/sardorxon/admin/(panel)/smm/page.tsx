@@ -58,7 +58,7 @@ export default async function AdminSmm() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold text-white">TayyorrSMM</h1>
+        <h1 className="text-xl font-semibold text-white">tayyorr+</h1>
         <p className="mt-1 text-sm text-zinc-500">
           <a href={SMM_URL} target="_blank" rel="noreferrer" className="text-indigo-400 hover:underline">
             {SMM_URL.replace(/^https?:\/\//, "")}

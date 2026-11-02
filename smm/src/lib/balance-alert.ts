@@ -85,7 +85,7 @@ export async function checkProviderBalance() {
         [
           `Balans: ${fmt(balance)}`,
           `${num(level)} so'mdan kam qoldi.`,
-          "Balans tugasa TayyorrSMM buyurtmalari rad etiladi (mijozlarga pul qaytadi).",
+          "Balans tugasa tayyorr+ buyurtmalari rad etiladi (mijozlarga pul qaytadi).",
         ],
         addFunds,
       );

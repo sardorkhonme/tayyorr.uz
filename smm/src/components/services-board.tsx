@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-import { PlatformIcon } from "@/components/platform-icon";
 import { OrderDialog } from "@/components/order-dialog";
+import { PlatformIcon } from "@/components/platform-icon";
 import { num, som } from "@/lib/format";
+import { KINDS, kindOf } from "@/lib/kinds";
 import { PLATFORMS } from "@/lib/platforms";
 
 export type BoardService = {
@@ -20,139 +20,233 @@ export type BoardService = {
   refill: boolean;
 };
 
+const PAGE = 12;
+
+function StepTitle({ n, title, hint }: { n: number; title: string; hint?: string }) {
+  return (
+    <div className="flex items-start gap-4">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-indigo-500/15 font-display text-base font-semibold text-indigo-200 ring-1 ring-indigo-400/30">
+        {n}
+      </span>
+      <div>
+        <h2 className="font-display text-xl font-semibold text-white sm:text-2xl">{title}</h2>
+        {hint && <p className="mt-1 text-sm text-zinc-400">{hint}</p>}
+      </div>
+    </div>
+  );
+}
+
 export function ServicesBoard({
   services,
   loggedIn,
   balance,
+  initialPlatform = null,
+  initialKind = null,
 }: {
   services: BoardService[];
   loggedIn: boolean;
   balance: number;
+  /** havoladan oldindan tanlash: ?p=instagram&k=followers */
+  initialPlatform?: string | null;
+  initialKind?: string | null;
 }) {
-  const counts = useMemo(() => {
+  const withKind = useMemo(
+    () => services.map((s) => ({ ...s, kind: kindOf(s.category, s.name) })),
+    [services],
+  );
+
+  const platformCounts = useMemo(() => {
     const m = new Map<string, number>();
-    for (const s of services) m.set(s.platform, (m.get(s.platform) ?? 0) + 1);
+    for (const s of withKind) m.set(s.platform, (m.get(s.platform) ?? 0) + 1);
     return m;
-  }, [services]);
+  }, [withKind]);
 
-  const visiblePlatforms = PLATFORMS.filter((p) => p.key !== "other" || counts.get("other"));
-  const firstWithServices = visiblePlatforms.find((p) => counts.get(p.key))?.key ?? "instagram";
-
-  const [platform, setPlatform] = useState(firstWithServices);
+  const [platform, setPlatform] = useState<string | null>(initialPlatform);
+  const [kind, setKind] = useState<string | null>(initialPlatform ? initialKind : null);
   const [query, setQuery] = useState("");
+  const [shown, setShown] = useState(PAGE);
   const [selected, setSelected] = useState<BoardService | null>(null);
   const [wallet, setWallet] = useState(balance);
 
-  const groups = useMemo(() => {
+  const step2 = useRef<HTMLDivElement>(null);
+  const step3 = useRef<HTMLDivElement>(null);
+  const scrollTo = (el: HTMLDivElement | null) =>
+    setTimeout(() => el?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+
+  const platforms = PLATFORMS.filter((p) => p.key !== "other" || platformCounts.get("other"));
+
+  const kinds = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of withKind) if (s.platform === platform) m.set(s.kind, (m.get(s.kind) ?? 0) + 1);
+    return KINDS.filter((k) => m.get(k.key)).map((k) => ({ ...k, count: m.get(k.key)! }));
+  }, [withKind, platform]);
+
+  const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = services.filter(
-      (s) =>
-        (q ? true : s.platform === platform) &&
-        (!q || s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q)),
+    return withKind
+      .filter((s) => s.platform === platform && s.kind === kind)
+      .filter((s) => !q || s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
+      .sort((a, b) => a.rate - b.rate);
+  }, [withKind, platform, kind, query]);
+
+  const platformName = PLATFORMS.find((p) => p.key === platform)?.name;
+  const kindLabel = KINDS.find((k) => k.key === kind)?.label;
+
+  if (services.length === 0) {
+    return (
+      <section id="start" className="scroll-mt-24 rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+        <p className="font-display text-2xl font-semibold text-white">Xizmatlar tez orada qo&apos;shiladi</p>
+        <p className="mx-auto mt-3 max-w-md text-zinc-400">
+          Hozir ro&apos;yxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling.
+        </p>
+      </section>
     );
-    const m = new Map<string, BoardService[]>();
-    for (const s of list) {
-      const arr = m.get(s.category) ?? [];
-      arr.push(s);
-      m.set(s.category, arr);
-    }
-    return [...m.entries()];
-  }, [services, platform, query]);
+  }
 
   return (
-    <section className="space-y-8">
-      {/* platformalar — katta bloklar */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {visiblePlatforms.map((p, i) => {
-          const n = counts.get(p.key) ?? 0;
-          const active = !query && platform === p.key;
-          return (
-            <button
-              key={p.key}
-              type="button"
-              disabled={!n}
-              onClick={() => {
-                setPlatform(p.key);
-                setQuery("");
-              }}
-              data-active={active}
-              style={{ "--from": p.from, animationDelay: `${i * 50}ms` } as React.CSSProperties}
-              className="platform-tile card animate-rise flex flex-col items-start gap-4 !p-4 text-left disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <span
-                className="grid h-11 w-11 place-items-center rounded-xl text-white shadow-lg"
-                style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
+    <section id="start" className="scroll-mt-24 space-y-16">
+      {/* 1-qadam: tarmoq */}
+      <div className="space-y-6">
+        <StepTitle n={1} title="Ijtimoiy tarmoqni tanlang" hint="Qaysi tarmoqdagi sahifangizni o'stirmoqchisiz?" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {platforms.map((p) => {
+            const n = platformCounts.get(p.key) ?? 0;
+            const active = platform === p.key;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                disabled={!n}
+                onClick={() => {
+                  setPlatform(p.key);
+                  setKind(null);
+                  setQuery("");
+                  setShown(PAGE);
+                  scrollTo(step2.current);
+                }}
+                data-active={active}
+                style={{ "--from": p.from } as React.CSSProperties}
+                className="platform-tile flex flex-col items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left disabled:cursor-not-allowed disabled:opacity-40 sm:flex-row sm:items-center sm:gap-4 sm:p-6"
               >
-                <PlatformIcon platform={p.key} />
-              </span>
-              <span>
-                <span className="block font-display text-[15px] font-semibold text-white">{p.name}</span>
-                <span className="text-xs text-zinc-500">{n ? `${n} ta xizmat` : "Tez orada"}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="font-display text-xl font-semibold text-white">
-          {query ? "Qidiruv natijalari" : `${PLATFORMS.find((p) => p.key === platform)?.name} xizmatlari`}
-        </h2>
-        <input
-          className="input sm:max-w-xs"
-          placeholder="Xizmatni qidirish…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
-
-      {services.length === 0 ? (
-        <div className="card py-14 text-center">
-          <p className="font-display text-lg text-white">Xizmatlar tez orada qo'shiladi</p>
-          <p className="mt-1 text-sm text-zinc-500">Hozircha ro'yxat bo'sh — biroz keyinroq qayting.</p>
-        </div>
-      ) : groups.length === 0 ? (
-        <div className="card py-10 text-center text-sm text-zinc-500">Hech narsa topilmadi</div>
-      ) : (
-        groups.map(([category, list]) => (
-          <div key={category} className="space-y-3">
-            <h3 className="text-sm font-medium uppercase tracking-wide text-zinc-500">{category}</h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSelected(s)}
-                  className="card group flex flex-col gap-3 text-left transition hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05]"
+                <span
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-lg sm:h-14 sm:w-14"
+                  style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
                 >
-                  <span className="line-clamp-2 text-[15px] font-medium leading-snug text-zinc-100">
-                    {s.name}
-                  </span>
-                  <span className="flex flex-wrap gap-1.5 text-[11px]">
-                    <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-zinc-400">
-                      {num(s.min)} – {num(s.max)} dona
+                  <PlatformIcon platform={p.key} className="h-7 w-7" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-display text-base font-semibold text-white sm:text-lg">{p.name}</span>
+                  <span className="text-sm text-zinc-500">{n ? `${n} ta xizmat` : "Tez orada"}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2-qadam: nima kerak */}
+      <div ref={step2} className="scroll-mt-24">
+        {platform && (
+          <div className="animate-rise space-y-6">
+            <StepTitle n={2} title="Nima kerak?" hint={`${platformName} uchun xizmat turini tanlang`} />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {kinds.map((k) => {
+                const active = kind === k.key;
+                return (
+                  <button
+                    key={k.key}
+                    type="button"
+                    onClick={() => {
+                      setKind(k.key);
+                      setQuery("");
+                      setShown(PAGE);
+                      scrollTo(step3.current);
+                    }}
+                    className={`rounded-2xl border p-5 text-left transition ${
+                      active
+                        ? "border-indigo-400/60 bg-indigo-500/10"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="font-display text-lg font-semibold text-white">{k.label}</span>
+                      <span className="rounded-full bg-white/[0.06] px-2.5 py-0.5 text-xs text-zinc-400">{k.count}</span>
                     </span>
-                    {s.refill && (
-                      <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-emerald-300">
-                        Kafolat (refill)
-                      </span>
-                    )}
-                  </span>
-                  <span className="mt-auto flex items-end justify-between">
-                    <span>
-                      <span className="block font-display text-lg font-semibold text-white">{som(s.rate)}</span>
-                      <span className="text-xs text-zinc-500">1000 dona uchun</span>
-                    </span>
-                    <span className="rounded-lg bg-indigo-500/15 px-3 py-1.5 text-sm text-indigo-200 transition group-hover:bg-indigo-500 group-hover:text-white">
-                      Buyurtma
-                    </span>
-                  </span>
-                </button>
-              ))}
+                    <span className="mt-1 block text-sm text-zinc-500">{k.hint}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-        ))
-      )}
+        )}
+      </div>
+
+      {/* 3-qadam: xizmat */}
+      <div ref={step3} className="scroll-mt-24">
+        {platform && kind && (
+          <div className="animate-rise space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <StepTitle n={3} title="Xizmatni tanlang" hint={`${platformName} · ${kindLabel} — eng arzonidan boshlab`} />
+              <input
+                className="input sm:max-w-xs"
+                placeholder="Ro'yxatdan qidirish…"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setShown(PAGE);
+                }}
+              />
+            </div>
+
+            {list.length === 0 ? (
+              <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 text-center text-zinc-500">
+                Hech narsa topilmadi
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {list.slice(0, shown).map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSelected(s)}
+                      className="group flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left transition hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05] sm:p-6"
+                    >
+                      <span className="text-[15px] leading-relaxed text-zinc-100">{s.name}</span>
+                      <span className="flex flex-wrap gap-2 text-xs">
+                        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-zinc-400">
+                          {num(s.min)} – {num(s.max)} ta
+                        </span>
+                        {s.refill && (
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-emerald-300">
+                            Kafolatli (kamaysa to&apos;ldiriladi)
+                          </span>
+                        )}
+                      </span>
+                      <span className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+                        <span>
+                          <span className="block font-display text-xl font-semibold text-white">{som(s.rate)}</span>
+                          <span className="text-xs text-zinc-500">har 1000 tasi uchun</span>
+                        </span>
+                        <span className="rounded-xl bg-indigo-500/15 px-4 py-2 text-sm font-medium text-indigo-200 transition group-hover:bg-indigo-500 group-hover:text-white">
+                          Tanlash
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {list.length > shown && (
+                  <div className="text-center">
+                    <button type="button" className="btn-ghost" onClick={() => setShown((v) => v + PAGE)}>
+                      Yana ko&apos;rsatish ({list.length - shown})
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {selected && (
         <OrderDialog
@@ -162,15 +256,6 @@ export function ServicesBoard({
           onClose={() => setSelected(null)}
           onOrdered={setWallet}
         />
-      )}
-
-      {!loggedIn && (
-        <p className="text-center text-sm text-zinc-500">
-          Buyurtma berish uchun{" "}
-          <Link href="/login" className="text-indigo-300 hover:underline">
-            tayyorr.uz hisobingiz bilan kiring
-          </Link>
-        </p>
       )}
     </section>
   );

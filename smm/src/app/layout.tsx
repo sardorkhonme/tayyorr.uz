@@ -13,11 +13,11 @@ const headingFont = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.AUTH_URL || "https://smm.tayyorr.uz"),
   title: {
-    default: "TayyorrSMM — Instagram, Telegram, TikTok uchun SMM xizmatlari",
-    template: "%s — TayyorrSMM",
+    default: "tayyorr+ — Instagram, Telegram, TikTok uchun obunachi, layk va ko'rishlar",
+    template: "%s — tayyorr+",
   },
   description:
-    "TayyorrSMM — obunachi, layk, ko'rishlar va boshqa SMM xizmatlari. tayyorr.uz hisobingiz va hamyoningiz bilan bir zumda buyurtma bering.",
+    "tayyorr+ — obunachi, layk, ko'rishlar va boshqa SMM xizmatlari. tayyorr.uz hisobingiz va hamyoningiz bilan bir zumda buyurtma bering.",
   icons: { icon: "/favicon.png", apple: "/apple-icon.png" },
 };
 

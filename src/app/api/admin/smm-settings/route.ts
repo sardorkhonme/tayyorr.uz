@@ -7,7 +7,7 @@ import { getSmmSettings, setSmmMarkupPercent } from "@/lib/smm-settings";
 
 const schema = z.object({ markupPercent: z.coerce.number().min(0).max(500) });
 
-/** TayyorrSMM ustamasini (%) o'zgartiradi — narxlar darhol yangilanadi. */
+/** tayyorr+ ustamasini (%) o'zgartiradi — narxlar darhol yangilanadi. */
 export async function POST(req: Request) {
   const denied = await adminApiGuard();
   if (denied) return denied;
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const pct = Math.round(parsed.data.markupPercent * 10) / 10;
   const before = await getSmmSettings();
   await setSmmMarkupPercent(pct);
-  await logToGroup("smmSystem", "⚙️ TayyorrSMM ustamasi o'zgartirildi", [
+  await logToGroup("smmSystem", "⚙️ tayyorr+ ustamasi o'zgartirildi", [
     `${before.markupPercent}% → ${pct}%`,
   ]);
   return NextResponse.json({ ok: true, markupPercent: pct });

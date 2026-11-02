@@ -9,7 +9,7 @@ export type Platform = {
 };
 
 export const PLATFORMS: Platform[] = [
-  { key: "instagram", name: "Instagram", match: /insta/i, from: "#f58529", to: "#dd2a7b" },
+  { key: "instagram", name: "Instagram", match: /instagram|\big\b|\breels?\b/i, from: "#f58529", to: "#dd2a7b" },
   { key: "telegram", name: "Telegram", match: /telegram|\btg\b/i, from: "#2aabee", to: "#229ed9" },
   { key: "tiktok", name: "TikTok", match: /tik ?tok/i, from: "#25f4ee", to: "#fe2c55" },
   { key: "youtube", name: "YouTube", match: /you ?tube|\byt\b/i, from: "#ff0000", to: "#b31217" },
@@ -18,8 +18,13 @@ export const PLATFORMS: Platform[] = [
   { key: "other", name: "Boshqa", match: /.^/, from: "#6366f1", to: "#4f46e5" },
 ];
 
-export function detectPlatform(text: string): string {
-  return PLATFORMS.find((p) => p.match.test(text))?.key ?? "other";
+function match(text: string) {
+  return PLATFORMS.find((p) => p.match.test(text))?.key ?? null;
+}
+
+/** Avval kategoriyadan, topilmasa nomdan ("Instant Start" kabi so'zlar adashtirmasin). */
+export function detectPlatform(category: string, name = ""): string {
+  return match(category) ?? match(name) ?? "other";
 }
 
 export function platformOf(key: string): Platform {

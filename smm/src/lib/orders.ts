@@ -71,7 +71,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
         type: "SPEND",
         amount: charge,
         method: "SMM",
-        note: `TayyorrSMM: ${service.name} × ${quantity}`,
+        note: `tayyorr+: ${service.name} × ${quantity}`,
         meta: { smmOrderId: o.id, serviceId: service.id },
       },
     });
@@ -83,7 +83,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
       data: {
         userId,
         action: "SMM_ORDER",
-        summary: `TayyorrSMM buyurtma: ${service.name} × ${quantity} (${charge} so'm)`,
+        summary: `tayyorr+ buyurtma: ${service.name} × ${quantity} (${charge} so'm)`,
         meta: { smmOrderId: order.id, link },
       },
     })
@@ -169,8 +169,8 @@ export async function finishOrder(
         method: "SMM",
         note:
           status === "PARTIAL"
-            ? `TayyorrSMM: qisman bajarildi — qolgan qismi qaytdi (${o.service.name})`
-            : `TayyorrSMM: buyurtma bekor bo'ldi — pul qaytdi (${o.service.name})`,
+            ? `tayyorr+: qisman bajarildi — qolgan qismi qaytdi (${o.service.name})`
+            : `tayyorr+: buyurtma bekor bo'ldi — pul qaytdi (${o.service.name})`,
         meta: { smmOrderId: o.id },
       },
     });

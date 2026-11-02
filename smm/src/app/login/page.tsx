@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { Logo } from "@/components/logo";
 import { MAIN_URL } from "@/lib/format";
 
 import { LoginForm } from "./login-form";
@@ -28,17 +29,15 @@ export default async function LoginPage({
       <div className="pointer-events-none absolute left-1/2 top-[-160px] -z-10 h-[380px] w-[620px] -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[120px]" />
 
       <div className="w-full max-w-sm animate-rise">
-        <Link href="/" className="mb-6 flex items-center justify-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-dark.png" alt="tayyorr" className="h-7 w-auto" />
-          <span className="rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-1.5 py-0.5 font-display text-xs font-bold tracking-wider text-white">
-            SMM
-          </span>
+        <Link href="/" className="mb-8 flex justify-center">
+          <Logo className="text-3xl" />
         </Link>
 
         <div className="card !p-6">
           <h1 className="font-display text-xl font-semibold text-white">Kirish</h1>
-          <p className="mb-5 mt-1 text-sm text-zinc-400">tayyorr.uz login/email va parolingiz bilan kiring.</p>
+          <p className="mb-6 mt-2 text-sm leading-relaxed text-zinc-400">
+            tayyorr.uz dagi login (yoki email) va parolingiz shu yerda ham ishlaydi — alohida ro&apos;yxatdan o&apos;tish shart emas.
+          </p>
           <LoginForm initialError={initialError} />
         </div>
 

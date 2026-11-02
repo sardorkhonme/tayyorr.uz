@@ -1,5 +1,5 @@
 /**
- * tayyorr.uz admin log guruhi (o'sha bot) — TayyorrSMM topiklari.
+ * tayyorr.uz admin log guruhi (o'sha bot) — tayyorr+ topiklari.
  * Xato bo'lsa jim o'tkaziladi — sayt ishiga xalaqit bermaydi.
  */
 const TOPICS = {

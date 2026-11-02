@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { signOut } from "@/auth";
+import { Logo } from "@/components/logo";
 import { TopupButton } from "@/components/topup-button";
 import { som } from "@/lib/format";
 
@@ -19,16 +20,12 @@ export function Header({ user }: { user: HeaderUser }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#08080d]/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-dark.png" alt="tayyorr" className="h-6 w-auto" draggable={false} />
-          <span className="rounded-md bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-1.5 py-0.5 font-display text-[11px] font-bold tracking-wider text-white">
-            SMM
-          </span>
+      <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-5 sm:px-8">
+        <Link href="/" aria-label="tayyorr+ bosh sahifa">
+          <Logo className="text-2xl" />
         </Link>
 
-        <nav className="ml-4 hidden items-center gap-1 text-sm sm:flex">
+        <nav className="ml-6 hidden items-center gap-1 text-sm sm:flex">
           <Link href="/" className="rounded-lg px-3 py-1.5 text-zinc-300 hover:bg-white/5 hover:text-white">
             Xizmatlar
           </Link>

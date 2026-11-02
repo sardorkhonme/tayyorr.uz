@@ -115,7 +115,7 @@ function OnboardingInner() {
       if (!res.ok) throw new Error(data.error || "Xatolik");
       await update();
       // to'liq qayta yuklash — server sessiyani yangi cookie bilan o'qisin
-      // (TayyorrSMM dan kelgan bo'lsa — SMM saytiga qaytadi)
+      // (tayyorr+ dan kelgan bo'lsa — SMM saytiga qaytadi)
       window.location.assign(typeof data.redirect === "string" ? data.redirect : "/dashboard");
       return;
     } catch (e) {

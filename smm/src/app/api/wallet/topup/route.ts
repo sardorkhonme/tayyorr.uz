@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       status: "PENDING",
       amount,
       method: "CLICK",
-      note: "Click orqali to'ldirish (TayyorrSMM)",
+      note: "Click orqali to'ldirish (tayyorr+)",
       meta: { source: "smm" },
     },
   });

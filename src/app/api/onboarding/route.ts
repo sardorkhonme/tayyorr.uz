@@ -158,13 +158,13 @@ export async function POST(req: Request) {
   await logActivity(
     session.user.id,
     "REGISTER",
-    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})${fromSmm ? " — TayyorrSMM orqali" : ""}`,
+    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})${fromSmm ? " — tayyorr+ orqali" : ""}`,
   );
   await logToGroup(
     "registrations",
-    fromSmm ? "🆕 Yangi ro'yxatdan o'tish (TayyorrSMM orqali)" : "🆕 Yangi ro'yxatdan o'tish",
+    fromSmm ? "🆕 Yangi ro'yxatdan o'tish (tayyorr+ orqali)" : "🆕 Yangi ro'yxatdan o'tish",
     [
-      fromSmm ? "Manba: TayyorrSMM (smm.tayyorr.uz)" : "",
+      fromSmm ? "Manba: tayyorr+ (smm.tayyorr.uz)" : "",
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
       session.user.email ? `Email: ${session.user.email}` : "",
