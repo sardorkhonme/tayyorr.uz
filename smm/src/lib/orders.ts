@@ -1,6 +1,12 @@
 import { db } from "@/lib/db";
 import { chargeFor, num } from "@/lib/format";
-import { addOrder, fetchStatuses, ProviderError, type ProviderStatus } from "@/lib/provider";
+import {
+  addOrder,
+  fetchStatuses,
+  ProviderError,
+  providerName,
+  type ProviderStatus,
+} from "@/lib/provider";
 import { adminUserUrl, notifyAdmins, userLabel } from "@/lib/telegram";
 
 const USER_SELECT = {
@@ -97,7 +103,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
         `Miqdor: ${num(quantity)}`,
         `Summa: ${som(charge)}`,
         `Hamyonda qoldi: ${u ? som(u.balance) : "?"}`,
-        `ZOSMM buyurtma: #${providerOrderId}`,
+        `${providerName()} buyurtma: #${providerOrderId}`,
         `Buyurtma ID: ${order.id}`,
       ],
       { text: "Foydalanuvchi", href: adminUserUrl(userId) },
@@ -115,12 +121,12 @@ export async function placeOrder(userId: string, serviceId: string, link: string
       .catch(() => {});
     await notifyAdmins(
       "orders",
-      "⏳ SMM buyurtma: ZOSMM javob bermadi — tekshiring",
+      `⏳ SMM buyurtma: ${providerName()} javob bermadi — tekshiring`,
       [
         `Xizmat: ${service.name}`,
         `Havola: ${link}`,
         `Miqdor: ${num(quantity)} · ${som(charge)}`,
-        "Buyurtma PENDING holatda qoldi (pul yechilgan). ZOSMM kabinetida yaratilganini tekshiring.",
+        `Buyurtma PENDING holatda qoldi (pul yechilgan). ${providerName()} kabinetida yaratilganini tekshiring.`,
         `Buyurtma ID: ${order.id}`,
       ],
       { text: "Foydalanuvchi", href: adminUserUrl(userId) },
@@ -194,7 +200,7 @@ async function notifyOrderFinished(orderId: string) {
       o.status === "PARTIAL" && o.remains != null ? `Bajarilmadi: ${num(o.remains)} dona` : "",
       o.refundAmount ? `Qaytarildi: ${som(o.refundAmount)} (hamyon: ${som(o.user.balance)})` : "",
       o.error ? `Sabab: ${o.error}` : "",
-      o.providerOrderId ? `ZOSMM buyurtma: #${o.providerOrderId}` : "",
+      o.providerOrderId ? `${providerName()} buyurtma: #${o.providerOrderId}` : "",
       `Buyurtma ID: ${o.id}`,
     ],
     { text: "Foydalanuvchi", href: adminUserUrl(o.userId) },

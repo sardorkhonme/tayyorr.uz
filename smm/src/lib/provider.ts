@@ -17,6 +17,25 @@ type ProviderService = {
 
 export class ProviderError extends Error {}
 
+/** Xabarlarda ko'rsatiladigan nom: SMM_PROVIDER_NAME yoki API domeni (masalan "smmcloud.uk"). */
+export function providerName() {
+  if (process.env.SMM_PROVIDER_NAME) return process.env.SMM_PROVIDER_NAME;
+  try {
+    return new URL(process.env.SMM_PROVIDER_URL || "").hostname.replace(/^www\./, "");
+  } catch {
+    return "SMM provayder";
+  }
+}
+
+/** Provayder saytidagi balansni to'ldirish sahifasi (Perfect Panel: /addfunds). */
+export function providerAddFundsUrl() {
+  try {
+    return `${new URL(process.env.SMM_PROVIDER_URL || "").origin}/addfunds`;
+  } catch {
+    return null;
+  }
+}
+
 export function providerConfigured() {
   return !!(process.env.SMM_PROVIDER_URL && process.env.SMM_PROVIDER_KEY);
 }

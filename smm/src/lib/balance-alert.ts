@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { num } from "@/lib/format";
-import { fetchBalance, providerConfigured } from "@/lib/provider";
+import { fetchBalance, providerAddFundsUrl, providerConfigured, providerName } from "@/lib/provider";
 import { notifyAdmins } from "@/lib/telegram";
 
 /** Ogohlantirish chegaralari (so'm) — balans shulardan pastga tushganda bir martadan xabar. */
@@ -9,7 +9,6 @@ const THRESHOLDS = [100_000, 50_000, 40_000, 30_000, 20_000, 10_000];
 const LEVEL_KEY = "smmProviderAlertLevel";
 /** Oxirgi ko'rilgan provayder balansi (o'z valyutasida) — har o'zgarish haqida xabar uchun. */
 const LAST_KEY = "smmProviderLastBalance";
-const ADD_FUNDS = { text: "ZOSMM balansini to'ldirish", href: "https://zosmm.com/addfunds" };
 
 /** Shartli yozuv: faqat qiymat `prev` bo'lsa almashtiradi — parallel tekshiruvlarda xabar takrorlanmaydi. */
 async function swap(key: string, prev: string | null, next: string | null) {
@@ -25,7 +24,7 @@ async function swap(key: string, prev: string | null, next: string | null) {
 }
 
 /**
- * Provayder (ZOSMM) balansini tekshiradi:
+ * Provayder (SMM panel) balansini tekshiradi:
  * - har o'zgarishda (to'ldirildi / yechildi) "SMM tizim balansi" topigiga xabar;
  * - 100k/50k/40k/30k/20k/10k so'mdan tushganda bir martalik ogohlantirish.
  */
@@ -46,6 +45,9 @@ export async function checkProviderBalance() {
   const fmt = (v: number) =>
     `${num(Math.round(toUzs(v)))} so'm` + (isUzs ? "" : ` ($${v.toFixed(2)})`);
   const uzs = toUzs(balance);
+  const name = providerName();
+  const addFundsHref = providerAddFundsUrl();
+  const addFunds = addFundsHref ? { text: `${name} balansini to'ldirish`, href: addFundsHref } : undefined;
 
   const [lastRow, levelRow] = await Promise.all([
     db.appSetting.findUnique({ where: { key: LAST_KEY } }),
@@ -57,12 +59,12 @@ export async function checkProviderBalance() {
   const prevStr = lastRow?.value ?? null;
   if (prevStr !== cur && (await swap(LAST_KEY, prevStr, cur))) {
     if (prevStr === null) {
-      await notifyAdmins("system", "🔌 ZOSMM kuzatuvi yoqildi", [`Joriy balans: ${fmt(balance)}`]);
+      await notifyAdmins("system", `🔌 ${name} kuzatuvi yoqildi`, [`Joriy balans: ${fmt(balance)}`]);
     } else {
       const diff = balance - Number(prevStr);
       await notifyAdmins(
         "system",
-        diff > 0 ? "💰 ZOSMM hisobi to'ldirildi" : "➖ ZOSMM hisobidan yechildi",
+        diff > 0 ? `💰 ${name} hisobi to'ldirildi` : `➖ ${name} hisobidan yechildi`,
         [`${diff > 0 ? "+" : "−"}${fmt(Math.abs(diff))}`, `Balans: ${fmt(balance)}`],
       );
     }
@@ -78,13 +80,13 @@ export async function checkProviderBalance() {
     if (await swap(LEVEL_KEY, prevLevel, String(level))) {
       await notifyAdmins(
         "system",
-        level <= 10_000 ? "🚨 ZOSMM balansi tugayapti!" : "⚠️ ZOSMM balansi kamaydi",
+        level <= 10_000 ? `🚨 ${name} balansi tugayapti!` : `⚠️ ${name} balansi kamaydi`,
         [
           `Balans: ${fmt(balance)}`,
           `${num(level)} so'mdan kam qoldi.`,
           "Balans tugasa TayyorrSMM buyurtmalari rad etiladi (mijozlarga pul qaytadi).",
         ],
-        ADD_FUNDS,
+        addFunds,
       );
     }
   } else if (level > Number(prevLevel)) {

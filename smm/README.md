@@ -38,9 +38,9 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 
 | Topik | Nima keladi |
 |---|---|
-| 498 — SMM buyurtmalar | yangi buyurtma, bajarildi / qisman / bekor / rad etildi, ZOSMM javob bermadi |
+| 498 — SMM buyurtmalar | yangi buyurtma, bajarildi / qisman / bekor / rad etildi, provayder javob bermadi |
 | 499 — SMM to'ldirish | Click orqali SMM da to'ldirish (tayyorr.uz Complete webhook'i yozadi, `meta.source = "smm"`) |
-| 500 — SMM tizim balansi | ZOSMM hisobi to'ldirildi / yechildi; 100k/50k/40k/30k/20k/10k so'mdan tushish ogohlantirishi |
+| 500 — SMM tizim balansi | provayder hisobi to'ldirildi / yechildi; 100k/50k/40k/30k/20k/10k so'mdan tushish ogohlantirishi |
 
 Ro'yxatdan o'tish: SMM dagi havola `tayyorr.uz/register?from=smm` — registratsiya logida
 "TayyorrSMM orqali" deb chiqadi va tugagach foydalanuvchi SMM ga qaytadi.
@@ -58,12 +58,13 @@ Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har
 | `AUTH_URL` | `https://smm.tayyorr.uz` |
 | `AUTH_TRUST_HOST` | `true` |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | tayyorr.uz dagi OAuth client |
-| `SMM_PROVIDER_URL` | `https://zosmm.com/api/v2` |
-| `SMM_PROVIDER_KEY` | ZOSMM → Account → API key |
-| `SMM_PROVIDER_RATE_UZS` | ZOSMM narxlari USD da — 1 USD kursi (masalan 12800) |
+| `SMM_PROVIDER_URL` | `https://smmcloud.uk/api/v2` (istalgan Perfect Panel "API v2") |
+| `SMM_PROVIDER_KEY` | provayder → Account → API key |
+| `SMM_PROVIDER_NAME` | ixtiyoriy: xabarlardagi nom (standart — API domeni) |
+| `SMM_PROVIDER_RATE_UZS` | provayder narxlari USD da — 1 USD kursi (masalan 12800) |
 | `SMM_MARKUP` | ustama (1.5 = +50%) |
 | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` | tayyorr.uz dagi Click qiymatlari (secret key shart emas) |
-| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_LOG_GROUP_ID` | tayyorr.uz dagi bilan bir xil — ZOSMM balans ogohlantirishlari |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_LOG_GROUP_ID` | tayyorr.uz dagi bilan bir xil — buyurtma va balans xabarlari |
 | `TELEGRAM_TOPIC_SMM_ORDERS` / `_SYSTEM` | ixtiyoriy: topik id (standart 498 / 500) |
 | `CRON_SECRET` | `/api/cron/sync` uchun |
 | `NEXT_PUBLIC_MAIN_URL` | `https://tayyorr.uz` |

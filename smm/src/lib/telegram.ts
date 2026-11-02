@@ -5,7 +5,7 @@
 const TOPICS = {
   // SMM buyurtmalar
   orders: process.env.TELEGRAM_TOPIC_SMM_ORDERS || "498",
-  // SMM tizim balansi (ZOSMM): to'ldirish, yechilish, ogohlantirishlar
+  // SMM tizim balansi (provayder): to'ldirish, yechilish, ogohlantirishlar
   system: process.env.TELEGRAM_TOPIC_SMM_SYSTEM || "500",
 } as const;
 
