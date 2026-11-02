@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/icons";
@@ -19,12 +20,16 @@ export function SupportChat({
   loggedIn,
   className = "",
   autoFocus = false,
+  closable = false,
 }: {
   loggedIn: boolean;
   className?: string;
   /** popupda — darhol yozish; telefon sahifasida klaviatura o'zi ochilmasin */
   autoFocus?: boolean;
+  /** /support sahifasida — sarlavhada chiqish (✕) tugmasi */
+  closable?: boolean;
 }) {
+  const router = useRouter();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -69,7 +74,7 @@ export function SupportChat({
   return (
     <div className={`flex flex-col overflow-hidden bg-white ${className}`}>
       {/* sarlavha */}
-      <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-4 text-white">
+      <div className="shine flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-4 text-white">
         <span className="grid h-10 w-10 place-items-center rounded-full bg-white/20">
           <Icon name="headset" className="h-5 w-5" />
         </span>
@@ -79,6 +84,16 @@ export function SupportChat({
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> Odatda bir necha daqiqada javob beramiz
           </p>
         </div>
+        {closable && (
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            aria-label="Supportdan chiqish"
+            className="relative z-[2] grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15 transition hover:bg-white/25"
+          >
+            <Icon name="close" className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {loggedIn ? (

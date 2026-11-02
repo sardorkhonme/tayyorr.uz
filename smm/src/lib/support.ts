@@ -4,10 +4,16 @@ import { notifyAdmins } from "@/lib/telegram";
 /**
  * Support chati — tayyorr.uz dagi "tayyorr.uz support" hisobi bilan bitta suhbat
  * (admin paneldagi "Xabarlar" bo'limida ko'rinadi va javob shu yerdan beriladi).
- * tayyorr+ dan yozilgan xabar boshiga belgi qo'yiladi — admin qaysi tizimdan
- * yozilganini darhol ko'radi.
+ * Platformalar ajratilgan (belgi xabar boshida, foydalanuvchiga ko'rsatilmaydi):
+ *   "[tayyorr+]" — faqat tayyorr+ da ko'rinadi (SMM, buyurtmalar, shu yerdan yozilganlar)
+ *   "[all]"      — ikkala platformada (hisob / pul haqida)
+ *   belgisiz     — faqat tayyorr.uz da
+ * tayyorr.uz tomoni: src/lib/message-source.ts.
  */
 export const SOURCE_TAG = "[tayyorr+]";
+export const ALL_TAG = "[all]";
+/** tayyorr+ da ko'rinadigan xabarlar */
+const VISIBLE_HERE = { OR: [{ body: { startsWith: SOURCE_TAG } }, { body: { startsWith: ALL_TAG } }] };
 const SUPPORT_NAME = "tayyorr.uz support";
 const ADMIN_URL = (process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz") + "/sardorxon/admin";
 
@@ -38,7 +44,7 @@ async function getConversation(userId: string, create: boolean) {
 
 export type SupportMessage = { id: string; mine: boolean; body: string; createdAt: string };
 
-const stripTag = (body: string) => body.replace(/^\[tayyorr\+\]\s*/, "");
+const stripTag = (body: string) => body.replace(/^\[(tayyorr\+|all)\]\s*/, "");
 
 /** Suhbat tarixi (oxirgi 60 ta) + support javoblarini o'qilgan deb belgilash. */
 export async function listSupportMessages(userId: string, markRead: boolean) {
@@ -46,7 +52,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
   if (!conv || conv.hiddenFromUsersAt) return { messages: [] as SupportMessage[], unread: 0 };
 
   const rows = await db.message.findMany({
-    where: { conversationId: conv.id, deletedAt: null },
+    where: { conversationId: conv.id, deletedAt: null, ...VISIBLE_HERE },
     orderBy: { createdAt: "desc" },
     take: 60,
     select: { id: true, senderId: true, body: true, createdAt: true, readAt: true, fileName: true },
@@ -54,7 +60,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
   const unread = rows.filter((m) => m.senderId === supportId && !m.readAt).length;
   if (markRead && unread) {
     await db.message.updateMany({
-      where: { conversationId: conv.id, senderId: supportId, readAt: null },
+      where: { conversationId: conv.id, senderId: supportId, readAt: null, ...VISIBLE_HERE },
       data: { readAt: new Date() },
     });
   }
@@ -67,6 +73,21 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
       createdAt: m.createdAt.toISOString(),
     })),
   };
+}
+
+/** Support nomidan foydalanuvchiga xabarnoma — faqat tayyorr+ da ko'rinadi (SMM buyurtmalari va h.k.). */
+export async function sendSupportNotice(userId: string, text: string) {
+  const { conv, supportId } = await getConversation(userId, true);
+  const c = conv!;
+  await db.$transaction(async (tx) => {
+    const msg = await tx.message.create({
+      data: { conversationId: c.id, senderId: supportId, body: `${SOURCE_TAG} ${text}` },
+    });
+    await tx.conversation.update({
+      where: { id: c.id },
+      data: { lastMessageAt: msg.createdAt, deletedByUsersAt: null },
+    });
+  });
 }
 
 /** Foydalanuvchi support'ga yozadi — xabar tayyorr.uz admin paneliga boradi. */

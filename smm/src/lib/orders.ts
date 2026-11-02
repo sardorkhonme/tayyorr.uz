@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { chargeFor, num } from "@/lib/format";
+import { splitServiceName } from "@/lib/kinds";
 import { getPricing, rateFor } from "@/lib/pricing";
 import {
   addOrder,
@@ -8,6 +9,7 @@ import {
   providerName,
   type ProviderStatus,
 } from "@/lib/provider";
+import { sendSupportNotice } from "@/lib/support";
 import { adminUserUrl, notifyAdmins, userLabel } from "@/lib/telegram";
 
 const USER_SELECT = {
@@ -186,12 +188,26 @@ const FINISH_TITLE: Record<string, string> = {
   FAILED: "⛔ SMM buyurtma rad etildi",
 };
 
+const USER_NOTICE: Record<string, (o: { title: string; qty: string; refund: string }) => string> = {
+  COMPLETED: (o) => `✅ Buyurtmangiz bajarildi: ${o.title} — ${o.qty} ta.`,
+  PARTIAL: (o) => `🟡 Buyurtmangiz qisman bajarildi: ${o.title}. Bajarilmagan qism uchun ${o.refund} hamyoningizga qaytarildi.`,
+  CANCELED: (o) => `❌ Buyurtmangiz bekor qilindi: ${o.title}. ${o.refund} hamyoningizga qaytarildi.`,
+  FAILED: (o) => `⛔ Buyurtma qabul qilinmadi: ${o.title}. ${o.refund} hamyoningizga qaytarildi.`,
+};
+
 async function notifyOrderFinished(orderId: string) {
   const o = await db.smmOrder.findUnique({
     where: { id: orderId },
     include: { service: { select: { name: true } }, user: { select: USER_SELECT } },
   });
   if (!o) return;
+  // foydalanuvchiga — faqat tayyorr+ chatida (tayyorr.uz da ko'rinmaydi)
+  const notice = USER_NOTICE[o.status]?.({
+    title: splitServiceName(o.service.name).title,
+    qty: num(o.quantity),
+    refund: som(o.refundAmount ?? 0),
+  });
+  if (notice) await sendSupportNotice(o.userId, notice).catch(() => {});
   await notifyAdmins(
     "orders",
     FINISH_TITLE[o.status] ?? `SMM buyurtma: ${o.status}`,

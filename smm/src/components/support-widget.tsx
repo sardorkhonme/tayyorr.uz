@@ -69,7 +69,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
         type="button"
         onClick={toggle}
         aria-label="Yordam (support)"
-        className="fixed bottom-5 right-5 z-[45] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-xl shadow-violet-500/40 transition hover:shadow-2xl hover:shadow-fuchsia-500/40"
+        className="shine fixed bottom-5 right-5 z-[45] grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-xl shadow-violet-500/40 transition hover:shadow-2xl hover:shadow-fuchsia-500/40"
       >
         <Icon name={open ? "close" : "headset"} className="h-6 w-6" />
         {!open && unread > 0 && (

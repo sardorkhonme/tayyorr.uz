@@ -133,8 +133,13 @@ export function ServicesBoard({
                 className="platform-tile glow-card card flex flex-col items-start gap-4 !rounded-2xl p-5 text-left disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
               >
                 <span
-                  className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
+                  className="shine grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white shadow-lg"
+                  style={
+                    {
+                      background: `linear-gradient(135deg, ${p.from}, ${p.to})`,
+                      "--shine-delay": `${(PLATFORMS.indexOf(p) * 0.35).toFixed(2)}s`,
+                    } as React.CSSProperties
+                  }
                 >
                   <PlatformIcon platform={p.key} className="h-7 w-7" />
                 </span>

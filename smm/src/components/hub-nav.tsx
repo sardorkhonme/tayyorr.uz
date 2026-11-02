@@ -67,7 +67,7 @@ function NavLinks({ user, onNavigate }: { user: HubUser; onNavigate?: () => void
 
 function WalletCard({ user }: { user: NonNullable<HubUser> }) {
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-4 text-white shadow-lg shadow-indigo-500/25">
+    <div className="shine rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-4 text-white shadow-lg shadow-indigo-500/25">
       <p className="flex items-center gap-1.5 text-xs text-indigo-100">
         <Icon name="wallet" className="h-4 w-4" /> Hamyon
       </p>

@@ -85,7 +85,7 @@ export default async function DashboardPage({
         >
           <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
               <Icon name="rocket" className="h-7 w-7" />
             </span>
             {smmCount > 0 && (
@@ -177,7 +177,7 @@ export default async function DashboardPage({
           )}
         </section>
       ) : (
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-7 text-white sm:p-9">
+        <section className="shine relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-7 text-white sm:p-9">
           <h2 className="font-display text-2xl font-bold sm:text-3xl">Bir daqiqada boshlang</h2>
           <p className="mt-2 max-w-lg text-indigo-100">
             Ro&apos;yxatdan o&apos;ting yoki tayyorr.uz hisobingiz bilan kiring — hamyon umumiy.
