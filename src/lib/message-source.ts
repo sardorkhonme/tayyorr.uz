@@ -1,6 +1,6 @@
 /**
  * Xabar qaysi platformaga tegishli — matn boshidagi belgi (foydalanuvchiga ko'rsatilmaydi):
- *   "[tayyorr+]" — faqat tayyorr+ (smm.tayyorr.uz) da: SMM, buyurtmalar, u yerdan yozilganlar
+ *   "[tayyorr+]" — faqat tayyorr+ (plus.tayyorr.uz) da: SMM, buyurtmalar, u yerdan yozilganlar
  *   "[all]"      — ikkala platformada: hisob / pul haqida, admin tanlasa
  *   belgisiz     — faqat tayyorr.uz da
  * Admin har bir xabar ostida kichik status ko'radi. tayyorr+ tomoni: smm/src/lib/support.ts.

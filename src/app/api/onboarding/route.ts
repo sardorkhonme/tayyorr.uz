@@ -164,7 +164,7 @@ export async function POST(req: Request) {
     "registrations",
     fromSmm ? "🆕 Yangi ro'yxatdan o'tish (tayyorr+ orqali)" : "🆕 Yangi ro'yxatdan o'tish",
     [
-      fromSmm ? "Manba: tayyorr+ (smm.tayyorr.uz)" : "",
+      fromSmm ? "Manba: tayyorr+ (plus.tayyorr.uz)" : "",
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
       session.user.email ? `Email: ${session.user.email}` : "",
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
   if (fromSmm) {
     const res = NextResponse.json({
       ok: true,
-      redirect: process.env.SMM_SITE_URL || "https://smm.tayyorr.uz",
+      redirect: process.env.SMM_SITE_URL || "https://plus.tayyorr.uz",
     });
     res.cookies.delete("tyr_src");
     return res;

@@ -12,7 +12,7 @@ const headingFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.AUTH_URL || "https://smm.tayyorr.uz"),
+  metadataBase: new URL(process.env.AUTH_URL || "https://plus.tayyorr.uz"),
   title: {
     default: "tayyorr+ — tayyorr.uz xizmatlari markazi",
     template: "%s — tayyorr+",

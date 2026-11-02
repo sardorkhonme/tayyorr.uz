@@ -16,7 +16,7 @@ import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
 
 const TELEGRAM_URL = "https://t.me/tayyorruz";
-const TAYYORR_PLUS_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
+const TAYYORR_PLUS_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
 
 export const metadata: Metadata = {

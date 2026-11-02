@@ -9,7 +9,7 @@ import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
-const SMM_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
+const SMM_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Navbatda", cls: "text-zinc-300" },

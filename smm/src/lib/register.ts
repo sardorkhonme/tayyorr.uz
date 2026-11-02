@@ -33,7 +33,7 @@ export async function logRegistration(
     "registrations",
     "🆕 Yangi ro'yxatdan o'tish (tayyorr+ orqali)",
     [
-      "Manba: tayyorr+ (smm.tayyorr.uz)",
+      "Manba: tayyorr+ (plus.tayyorr.uz)",
       `Login: @${user.login}`,
       full ? `Ism: ${full}` : "",
       user.email ? `Email: ${user.email}` : "",

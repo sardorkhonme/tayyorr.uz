@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { TERMS_VERSION } from "@/lib/register";
 
 /**
- * smm.tayyorr.uz — alohida sessiya, lekin foydalanuvchilar tayyorr.uz bazasidan
+ * plus.tayyorr.uz — alohida sessiya, lekin foydalanuvchilar tayyorr.uz bazasidan
  * (bitta hisob, bitta hamyon). Ro'yxatdan o'tish tayyorr.uz dagidek faqat Google
  * orqali — yangi User umumiy bazaga yoziladi, profil /onboarding da to'ldiriladi.
  */

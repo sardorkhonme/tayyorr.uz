@@ -10,7 +10,7 @@ import { sendMobilePush } from "@/lib/fcm";
 import { sendPushToUser } from "@/lib/push";
 import { splitSource, stripSource } from "@/lib/message-source";
 
-const PLUS_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
+const PLUS_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
 
 function snippet(m: Message) {
   if (m.deletedAt) return "xabar";

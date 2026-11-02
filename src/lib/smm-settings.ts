@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 
 /**
- * tayyorr+ (smm.tayyorr.uz) narx sozlamalari — umumiy bazadagi AppSetting.
+ * tayyorr+ (plus.tayyorr.uz) narx sozlamalari — umumiy bazadagi AppSetting.
  * Kalitlar smm/src/lib/pricing.ts bilan bir xil bo'lishi shart.
  */
 export const SMM_MARKUP_KEY = "smmMarkupPercent";

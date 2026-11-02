@@ -13,7 +13,7 @@ import {
   verifyCompleteSign,
 } from "@/lib/click";
 
-const SMM_SITE_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
+const SMM_SITE_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
 
 function fail(code: number, extra: Record<string, unknown> = {}) {
   return NextResponse.json({ error: code, error_note: clickErrorNote(code), ...extra });
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
   }
 
   const actionNum = Number(action);
-  // tayyorr+ (smm.tayyorr.uz) da boshlangan to'lov — alohida topik va SMM havolalari
+  // tayyorr+ (plus.tayyorr.uz) da boshlangan to'lov — alohida topik va SMM havolalari
   const fromSmm = meta.source === "smm";
   const payTopic = fromSmm ? "smmTopups" : "payments";
   const smmTag = fromSmm ? " — tayyorr+" : "";

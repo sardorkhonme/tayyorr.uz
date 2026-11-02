@@ -333,14 +333,14 @@ class _MenuPanel extends StatelessWidget {
                               : null,
                           onTap: () => _go(context, it.section),
                         ),
-                        // tayyorr+ (smm.tayyorr.uz) — "Asosiy menyu"dan keyin, saytdagidek
+                        // tayyorr+ (plus.tayyorr.uz) — "Asosiy menyu"dan keyin, saytdagidek
                         if (it.section == AppSection.dashboard)
                           _Row(
                             icon: Icons.auto_awesome_rounded,
                             label: 'tayyorr+',
                             onTap: () {
                               Navigator.of(context).pop();
-                              launchUrl(Uri.parse('https://smm.tayyorr.uz'), mode: LaunchMode.externalApplication);
+                              launchUrl(Uri.parse('https://plus.tayyorr.uz'), mode: LaunchMode.externalApplication);
                             },
                           ),
                       ],

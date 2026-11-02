@@ -1,4 +1,4 @@
-/* tayyorr+ (smm.tayyorr.uz) — push bildirishnomalar service worker */
+/* tayyorr+ (plus.tayyorr.uz) — push bildirishnomalar service worker */
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));

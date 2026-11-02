@@ -1,4 +1,4 @@
-# tayyorr+ — smm.tayyorr.uz
+# tayyorr+ — plus.tayyorr.uz
 
 tayyorr.uz oilasidagi alohida sayt: Instagram, Telegram, TikTok, YouTube va boshqalar uchun
 avtomatik SMM xizmatlari (obunachi, layk, ko'rish…).
@@ -60,7 +60,7 @@ Ro'yxatdan o'tish: SMM dagi havola `tayyorr.uz/register?from=smm` — registrats
 
 Balans [balance-alert.ts](src/lib/balance-alert.ts) da tekshiriladi.
 Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har 10 daqiqa:
-`GET https://smm.tayyorr.uz/api/cron/sync`, header `Authorization: Bearer <CRON_SECRET>`).
+`GET https://plus.tayyorr.uz/api/cron/sync`, header `Authorization: Bearer <CRON_SECRET>`).
 
 ## Env (Vercel → smm loyihasi)
 
@@ -68,7 +68,7 @@ Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har
 |---|---|
 | `DATABASE_URL` | tayyorr.uz bilan **bir xil** |
 | `AUTH_SECRET` | yangi (`openssl rand -base64 32`) |
-| `AUTH_URL` | `https://smm.tayyorr.uz` |
+| `AUTH_URL` | `https://plus.tayyorr.uz` |
 | `AUTH_TRUST_HOST` | `true` |
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | tayyorr.uz dagi OAuth client |
 | `SMM_PROVIDER_URL` | `https://smmcloud.uk/api/v2` (istalgan Perfect Panel "API v2") |
@@ -95,5 +95,5 @@ npm run dev                  # http://localhost:3010
 1. Vercel → Add New Project → shu repo → **Root Directory: `smm`**
    ("Include files outside the root directory" yoqilgan bo'lsin — Prisma sxemasi `../prisma` da).
 2. Env qiymatlarni qo'shing.
-3. Domains → `smm.tayyorr.uz`; DNS da `smm` uchun `CNAME cname.vercel-dns.com`.
-4. Google Cloud Console → OAuth client → redirect URI: `https://smm.tayyorr.uz/api/auth/callback/google`.
+3. Domains → `plus.tayyorr.uz`; DNS da `smm` uchun `CNAME cname.vercel-dns.com`.
+4. Google Cloud Console → OAuth client → redirect URI: `https://plus.tayyorr.uz/api/auth/callback/google`.

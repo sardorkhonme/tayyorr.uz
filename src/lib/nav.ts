@@ -7,9 +7,9 @@ const BASE_NAV: NavLink[] = [
   { href: "/profile", label: "Profil", tkey: "nav.profile", icon: "user" },
 ];
 
-/** tayyorr+ (smm.tayyorr.uz) — umumiy hisob va hamyon bilan qo'shimcha xizmatlar. */
+/** tayyorr+ (plus.tayyorr.uz) — umumiy hisob va hamyon bilan qo'shimcha xizmatlar. */
 const TAYYORR_PLUS_LINK: NavLink = {
-  href: process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://smm.tayyorr.uz",
+  href: process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz",
   label: "tayyorr+",
   icon: "sparkles",
 };
