@@ -102,12 +102,19 @@ class _PlusWebViewScreenState extends State<PlusWebViewScreen> {
             },
           ),
           titleSpacing: 0,
-          title: const Text.rich(
-            TextSpan(children: [
-              TextSpan(text: 'tayyorr'),
-              TextSpan(text: '+', style: TextStyle(color: Color(0xFFD946EF))),
-            ]),
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/logo-mark.png', height: 28, filterQuality: FilterQuality.high),
+              const SizedBox(width: 8),
+              const Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: 'tayyorr'),
+                  TextSpan(text: '+', style: TextStyle(color: Color(0xFFD946EF))),
+                ]),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              ),
+            ],
           ),
           actions: [
             IconButton(

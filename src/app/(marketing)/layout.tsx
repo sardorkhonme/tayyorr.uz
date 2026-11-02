@@ -16,7 +16,7 @@ export default function MarketingLayout({
       <header className="relative z-20">
         <nav className="mx-auto mt-4 flex max-w-5xl items-center justify-between rounded-2xl glass px-5 py-3">
           <Link href="/" aria-label="tayyorr.uz">
-            <Logo className="h-6" markClassName="h-9" />
+            <Logo className="text-2xl" markClassName="h-9" />
           </Link>
           <div className="flex items-center gap-2">
             <Link

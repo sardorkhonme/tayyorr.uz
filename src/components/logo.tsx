@@ -1,10 +1,10 @@
 /*
- * tayyorr.uz logotipi: rangli "T" belgisi + yozuv (yozuv mavzuga qarab almashadi).
- * Belgi yozuvdan ~1.5 baravar baland — markClassName bilan beriladi.
+ * tayyorr.uz logotipi: rangli "T" belgisi + "Tayyorr.uz" yozuvi (asosiy shrift — Space Grotesk).
+ * className — yozuv o'lchami (text-*), markClassName — belgi balandligi.
  */
 export function Logo({
-  className = "h-7",
-  markClassName = "h-10",
+  className = "text-2xl",
+  markClassName = "h-9",
 }: {
   className?: string;
   markClassName?: string;
@@ -19,20 +19,9 @@ export function Logo({
         className={`w-auto shrink-0 object-contain ${markClassName}`}
         draggable={false}
       />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo-dark.png"
-        alt="tayyorr.uz"
-        className={`logo-dark w-auto min-w-0 max-w-full object-contain ${className}`}
-        draggable={false}
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo-light.png"
-        alt="tayyorr.uz"
-        className={`logo-light w-auto min-w-0 max-w-full object-contain ${className}`}
-        draggable={false}
-      />
+      <span className={`whitespace-nowrap font-display font-bold leading-tight tracking-tight text-white ${className}`}>
+        Tayyorr<span className="text-indigo-400">.uz</span>
+      </span>
     </span>
   );
 }

@@ -95,7 +95,7 @@ class WebHeaderBar extends StatelessWidget {
               ],
               GestureDetector(
                 onTap: () => goToSection(context, AppSection.dashboard),
-                child: const AppLogo(height: 16),
+                child: const AppLogo(height: 20),
               ),
               const Spacer(),
               GestureDetector(
@@ -388,11 +388,12 @@ class _PlusCard extends StatelessWidget {
             Container(
               width: 34,
               height: 34,
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: const Icon(Icons.auto_awesome_rounded, size: 18, color: Colors.white),
+              child: Image.asset('assets/logo-mark.png', filterQuality: FilterQuality.high),
             ),
             const SizedBox(width: 10),
             const Expanded(

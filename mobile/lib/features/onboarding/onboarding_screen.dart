@@ -103,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                 padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
                 child: Row(
                   children: [
-                    const AppLogo(height: 18),
+                    const AppLogo(height: 20),
                     const Spacer(),
                     AnimatedOpacity(
                       opacity: isLast ? 0 : 1,

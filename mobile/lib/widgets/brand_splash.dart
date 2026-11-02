@@ -96,7 +96,7 @@ class _BrandSplashState extends State<BrandSplash> with TickerProviderStateMixin
                                     filterQuality: FilterQuality.high,
                                   ),
                                   const SizedBox(height: 16),
-                                  const AppLogo(height: 26, showMark: false),
+                                  const AppLogo(height: 32, showMark: false),
                                 ],
                               ),
                             ),

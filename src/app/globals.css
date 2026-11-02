@@ -186,16 +186,6 @@ html.light [class~="bg-indigo-600"] [class*="bg-white/"] {
 html.light [class~="bg-indigo-600"] [class*="border-white/"] {
   border-color: rgba(255, 255, 255, 0.5) !important;
 }
-/* logotip — mavzuga qarab */
-.logo-light {
-  display: none;
-}
-html.light .logo-light {
-  display: inline-block;
-}
-html.light .logo-dark {
-  display: none;
-}
 
 /* dekorativ orqa fon — yorug'da ham yorug' */
 html.light .aurora-fade {

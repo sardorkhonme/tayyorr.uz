@@ -17,8 +17,8 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
     <main className="min-h-dvh">
       {/* chap — brend paneli (kompyuterda): ekranga qotib turadi, aylanmaydi */}
       <aside className="fixed inset-y-0 left-0 hidden w-[46%] flex-col overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-12 text-white lg:flex">
-        <Link href="/" className="font-display text-2xl font-bold">
-          tayyorr<span className="text-amber-300">+</span>
+        <Link href="/">
+          <Logo className="text-2xl" light />
         </Link>
         <div className="my-auto max-w-md">
           <h2 className="font-display text-4xl font-bold leading-tight">Bitta hisob — ko&apos;p xizmat</h2>

@@ -37,7 +37,7 @@ export function AppHeader({
     <header className="sticky top-0 z-30 px-3 pt-3 sm:px-4 sm:pt-4 lg:hidden">
       <div className="mx-auto flex max-w-4xl items-center gap-3 rounded-2xl border border-white/12 bg-[#0b0b12]/90 px-3 py-2.5 shadow-lg shadow-black/20 backdrop-blur-2xl sm:px-4">
         <Link href="/dashboard" className="shrink-0">
-          <Logo className="h-4 max-w-[60vw] sm:h-6" markClassName="h-7 sm:h-9" />
+          <Logo className="text-xl sm:text-2xl" markClassName="h-8 sm:h-9" />
         </Link>
         <div className="ml-auto flex items-center gap-2.5">
           <Link
