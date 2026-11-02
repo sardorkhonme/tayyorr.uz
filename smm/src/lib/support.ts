@@ -49,7 +49,9 @@ const stripTag = (body: string) => body.replace(/^\[(tayyorr\+|all)\]\s*/, "");
 /** Suhbat tarixi (oxirgi 60 ta) + support javoblarini o'qilgan deb belgilash. */
 export async function listSupportMessages(userId: string, markRead: boolean) {
   const { conv, supportId } = await getConversation(userId, false);
-  if (!conv || conv.hiddenFromUsersAt) return { messages: [] as SupportMessage[], unread: 0 };
+  if (!conv || conv.hiddenFromUsersAt) {
+    return { messages: [] as SupportMessage[], unread: 0, latest: null as string | null };
+  }
 
   const rows = await db.message.findMany({
     where: { conversationId: conv.id, deletedAt: null, ...VISIBLE_HERE },
@@ -57,7 +59,10 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
     take: 60,
     select: { id: true, senderId: true, body: true, createdAt: true, readAt: true, fileName: true },
   });
-  const unread = rows.filter((m) => m.senderId === supportId && !m.readAt).length;
+  const unreadRows = rows.filter((m) => m.senderId === supportId && !m.readAt);
+  const unread = unreadRows.length;
+  // eng yangi o'qilmagan javob — bildirishnoma (toast) uchun
+  const latest = unreadRows[0] ? stripTag(unreadRows[0].body).slice(0, 140) || "Yangi xabar" : null;
   if (markRead && unread) {
     await db.message.updateMany({
       where: { conversationId: conv.id, senderId: supportId, readAt: null, ...VISIBLE_HERE },
@@ -66,6 +71,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
   }
   return {
     unread: markRead ? 0 : unread,
+    latest: markRead ? null : latest,
     messages: rows.reverse().map((m) => ({
       id: m.id,
       mine: m.senderId === userId,
