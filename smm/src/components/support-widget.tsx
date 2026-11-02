@@ -9,7 +9,7 @@ import { SupportChat } from "@/components/support-chat";
 
 /**
  * Pastki o'ng burchakdagi support tugmasi. Kompyuterda — chat oynasi (popup,
- * fon xiralashtirilmaydi), telefonda — alohida /support sahifasi.
+ * fon xiralashtirilmaydi), telefon va planshetda — alohida /support sahifasi.
  */
 export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   const [open, setOpen] = useState(false);
@@ -55,7 +55,8 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   if (pathname === "/support") return null;
 
   function toggle() {
-    if (window.matchMedia("(max-width: 639px)").matches) {
+    // telefon va planshet — alohida sahifa, kompyuter — popup
+    if (window.matchMedia("(max-width: 1023px)").matches) {
       router.push("/support");
       return;
     }

@@ -30,11 +30,11 @@ function Avatar({ user, size = "h-10 w-10" }: { user: NonNullable<HubUser>; size
   );
 }
 
-function NavLinks({ user, onNavigate }: { user: HubUser; onNavigate?: () => void }) {
+function NavLinks({ user, onNavigate, mobile = false }: { user: HubUser; onNavigate?: () => void; mobile?: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1">
-      {HUB_NAV.filter((l) => !l.auth || user).map((l) => {
+      {HUB_NAV.filter((l) => (!l.auth || user) && (mobile || !l.mobileOnly)).map((l) => {
         const active = !l.external && isActive(pathname, l.href);
         const cls = `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition ${
           active ? "bg-gradient-to-r from-indigo-50 to-fuchsia-50 text-indigo-700" : "nav-item text-zinc-600"
@@ -210,7 +210,7 @@ export function HubMobileBar({ user }: { user: HubUser }) {
               ) : (
                 <GuestCard />
               )}
-              <NavLinks user={user} onNavigate={() => setOpen(false)} />
+              <NavLinks user={user} mobile onNavigate={() => setOpen(false)} />
               {user && (
                 <div className="border-t border-zinc-100 pt-2">
                   <SignOut />

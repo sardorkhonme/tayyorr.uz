@@ -8,6 +8,8 @@ export type HubLink = {
   auth?: boolean;
   /** boshqa sayt (tayyorr.uz) */
   external?: boolean;
+  /** faqat telefon/planshet menyusida (kompyuterda support — popup) */
+  mobileOnly?: boolean;
 };
 
 export const MAIN_SITE_URL = process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz";
@@ -18,7 +20,7 @@ export const HUB_NAV: HubLink[] = [
   { href: "/smm", label: "Tayyorr SMM", icon: "rocket" },
   { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
-  { href: "/support", label: "Yordam", icon: "headset" },
+  { href: "/support", label: "Yordam", icon: "headset", mobileOnly: true },
   { href: MAIN_SITE_URL, label: "tayyorr.uz", icon: "external", external: true },
 ];
 

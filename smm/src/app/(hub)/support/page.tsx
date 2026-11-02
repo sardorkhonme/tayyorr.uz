@@ -1,13 +1,15 @@
 import { currentUser } from "@/auth";
+import { DesktopRedirect } from "@/components/desktop-redirect";
 import { SupportChat } from "@/components/support-chat";
 
 export const metadata = { title: "Support" };
 
-/** Support — telefonda butun ekran, kompyuterda kartada. */
+/** Support — telefon va planshet uchun butun ekran (kompyuterda popup ishlatiladi). */
 export default async function SupportPage() {
   const user = await currentUser();
   return (
     <div className="-mx-4 -mb-24 -mt-6 sm:mx-0 sm:mb-0 sm:mt-0">
+      <DesktopRedirect />
       <SupportChat
         loggedIn={!!user}
         closable

@@ -140,6 +140,7 @@ body {
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-pop { animation: pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+@layer components {
 /*
  * Kartalar: hover'da sichqoncha ortidan yuradigan rangli yorug'lik (--mx/--my,
  * GlowPointer yozadi) + gradient chegara + yumshoq rangli soya.
@@ -196,6 +197,7 @@ body {
   background-size: 100% 100%;
   color: #3730a3;
 }
+}
 
 /* platforma bloki */
 .platform-tile {
@@ -229,7 +231,9 @@ body {
   animation: skel-sweep 1.6s ease-in-out infinite;
 }
 
-/* Rangli elementlarda vaqti-vaqti bilan o'tuvchi nur (hamyon kartasi, ikonka bloklari, tugmalar) */
+@layer components {
+/* Rangli elementlarda vaqti-vaqti bilan o'tuvchi nur (hamyon kartasi, ikonka bloklari, tugmalar).
+   @layer components — `fixed` kabi utility klasslar ustun tursin (support tugmasi joyida qolsin). */
 @keyframes shine-sweep {
   0% { transform: translateX(-130%) rotate(20deg); opacity: 0; }
   10% { opacity: 1; }
@@ -253,6 +257,7 @@ body {
   animation-delay: var(--shine-delay, 0s);
   pointer-events: none;
   z-index: 1;
+}
 }
 
 @media (prefers-reduced-motion: reduce) {
