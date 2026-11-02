@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { chargeFor, num } from "@/lib/format";
+import { getPricing, rateFor } from "@/lib/pricing";
 import {
   addOrder,
   fetchStatuses,
@@ -48,7 +49,9 @@ export async function placeOrder(userId: string, serviceId: string, link: string
     throw new OrderError("Hisobingiz vaqtincha cheklangan", 403);
   }
 
-  const charge = chargeFor(service.rate, quantity);
+  const pricing = await getPricing();
+  if (!pricing) throw new OrderError("Narxni hisoblab bo'lmadi, birozdan keyin urinib ko'ring", 503);
+  const charge = chargeFor(rateFor(service.providerRate, pricing), quantity);
   if (charge <= 0) throw new OrderError("Summa noto'g'ri");
 
   const order = await db.$transaction(async (tx) => {

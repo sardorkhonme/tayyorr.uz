@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { num } from "@/lib/format";
+import { getPricing } from "@/lib/pricing";
 import { fetchBalance, providerAddFundsUrl, providerConfigured, providerName } from "@/lib/provider";
 import { notifyAdmins } from "@/lib/telegram";
 
@@ -38,7 +39,7 @@ export async function checkProviderBalance() {
   } catch {
     return null;
   }
-  const fx = Number(process.env.SMM_PROVIDER_RATE_UZS || 0);
+  const fx = (await getPricing())?.fx ?? 0;
   const isUzs = currency === "UZS";
   if (!isUzs && !fx) return null;
   const toUzs = (v: number) => (isUzs ? v : v * fx);

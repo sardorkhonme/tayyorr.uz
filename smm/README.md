@@ -24,6 +24,12 @@ smm/
 
 Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 
+## Narx
+
+`provayder narxi (USD/1000) × dollar kursi × (1 + ustama%)`, 100 so'mgacha yuqoriga yaxlitlanadi
+([pricing.ts](src/lib/pricing.ts)). Kurs — Markaziy bank (cbu.uz), 6 soatda avtomatik yangilanadi.
+Ustama — tayyorr.uz admin → **TayyorrSMM** sahifasi (standart 50%).
+
 ## Pul oqimi
 
 - Buyurtma: `balance >= charge` sharti bilan atomik yechiladi → `WalletTransaction` `SPEND`, `method: "SMM"`.
@@ -61,8 +67,6 @@ Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har
 | `SMM_PROVIDER_URL` | `https://smmcloud.uk/api/v2` (istalgan Perfect Panel "API v2") |
 | `SMM_PROVIDER_KEY` | provayder → Account → API key |
 | `SMM_PROVIDER_NAME` | ixtiyoriy: xabarlardagi nom (standart — API domeni) |
-| `SMM_PROVIDER_RATE_UZS` | provayder narxlari USD da — 1 USD kursi (masalan 12800) |
-| `SMM_MARKUP` | ustama (1.5 = +50%) |
 | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` | tayyorr.uz dagi Click qiymatlari (secret key shart emas) |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_LOG_GROUP_ID` | tayyorr.uz dagi bilan bir xil — buyurtma va balans xabarlari |
 | `TELEGRAM_TOPIC_SMM_ORDERS` / `_SYSTEM` | ixtiyoriy: topik id (standart 498 / 500) |

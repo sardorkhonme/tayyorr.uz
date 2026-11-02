@@ -8,7 +8,9 @@
  * Faqat "Default" turdagi xizmatlar olinadi (havola + miqdor). Izoh, username,
  * so'rovnoma kabi qo'shimcha maydon talab qiladigan turlar hozircha o'tkazib yuboriladi.
  *
- * Narx: provayder rate × SMM_PROVIDER_RATE_UZS × SMM_MARKUP (100 so'mgacha yaxlitlanadi).
+ * Narx saytda har safar joriy kurs (Markaziy bank) va admin ustamasi bo'yicha hisoblanadi
+ * (src/lib/pricing.ts) — bu yerda faqat provayder narxi saqlanadi; `rate` ustuni joriy
+ * sozlamalar bo'yicha ma'lumot uchun yoziladi.
  * Mavjud xizmatning `active`, `sort` va `name` qiymatlariga tegilmaydi
  * (admin bazada o'zgartirgan bo'lsa saqlanadi); yangilari `active: true` bilan qo'shiladi.
  */
@@ -16,11 +18,9 @@ import { PrismaClient } from "@prisma/client";
 
 const url = process.env.SMM_PROVIDER_URL;
 const key = process.env.SMM_PROVIDER_KEY;
-const fx = Number(process.env.SMM_PROVIDER_RATE_UZS || 0);
-const markup = Number(process.env.SMM_MARKUP || 1.5);
 
-if (!url || !key || !fx) {
-  console.error("SMM_PROVIDER_URL, SMM_PROVIDER_KEY va SMM_PROVIDER_RATE_UZS kerak");
+if (!url || !key) {
+  console.error("SMM_PROVIDER_URL va SMM_PROVIDER_KEY kerak");
   process.exit(1);
 }
 
@@ -51,6 +51,14 @@ if (!Array.isArray(list)) {
 }
 
 const db = dry ? null : new PrismaClient();
+
+// joriy kurs va ustama (faqat `rate` ustuni uchun)
+const cbu = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/USD/")
+  .then((r) => r.json())
+  .catch(() => null);
+const fx = Number(cbu?.[0]?.Rate) || 0;
+const markupRow = db ? await db.appSetting.findUnique({ where: { key: "smmMarkupPercent" } }) : null;
+const markup = 1 + (Number(markupRow?.value ?? 50) || 0) / 100;
 let created = 0;
 let updated = 0;
 let skipped = 0;
@@ -75,7 +83,7 @@ for (const s of list) {
     skipped++;
     continue;
   }
-  const rate = Math.max(100, Math.ceil((providerRate * fx * markup) / 100) * 100);
+  const rate = fx ? Math.max(100, Math.ceil((providerRate * fx * markup) / 100) * 100) : 0;
   const common = {
     platform,
     category: String(s.category).slice(0, 200),

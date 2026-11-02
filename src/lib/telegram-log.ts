@@ -31,6 +31,8 @@ const TOPICS = {
   stars: process.env.TELEGRAM_TOPIC_STARS,
   // TayyorrSMM (smm.tayyorr.uz) orqali hamyonni to'ldirish
   smmTopups: process.env.TELEGRAM_TOPIC_SMM_TOPUPS || "499",
+  // TayyorrSMM tizim (provayder balansi, narx sozlamalari)
+  smmSystem: process.env.TELEGRAM_TOPIC_SMM_SYSTEM || "500",
 } as const;
 
 export type LogTopic = keyof typeof TOPICS;

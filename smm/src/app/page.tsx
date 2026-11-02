@@ -4,6 +4,7 @@ import { ServicesBoard } from "@/components/services-board";
 import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
 import { MAIN_URL, som } from "@/lib/format";
+import { getPricing, rateFor } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -13,24 +14,29 @@ export default async function DashboardPage({
   searchParams: Promise<{ topup?: string }>;
 }) {
   const { topup } = await searchParams;
-  const [user, services] = await Promise.all([
+  const [user, rows, pricing] = await Promise.all([
     currentUser(),
     db.smmService.findMany({
       where: { active: true },
-      orderBy: [{ platform: "asc" }, { sort: "asc" }, { rate: "asc" }],
+      orderBy: [{ platform: "asc" }, { sort: "asc" }, { providerRate: "asc" }],
       select: {
         id: true,
         platform: true,
         category: true,
         name: true,
         description: true,
-        rate: true,
+        providerRate: true,
         min: true,
         max: true,
         refill: true,
       },
     }),
+    getPricing(),
   ]);
+  // narx har safar joriy kurs va admin ustamasi bo'yicha hisoblanadi
+  const services = pricing
+    ? rows.map(({ providerRate, ...s }) => ({ ...s, rate: rateFor(providerRate, pricing) }))
+    : [];
 
   const active = user
     ? await db.smmOrder.count({ where: { userId: user.id, status: { in: ["PENDING", "PROCESSING", "IN_PROGRESS"] } } })
