@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
+import { PayoutRejectButton } from "@/components/admin/payout-reject-button";
 import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
 import { Icon } from "@/components/icons";
@@ -106,17 +107,14 @@ export default async function AdminPayouts({
                         className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-500/25"
                         confirmText="Pul kartaga haqiqatan o'tkazildimi?"
                       />
-                      <AdminPostButton
-                        url={`/api/admin/payouts/${p.id}`}
-                        body={{ action: "REJECT" }}
-                        label="O'tkazib bo'lmadi"
-                        className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
-                        confirmText="O'tkazib bo'lmadi — mablag' foydalanuvchiga qaytarilsinmi?"
-                      />
+                      <PayoutRejectButton id={p.id} amountText={`${p.amount.toLocaleString("ru-RU")} so'm`} />
                     </div>
                   )}
                   {p.adminNote && (
-                    <div className="mt-1 text-xs text-zinc-500">{p.adminNote}</div>
+                    <div className="mt-1 text-xs text-zinc-500">
+                      {p.status === "REJECTED" ? "Sabab: " : ""}
+                      {p.adminNote}
+                    </div>
                   )}
                 </td>
               </tr>

@@ -98,7 +98,7 @@ export default async function WalletPage() {
                   </p>
                   <p className="mt-0.5 truncate text-sm text-zinc-500">
                     {dateFmt.format(p.createdAt)} · {p.card.slice(0, 4)} **** {p.card.slice(-4)}
-                    {p.adminNote ? ` · ${p.adminNote}` : ""}
+                    {p.adminNote ? ` · ${p.status === "REJECTED" ? "Sabab: " : ""}${p.adminNote}` : ""}
                   </p>
                 </div>
                 {p.status === "PENDING" && <PayoutCancelButton id={p.id} />}

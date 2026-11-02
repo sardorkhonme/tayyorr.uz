@@ -27,6 +27,10 @@ export async function POST(
     return NextResponse.json({ error: "Noto'g'ri amal" }, { status: 400 });
   }
   const { action, note } = parsed.data;
+  // rad etishda sabab majburiy — foydalanuvchi nega rad etilganini bilishi kerak
+  if (action === "REJECT" && (!note || note.length < 3)) {
+    return NextResponse.json({ error: "Rad etish sababini yozing" }, { status: 400 });
+  }
 
   const p = await db.payoutRequest.findUnique({
     where: { id },
@@ -41,12 +45,16 @@ export async function POST(
     return NextResponse.json({ error: "Allaqachon hal qilingan" }, { status: 400 });
   }
 
+  // holat shartli o'zgaradi — ikki marta bosilsa ham pul ikki marta qaytmaydi
+  const ALREADY = "ALREADY_RESOLVED";
+  try {
   if (action === "PAID") {
     await db.$transaction(async (tx) => {
-      await tx.payoutRequest.update({
-        where: { id },
+      const upd = await tx.payoutRequest.updateMany({
+        where: { id, status: "PENDING" },
         data: { status: "PAID", resolvedAt: new Date(), adminNote: note || null },
       });
+      if (upd.count !== 1) throw new Error(ALREADY);
       await tx.walletTransaction.updateMany({
         where: {
           userId: p.userId,
@@ -59,10 +67,11 @@ export async function POST(
     });
   } else {
     await db.$transaction(async (tx) => {
-      await tx.payoutRequest.update({
-        where: { id },
+      const upd = await tx.payoutRequest.updateMany({
+        where: { id, status: "PENDING" },
         data: { status: "REJECTED", resolvedAt: new Date(), adminNote: note || null },
       });
+      if (upd.count !== 1) throw new Error(ALREADY);
       await tx.user.update({
         where: { id: p.userId },
         data: { balance: { increment: p.amount } },
@@ -86,6 +95,12 @@ export async function POST(
         },
       });
     });
+  }
+  } catch (e) {
+    if (e instanceof Error && e.message === ALREADY) {
+      return NextResponse.json({ error: "Allaqachon hal qilingan" }, { status: 400 });
+    }
+    throw e;
   }
 
   // foydalanuvchiga support xabari + push

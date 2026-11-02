@@ -154,7 +154,7 @@ export default async function WalletPage({
                   </div>
                   <div className="mt-0.5 text-xs text-zinc-500">
                     {shortDateTime(p.createdAt)}
-                    {p.adminNote ? ` · ${p.adminNote}` : ""}
+                    {p.adminNote ? ` · ${p.status === "REJECTED" ? "Sabab: " : ""}${p.adminNote}` : ""}
                   </div>
                 </div>
                 {p.status === "PENDING" && <PayoutCancelButton id={p.id} />}

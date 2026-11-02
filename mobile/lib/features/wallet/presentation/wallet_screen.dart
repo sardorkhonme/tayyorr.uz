@@ -725,7 +725,7 @@ class _PayoutRowState extends State<_PayoutRow> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${shortDateTime(p.createdAt)}${(p.adminNote ?? '').isNotEmpty ? ' · ${p.adminNote}' : ''}',
+                  '${shortDateTime(p.createdAt)}${(p.adminNote ?? '').isNotEmpty ? ' · ${p.status == 'REJECTED' ? 'Sabab: ' : ''}${p.adminNote}' : ''}',
                   style: TextStyle(color: WebC.zinc500, fontSize: 12),
                 ),
               ],
