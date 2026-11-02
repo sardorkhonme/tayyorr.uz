@@ -34,6 +34,13 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
   tasdiqlaydi. Click kabinetida hech narsa o'zgarmaydi.
 - Barcha amallar tayyorr.uz admin → To'lovlar va foydalanuvchi hamyonida ko'rinadi.
 
+## ZOSMM balans ogohlantirishi
+
+[balance-alert.ts](src/lib/balance-alert.ts) — balans 100k / 50k / 40k / 30k / 20k / 10k so'mdan
+pastga tushganda admin Telegram guruhiga bir martadan xabar; to'ldirilgach "to'ldirildi" xabari.
+Tekshiruv: har buyurtmadan keyin va `/api/cron/sync` da (cron-job.org orqali har 10 daqiqa:
+`GET https://smm.tayyorr.uz/api/cron/sync`, header `Authorization: Bearer <CRON_SECRET>`).
+
 ## Env (Vercel → smm loyihasi)
 
 | Kalit | Izoh |
@@ -48,6 +55,8 @@ Prisma sxemasi umumiy: `../prisma/schema.prisma` (`SmmService`, `SmmOrder`).
 | `SMM_PROVIDER_RATE_UZS` | ZOSMM narxlari USD da — 1 USD kursi (masalan 12800) |
 | `SMM_MARKUP` | ustama (1.5 = +50%) |
 | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID` | tayyorr.uz dagi Click qiymatlari (secret key shart emas) |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_LOG_GROUP_ID` | tayyorr.uz dagi bilan bir xil — ZOSMM balans ogohlantirishlari |
+| `TELEGRAM_TOPIC_SMM` | ixtiyoriy: guruhdagi topik id (bo'lmasa `TELEGRAM_TOPIC_PAYMENTS`) |
 | `CRON_SECRET` | `/api/cron/sync` uchun |
 | `NEXT_PUBLIC_MAIN_URL` | `https://tayyorr.uz` |
 

@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { checkProviderBalance } from "@/lib/balance-alert";
 import { db } from "@/lib/db";
 import { OrderError, placeOrder, syncOrders } from "@/lib/orders";
 import { providerConfigured } from "@/lib/provider";
@@ -49,6 +50,8 @@ export async function POST(req: Request) {
   try {
     const { serviceId, link, quantity } = parsed.data;
     const order = await placeOrder(session.user.id, serviceId, link, quantity);
+    // har buyurtmadan keyin provayder balansi (javob qaytgach, foydalanuvchi kutmaydi)
+    after(() => checkProviderBalance());
     const user = await db.user.findUnique({
       where: { id: session.user.id },
       select: { balance: true },

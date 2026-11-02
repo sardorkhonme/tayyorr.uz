@@ -66,3 +66,10 @@ export type ProviderStatus = {
 export function fetchStatuses(ids: number[]) {
   return call<Record<string, ProviderStatus>>({ action: "status", orders: ids.join(",") });
 }
+
+export async function fetchBalance() {
+  const r = await call<{ balance: string | number; currency?: string }>({ action: "balance" });
+  const balance = Number(r.balance);
+  if (!Number.isFinite(balance)) throw new ProviderError("Provayder balansni qaytarmadi");
+  return { balance, currency: (r.currency || "USD").toUpperCase() };
+}
