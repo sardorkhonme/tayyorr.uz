@@ -8,6 +8,7 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { PresencePing } from "@/components/presence-ping";
+import { PushSetup } from "@/components/push-setup";
 import { VisitPing } from "@/components/visit-ping";
 import { NavHistoryTracker } from "@/components/nav-history";
 import { ThemeSync } from "@/components/theme-sync";
@@ -92,6 +93,8 @@ export default async function AppLayout({
           role={u?.role ?? null}
         />
         <PresencePing />
+        {/* bildirishnomaga ruxsat — sayt yopiq bo'lsa ham xabar kelsin */}
+        <PushSetup />
         <VisitPing />
         <NavHistoryTracker />
         <RevealOnScroll />

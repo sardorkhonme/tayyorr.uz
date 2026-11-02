@@ -50,7 +50,17 @@ export async function deliverMessage(m: Message) {
 
   // tayyorr+ ga xos xabar — tayyorr.uz ilovasi/brauzeriga push yubormaymiz (u yerda ko'rinmaydi),
   // Telegram'dagi tugma tayyorr+ ni ochadi
-  const plusOnly = splitSource(m.body).source === "tayyorr+";
+  const source = splitSource(m.body).source;
+  const plusOnly = source === "tayyorr+";
+
+  // tayyorr+ brauzer bildirishnomasi — faqat support xabari tayyorr+ / ikkalasiga bo'lsa
+  if (sender?.isSupport && source !== "tayyorr.uz") {
+    await sendPushToUser(
+      recipientId,
+      { title: SUPPORT_NAME, body: snippet(m), url: "/support", tag: `plus-${m.conversationId}` },
+      ["plus"],
+    ).catch(() => {});
+  }
 
   // mobil ilova (FCM) va brauzer (web-push) — xatosi xabar yuborishni to'xtatmasin
   if (!plusOnly) await Promise.allSettled([

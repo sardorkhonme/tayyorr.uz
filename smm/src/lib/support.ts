@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { sendPlusPush } from "@/lib/push";
 import { notifyAdmins } from "@/lib/telegram";
 
 /**
@@ -94,6 +95,8 @@ export async function sendSupportNotice(userId: string, text: string) {
       data: { lastMessageAt: msg.createdAt, deletedByUsersAt: null },
     });
   });
+  // sayt yopiq bo'lsa ham — brauzer bildirishnomasi
+  await sendPlusPush(userId, { title: SUPPORT_NAME, body: text.slice(0, 140), url: "/support", tag: `plus-${c.id}` }).catch(() => {});
 }
 
 /** Foydalanuvchi support'ga yozadi — xabar tayyorr.uz admin paneliga boradi. */

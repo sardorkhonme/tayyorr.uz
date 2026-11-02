@@ -440,9 +440,11 @@ model PushSubscription {
   endpoint  String   @unique
   p256dh    String
   auth      String
+  // qaysi saytda obuna bo'lingan: "uz" (tayyorr.uz) | "plus" (tayyorr+ — smm.tayyorr.uz)
+  site      String   @default("uz")
   createdAt DateTime @default(now())
 
-  @@index([userId])
+  @@index([userId, site])
 }
 
 /// Mobil ilova (FCM) push tokeni — ilova yopiq bo'lsa ham xabar yetkazish uchun.

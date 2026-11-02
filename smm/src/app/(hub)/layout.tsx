@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth, currentUser } from "@/auth";
 import { AccountNotFound } from "@/components/account-not-found";
 import { HubMobileBar, HubSidebar, type HubUser } from "@/components/hub-nav";
+import { PushPrompt } from "@/components/push-prompt";
 import { SupportWidget } from "@/components/support-widget";
 
 /** tayyorr+ kabineti: chapda panel (kompyuter), tepada popup menyu (telefon). */
@@ -29,6 +30,7 @@ export default async function HubLayout({ children }: { children: React.ReactNod
         <div className="mx-auto w-full max-w-5xl">{children}</div>
       </main>
       <SupportWidget loggedIn={!!user} />
+      {user && <PushPrompt />}
     </div>
   );
 }

@@ -23,11 +23,16 @@ export interface PushPayload {
   tag?: string;
 }
 
-/** Bitta foydalanuvchining barcha qurilmalariga push yuboradi. */
-export async function sendPushToUser(userId: string, payload: PushPayload) {
+export type PushSite = "uz" | "plus";
+
+/**
+ * Foydalanuvchining shu sayt(lar)dagi qurilmalariga push yuboradi.
+ * "uz" — tayyorr.uz, "plus" — tayyorr+ (smm.tayyorr.uz); url shu sayt ichida ochiladi.
+ */
+export async function sendPushToUser(userId: string, payload: PushPayload, sites: PushSite[] = ["uz"]) {
   if (!ensure()) return;
 
-  const subs = await db.pushSubscription.findMany({ where: { userId } });
+  const subs = await db.pushSubscription.findMany({ where: { userId, site: { in: sites } } });
   if (!subs.length) return;
 
   const data = JSON.stringify(payload);

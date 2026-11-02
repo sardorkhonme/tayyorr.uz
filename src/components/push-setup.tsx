@@ -6,6 +6,9 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/components/icons";
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+/** "Keyinroq" bosilgach 3 kun qayta so'ralmaydi */
+const SNOOZE_KEY = "tyr_push_snooze";
+const SNOOZE_MS = 3 * 24 * 3600 * 1000;
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -39,9 +42,15 @@ export function PushSetup() {
     "loading" | "unsupported" | "default" | "granted" | "denied"
   >("loading");
   const [busy, setBusy] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissedState] = useState(false);
+  function setDismissed(v: boolean) {
+    setDismissedState(v);
+    if (v) localStorage.setItem(SNOOZE_KEY, String(Date.now()));
+  }
 
   useEffect(() => {
+    const snoozed = Number(localStorage.getItem(SNOOZE_KEY) || 0);
+    if (Date.now() - snoozed < SNOOZE_MS) setDismissedState(true);
     if (
       typeof window === "undefined" ||
       !("serviceWorker" in navigator) ||

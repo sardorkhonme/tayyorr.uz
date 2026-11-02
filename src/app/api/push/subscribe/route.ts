@@ -23,12 +23,13 @@ export async function POST(req: Request) {
 
   await db.pushSubscription.upsert({
     where: { endpoint },
-    update: { userId: session.user.id, p256dh: keys.p256dh, auth: keys.auth },
+    update: { userId: session.user.id, p256dh: keys.p256dh, auth: keys.auth, site: "uz" },
     create: {
       userId: session.user.id,
       endpoint,
       p256dh: keys.p256dh,
       auth: keys.auth,
+      site: "uz",
     },
   });
 
