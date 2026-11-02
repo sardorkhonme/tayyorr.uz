@@ -13,6 +13,8 @@ export interface NavLink {
   label: string;
   tkey?: string;
   icon: IconName;
+  /** ikonka o'rniga logotip rasmi (masalan tayyorr+ — /plus-mark.png) */
+  image?: string;
   badge?: number;
 }
 
@@ -133,7 +135,12 @@ export function NavMenu({
                         : "text-zinc-300 hover:bg-white/5 hover:pl-4"
                     }`}
                   >
-                    <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
+                    {l.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={l.image} alt="" className="h-5 w-5 shrink-0 object-contain" />
+                    ) : (
+                      <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
+                    )}
                     <span className="flex-1">
                       {l.tkey ? t(l.tkey) : l.label}
                     </span>

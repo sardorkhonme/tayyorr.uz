@@ -105,8 +105,12 @@ export default async function Home() {
           <a href="#imkoniyat" className="transition hover:text-white">
             Imkoniyatlar
           </a>
-          <a href={TAYYORR_PLUS_URL} className="transition hover:text-white">
-            tayyorr<span className="text-fuchsia-400">+</span>
+          <a href={TAYYORR_PLUS_URL} className="inline-flex items-center gap-1.5 transition hover:text-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/plus-mark.png" alt="" className="h-5 w-5 object-contain" />
+            <span>
+              tayyorr<span className="text-fuchsia-400">+</span>
+            </span>
           </a>
           <a href="#ilova" className="transition hover:text-white">
             Ilova
@@ -284,6 +288,8 @@ export default async function Home() {
 
       {/* ---------- bizning xizmatlar (tayyorr+) ---------- */}
       <section id="tayyorr-plus" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/plus-mark.png" alt="tayyorr+" className="blur-in mx-auto mb-5 h-16 w-16 object-contain" />
         <SectionHeading
           kicker="Bizning xizmatlar"
           title="tayyorr+ — bitta hisob, ko'proq imkoniyat"

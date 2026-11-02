@@ -35,7 +35,12 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
                   : "text-zinc-400 hover:bg-white/5 hover:text-white"
               }`}
             >
-              <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
+              {l.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={l.image} alt="" className="h-5 w-5 shrink-0 object-contain" />
+              ) : (
+                <Icon name={l.icon} className="h-[18px] w-[18px] shrink-0" />
+              )}
               <span className="flex-1">{l.label}</span>
               {!!l.badge && l.badge > 0 && (
                 <span className="rounded-full bg-indigo-500 px-1.5 text-xs font-semibold text-white">

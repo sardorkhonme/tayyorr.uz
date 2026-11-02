@@ -59,7 +59,11 @@ export default async function AdminSmm() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold text-white">tayyorr+</h1>
+        <h1 className="flex items-center gap-2 text-xl font-semibold text-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/plus-mark.png" alt="" className="h-7 w-7 object-contain" />
+          tayyorr+
+        </h1>
         <p className="mt-1 text-sm text-zinc-500">
           <a href={SMM_URL} target="_blank" rel="noreferrer" className="text-indigo-400 hover:underline">
             {SMM_URL.replace(/^https?:\/\//, "")}
