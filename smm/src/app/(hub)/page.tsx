@@ -75,7 +75,7 @@ export default async function DashboardPage({
       <section className="grid gap-5 md:grid-cols-2">
         <Link
           href="/smm"
-          className="card group relative flex flex-col overflow-hidden !rounded-3xl p-6 transition hover:-translate-y-1 hover:shadow-xl sm:p-7"
+          className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
         >
           <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">

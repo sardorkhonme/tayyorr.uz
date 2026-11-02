@@ -22,10 +22,10 @@ function GoogleButton({ label }: { label: string }) {
   );
 }
 
-function Divider() {
+function Divider({ label = "yoki" }: { label?: string }) {
   return (
     <div className="my-6 flex items-center gap-3 text-sm text-zinc-400">
-      <span className="h-px flex-1 bg-zinc-200" /> yoki email bilan <span className="h-px flex-1 bg-zinc-200" />
+      <span className="h-px flex-1 bg-zinc-200" /> {label} <span className="h-px flex-1 bg-zinc-200" />
     </div>
   );
 }
@@ -66,12 +66,9 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       <h1 className="font-display text-2xl font-bold text-zinc-900">Xush kelibsiz!</h1>
       <p className="mb-6 mt-1.5 text-zinc-500">tayyorr.uz hisobingiz ham shu yerda ishlaydi.</p>
 
-      <GoogleButton label="Google bilan kirish" />
-      <Divider />
-
       <form action={action} className="space-y-5">
         <div>
-          <label className="label" htmlFor="identifier">Email yoki login</label>
+          <label className="label" htmlFor="identifier">Login yoki email</label>
           <input
             id="identifier"
             name="identifier"
@@ -91,6 +88,9 @@ export function LoginForm({ initialError }: { initialError?: string }) {
         </button>
       </form>
 
+      <Divider />
+      <GoogleButton label="Google bilan kirish" />
+
       <p className="mt-6 text-center text-[15px] text-zinc-500">
         Hisobingiz yo&apos;qmi?{" "}
         <Link href="/register" className="font-semibold text-indigo-600 hover:underline">
@@ -104,13 +104,17 @@ export function LoginForm({ initialError }: { initialError?: string }) {
 export function RegisterForm() {
   return (
     <>
-      <h1 className="font-display text-2xl font-bold text-zinc-900">Hisob yarating</h1>
-      <p className="mb-6 mt-1.5 text-zinc-500">tayyorr.uz va tayyorr+ uchun bitta hisob.</p>
-
-      <GoogleButton label="Google bilan davom etish" />
-      <Divider />
-
-      <ProfileWizard mode="register" />
+      <ProfileWizard
+        mode="register"
+        intro={
+          <>
+            <h1 className="font-display text-2xl font-bold text-zinc-900">Hisob yarating</h1>
+            <p className="mb-6 mt-1.5 text-zinc-500">tayyorr.uz va tayyorr+ uchun bitta hisob.</p>
+            <GoogleButton label="Google bilan davom etish" />
+            <Divider label="yoki email bilan" />
+          </>
+        }
+      />
 
       <p className="mt-6 text-center text-[15px] text-zinc-500">
         Hisobingiz bormi?{" "}

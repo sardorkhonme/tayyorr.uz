@@ -61,7 +61,7 @@ export default async function OrdersPage() {
               const st = STATUS[o.status] ?? STATUS.PENDING;
               const done = o.remains != null ? Math.max(o.quantity - o.remains, 0) : null;
               return (
-                <li key={o.id} className="card flex gap-4 p-5">
+                <li key={o.id} className="card glow-card flex gap-4 p-5">
                   <span
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white"
                     style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}

@@ -126,8 +126,8 @@ export function ServicesBoard({
                   scrollTo(step2.current);
                 }}
                 data-active={active}
-                style={{ "--from": p.from } as React.CSSProperties}
-                className="platform-tile card flex flex-col items-start gap-4 !rounded-2xl p-5 text-left disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
+                style={{ "--from": p.from, "--glow": p.from } as React.CSSProperties}
+                className="platform-tile glow-card card flex flex-col items-start gap-4 !rounded-2xl p-5 text-left disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
               >
                 <span
                   className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white shadow-lg"
@@ -163,10 +163,8 @@ export function ServicesBoard({
                       setShown(PAGE);
                       scrollTo(step3.current);
                     }}
-                    className={`rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 ${
-                      active
-                        ? "border-indigo-500 ring-4 ring-indigo-100"
-                        : "border-zinc-200/80 hover:border-zinc-300 hover:shadow-md"
+                    className={`glow-card rounded-2xl border bg-white p-5 text-left shadow-sm ${
+                      active ? "border-indigo-500 ring-4 ring-indigo-100" : "border-zinc-200/80"
                     }`}
                   >
                     <span className="flex items-center justify-between gap-2">
@@ -211,7 +209,7 @@ export function ServicesBoard({
                       key={s.id}
                       type="button"
                       onClick={() => setSelected(s)}
-                      className="card group flex flex-col gap-4 !rounded-2xl p-5 text-left transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg sm:p-6"
+                      className="card glow-card group flex flex-col gap-4 !rounded-2xl p-5 text-left sm:p-6"
                     >
                       <span className="font-display text-[17px] font-semibold leading-snug text-zinc-900">{s.title}</span>
                       <span className="flex flex-wrap gap-1.5 text-xs">
@@ -234,7 +232,7 @@ export function ServicesBoard({
                           <span className="block font-display text-2xl font-bold text-zinc-900">{som(s.rate)}</span>
                           <span className="text-xs text-zinc-500">har 1000 tasi uchun</span>
                         </span>
-                        <span className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition group-hover:bg-indigo-600 group-hover:text-white">
+                        <span className="rounded-xl bg-indigo-50 bg-[length:200%_100%] px-4 py-2.5 text-sm font-semibold text-indigo-700 transition-all duration-500 group-hover:bg-gradient-to-r group-hover:from-indigo-500 group-hover:via-violet-500 group-hover:to-fuchsia-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-fuchsia-500/30">
                           Tanlash
                         </span>
                       </span>

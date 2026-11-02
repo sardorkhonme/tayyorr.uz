@@ -36,7 +36,7 @@ function NavLinks({ user, onNavigate }: { user: HubUser; onNavigate?: () => void
       {HUB_NAV.filter((l) => !l.auth || user).map((l) => {
         const active = !l.external && isActive(pathname, l.href);
         const cls = `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition ${
-          active ? "bg-indigo-50 text-indigo-700" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          active ? "bg-gradient-to-r from-indigo-50 to-fuchsia-50 text-indigo-700" : "nav-item text-zinc-600"
         }`;
         const inner = (
           <>

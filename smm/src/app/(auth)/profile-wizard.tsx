@@ -54,8 +54,11 @@ export function ProfileWizard({
   mode,
   initial,
   needsPassword = true,
+  intro,
 }: {
   mode: "register" | "complete";
+  /** faqat 1-qadamda, ko'rsatkich ustida (masalan Google tugmasi) */
+  intro?: React.ReactNode;
   initial?: { firstName?: string; lastName?: string; avatar?: string | null };
   needsPassword?: boolean;
 }) {
@@ -130,6 +133,7 @@ export function ProfileWizard({
 
   return (
     <div ref={topRef} className="scroll-mt-6">
+      {step === 1 && intro}
       {/* qadamlar ko'rsatkichi */}
       <div className="mb-6 flex items-center justify-between">
         <span className="text-sm font-semibold text-indigo-600">{step}-qadam / 2</span>
@@ -151,10 +155,10 @@ export function ProfileWizard({
                 key={h.value}
                 type="button"
                 onClick={() => setHear(h.value)}
-                className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-left text-[15px] font-medium transition ${
+                className={`glow-card flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-left text-[15px] font-medium ${
                   hear === h.value
                     ? "border-indigo-500 bg-indigo-50 text-indigo-800 ring-4 ring-indigo-100"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300"
+                    : "border-zinc-200 bg-white text-zinc-700"
                 }`}
               >
                 <span className="text-lg">{h.icon}</span>

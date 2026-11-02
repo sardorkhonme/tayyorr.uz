@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
+import { GlowPointer } from "@/components/glow-pointer";
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -26,7 +27,10 @@ export const viewport: Viewport = { themeColor: "#ffffff" };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uz" className={headingFont.variable}>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <GlowPointer />
+        {children}
+      </body>
     </html>
   );
 }
