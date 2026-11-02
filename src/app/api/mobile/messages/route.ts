@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getSupportUserId } from "@/lib/support";
+import { stripSource } from "@/lib/message-source";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -50,7 +51,7 @@ export async function GET(req: Request) {
         },
         blockedMe: blockedMeBy.has(other.id) && other.id !== supportId,
         lastMessage: last
-          ? { body: last.body, createdAt: last.createdAt.toISOString(), mine: last.senderId === me }
+          ? { body: stripSource(last.body), createdAt: last.createdAt.toISOString(), mine: last.senderId === me }
           : null,
         lastMessageAt: c.lastMessageAt.toISOString(),
         unread,

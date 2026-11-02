@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
 import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
+import { splitSource, stripSource } from "@/lib/message-source";
 
 export default async function AdminMessages({
   searchParams,
@@ -123,7 +124,7 @@ export default async function AdminMessages({
                 <div className="truncate text-sm text-zinc-400">
                   {last
                     ? `${last.senderId === supportId ? "Support: " : ""}${
-                        last.body || "📎 fayl"
+                        (splitSource(last.body).source === "tayyorr+" ? "[tayyorr+] " : "") + (stripSource(last.body) || "📎 fayl")
                       }`
                     : "—"}
                 </div>

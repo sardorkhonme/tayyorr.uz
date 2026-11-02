@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { smartTime } from "@/lib/date";
+import { MessageSourceBadge } from "@/components/message-source-badge";
+import type { MessageSource } from "@/lib/message-source";
 
 interface Msg {
   id: string;
   senderId: string;
   body: string;
+  source?: MessageSource;
   system: boolean;
   createdAt: number;
   edited: boolean;
@@ -90,6 +93,7 @@ export function AdminConversationView({
             id: m.id,
             senderId: m.senderId,
             body: m.body,
+            source: m.source,
             system: m.system,
             createdAt: new Date(m.createdAt).getTime(),
             mine: m.senderId === right.id,
@@ -212,6 +216,7 @@ export function AdminConversationView({
                       m.mine && !m.deleted ? "text-indigo-200" : "text-zinc-500"
                     }`}
                   >
+                    <MessageSourceBadge source={m.source} />
                     {m.edited && "tahrirlangan · "}
                     {fmt(m.createdAt)}
                   </div>

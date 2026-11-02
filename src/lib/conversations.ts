@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
+import { stripSource } from "@/lib/message-source";
 
 export interface ConvRow {
   id: string;
@@ -61,7 +62,7 @@ export async function listConversations(
         isSupport,
         blockedMe,
         unread,
-        lastText: last ? last.body || "📎 fayl" : "Suhbat boshlandi",
+        lastText: last ? stripSource(last.body) || "📎 fayl" : "Suhbat boshlandi",
         lastAt: last ? last.createdAt.toISOString() : null,
         lastMine: last ? last.senderId === meId : false,
       } satisfies ConvRow;

@@ -199,11 +199,11 @@ export function HubMobileBar({ user }: { user: HubUser }) {
             <div className="animate-pop absolute right-3 top-2 max-h-[calc(100dvh-5.5rem)] w-[min(20rem,calc(100vw-1.5rem))] space-y-4 overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-4 shadow-2xl">
               {user ? (
                 <>
+                  {/* balans tepadagi panelda turibdi — menyuda faqat profil */}
                   <div className="flex items-center gap-3 px-1">
                     <Avatar user={user} />
                     <span className="min-w-0 truncate font-semibold text-zinc-900">{user.name}</span>
                   </div>
-                  <WalletCard user={user} />
                 </>
               ) : (
                 <GuestCard />

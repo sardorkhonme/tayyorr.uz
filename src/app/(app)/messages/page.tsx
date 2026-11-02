@@ -7,6 +7,7 @@ import { getT } from "@/lib/i18n-server";
 import { BlockedIcon } from "@/components/icons";
 import { LiveConvBadge } from "@/components/live-conv-badge";
 import { shortDate } from "@/lib/date";
+import { stripSource } from "@/lib/message-source";
 
 function timeAgo(d: Date) {
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
@@ -112,7 +113,7 @@ export default async function MessagesPage() {
                     <span className="truncate text-sm text-zinc-400">
                       {last
                         ? `${last.senderId === me ? "Siz: " : ""}${
-                            last.body || "📎 fayl"
+                            stripSource(last.body) || "📎 fayl"
                           }`
                         : t("msgs.started")}
                     </span>

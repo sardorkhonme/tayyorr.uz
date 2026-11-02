@@ -1,4 +1,5 @@
 import type { Message, MessageReaction } from "@prisma/client";
+import { splitSource, stripSource, type MessageSource } from "@/lib/message-source";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 
@@ -27,6 +28,8 @@ export interface ClientMessage {
   id: string;
   senderId: string;
   body: string;
+  /** qaysi tizimdan yozilgan — faqat admin ko'rinishida ko'rsatiladi */
+  source: MessageSource;
   system: boolean;
   /** tizim xabari tegishli buyurtma */
   orderId: string | null;
@@ -52,7 +55,8 @@ function snippet(m: {
   deletedAt: Date | null;
 }): string {
   if (m.deletedAt) return "o'chirilgan xabar";
-  if (m.body) return m.body.length > 90 ? m.body.slice(0, 90) + "…" : m.body;
+  const body = stripSource(m.body);
+  if (body) return body.length > 90 ? body.slice(0, 90) + "…" : body;
   if (m.fileName) return `📎 ${m.fileName}`;
   return "xabar";
 }
@@ -89,10 +93,12 @@ export async function toClientMessage(
     };
   }
 
+  const { source, body } = splitSource(m.body);
   return {
     id: m.id,
     senderId: m.senderId,
-    body: hideContent ? "" : m.body,
+    body: hideContent ? "" : body,
+    source,
     system: m.system,
     orderId: m.orderId,
     createdAt: m.createdAt.getTime(),
@@ -127,11 +133,13 @@ export async function toSerializedMessage(m: Message) {
       url: await presignGet({ bucket: PRIVATE_BUCKET, key: m.fileKey, expiresIn: 3600 }),
     };
   }
+  const { source, body } = splitSource(m.body);
   return {
     id: m.id,
     conversationId: m.conversationId,
     senderId: m.senderId,
-    body: deleted ? "" : m.body,
+    body: deleted ? "" : body,
+    source,
     system: m.system,
     orderId: m.orderId,
     createdAt: m.createdAt.toISOString(),

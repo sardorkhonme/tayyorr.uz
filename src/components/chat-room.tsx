@@ -17,6 +17,8 @@ import { useUnread } from "@/components/unread-provider";
 import { prepareAdminChatFile, prepareChatFile, type PreparedChatFile } from "@/lib/upload-client";
 import { presenceText } from "@/lib/presence";
 import { shortDateTime, smartTime } from "@/lib/date";
+import { MessageSourceBadge } from "@/components/message-source-badge";
+import type { MessageSource } from "@/lib/message-source";
 
 interface ReplyPreview {
   id: string;
@@ -37,6 +39,8 @@ interface Msg {
   key?: string;
   senderId: string;
   body: string;
+  /** qaysi tizimdan yozilgan — faqat admin (support) ko'rinishida ko'rsatiladi */
+  source?: MessageSource;
   system?: boolean;
   /** tizim xabari tegishli buyurtma */
   orderId?: string | null;
@@ -318,6 +322,7 @@ export function ChatRoom({
               id: m.id,
               senderId: m.senderId,
               body: m.body,
+              source: m.source,
               system: m.system,
               orderId: m.orderId ?? null,
               createdAt: new Date(m.createdAt).getTime(),
@@ -999,6 +1004,7 @@ export function ChatRoom({
                           m.mine ? "text-indigo-200" : "text-zinc-500"
                         }`}
                       >
+                        {asSupport && <MessageSourceBadge source={m.source} />}
                         {m.edited && "tahrirlangan · "}
                         {fmtTime(m.createdAt)}
                         {m.mine && <ReadTicks pending={!!m.pending} read={!!m.readAt || (m.id === lastMineId && peerRead)} />}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { stripSource } from "@/lib/message-source";
 
 /** Mening barcha suhbatlarim: oxirgi xabar + o'qilmaganlar soni. */
 export async function GET() {
@@ -42,7 +43,7 @@ export async function GET() {
           image: other.avatarUrl ?? other.image ?? null,
         },
         lastMessage: last
-          ? { body: last.body, createdAt: last.createdAt, mine: last.senderId === me }
+          ? { body: stripSource(last.body), createdAt: last.createdAt, mine: last.senderId === me }
           : null,
         lastMessageAt: c.lastMessageAt,
         unread,
