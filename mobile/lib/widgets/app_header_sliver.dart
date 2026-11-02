@@ -333,21 +333,19 @@ class _MenuPanel extends StatelessWidget {
                               : null,
                           onTap: () => _go(context, it.section),
                         ),
-                        // tayyorr+ (plus.tayyorr.uz) — "Asosiy menyu"dan keyin, saytdagidek
-                        if (it.section == AppSection.dashboard)
-                          _Row(
-                            icon: Icons.auto_awesome_rounded,
-                            label: 'tayyorr+',
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              launchUrl(Uri.parse('https://plus.tayyorr.uz'), mode: LaunchMode.externalApplication);
-                            },
-                          ),
                       ],
                     ],
                   ),
                 ),
                 divider,
+                // tayyorr+ — saytdagidek menyuning eng pastida, gradient kartochka
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+                  child: _PlusCard(onTap: () {
+                    Navigator.of(context).pop();
+                    launchUrl(Uri.parse('https://plus.tayyorr.uz'), mode: LaunchMode.externalApplication);
+                  }),
+                ),
                 const Padding(
                   padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
                   child: ThemeToggle(bare: true),
@@ -355,6 +353,66 @@ class _MenuPanel extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// tayyorr+ (plus.tayyorr.uz) kartochkasi — gradient fon, saytdagi TayyorrPlusCard bilan bir xil.
+class _PlusCard extends StatelessWidget {
+  const _PlusCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFFD946EF)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFFD946EF).withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 6)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(Icons.auto_awesome_rounded, size: 18, color: Colors.white),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text.rich(
+                    TextSpan(children: [
+                      TextSpan(text: 'tayyorr'),
+                      TextSpan(text: '+', style: TextStyle(color: Color(0xFFFDE68A))),
+                    ]),
+                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(height: 1),
+                  Text('SMM va boshqalar', style: TextStyle(color: Color(0xCCFFFFFF), fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.north_east_rounded, size: 16, color: Color(0xCCFFFFFF)),
+          ],
         ),
       ),
     );

@@ -791,3 +791,25 @@ html.js-reveal .blur-in.reveal-in {
   pointer-events: none;
   animation: msg-flash 1.4s ease-out;
 }
+
+/* tayyorr+ kartochkasi (menyu pastida) — vaqti-vaqti bilan o'tuvchi nur */
+@keyframes plus-card-shine {
+  0% { transform: translateX(-130%) rotate(20deg); opacity: 0; }
+  10% { opacity: 1; }
+  45% { opacity: 1; }
+  60%, 100% { transform: translateX(260%) rotate(20deg); opacity: 0; }
+}
+.plus-card::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent 25%, rgba(255, 255, 255, 0.35) 50%, transparent 75%);
+  animation: plus-card-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plus-card::after { display: none; }
+}

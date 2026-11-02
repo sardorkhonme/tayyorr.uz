@@ -9,6 +9,7 @@ import { Logo } from "@/components/logo";
 import { navForRole } from "@/lib/nav";
 import { useUnread } from "@/components/unread-provider";
 import { StarIcon } from "@/components/icons";
+import { TayyorrPlusCard } from "@/components/tayyorr-plus-card";
 
 export function AppHeader({
   image,
@@ -51,7 +52,12 @@ export function AppHeader({
           </Link>
           <NavMenu
             links={nav}
-            footer={<ThemeToggle bare />}
+            footer={
+              <div className="space-y-1.5">
+                <TayyorrPlusCard compact />
+                <ThemeToggle bare />
+              </div>
+            }
             topSlot={
               starBalance !== null ? (
                 <Link

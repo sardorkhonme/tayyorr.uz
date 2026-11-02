@@ -7,12 +7,8 @@ const BASE_NAV: NavLink[] = [
   { href: "/profile", label: "Profil", tkey: "nav.profile", icon: "user" },
 ];
 
-/** tayyorr+ (plus.tayyorr.uz) — umumiy hisob va hamyon bilan qo'shimcha xizmatlar. */
-const TAYYORR_PLUS_LINK: NavLink = {
-  href: process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz",
-  label: "tayyorr+",
-  icon: "sparkles",
-};
+/** tayyorr+ (plus.tayyorr.uz) — menyuning eng pastida alohida kartochka (TayyorrPlusCard). */
+export const TAYYORR_PLUS_URL = process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz";
 
 const MY_OFFERS_LINK: NavLink = {
   href: "/offers",
@@ -30,9 +26,8 @@ const REFERRAL_LINK: NavLink = {
 
 /** Rolga qarab navigatsiya ro'yxati — "Mening takliflarim" va "Referal" faqat tayyorlovchiga. */
 export function navForRole(role: string | null | undefined): NavLink[] {
-  // tayyorr+ — "Asosiy menyu"dan keyin, ko'zga tashlanib tursin
-  if (role !== "PREPARER") return [BASE_NAV[0], TAYYORR_PLUS_LINK, ...BASE_NAV.slice(1)];
-  return [BASE_NAV[0], TAYYORR_PLUS_LINK, MY_OFFERS_LINK, REFERRAL_LINK, ...BASE_NAV.slice(1)];
+  if (role !== "PREPARER") return BASE_NAV;
+  return [BASE_NAV[0], MY_OFFERS_LINK, REFERRAL_LINK, ...BASE_NAV.slice(1)];
 }
 
 /** Orqaga moslik uchun — rolsiz joylarda standart ro'yxat. */

@@ -10,6 +10,7 @@ import { BalanceAmount } from "@/components/balance-amount";
 import { useLocale } from "@/components/locale-provider";
 import { useUnread } from "@/components/unread-provider";
 import { Icon, StarIcon } from "@/components/icons";
+import { TayyorrPlusCard } from "@/components/tayyorr-plus-card";
 
 export interface SidebarUser {
   name: string | null;
@@ -130,7 +131,8 @@ export function AppSidebar({
         </nav>
       </div>
 
-      <div className="border-t border-white/10 p-3">
+      <div className="space-y-2 border-t border-white/10 p-3">
+        <TayyorrPlusCard />
         <ThemeToggle />
       </div>
     </aside>
