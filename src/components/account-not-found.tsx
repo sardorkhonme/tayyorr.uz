@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "next-auth/react";
 import { AuthShell } from "@/components/auth-shell";
 import { Icon } from "@/components/icons";
 
@@ -11,7 +10,7 @@ export function AccountNotFound() {
   async function handleRetry() {
     setBusy(true);
     // Eski/o'chirilgan hisob sessiyasini tozalab, login sahifasiga yo'naltiramiz
-    await signOut({ callbackUrl: "/login" });
+    window.location.href = "/api/sso/logout";
   }
 
   return (

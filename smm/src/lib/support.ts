@@ -16,7 +16,8 @@ export const ALL_TAG = "[all]";
 /** tayyorr+ da ko'rinadigan xabarlar */
 const VISIBLE_HERE = { OR: [{ body: { startsWith: SOURCE_TAG } }, { body: { startsWith: ALL_TAG } }] };
 const SUPPORT_NAME = "tayyorr.uz support";
-const ADMIN_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://tayyorr.uz") + "/sardorxon/admin";
+/** admin panel — alohida loyiha (admin.tayyorr.uz) */
+const ADMIN_URL = (process.env.NEXT_PUBLIC_ADMIN_URL || "https://admin.tayyorr.uz").replace(/\/+$/, "");
 
 let cachedId: string | null = null;
 

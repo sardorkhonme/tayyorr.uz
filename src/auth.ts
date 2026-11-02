@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { authConfig } from "@/auth.config";
 import { logActivity } from "@/lib/activity";
 import { googleBirthdayEnabled, saveGoogleBirthday } from "@/lib/birthday";
+import { verifySso } from "@/lib/sso";
 
 const credentialsSchema = z.object({
   login: z.string().min(3),
@@ -19,6 +20,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   providers: [
     ...authConfig.providers,
+    // umumiy kirish: plus.tayyorr.uz da kirgan foydalanuvchi (`.tayyorr.uz` SSO belgisi orqali)
+    Credentials({
+      id: "sso",
+      credentials: { token: { type: "text" } },
+      async authorize(raw) {
+        const userId = await verifySso(typeof raw?.token === "string" ? raw.token : null);
+        if (!userId) return null;
+        const user = await db.user.findUnique({ where: { id: userId } });
+        if (!user) return null;
+        await logActivity(user.id, "AUTH_LOGIN", "tayyorr+ orqali kirdi");
+        return {
+          id: user.id,
+          name: user.name ?? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+          email: user.email,
+          image: user.avatarUrl ?? user.image,
+        };
+      },
+    }),
     Credentials({
       credentials: {
         login: { label: "Login yoki email", type: "text" },

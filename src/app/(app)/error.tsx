@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
 import { Icon } from "@/components/icons";
 
 export default function AppError({
@@ -20,7 +19,7 @@ export default function AppError({
 
   async function handleRelogin() {
     setBusy(true);
-    await signOut({ callbackUrl: "/login" });
+    window.location.href = "/api/sso/logout";
   }
 
   const isUserNotFound =

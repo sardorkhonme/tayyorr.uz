@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { APP_URL } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 
 /**
  * Admin loglar guruhi — @tayyorrworkbot orqali (mavjud, kanalga buyurtma
@@ -11,8 +11,6 @@ import { APP_URL } from "@/lib/site";
  */
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const GROUP_ID = process.env.TELEGRAM_LOG_GROUP_ID;
-// havolalar kabinetga (app.tayyorr.uz) — landing faqat tanishtiradi
-const SITE = APP_URL.replace(/\/+$/, "");
 
 const TOPICS = {
   registrations: process.env.TELEGRAM_TOPIC_REGISTRATIONS,
@@ -40,7 +38,7 @@ function esc(s: string): string {
 }
 
 export function siteUrl(path: string): string {
-  return `${SITE}${path.startsWith("/") ? path : `/${path}`}`;
+  return absoluteUrl(path);
 }
 
 /** Foydalanuvchini guruh logida tanib olish uchun qisqa yorliq: "Ism Familiya · @login". */

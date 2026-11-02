@@ -15,15 +15,13 @@ export type HubLink = {
 };
 
 /** tayyorr.uz kabineti (ilmiy ishlar) — app.tayyorr.uz; tayyorr.uz o'zi faqat landing. */
-export const MAIN_SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://tayyorr.uz";
+export const MAIN_SITE_URL = `${process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz"}/dashboard`;
 
-/** tayyorr+ navigatsiyasi — yangi xizmat qo'shilsa shu ro'yxatga qo'shiladi. */
+/** tayyorr+ navigatsiyasi — asosiy panel: faqat eng kerakli bo'limlar. */
 export const HUB_NAV: HubLink[] = [
   { href: "/", label: "Asosiy", icon: "home" },
-  { href: "/smm", label: "Tayyorr SMM", icon: "rocket", image: "/smm-mark.png" },
-  { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
-  { href: "/support", label: "Yordam", icon: "headset", mobileOnly: true },
+  { href: "/account", label: "Hisoblar", icon: "users", auth: true },
 ];
 
 export function isActive(pathname: string, href: string) {

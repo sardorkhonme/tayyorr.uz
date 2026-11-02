@@ -17,7 +17,8 @@ const TOPICS = {
 
 export type SmmTopic = keyof typeof TOPICS;
 
-const ADMIN_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://tayyorr.uz") + "/sardorxon/admin";
+/** admin panel — alohida loyiha (admin.tayyorr.uz) */
+const ADMIN_URL = (process.env.NEXT_PUBLIC_ADMIN_URL || "https://admin.tayyorr.uz").replace(/\/+$/, "");
 
 export function adminUserUrl(userId: string) {
   return `${ADMIN_URL}/users/${userId}`;

@@ -1,12 +1,10 @@
 import { after } from "next/server";
 
 import { db } from "@/lib/db";
-import { APP_URL } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 
 const TOKEN = process.env.TELEGRAM_NOTIFY_BOT_TOKEN;
 const BOT_USERNAME = process.env.TELEGRAM_NOTIFY_BOT_USERNAME || "tayyorr_xabarnoma_bot";
-// havolalar kabinetga (app.tayyorr.uz) — landing faqat tanishtiradi
-const SITE = APP_URL.replace(/\/+$/, "");
 
 /** Botning ochiq (hammaga bir xil) manzili — akkaunt ulash email+kod orqali botning o'zida sodir bo'ladi. */
 export function botLink(): string {
@@ -106,5 +104,5 @@ export async function sendTelegramToUsers(
 }
 
 export function siteUrl(path: string): string {
-  return `${SITE}${path.startsWith("/") ? path : `/${path}`}`;
+  return absoluteUrl(path);
 }

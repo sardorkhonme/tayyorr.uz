@@ -1,0 +1,805 @@
+@import "tailwindcss";
+
+/* sarlavhalar uchun asosiy (display) shrift — logotipdagi uchli/texnik uslub (next/font orqali) */
+@theme inline {
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  /* auto -> auto o'lchamlar orasida silliq o'tish (qo'llab-quvvatlagan brauzerda) */
+  interpolate-size: allow-keywords;
+}
+
+/* e'lon tugmasi — yozuv o'zgarganда o'lchami silliq kattaradi/kichrayadi */
+.ann-btn {
+  transition:
+    width 0.42s cubic-bezier(0.33, 1, 0.68, 1),
+    height 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ann-btn {
+    transition: none;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background: #08080d;
+  color: #e4e4e7;
+}
+
+/* ================= yorug' rejim ================= */
+html.light {
+  color-scheme: light;
+}
+html.light body {
+  background: #f3f3f5;
+  color: #1b1b1f;
+}
+/* asosiy sirtlar */
+html.light .card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+html.light .input,
+html.light select.input,
+html.light textarea.input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.14);
+  color: #1b1b1f;
+}
+html.light .glass,
+html.light .glass-strong {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+html.light .btn-ghost {
+  background: rgba(0, 0, 0, 0.04);
+  color: #3f3f46;
+}
+html.light .btn-white {
+  background: #18181b;
+  color: #fff;
+}
+html.light .menu-panel {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1b1b1f;
+}
+/* yorug' rejim: modal / popup orqa foni — fon o'qishga xalaqit bermasin */
+html.light .fixed.inset-0[class*="bg-black/"] {
+  background-color: rgba(228, 228, 233, 0.66) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  backdrop-filter: blur(14px) saturate(1.05);
+}
+/* rasm ko'ruvchi (lightbox) qorong'i qoladi */
+html.light .fixed.inset-0[class*="bg-black/9"] {
+  background-color: rgba(24, 24, 27, 0.92) !important;
+}
+/* dark rejimda ham modal orqa foni biroz kuchliroq xira bo'lsin */
+.fixed.inset-0[class*="bg-black/6"],
+.fixed.inset-0[class*="bg-black/7"] {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+/* qattiq kodlangan panel foni (header/sidebar/menyu) */
+html.light [class*="bg-[#0b0b12]"],
+html.light [class*="bg-[#08080d]"],
+html.light [class*="bg-[#14141b]"],
+html.light [class*="bg-[#0e0e16]"] {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+/* matn ranglari */
+html.light .text-white {
+  color: #18181b;
+}
+html.light .text-zinc-100,
+html.light .text-zinc-200,
+html.light .text-zinc-300 {
+  color: #27272a;
+}
+html.light .text-zinc-400,
+html.light .text-zinc-500 {
+  color: #52525b;
+}
+html.light .text-zinc-600 {
+  color: #71717a;
+}
+html.light .text-emerald-300,
+html.light .text-emerald-400 {
+  color: #047857;
+}
+html.light .text-red-300,
+html.light .text-red-400 {
+  color: #dc2626;
+}
+html.light .text-amber-200,
+html.light .text-amber-300 {
+  color: #b45309;
+}
+html.light .text-indigo-300,
+html.light .text-indigo-400 {
+  color: #4338ca;
+}
+html.light .text-sky-100,
+html.light .text-sky-200,
+html.light .text-sky-300,
+html.light .text-sky-400 {
+  color: #0369a1;
+}
+/* oq asosli DOIMIY fonlar -> juda yengil kulrang (hover-only'lar tegilmaydi) */
+html.light
+  [class*="bg-white/"]:not([class*="hover:bg-white"]):not(
+    [class*="group-hover:bg-white"]
+  ):not([class*="bg-indigo"]) {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+/* hover fonlari faqat hover paytida */
+html.light [class*="hover:bg-white/"]:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+html.light [class*="border-white/"] {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+html.light [class*="divide-white/"] > * + * {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* tanlangan / faol (yarim shaffof indigo) — ko'kroq fon + ko'k matn */
+html.light [class*="bg-indigo-500/"],
+html.light [class*="bg-indigo-400/"] {
+  background-color: rgba(79, 70, 229, 0.16) !important;
+  color: #3730a3 !important;
+}
+/* to'liq rangli tugma/nishonlarda matn oq qoladi */
+html.light .btn-primary,
+html.light [class~="bg-indigo-500"],
+html.light [class~="bg-indigo-600"],
+html.light [class~="bg-emerald-500"],
+html.light [class~="bg-red-500"] {
+  color: #fff !important;
+}
+html.light [class~="bg-indigo-500"] {
+  background-color: #4f46e5 !important;
+}
+/* chat: o'zim yuborgan indigo pufak — yorug'da ham ichi och rangda o'qiladi */
+html.light [class~="bg-indigo-600"] {
+  background-color: #4f46e5 !important;
+}
+html.light [class~="bg-indigo-600"] .text-white,
+html.light [class~="bg-indigo-600"] [class*="text-zinc-"],
+html.light [class~="bg-indigo-600"] [class*="text-indigo-"] {
+  color: #eef2ff !important;
+}
+html.light [class~="bg-indigo-600"] a {
+  color: #bae6fd !important;
+}
+/* pufak ichidagi oq-shaffof fon/chegara (reply blok, reaksiya chipi) — och qoladi */
+html.light [class~="bg-indigo-600"] [class*="bg-white/"] {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+}
+html.light [class~="bg-indigo-600"] [class*="border-white/"] {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* dekorativ orqa fon — yorug'da ham yorug' */
+html.light .aurora-fade {
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(243, 243, 245, 0.5),
+    #f3f3f5
+  ) !important;
+}
+html.light .blob {
+  opacity: 0.1 !important;
+}
+html.light .bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+/* ================= shared UI primitives (dark) ================= */
+
+.btn,
+.btn-primary,
+.btn-ghost,
+.btn-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  transition: filter 0.15s ease, background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+  cursor: pointer;
+}
+.btn:disabled,
+.btn-primary:disabled,
+.btn-ghost:disabled,
+.btn-white:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.btn-primary {
+  background: linear-gradient(180deg, #6366f1, #4f46e5);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 26px -14px rgba(79, 70, 229, 0.8);
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-white {
+  background: #fafafa;
+  color: #09090b;
+}
+.btn-white:hover {
+  background: #e4e4e7;
+}
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d4d4d8;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.875rem;
+  color: #e4e4e7;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input::placeholder {
+  color: #71717a;
+}
+.input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+select.input option {
+  background: #141419;
+  color: #e4e4e7;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #a1a1aa;
+}
+
+.card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  padding: 1.25rem;
+}
+
+/* ================= landing / decorative ================= */
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 62px 62px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 75% 55% at 50% 0%,
+    #000 30%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 75% 55% at 50% 0%,
+    #000 30%,
+    transparent 100%
+  );
+}
+
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+@keyframes float-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24px, -48px, 0) scale(1.12); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-40px, 32px, 0) scale(1.08); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(36px, 28px, 0) scale(1.15); }
+}
+@keyframes sheen {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float-a { animation: float-a 16s ease-in-out infinite; }
+.animate-float-b { animation: float-b 21s ease-in-out infinite; }
+.animate-float-c { animation: float-c 25s ease-in-out infinite; }
+.animate-rise { animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes phone-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.phone-float { animation: phone-float 6s ease-in-out infinite; }
+
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.glass-strong {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
+}
+
+/* ================= minimal glassmorphism (landing) ================= */
+/* Klassik shisha panel: yupqa chegara + xira fon + blur. Ortiqcha
+   effektlarsiz (yaltiroq qatlam, rang o'yini, 3D) — faqat landingda ishlatiladi. */
+.lq-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+.lq-glass:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.07);
+}
+.lq-glass-strong {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.13);
+  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
+}
+/* flash-xavfsizlik: JS ForceDark ishga tushmasidan oldingi kadr uchun */
+html.light .lq-glass,
+html.light .lq-glass-strong {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 32px -16px rgba(0, 0, 0, 0.16) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lq-glass {
+    transition: none;
+  }
+  .lq-glass:hover {
+    transform: none;
+  }
+}
+
+/* hero maketidagi doimiy sirpanuvchi yorug'lik (HeroMockup) —
+   chetlarda yumshoq so'nadi, sikl oxirida to'satdan yo'qolmaydi/sakramaydi */
+@keyframes hero-shimmer-sweep {
+  0% { transform: translateX(-130%) rotate(20deg); opacity: 0; }
+  12% { opacity: 1; }
+  55% { opacity: 1; }
+  88% { opacity: 0; }
+  100% { transform: translateX(230%) rotate(20deg); opacity: 0; }
+}
+.hero-shimmer {
+  position: absolute;
+  inset: -20% -50%;
+  width: 40%;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.14) 50%,
+    transparent 70%
+  );
+  animation: hero-shimmer-sweep 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-shimmer {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Skeleton-loading — heroning "nurli chiziq"iga o'xshash harakatlanuvchi
+   yorug' chiziq. Nur o'ngga qiya ("/" ko'rinishida) va qutichalarda
+   fondan bilinib turadigan ingichka chegara bor (mobil ilova bilan bir xil). */
+@keyframes skel-sweep {
+  0% { transform: translateX(-60%); }
+  100% { transform: translateX(60%); }
+}
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.skel::after {
+  content: "";
+  position: absolute;
+  inset: 0 -100%;
+  transform: translateX(-60%);
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.16) 50%,
+    transparent 60%
+  );
+  animation: skel-sweep 1.7s ease-in-out infinite;
+}
+html.light .skel {
+  background: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09);
+}
+html.light .skel::after {
+  background: linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(99, 102, 241, 0.2) 50%,
+    transparent 60%
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel::after {
+    animation: none;
+  }
+}
+
+/* hero maketidagi slaydlar orasidagi o'tish — blur bilan silliq */
+.hero-slide {
+  transition:
+    opacity 0.38s ease,
+    filter 0.38s ease;
+}
+.hero-slide.out {
+  opacity: 0;
+  filter: blur(10px);
+}
+.hero-slide.in {
+  opacity: 1;
+  filter: blur(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide {
+    transition: none;
+  }
+}
+
+/* dumaloq blur tugma — hover qilinganda kenglik ochilib yozuv chiqadi
+   (video "boshlash" / "qayta boshlash" tugmalari uchun) */
+.hover-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 0.9rem;
+  transition:
+    padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease,
+    backdrop-filter 0.3s ease;
+}
+.hover-pill-label {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  margin-left: 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition:
+    max-width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease,
+    margin-left 0.35s ease;
+}
+button:hover .hover-pill {
+  padding-right: 1.15rem;
+  background: rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+button:hover .hover-pill-label {
+  max-width: 9rem;
+  opacity: 1;
+  margin-left: 0.55rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-pill,
+  .hover-pill-label {
+    transition: none;
+  }
+}
+
+/* FAQ akkordeoni — javob ochilganda balandligi va bluri silliq animatsiyalanadi */
+.faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  filter: blur(6px);
+  transition:
+    grid-template-rows 0.4s ease,
+    opacity 0.35s ease,
+    filter 0.35s ease;
+}
+.faq-panel.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  filter: blur(0);
+}
+.faq-panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-panel {
+    transition: none;
+  }
+}
+
+/* hero fon videosi — telefonda pastga, kompyuterda o'ng chetga qarab
+   xiralashib fonga singib ketadi */
+.hero-video-mask {
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
+}
+@media (min-width: 640px) {
+  .hero-video-mask {
+    -webkit-mask-image: linear-gradient(to right, black 0%, black 55%, transparent 100%);
+    mask-image: linear-gradient(to right, black 0%, black 55%, transparent 100%);
+  }
+}
+
+/* ---- nav menu ---- */
+@keyframes menu-in {
+  from { opacity: 0; filter: blur(6px); transform: translateY(-10px) scale(0.94); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+}
+@keyframes menu-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-8px) scale(0.96); }
+}
+@keyframes menu-item-in {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes menu-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.menu-panel {
+  transform-origin: top right;
+  animation: menu-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.menu-panel.closing {
+  animation: menu-out 0.16s ease-in both;
+}
+.menu-backdrop {
+  animation: menu-backdrop-in 0.2s ease both;
+}
+.menu-item {
+  animation: menu-item-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 0.04s);
+}
+
+/* e'lon karusel indikatori */
+@keyframes ann-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.animate-ann-progress {
+  animation: ann-progress 6.5s linear both;
+}
+/* e'lon indikatori — mavzuга qarab kontrastли */
+.ann-ind {
+  background: rgba(255, 255, 255, 0.28);
+}
+.ann-ind-past {
+  background: rgba(255, 255, 255, 0.6);
+}
+.ann-ind-fill {
+  background: #ffffff;
+}
+html.light .ann-ind {
+  background: rgba(49, 46, 129, 0.25);
+}
+html.light .ann-ind-past {
+  background: rgba(49, 46, 129, 0.55);
+}
+html.light .ann-ind-fill {
+  background: #4338ca;
+}
+.ann-nav {
+  font-size: 18px;
+  line-height: 1;
+  /* barmoq bilan bosish oson bo'lsin — ko'rinishi kichik, bosiladigan joyi katta */
+  padding: 6px 10px;
+  margin: -6px -4px;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.15s;
+}
+.ann-nav:hover {
+  color: #fff;
+}
+html.light .ann-nav {
+  color: rgba(49, 46, 129, 0.6);
+}
+html.light .ann-nav:hover {
+  color: #312e81;
+}
+@keyframes ann-rise {
+  from { opacity: 0; filter: blur(8px); transform: translateY(12px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+.ann-rise {
+  animation: ann-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--d, 0) * 1ms);
+}
+
+/* umumiy "blur bilan paydo bo'lish" — xabarlar, kartalar, popuplar */
+:root { --bi: 7px; }
+html.light { --bi: 13px; }
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(var(--bi, 7px)); transform: translateY(10px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+.blur-in {
+  animation: blur-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* JS bor bo'lsa: element ko'rinishga kirmaguncha yashirin, keyin ketma-ket ochiladi */
+html.js-reveal .blur-in {
+  opacity: 0;
+  animation: none;
+}
+html.js-reveal .blur-in.reveal-in {
+  animation: blur-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--rd, 0ms);
+}
+
+/* popup / modal — ochilishi bilan darhol (scrollga bog'liq emas) */
+.pop-in {
+  animation: blur-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ro'yxat filtr/saralashдан keyin darhol ketma-ket ochiladi */
+.blur-in-now {
+  animation: blur-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--rd, 0ms);
+}
+
+/* harfma-harf blur bilan paydo bo'lish / yo'qolish
+   (transform/translate ishlatilmaydi — matn hech qachon qiyshaymaydi) */
+@keyframes blur-char-in {
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
+}
+@keyframes blur-char-out {
+  from { opacity: 1; filter: blur(0); }
+  to { opacity: 0; filter: blur(8px); }
+}
+.blur-char {
+  display: inline-block;
+  white-space: pre;
+  vertical-align: baseline;
+}
+.blur-char.in {
+  animation: blur-char-in 0.38s ease-out both;
+}
+.blur-char.out {
+  animation: blur-char-out 0.3s ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-a,
+  .animate-float-b,
+  .animate-float-c,
+  .animate-rise,
+  .phone-float,
+  .text-sheen,
+  .menu-panel,
+  .menu-panel.closing,
+  .menu-item,
+  .menu-backdrop,
+  .ann-rise,
+  .blur-in,
+  .blur-in-now,
+  .pop-in,
+  .blur-char,
+  .blur-char.in,
+  .blur-char.out,
+  html.js-reveal .blur-in,
+  html.js-reveal .blur-in.reveal-in {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* chatda javob iqtibosi bosilganda asl xabar "lip-lip" yonadi */
+@keyframes msg-flash {
+  0% { background-color: rgba(99, 102, 241, 0); }
+  14% { background-color: rgba(99, 102, 241, 0.28); }
+  30% { background-color: rgba(99, 102, 241, 0.1); }
+  44% { background-color: rgba(99, 102, 241, 0.28); }
+  100% { background-color: rgba(99, 102, 241, 0); }
+}
+/* Nur alohida qatlamda (::before) — xabar qatoridagi blur-in/reveal animatsiyasi uni bekor qilmasin.
+   Mobil ilovadagi _FlashHighlight bilan bir xil: indigo, ikki marta yonadi, 1.4s. */
+.msg-flash {
+  position: relative;
+  isolation: isolate;
+}
+.msg-flash::before {
+  content: "";
+  position: absolute;
+  inset: -4px -6px;
+  z-index: -1;
+  border-radius: 1rem;
+  pointer-events: none;
+  animation: msg-flash 1.4s ease-out;
+}
+
+/* tayyorr+ kartochkasi (menyu pastida) — vaqti-vaqti bilan o'tuvchi nur */
+@keyframes plus-card-shine {
+  0% { transform: translateX(-130%) rotate(20deg); opacity: 0; }
+  10% { opacity: 1; }
+  45% { opacity: 1; }
+  60%, 100% { transform: translateX(260%) rotate(20deg); opacity: 0; }
+}
+.plus-card::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent 25%, rgba(255, 255, 255, 0.35) 50%, transparent 75%);
+  animation: plus-card-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .plus-card::after { display: none; }
+}

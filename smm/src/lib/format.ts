@@ -13,4 +13,4 @@ export function chargeFor(rate: number, quantity: number) {
 
 export const MAIN_URL = process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz";
 /** tayyorr.uz kabineti (buyurtmalar, hamyon, admin) */
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://tayyorr.uz";
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz";
