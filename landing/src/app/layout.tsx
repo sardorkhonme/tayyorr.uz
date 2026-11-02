@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 
 import "./globals.css";
 import { SITE_URL } from "@/lib/links";
 
-const heading = Space_Grotesk({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-heading", display: "swap" });
-const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+// shriftlar loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
+const heading = localFont({ src: "../fonts/SpaceGrotesk.woff2", weight: "500 700", variable: "--font-heading", display: "swap" });
+const body = localFont({ src: "../fonts/Inter.woff2", weight: "400 700", variable: "--font-body", display: "swap" });
 
 const TITLE = "Tayyorr.uz — ilmiy ishlar, SMM va boshqa xizmatlar bitta hisobda";
 const DESCRIPTION =

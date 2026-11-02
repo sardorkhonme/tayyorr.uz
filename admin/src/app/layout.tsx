@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const headingFont = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+// shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
+const headingFont = localFont({
+  src: "../fonts/SpaceGrotesk.woff2",
+  weight: "500 700",
   variable: "--font-heading",
   display: "swap",
 });
