@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { Icon } from "@/components/icons";
 import { num, som } from "@/lib/format";
 
 const QUICK = [10_000, 25_000, 50_000, 100_000, 200_000];
@@ -78,7 +79,7 @@ function TopupDialog({ onClose }: { onClose: () => void }) {
             <p className="mt-1 text-sm text-zinc-500">Click orqali — tayyorr.uz va tayyorr+ uchun bitta hamyon</p>
           </div>
           <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopish">
-            ✕
+            <Icon name="close" />
           </button>
         </div>
 

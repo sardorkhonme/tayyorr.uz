@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 
 import { HearLogo } from "@/components/hear-logos";
+import { Icon } from "@/components/icons";
 import { HEAR_ABOUT_US } from "@/lib/hear-about-us";
 
 import { completeProfileAction } from "./actions";
@@ -172,7 +173,7 @@ export function ProfileWizard({
           )}
           {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           <button type="button" onClick={next} className="btn-primary w-full !py-4 !text-base">
-            Davom etish →
+            Davom etish <Icon name="arrow-right" className="h-5 w-5" strokeWidth={2.2} />
           </button>
         </div>
       ) : (
@@ -194,7 +195,7 @@ export function ProfileWizard({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatar} alt="" className="h-full w-full object-cover" />
               ) : (
-                "📷"
+                <Icon name="camera" className="h-7 w-7" />
               )}
             </button>
             <div>
@@ -308,7 +309,9 @@ export function ProfileWizard({
             }}
             className="w-full text-sm font-medium text-zinc-500 hover:text-zinc-900"
           >
-            ← Orqaga
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="arrow-left" className="h-4 w-4" /> Orqaga
+            </span>
           </button>
         </form>
       )}

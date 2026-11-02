@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { currentUser } from "@/auth";
+import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { splitServiceName } from "@/lib/kinds";
 import { db } from "@/lib/db";
@@ -15,7 +16,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Navbatda", cls: "bg-zinc-100 text-zinc-600" },
   PROCESSING: { label: "Qabul qilindi", cls: "bg-sky-50 text-sky-700" },
   IN_PROGRESS: { label: "Bajarilmoqda", cls: "bg-indigo-50 text-indigo-700" },
-  COMPLETED: { label: "Bajarildi ✓", cls: "bg-emerald-50 text-emerald-700" },
+  COMPLETED: { label: "Bajarildi", cls: "bg-emerald-50 text-emerald-700" },
   PARTIAL: { label: "Qisman", cls: "bg-amber-50 text-amber-700" },
   CANCELED: { label: "Bekor qilindi", cls: "bg-red-50 text-red-700" },
   FAILED: { label: "Xatolik", cls: "bg-red-50 text-red-700" },
@@ -49,7 +50,9 @@ export default async function OrdersPage() {
 
         {orders.length === 0 ? (
           <div className="card mt-8 !rounded-3xl px-6 py-16 text-center">
-            <p className="text-4xl">🛒</p>
+            <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
+              <Icon name="package" className="h-8 w-8" />
+            </span>
             <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yo&apos;q</p>
             <p className="mt-2 text-zinc-500">Birinchi buyurtmangizni bir daqiqada bering.</p>
             <a href="/smm" className="btn-primary mt-6">Xizmat tanlash</a>

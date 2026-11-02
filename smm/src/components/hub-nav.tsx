@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { signOutAction } from "@/app/(hub)/actions";
+import { Icon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { TopupButton } from "@/components/topup-button";
 import { som } from "@/lib/format";
@@ -40,7 +41,13 @@ function NavLinks({ user, onNavigate }: { user: HubUser; onNavigate?: () => void
         }`;
         const inner = (
           <>
-            <span className="w-5 text-center text-base">{l.icon}</span>
+            <span
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg transition ${
+                active ? "bg-white text-indigo-600 shadow-sm" : "bg-zinc-100/80 text-zinc-500"
+              }`}
+            >
+              <Icon name={l.icon} className="h-[18px] w-[18px]" />
+            </span>
             <span className="flex-1">{l.label}</span>
           </>
         );
@@ -61,11 +68,15 @@ function NavLinks({ user, onNavigate }: { user: HubUser; onNavigate?: () => void
 function WalletCard({ user }: { user: NonNullable<HubUser> }) {
   return (
     <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-4 text-white shadow-lg shadow-indigo-500/25">
-      <p className="text-xs text-indigo-100">Hamyon</p>
+      <p className="flex items-center gap-1.5 text-xs text-indigo-100">
+        <Icon name="wallet" className="h-4 w-4" /> Hamyon
+      </p>
       <p className="mt-0.5 font-display text-2xl font-bold">{som(user.balance)}</p>
       {user.walletCode && <p className="mt-0.5 text-[11px] text-indigo-200">kod: {user.walletCode}</p>}
       <TopupButton className="mt-3 w-full rounded-xl bg-white/15 py-2 text-sm font-semibold transition hover:bg-white/25">
-        + To&apos;ldirish
+        <span className="inline-flex items-center gap-1.5">
+          <Icon name="plus" className="h-4 w-4" strokeWidth={2.2} /> To&apos;ldirish
+        </span>
       </TopupButton>
     </div>
   );
@@ -88,7 +99,10 @@ function SignOut() {
   return (
     <form action={signOutAction}>
       <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-red-600 transition hover:bg-red-50">
-        <span className="w-5 text-center">⏻</span> Chiqish
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-50">
+          <Icon name="logout" className="h-[18px] w-[18px]" />
+        </span>
+        Chiqish
       </button>
     </form>
   );
@@ -156,8 +170,8 @@ export function HubMobileBar({ user }: { user: HubUser }) {
           {user && (
             <TopupButton className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white py-1 pl-3 pr-1 text-sm font-semibold text-zinc-900 shadow-sm">
               {som(user.balance)}
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-base text-white">
-                +
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
+                <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} />
               </span>
             </TopupButton>
           )}

@@ -1,6 +1,7 @@
 import { after } from "next/server";
 
 import { currentUser } from "@/auth";
+import { Icon } from "@/components/icons";
 import { ServicesBoard } from "@/components/services-board";
 import { db } from "@/lib/db";
 import { getPricing, rateFor } from "@/lib/pricing";
@@ -62,8 +63,8 @@ export default async function SmmPage({
   return (
     <div className="space-y-12">
       <header className="animate-rise flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-2xl shadow-lg shadow-violet-500/30">
-          🚀
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
+          <Icon name="rocket" className="h-7 w-7" />
         </span>
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight text-zinc-900">Tayyorr SMM</h1>

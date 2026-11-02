@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Icon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { MAIN_URL } from "@/lib/format";
 
@@ -24,7 +25,9 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
           <ul className="mt-10 space-y-4 text-lg text-indigo-50">
             {POINTS.map((p) => (
               <li key={p} className="flex items-start gap-3">
-                <span className="mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/20 text-sm">✓</span>
+                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/20">
+                  <Icon name="check" className="h-4 w-4" strokeWidth={2.4} />
+                </span>
                 {p}
               </li>
             ))}

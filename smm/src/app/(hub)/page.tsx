@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 
 import { currentUser } from "@/auth";
+import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
@@ -50,7 +51,12 @@ export default async function DashboardPage({
     <div className="space-y-10">
       {welcome && user && (
         <div className="animate-rise flex flex-col gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 text-indigo-900 sm:flex-row sm:items-center sm:justify-between">
-          <span>🎉 Hisobingiz tayyor! Hamyonni to&apos;ldiring va birinchi xizmatdan foydalaning.</span>
+          <span className="flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-indigo-600 shadow-sm">
+              <Icon name="party" />
+            </span>
+            Hisobingiz tayyor! Hamyonni to&apos;ldiring va birinchi xizmatdan foydalaning.
+          </span>
           <TopupButton className="btn-primary shrink-0 !py-2.5">Hamyonni to&apos;ldirish</TopupButton>
         </div>
       )}
@@ -62,7 +68,7 @@ export default async function DashboardPage({
       )}
 
       <header className="animate-rise">
-        <p className="text-sm font-medium text-indigo-600">{greet ? `Salom, ${greet} 👋` : "Xush kelibsiz 👋"}</p>
+        <p className="text-sm font-medium text-indigo-600">{greet ? `Salom, ${greet}!` : "Xush kelibsiz!"}</p>
         <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           tayyorr<span className="text-fuchsia-500">+</span> xizmatlari
         </h1>
@@ -79,8 +85,8 @@ export default async function DashboardPage({
         >
           <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-2xl shadow-lg shadow-violet-500/30">
-              🚀
+            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
+              <Icon name="rocket" className="h-7 w-7" />
             </span>
             {smmCount > 0 && (
               <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -108,12 +114,14 @@ export default async function DashboardPage({
             })}
           </div>
           <span className="mt-6 inline-flex items-center gap-2 font-semibold text-indigo-600 transition group-hover:gap-3">
-            Ochish <span>→</span>
+            Ochish <Icon name="arrow-right" className="h-4 w-4" strokeWidth={2.2} />
           </span>
         </Link>
 
         <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 p-8 text-center">
-          <span className="text-3xl">✨</span>
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-amber-100 to-fuchsia-100 text-fuchsia-600">
+            <Icon name="sparkles" className="h-6 w-6" />
+          </span>
           <h2 className="mt-3 font-display text-lg font-bold text-zinc-900">Yangi xizmatlar tez orada</h2>
           <p className="mt-1.5 max-w-xs text-sm text-zinc-500">tayyorr+ doimiy kengayib boradi — kuzatib boring.</p>
         </div>
@@ -130,7 +138,9 @@ export default async function DashboardPage({
               </p>
             </div>
             <Link href="/orders" className="text-sm font-semibold text-indigo-600 hover:underline">
-              Hammasi →
+              <span className="inline-flex items-center gap-1">
+                Hammasi <Icon name="arrow-right" className="h-4 w-4" strokeWidth={2.2} />
+              </span>
             </Link>
           </div>
           {recent.length === 0 ? (

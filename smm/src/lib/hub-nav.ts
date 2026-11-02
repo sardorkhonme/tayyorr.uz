@@ -1,7 +1,9 @@
+import type { IconName } from "@/components/icons";
+
 export type HubLink = {
   href: string;
   label: string;
-  icon: string;
+  icon: IconName;
   /** faqat hisobga kirganlarga */
   auth?: boolean;
   /** boshqa sayt (tayyorr.uz) */
@@ -12,10 +14,10 @@ export const MAIN_SITE_URL = process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyor
 
 /** tayyorr+ navigatsiyasi — yangi xizmat qo'shilsa shu ro'yxatga qo'shiladi. */
 export const HUB_NAV: HubLink[] = [
-  { href: "/", label: "Asosiy", icon: "🏠" },
-  { href: "/smm", label: "Tayyorr SMM", icon: "🚀" },
-  { href: "/orders", label: "Buyurtmalarim", icon: "📦", auth: true },
-  { href: MAIN_SITE_URL, label: "tayyorr.uz", icon: "↗", external: true },
+  { href: "/", label: "Asosiy", icon: "home" },
+  { href: "/smm", label: "Tayyorr SMM", icon: "rocket" },
+  { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
+  { href: MAIN_SITE_URL, label: "tayyorr.uz", icon: "external", external: true },
 ];
 
 export function isActive(pathname: string, href: string) {

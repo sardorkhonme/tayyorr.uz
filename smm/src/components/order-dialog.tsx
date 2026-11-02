@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import type { BoardService } from "@/components/services-board";
+import { Icon } from "@/components/icons";
 import { TopupButton } from "@/components/topup-button";
 import { chargeFor, num, som } from "@/lib/format";
 import { LINK_HINTS, splitServiceName } from "@/lib/kinds";
@@ -88,7 +89,7 @@ export function OrderDialog({
             </div>
           </div>
           <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopish">
-            ✕
+            <Icon name="close" />
           </button>
         </div>
 
@@ -100,7 +101,9 @@ export function OrderDialog({
 
         {done ? (
           <div className="space-y-4 text-center">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600">✓</div>
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+              <Icon name="check" className="h-8 w-8" strokeWidth={2.4} />
+            </div>
             <p className="font-display text-xl font-bold text-zinc-900">Buyurtma qabul qilindi!</p>
             <p className="text-sm text-zinc-500">Holatini «Buyurtmalarim» bo'limida kuzatishingiz mumkin.</p>
             <div className="flex gap-2">

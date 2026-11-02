@@ -1,13 +1,15 @@
 /** Xizmat turlari — provayder kategoriyasi/nomidan aniqlanadi (birinchi mos kelgani). */
-export type Kind = { key: string; label: string; hint: string; match: RegExp };
+import type { IconName } from "@/components/icons";
+
+export type Kind = { key: string; label: string; hint: string; icon: IconName; color: string; match: RegExp };
 
 export const KINDS: Kind[] = [
-  { key: "followers", label: "Obunachilar", hint: "Sahifa yoki kanalga yangi obunachilar", match: /follow|member|subscri|obuna/i },
-  { key: "views", label: "Ko'rishlar", hint: "Video, post va story ko'rishlari", match: /view|impression|watch|reach|plays?\b/i },
-  { key: "likes", label: "Layk va reaksiyalar", hint: "Post va videolarga layklar", match: /like|heart|reaction|react/i },
-  { key: "comments", label: "Izohlar", hint: "Postlar ostiga izohlar", match: /comment/i },
-  { key: "shares", label: "Ulashish va saqlash", hint: "Repost, ulashish, saqlash", match: /share|save|repost|retweet/i },
-  { key: "other", label: "Boshqa", hint: "Qolgan xizmatlar", match: /.^/ },
+  { key: "followers", label: "Obunachilar", hint: "Sahifa yoki kanalga yangi obunachilar", icon: "users", color: "#6366f1", match: /follow|member|subscri|obuna/i },
+  { key: "views", label: "Ko'rishlar", hint: "Video, post va story ko'rishlari", icon: "eye", color: "#0ea5e9", match: /view|impression|watch|reach|plays?\b/i },
+  { key: "likes", label: "Layk va reaksiyalar", hint: "Post va videolarga layklar", icon: "heart", color: "#ec4899", match: /like|heart|reaction|react/i },
+  { key: "comments", label: "Izohlar", hint: "Postlar ostiga izohlar", icon: "message", color: "#f59e0b", match: /comment/i },
+  { key: "shares", label: "Ulashish va saqlash", hint: "Repost, ulashish, saqlash", icon: "share", color: "#10b981", match: /share|save|repost|retweet/i },
+  { key: "other", label: "Boshqa", hint: "Qolgan xizmatlar", icon: "grid", color: "#8b5cf6", match: /.^/ },
 ];
 
 function match(text: string) {
@@ -44,7 +46,13 @@ export function splitServiceName(name: string): { title: string; tags: string[] 
   const pipe = title.split("|");
   title = pipe.shift() ?? "";
   tags.push(...pipe);
-  const clean = (t: string) => t.replace(/\s+/g, " ").trim();
+  // provayder nomidagi emoji va bezaklarni olib tashlaymiz (🚀 ⚠️ ⭐ va h.k.)
+  const clean = (t: string) =>
+    t
+      .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{FE0F}\u{200D}]/gu, "")
+      .replace(/\s+/g, " ")
+      .replace(/^[\s\-–—|:•]+|[\s\-–—|:•]+$/g, "")
+      .trim();
   return {
     title: clean(title) || clean(name),
     tags: tags.map(clean).filter((t) => t.length > 0 && t.length <= 40),

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 
+import { Icon } from "@/components/icons";
 import { OrderDialog } from "@/components/order-dialog";
 import { PlatformIcon } from "@/components/platform-icon";
 import { num, som } from "@/lib/format";
@@ -95,7 +96,9 @@ export function ServicesBoard({
   if (services.length === 0) {
     return (
       <section id="start" className="card scroll-mt-24 !rounded-3xl px-6 py-16 text-center">
-        <p className="text-4xl">⏳</p>
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
+          <Icon name="clock" className="h-8 w-8" />
+        </span>
         <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Xizmatlar tez orada qo&apos;shiladi</p>
         <p className="mx-auto mt-3 max-w-md text-zinc-500">
           Hozir ro&apos;yxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling.
@@ -163,15 +166,22 @@ export function ServicesBoard({
                       setShown(PAGE);
                       scrollTo(step3.current);
                     }}
+                    style={{ "--glow": k.color } as React.CSSProperties}
                     className={`glow-card rounded-2xl border bg-white p-5 text-left shadow-sm ${
                       active ? "border-indigo-500 ring-4 ring-indigo-100" : "border-zinc-200/80"
                     }`}
                   >
-                    <span className="flex items-center justify-between gap-2">
-                      <span className="font-display text-lg font-semibold text-zinc-900">{k.label}</span>
+                    <span className="flex items-center gap-3">
+                      <span
+                        className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+                        style={{ background: `${k.color}14`, color: k.color }}
+                      >
+                        <Icon name={k.icon} className="h-[22px] w-[22px]" />
+                      </span>
+                      <span className="flex-1 font-display text-lg font-semibold text-zinc-900">{k.label}</span>
                       <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500">{k.count}</span>
                     </span>
-                    <span className="mt-1.5 block text-sm text-zinc-500">{k.hint}</span>
+                    <span className="mt-3 block text-sm text-zinc-500">{k.hint}</span>
                   </button>
                 );
               })}
