@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app.dart';
 import '../core/theme/app_colors.dart';
@@ -334,6 +335,15 @@ class _MenuPanel extends StatelessWidget {
                         ),
                     ],
                   ),
+                ),
+                // tayyorr+ (smm.tayyorr.uz) — umumiy hisob va hamyon bilan qo'shimcha xizmatlar
+                _Row(
+                  icon: '✨',
+                  label: 'tayyorr+',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    launchUrl(Uri.parse('https://smm.tayyorr.uz'), mode: LaunchMode.externalApplication);
+                  },
                 ),
                 divider,
                 const Padding(

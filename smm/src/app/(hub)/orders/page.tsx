@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { currentUser } from "@/auth";
-import { Header } from "@/components/header";
 import { PlatformIcon } from "@/components/platform-icon";
+import { splitServiceName } from "@/lib/kinds";
 import { db } from "@/lib/db";
 import { num, som } from "@/lib/format";
 import { syncOrders } from "@/lib/orders";
@@ -43,9 +43,7 @@ export default async function OrdersPage() {
   });
 
   return (
-    <>
-      <Header user={user} />
-      <main className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-8 sm:pt-14">
+    <div className="mx-auto max-w-4xl">
         <h1 className="font-display text-3xl font-bold text-zinc-900">Buyurtmalarim</h1>
         <p className="mt-2 text-zinc-500">Holatlar sahifa ochilganda yangilanadi. Bajarilmagan qism uchun pul avtomatik qaytadi.</p>
 
@@ -54,7 +52,7 @@ export default async function OrdersPage() {
             <p className="text-4xl">🛒</p>
             <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yo&apos;q</p>
             <p className="mt-2 text-zinc-500">Birinchi buyurtmangizni bir daqiqada bering.</p>
-            <a href="/#start" className="btn-primary mt-6">Xizmat tanlash</a>
+            <a href="/smm" className="btn-primary mt-6">Xizmat tanlash</a>
           </div>
         ) : (
           <ul className="mt-8 space-y-3">
@@ -72,7 +70,7 @@ export default async function OrdersPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="font-medium leading-snug text-zinc-900">{o.service.name}</p>
+                      <p className="font-medium leading-snug text-zinc-900">{splitServiceName(o.service.name).title}</p>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
                     </div>
                     <p className="mt-1 truncate text-sm text-zinc-500">{o.link}</p>
@@ -89,7 +87,6 @@ export default async function OrdersPage() {
             })}
           </ul>
         )}
-      </main>
-    </>
+    </div>
   );
 }

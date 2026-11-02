@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ForceDark } from "@/components/force-dark";
 import { Logo } from "@/components/logo";
@@ -15,6 +16,7 @@ import { SERVICES } from "@/lib/services";
 import { db } from "@/lib/db";
 
 const TELEGRAM_URL = "https://t.me/tayyorruz";
+const TAYYORR_PLUS_URL = process.env.SMM_SITE_URL || "https://smm.tayyorr.uz";
 const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
 
 export const metadata: Metadata = {
@@ -30,6 +32,8 @@ export default async function Home() {
       })
     : null;
   const loggedIn = !!userExists;
+  // hisobga kirgan foydalanuvchi landingni emas, darhol kabinetni ko'radi
+  if (loggedIn) redirect("/dashboard");
 
   const [heroVideo, videoRows, faqRows, phoneSlideRows] = await Promise.all([
     db.heroVideo.findUnique({ where: { id: "hero" } }),
@@ -100,6 +104,9 @@ export default async function Home() {
           </a>
           <a href="#imkoniyat" className="transition hover:text-white">
             Imkoniyatlar
+          </a>
+          <a href="#tayyorr-plus" className="transition hover:text-white">
+            tayyorr<span className="text-fuchsia-400">+</span>
           </a>
           <a href="#ilova" className="transition hover:text-white">
             Ilova
@@ -272,6 +279,39 @@ export default async function Home() {
           >
             Barcha xizmatlarni ko'rish →
           </Link>
+        </div>
+      </section>
+
+      {/* ---------- bizning xizmatlar (tayyorr+) ---------- */}
+      <section id="tayyorr-plus" className="relative z-10 mx-auto max-w-5xl px-6 py-20">
+        <SectionHeading
+          kicker="Bizning xizmatlar"
+          title="tayyorr+ — bitta hisob, ko'proq imkoniyat"
+          subtitle="tayyorr.uz hisobingiz va hamyoningiz bilan qo'shimcha xizmatlardan foydalaning."
+        />
+        <div className="mt-14 grid gap-4 sm:grid-cols-2">
+          <a
+            href={TAYYORR_PLUS_URL}
+            className="lq-glass blur-in group relative flex flex-col overflow-hidden rounded-2xl p-7"
+          >
+            <span className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-2xl">
+              🚀
+            </span>
+            <h3 className="font-display mt-5 text-xl font-bold text-white">Tayyorr SMM</h3>
+            <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-400">
+              Instagram, Telegram, TikTok va YouTube uchun obunachilar, layklar va ko&apos;rishlar —
+              bir necha daqiqada, avtomatik.
+            </p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 transition group-hover:gap-2.5">
+              tayyorr+ ga o&apos;tish <span>→</span>
+            </span>
+          </a>
+          <div className="blur-in flex flex-col justify-center rounded-2xl border border-dashed border-white/10 p-7 text-center">
+            <span className="text-2xl">✨</span>
+            <h3 className="font-display mt-3 font-bold text-white">Yangi xizmatlar tez orada</h3>
+            <p className="mt-2 text-sm text-zinc-500">tayyorr+ doimiy kengayib boradi.</p>
+          </div>
         </div>
       </section>
 
