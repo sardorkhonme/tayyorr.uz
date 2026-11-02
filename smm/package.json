@@ -7,7 +7,7 @@
     "prisma:schema": "node -e \"require('fs').mkdirSync('prisma',{recursive:true});require('fs').copyFileSync('../prisma/schema.prisma','prisma/schema.prisma')\"",
     "build": "npm run prisma:schema && prisma generate && next build",
     "start": "next start",
-    "sync-services": "node scripts/sync-services.mjs",
+    "sync-services": "node --env-file-if-exists=../.env --env-file-if-exists=.env.local scripts/sync-services.mjs",
     "postinstall": "npm run prisma:schema && prisma generate"
   },
   "prisma": {
