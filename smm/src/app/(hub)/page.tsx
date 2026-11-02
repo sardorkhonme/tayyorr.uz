@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
+import { MAIN_SITE_URL } from "@/lib/hub-nav";
 import { num, som } from "@/lib/format";
 import { splitServiceName } from "@/lib/kinds";
 import { platformOf } from "@/lib/platforms";
@@ -78,7 +79,7 @@ export default async function DashboardPage({
       </header>
 
       {/* xizmatlar */}
-      <section className="grid gap-5 md:grid-cols-2">
+      <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/smm"
           className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
@@ -113,12 +114,43 @@ export default async function DashboardPage({
               );
             })}
           </div>
-          <span className="mt-6 inline-flex items-center gap-2 font-semibold text-indigo-600 transition group-hover:gap-3">
+          <span className="mt-auto inline-flex items-center gap-2 pt-6 font-semibold text-indigo-600 transition group-hover:gap-3">
             Ochish <Icon name="arrow-right" className="h-4 w-4" strokeWidth={2.2} />
           </span>
         </Link>
 
-        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 p-8 text-center">
+        {/* tayyorr.uz — tayyorr+ xizmatlaridan biri (asosiy platforma) */}
+        <a
+          href={MAIN_SITE_URL}
+          style={{ "--glow": "#4f46e5" } as React.CSSProperties}
+          className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
+        >
+          <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
+          <div className="flex items-start justify-between gap-4">
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-zinc-900 via-indigo-950 to-indigo-700 font-display text-2xl font-bold text-white shadow-lg shadow-indigo-900/30">
+              T
+            </span>
+            <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">Asosiy platforma</span>
+          </div>
+          <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
+            tayyorr<span className="text-indigo-600">.uz</span>
+          </h2>
+          <p className="mt-2 leading-relaxed text-zinc-500">
+            Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["Prezentatsiya", "Kurs ishi", "Referat", "Diplom ishi"].map((t) => (
+              <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600">
+                {t}
+              </span>
+            ))}
+          </div>
+          <span className="mt-auto inline-flex items-center gap-2 pt-6 font-semibold text-indigo-600 transition group-hover:gap-3">
+            Ochish <Icon name="external" className="h-4 w-4" strokeWidth={2.2} />
+          </span>
+        </a>
+
+        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 p-8 text-center md:col-span-2 lg:col-span-1">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-amber-100 to-fuchsia-100 text-fuchsia-600">
             <Icon name="sparkles" className="h-6 w-6" />
           </span>
