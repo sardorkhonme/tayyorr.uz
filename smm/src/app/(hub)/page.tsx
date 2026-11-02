@@ -19,6 +19,24 @@ export const maxDuration = 60;
 const ACTIVE = ["PENDING", "PROCESSING", "IN_PROGRESS"];
 const SMM_PLATFORMS = ["instagram", "telegram", "tiktok", "youtube", "facebook", "twitter"];
 
+/**
+ * Kartadagi "Ochish" — karta ustiga borilganda gradient fon silliq paydo bo'ladi,
+ * matn oq bo'ladi, strelka o'ngga suriladi (hamma xizmat kartalarida bir xil).
+ */
+function OpenPill() {
+  return (
+    <span className="relative -ml-4 inline-flex items-center gap-2 overflow-hidden rounded-full px-4 py-2 font-semibold text-indigo-600 transition-[color,box-shadow] duration-300 group-hover:text-white group-hover:shadow-lg group-hover:shadow-fuchsia-500/30">
+      <span className="absolute inset-0 -z-0 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <span className="relative">Ochish</span>
+      <Icon
+        name="arrow-right"
+        className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+        strokeWidth={2.2}
+      />
+    </span>
+  );
+}
+
 /** tayyorr+ bosh sahifasi — xizmatlar paneli (landing yo'q). */
 export default async function DashboardPage({
   searchParams,
@@ -114,8 +132,8 @@ export default async function DashboardPage({
               );
             })}
           </div>
-          <span className="mt-auto inline-flex items-center gap-2 pt-6 font-semibold text-indigo-600 transition group-hover:gap-3">
-            Ochish <Icon name="arrow-right" className="h-4 w-4" strokeWidth={2.2} />
+          <span className="mt-auto pt-6">
+            <OpenPill />
           </span>
         </Link>
 
@@ -145,8 +163,8 @@ export default async function DashboardPage({
               </span>
             ))}
           </div>
-          <span className="mt-auto inline-flex items-center gap-2 pt-6 font-semibold text-indigo-600 transition group-hover:gap-3">
-            Ochish <Icon name="external" className="h-4 w-4" strokeWidth={2.2} />
+          <span className="mt-auto pt-6">
+            <OpenPill />
           </span>
         </a>
 
