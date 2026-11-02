@@ -37,6 +37,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
+    // tayyorr.uz mobil ilovasi tayyorr+ ni WebView'da ochganda — bir martalik kalit bilan kirish
+    // (kalitni tayyorr.uz beradi: src/app/api/mobile/plus-ticket)
+    Credentials({
+      id: "app-ticket",
+      credentials: { ticket: { type: "text" } },
+      async authorize(raw) {
+        const ticket = typeof raw?.ticket === "string" ? raw.ticket : "";
+        if (ticket.length < 20) return null;
+        const row = await db.verificationToken.findUnique({ where: { token: ticket } });
+        if (!row || !row.identifier.startsWith("plus-app:")) return null;
+        // bir martalik: o'chirilmasa (boshqa so'rov ishlatgan bo'lsa) — rad
+        const del = await db.verificationToken.deleteMany({ where: { token: ticket } });
+        if (del.count !== 1 || row.expires < new Date()) return null;
+        const userId = row.identifier.slice("plus-app:".length);
+        const user = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
+        if (!user) return null;
+        await logLogin(user.id, "mobil ilova");
+        return { id: user.id };
+      },
+    }),
     Credentials({
       credentials: {
         identifier: { label: "Login yoki email", type: "text" },

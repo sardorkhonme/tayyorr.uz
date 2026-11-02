@@ -2,13 +2,13 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../app.dart';
 import '../core/theme/app_colors.dart';
 import '../core/unread_counter.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/home/section_cubit.dart';
+import '../features/plus/plus_webview_screen.dart';
 import 'app_logo.dart';
 import 'theme_toggle.dart';
 import 'web_ui.dart';
@@ -341,9 +341,10 @@ class _MenuPanel extends StatelessWidget {
                 // tayyorr+ — saytdagidek menyuning eng pastida, gradient kartochka
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+                  // MyGov kabi — ilovaning o'zida (WebView), avtomatik kirish bilan
                   child: _PlusCard(onTap: () {
                     Navigator.of(context).pop();
-                    launchUrl(Uri.parse('https://plus.tayyorr.uz'), mode: LaunchMode.externalApplication);
+                    PlusWebViewScreen.open(outer);
                   }),
                 ),
                 const Padding(

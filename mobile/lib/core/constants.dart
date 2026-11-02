@@ -1,7 +1,10 @@
 /// Backend — tayyorr.uz saytining o'zi (Next.js API route'lari).
-/// Kerak bo'lsa mahalliy backendga sinab ko'rish uchun shu qiymatni
-/// o'zgartiring (masalan http://10.0.2.2:3000/api Android emulyatori uchun).
-const String kApiBaseUrl = 'http://localhost:3199/api';
+/// Mahalliy backendda sinash uchun kodni o'zgartirmang, yig'ishda bering:
+///   flutter run --dart-define=API_BASE=http://10.0.2.2:3000/api
+const String kApiBaseUrl = String.fromEnvironment('API_BASE', defaultValue: 'https://tayyorr.uz/api');
+
+/// tayyorr+ (plus.tayyorr.uz) — ilova ichida WebView'da ochiladi.
+const String kPlusUrl = String.fromEnvironment('PLUS_URL', defaultValue: 'https://plus.tayyorr.uz');
 
 /// tayyorr.uz veb sayti (NextAuth) uchun ishlatilgan Google OAuth Web Client
 /// ID — bu maxfiy emas (Client Secret emas), shuning uchun ilova ichida
