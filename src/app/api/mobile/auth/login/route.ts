@@ -14,16 +14,17 @@ const schema = z.object({
   password: z.string().min(1),
 });
 
-/** Flutter ilovasi uchun login — login+parol, javobida Bearer token. */
+/** Flutter ilovasi uchun login — login (yoki email) + parol, javobida Bearer token. */
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Login va parolni kiriting" }, { status: 400 });
+    return mobileJson({ error: "Login (yoki email) va parolni kiriting" }, { status: 400 });
   }
   const { login, password } = parsed.data;
 
+  // login yoki email (tayyorr+ da email bilan ro'yxatdan o'tganlar uchun)
   const user = await db.user.findUnique({
-    where: { login },
+    where: login.includes("@") ? { email: login.toLowerCase() } : { login },
     select: { ...ME_SELECT, passwordHash: true },
   });
   if (!user?.passwordHash) {
@@ -33,12 +34,8 @@ export async function POST(req: Request) {
   if (!ok) {
     return mobileJson({ error: "Login yoki parol xato" }, { status: 401 });
   }
-  if (!user.role || !user.login) {
-    return mobileJson(
-      { error: "Hisobingiz to'liq emas — saytdan (tayyorr.uz) tugating" },
-      { status: 400 },
-    );
-  }
+  // profil to'liq bo'lmasa (masalan tayyorr+ da ro'yxatdan o'tgan) — ilova
+  // `needsOnboarding` bo'yicha profil to'ldirish sahifasini ochadi
 
   const token = signMobileToken(user.id);
   await logActivity(user.id, "AUTH_LOGIN", "Mobil ilovadan kirdi");

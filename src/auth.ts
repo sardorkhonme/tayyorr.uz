@@ -21,15 +21,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig.providers,
     Credentials({
       credentials: {
-        login: { label: "Login", type: "text" },
+        login: { label: "Login yoki email", type: "text" },
         password: { label: "Parol", type: "password" },
       },
       async authorize(raw) {
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
 
-        const { login, password } = parsed.data;
-        const user = await db.user.findUnique({ where: { login } });
+        // login yoki email (tayyorr+ da email bilan ro'yxatdan o'tganlar uchun)
+        const login = parsed.data.login.trim();
+        const { password } = parsed.data;
+        const user = login.includes("@")
+          ? await db.user.findUnique({ where: { email: login.toLowerCase() } })
+          : await db.user.findUnique({ where: { login } });
         if (!user?.passwordHash) return null;
 
         const ok = await bcrypt.compare(password, user.passwordHash);

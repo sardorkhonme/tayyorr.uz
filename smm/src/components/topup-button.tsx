@@ -62,7 +62,7 @@ function TopupDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-900/30 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <form
@@ -70,14 +70,14 @@ function TopupDialog({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         onSubmit={pay}
         onClick={(e) => e.stopPropagation()}
-        className="animate-rise w-full max-w-sm space-y-4 rounded-t-2xl border border-white/10 bg-[#0e0e16] p-5 text-left shadow-2xl sm:rounded-2xl"
+        className="animate-pop w-full max-w-md space-y-5 rounded-t-3xl bg-white p-6 text-left shadow-2xl sm:rounded-3xl sm:p-7"
       >
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="font-display text-lg font-semibold text-white">Hamyonni to'ldirish</h3>
-            <p className="mt-0.5 text-sm text-zinc-500">Click orqali — tayyorr.uz hamyoningizga tushadi</p>
+            <h3 className="font-display text-xl font-semibold text-zinc-900">Hamyonni to'ldirish</h3>
+            <p className="mt-1 text-sm text-zinc-500">Click orqali — tayyorr.uz va tayyorr+ uchun bitta hamyon</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-zinc-500 hover:bg-white/5 hover:text-white" aria-label="Yopish">
+          <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopish">
             ✕
           </button>
         </div>
@@ -86,22 +86,22 @@ function TopupDialog({ onClose }: { onClose: () => void }) {
           <label className="label" htmlFor="topup-amount">Summa (so'm)</label>
           <input
             id="topup-amount"
-            className="input !text-lg"
+            className="input !py-3.5 font-display !text-2xl font-semibold"
             inputMode="numeric"
             value={amount ? num(value) : ""}
             onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
             autoFocus
           />
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-3 flex flex-wrap gap-2">
             {QUICK.map((q) => (
               <button
                 key={q}
                 type="button"
                 onClick={() => setAmount(String(q))}
-                className={`rounded-lg border px-2.5 py-1 text-xs transition ${
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
                   value === q
-                    ? "border-indigo-400 bg-indigo-500/20 text-white"
-                    : "border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white"
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300"
                 }`}
               >
                 {num(q)}
@@ -110,12 +110,12 @@ function TopupDialog({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-        <button className="btn-primary w-full !py-3" disabled={busy || value < 1000}>
+        <button className="btn-primary w-full !py-4 !text-base" disabled={busy || value < 1000}>
           {busy ? "Click ochilmoqda…" : `${som(value)} — Click orqali to'lash`}
         </button>
-        <p className="text-center text-xs text-zinc-600">To'lovdan keyin shu saytga qaytasiz, balans avtomatik yangilanadi.</p>
+        <p className="text-center text-xs text-zinc-500">To'lovdan keyin shu saytga qaytasiz, balans avtomatik yangilanadi.</p>
       </form>
     </div>
   );

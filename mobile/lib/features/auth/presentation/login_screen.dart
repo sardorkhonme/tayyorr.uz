@@ -65,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Text('Kirish',
                                   style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
                               const SizedBox(height: 20),
-                              const WebLabel('Login'),
+                              const WebLabel('Login yoki email'),
                               AutofillGroup(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,

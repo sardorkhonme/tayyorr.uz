@@ -29,3 +29,24 @@ export const LINK_HINTS: Record<string, string> = {
   twitter: "https://x.com/username yoki post havolasi",
   other: "https://…",
 };
+
+/**
+ * Provayder nomini ko'rinish uchun ajratadi:
+ * "Instagram Followers [Bot Mix] [Speed: 50K/Day] | Max 100K" →
+ * { title: "Instagram Followers", tags: ["Bot Mix", "Speed: 50K/Day", "Max 100K"] }
+ */
+export function splitServiceName(name: string): { title: string; tags: string[] } {
+  const tags: string[] = [];
+  let title = name.replace(/\[([^\]]+)\]/g, (_, t: string) => {
+    tags.push(t);
+    return " ";
+  });
+  const pipe = title.split("|");
+  title = pipe.shift() ?? "";
+  tags.push(...pipe);
+  const clean = (t: string) => t.replace(/\s+/g, " ").trim();
+  return {
+    title: clean(title) || clean(name),
+    tags: tags.map(clean).filter((t) => t.length > 0 && t.length <= 40),
+  };
+}

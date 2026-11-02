@@ -5,10 +5,12 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { logRegistration, TERMS_VERSION } from "@/lib/register";
 
 /**
- * smm.tayyorr.uz — alohida sessiya, lekin foydalanuvchilar tayyorr.uz bazasidan.
- * Bu yerda yangi hisob yaratilmaydi: ro'yxatdan o'tish faqat tayyorr.uz da.
+ * smm.tayyorr.uz — alohida sessiya, lekin foydalanuvchilar tayyorr.uz bazasidan
+ * (bitta hisob, bitta hamyon). Ro'yxatdan o'tish shu yerda ham: email + parol
+ * (/register) yoki Google — yangi User umumiy bazaga yoziladi.
  */
 
 class NoAccount extends CredentialsSignin {
@@ -61,10 +63,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ account, profile }) {
       if (account?.provider !== "google") return true;
       const email = profile?.email?.toLowerCase();
-      if (!email || profile?.email_verified === false) return "/login?error=no_account";
+      if (!profile || !email || profile.email_verified === false) return "/login?error=google";
       const dbUser = await db.user.findUnique({ where: { email }, select: { id: true } });
-      if (!dbUser) return "/login?error=no_account";
-      await logLogin(dbUser.id, "Google");
+      if (dbUser) {
+        await logLogin(dbUser.id, "Google");
+        return true;
+      }
+      // yangi foydalanuvchi — Google orqali ro'yxatdan o'tish
+      const firstName = typeof profile.given_name === "string" ? profile.given_name : null;
+      const lastName = typeof profile.family_name === "string" ? profile.family_name : null;
+      const created = await db.user
+        .create({
+          data: {
+            email,
+            emailVerified: new Date(),
+            name: typeof profile.name === "string" ? profile.name : firstName,
+            firstName,
+            lastName,
+            image: typeof profile.picture === "string" ? profile.picture : null,
+            termsAcceptedAt: new Date(),
+            termsVersion: TERMS_VERSION,
+          },
+        })
+        .catch(() => null); // parallel so'rovda allaqachon yaratilgan bo'lishi mumkin
+      if (created) await logRegistration(created, "Google");
       return true;
     },
     async jwt({ token, user, account, profile }) {

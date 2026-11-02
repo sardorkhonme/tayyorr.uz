@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import type { BoardService } from "@/components/services-board";
 import { TopupButton } from "@/components/topup-button";
 import { chargeFor, num, som } from "@/lib/format";
-import { LINK_HINTS } from "@/lib/kinds";
+import { LINK_HINTS, splitServiceName } from "@/lib/kinds";
 
 export function OrderDialog({
   service,
@@ -64,35 +64,44 @@ export function OrderDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-900/30 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="animate-rise max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/10 bg-[#0e0e16] p-6 shadow-2xl sm:rounded-3xl sm:p-7"
+        className="animate-pop max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="mb-5 flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-wide text-zinc-500">{service.category}</p>
-            <h3 className="mt-1 font-display text-lg font-semibold leading-snug text-white">{service.name}</h3>
+            <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">{service.category}</p>
+            <h3 className="mt-1.5 font-display text-xl font-bold leading-snug text-zinc-900">
+              {splitServiceName(service.name).title}
+            </h3>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {splitServiceName(service.name).tags.slice(0, 6).map((t) => (
+                <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs text-zinc-600">
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
-          <button onClick={onClose} className="rounded-lg px-2 py-1 text-zinc-500 hover:bg-white/5 hover:text-white" aria-label="Yopish">
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopish">
             ✕
           </button>
         </div>
 
         {service.description && (
-          <p className="mb-4 max-h-28 overflow-y-auto whitespace-pre-line rounded-xl bg-white/[0.03] p-3 text-sm text-zinc-400">
+          <p className="mb-5 max-h-28 overflow-y-auto whitespace-pre-line rounded-2xl bg-zinc-50 p-3.5 text-sm text-zinc-600">
             {service.description}
           </p>
         )}
 
         {done ? (
           <div className="space-y-4 text-center">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-500/15 text-2xl text-emerald-300">✓</div>
-            <p className="text-white">Buyurtma qabul qilindi!</p>
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600">✓</div>
+            <p className="font-display text-xl font-bold text-zinc-900">Buyurtma qabul qilindi!</p>
             <p className="text-sm text-zinc-500">Holatini «Buyurtmalarim» bo'limida kuzatishingiz mumkin.</p>
             <div className="flex gap-2">
               <button className="btn-ghost flex-1" onClick={onClose}>Yopish</button>
@@ -101,15 +110,18 @@ export function OrderDialog({
           </div>
         ) : !loggedIn ? (
           <div className="space-y-3 text-center">
-            <p className="text-zinc-400">
+            <p className="text-zinc-600">
               Buyurtma berish uchun hisobingizga kiring. tayyorr.uz dagi login va parolingiz shu yerda ham ishlaydi.
             </p>
-            <Link href="/login" className="btn-primary w-full">Kirish</Link>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Link href="/register" className="btn-primary flex-1 !py-3.5">Ro&apos;yxatdan o&apos;tish</Link>
+              <Link href="/login" className="btn-ghost flex-1 !py-3.5">Kirish</Link>
+            </div>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-6">
             <div>
-              <label className="label !text-sm" htmlFor="link">1. Havolani kiriting</label>
+              <label className="label" htmlFor="link">1. Havolani kiriting</label>
               <input
                 id="link"
                 className="input !py-3"
@@ -121,8 +133,8 @@ export function OrderDialog({
               />
             </div>
             <div>
-              <label className="label !text-sm" htmlFor="qty">
-                2. Nechta kerak? <span className="font-normal text-zinc-600">({num(service.min)} – {num(service.max)})</span>
+              <label className="label" htmlFor="qty">
+                2. Nechta kerak? <span className="font-normal text-zinc-400">({num(service.min)} – {num(service.max)})</span>
               </label>
               <input
                 id="qty"
@@ -138,10 +150,10 @@ export function OrderDialog({
                     key={v}
                     type="button"
                     onClick={() => setQuantity(String(v))}
-                    className={`rounded-lg border px-3 py-1.5 text-sm transition ${
+                    className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
                       qty === v
-                        ? "border-indigo-400 bg-indigo-500/20 text-white"
-                        : "border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white"
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300"
                     }`}
                   >
                     {num(v)}
@@ -149,36 +161,36 @@ export function OrderDialog({
                 ))}
               </div>
               {quantity && !qtyOk && (
-                <p className="mt-2 text-sm text-amber-300">
+                <p className="mt-2 text-sm text-amber-600">
                   {num(service.min)} dan {num(service.max)} gacha son kiriting
                 </p>
               )}
             </div>
 
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-sm">
-              <div className="flex justify-between text-zinc-400">
+            <div className="rounded-2xl bg-zinc-50 p-5 text-[15px]">
+              <div className="flex justify-between text-zinc-500">
                 <span>Narx (har 1000 tasi)</span>
                 <span>{som(service.rate)}</span>
               </div>
-              <div className="mt-2 flex justify-between text-zinc-400">
+              <div className="mt-2 flex justify-between text-zinc-500">
                 <span>Hamyoningizda</span>
                 <span>{som(balance)}</span>
               </div>
-              <div className="mt-3 flex items-end justify-between border-t border-white/[0.08] pt-3">
-                <span className="text-zinc-300">To&apos;lanadi</span>
-                <span className="font-display text-2xl font-semibold text-white">{qtyOk ? som(total) : "—"}</span>
+              <div className="mt-3 flex items-end justify-between border-t border-zinc-200 pt-3">
+                <span className="font-medium text-zinc-700">To&apos;lanadi</span>
+                <span className="font-display text-3xl font-bold text-zinc-900">{qtyOk ? som(total) : "—"}</span>
               </div>
             </div>
 
             {qtyOk && !enough && (
-              <p className="text-sm text-amber-300">
+              <p className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800">
                 Mablag' yetarli emas.{" "}
-                <TopupButton className="underline">Hamyonni to'ldirish</TopupButton>
+                <TopupButton className="font-semibold underline">Hamyonni to'ldirish</TopupButton>
               </p>
             )}
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-600">{error}</p>}
 
-            <button className="btn-primary w-full !py-3.5 !text-base" disabled={busy || !qtyOk || !enough || !link.trim()}>
+            <button className="btn-primary w-full !py-4 !text-base" disabled={busy || !qtyOk || !enough || !link.trim()}>
               {busy ? "Yuborilmoqda…" : "Buyurtma berish"}
             </button>
             <p className="text-center text-xs text-zinc-500">

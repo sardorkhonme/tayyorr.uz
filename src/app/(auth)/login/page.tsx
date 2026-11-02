@@ -37,7 +37,7 @@ export default function LoginPage() {
 
         <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
           <div>
-            <label className="label">Login</label>
+            <label className="label">Login yoki email</label>
             <input
               className="input"
               required

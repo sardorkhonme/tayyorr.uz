@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "react";
 import { OrderDialog } from "@/components/order-dialog";
 import { PlatformIcon } from "@/components/platform-icon";
 import { num, som } from "@/lib/format";
-import { KINDS, kindOf } from "@/lib/kinds";
+import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
 import { PLATFORMS } from "@/lib/platforms";
 
 export type BoardService = {
@@ -25,12 +25,12 @@ const PAGE = 12;
 function StepTitle({ n, title, hint }: { n: number; title: string; hint?: string }) {
   return (
     <div className="flex items-start gap-4">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-indigo-500/15 font-display text-base font-semibold text-indigo-200 ring-1 ring-indigo-400/30">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 font-display text-base font-bold text-white shadow-md shadow-indigo-500/30">
         {n}
       </span>
       <div>
-        <h2 className="font-display text-xl font-semibold text-white sm:text-2xl">{title}</h2>
-        {hint && <p className="mt-1 text-sm text-zinc-400">{hint}</p>}
+        <h2 className="font-display text-2xl font-bold text-zinc-900 sm:text-3xl">{title}</h2>
+        {hint && <p className="mt-1.5 text-zinc-500">{hint}</p>}
       </div>
     </div>
   );
@@ -51,7 +51,7 @@ export function ServicesBoard({
   initialKind?: string | null;
 }) {
   const withKind = useMemo(
-    () => services.map((s) => ({ ...s, kind: kindOf(s.category, s.name) })),
+    () => services.map((s) => ({ ...s, kind: kindOf(s.category, s.name), ...splitServiceName(s.name) })),
     [services],
   );
 
@@ -94,9 +94,10 @@ export function ServicesBoard({
 
   if (services.length === 0) {
     return (
-      <section id="start" className="scroll-mt-24 rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
-        <p className="font-display text-2xl font-semibold text-white">Xizmatlar tez orada qo&apos;shiladi</p>
-        <p className="mx-auto mt-3 max-w-md text-zinc-400">
+      <section id="start" className="card scroll-mt-24 !rounded-3xl px-6 py-16 text-center">
+        <p className="text-4xl">⏳</p>
+        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Xizmatlar tez orada qo&apos;shiladi</p>
+        <p className="mx-auto mt-3 max-w-md text-zinc-500">
           Hozir ro&apos;yxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling.
         </p>
       </section>
@@ -104,11 +105,11 @@ export function ServicesBoard({
   }
 
   return (
-    <section id="start" className="scroll-mt-24 space-y-16">
+    <section id="start" className="scroll-mt-24 space-y-20">
       {/* 1-qadam: tarmoq */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         <StepTitle n={1} title="Ijtimoiy tarmoqni tanlang" hint="Qaysi tarmoqdagi sahifangizni o'stirmoqchisiz?" />
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {platforms.map((p) => {
             const n = platformCounts.get(p.key) ?? 0;
             const active = platform === p.key;
@@ -126,16 +127,16 @@ export function ServicesBoard({
                 }}
                 data-active={active}
                 style={{ "--from": p.from } as React.CSSProperties}
-                className="platform-tile flex flex-col items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left disabled:cursor-not-allowed disabled:opacity-40 sm:flex-row sm:items-center sm:gap-4 sm:p-6"
+                className="platform-tile card flex flex-col items-start gap-4 !rounded-2xl p-5 text-left disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
               >
                 <span
-                  className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-lg sm:h-14 sm:w-14"
+                  className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white shadow-lg"
                   style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
                 >
                   <PlatformIcon platform={p.key} className="h-7 w-7" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-base font-semibold text-white sm:text-lg">{p.name}</span>
+                  <span className="block font-display text-lg font-semibold text-zinc-900">{p.name}</span>
                   <span className="text-sm text-zinc-500">{n ? `${n} ta xizmat` : "Tez orada"}</span>
                 </span>
               </button>
@@ -147,7 +148,7 @@ export function ServicesBoard({
       {/* 2-qadam: nima kerak */}
       <div ref={step2} className="scroll-mt-24">
         {platform && (
-          <div className="animate-rise space-y-6">
+          <div className="animate-rise space-y-8">
             <StepTitle n={2} title="Nima kerak?" hint={`${platformName} uchun xizmat turini tanlang`} />
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {kinds.map((k) => {
@@ -162,17 +163,17 @@ export function ServicesBoard({
                       setShown(PAGE);
                       scrollTo(step3.current);
                     }}
-                    className={`rounded-2xl border p-5 text-left transition ${
+                    className={`rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 ${
                       active
-                        ? "border-indigo-400/60 bg-indigo-500/10"
-                        : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                        ? "border-indigo-500 ring-4 ring-indigo-100"
+                        : "border-zinc-200/80 hover:border-zinc-300 hover:shadow-md"
                     }`}
                   >
                     <span className="flex items-center justify-between gap-2">
-                      <span className="font-display text-lg font-semibold text-white">{k.label}</span>
-                      <span className="rounded-full bg-white/[0.06] px-2.5 py-0.5 text-xs text-zinc-400">{k.count}</span>
+                      <span className="font-display text-lg font-semibold text-zinc-900">{k.label}</span>
+                      <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500">{k.count}</span>
                     </span>
-                    <span className="mt-1 block text-sm text-zinc-500">{k.hint}</span>
+                    <span className="mt-1.5 block text-sm text-zinc-500">{k.hint}</span>
                   </button>
                 );
               })}
@@ -184,7 +185,7 @@ export function ServicesBoard({
       {/* 3-qadam: xizmat */}
       <div ref={step3} className="scroll-mt-24">
         {platform && kind && (
-          <div className="animate-rise space-y-6">
+          <div className="animate-rise space-y-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <StepTitle n={3} title="Xizmatni tanlang" hint={`${platformName} · ${kindLabel} — eng arzonidan boshlab`} />
               <input
@@ -199,7 +200,7 @@ export function ServicesBoard({
             </div>
 
             {list.length === 0 ? (
-              <p className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 text-center text-zinc-500">
+              <p className="card px-6 py-10 text-center text-zinc-500">
                 Hech narsa topilmadi
               </p>
             ) : (
@@ -210,25 +211,30 @@ export function ServicesBoard({
                       key={s.id}
                       type="button"
                       onClick={() => setSelected(s)}
-                      className="group flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left transition hover:-translate-y-0.5 hover:border-indigo-400/40 hover:bg-white/[0.05] sm:p-6"
+                      className="card group flex flex-col gap-4 !rounded-2xl p-5 text-left transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg sm:p-6"
                     >
-                      <span className="text-[15px] leading-relaxed text-zinc-100">{s.name}</span>
-                      <span className="flex flex-wrap gap-2 text-xs">
-                        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-zinc-400">
+                      <span className="font-display text-[17px] font-semibold leading-snug text-zinc-900">{s.title}</span>
+                      <span className="flex flex-wrap gap-1.5 text-xs">
+                        {s.tags.slice(0, 4).map((t) => (
+                          <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-zinc-600">
+                            {t}
+                          </span>
+                        ))}
+                        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-zinc-600">
                           {num(s.min)} – {num(s.max)} ta
                         </span>
                         {s.refill && (
-                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-emerald-300">
+                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">
                             Kafolatli (kamaysa to&apos;ldiriladi)
                           </span>
                         )}
                       </span>
-                      <span className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+                      <span className="mt-auto flex items-center justify-between gap-3 border-t border-zinc-100 pt-4">
                         <span>
-                          <span className="block font-display text-xl font-semibold text-white">{som(s.rate)}</span>
+                          <span className="block font-display text-2xl font-bold text-zinc-900">{som(s.rate)}</span>
                           <span className="text-xs text-zinc-500">har 1000 tasi uchun</span>
                         </span>
-                        <span className="rounded-xl bg-indigo-500/15 px-4 py-2 text-sm font-medium text-indigo-200 transition group-hover:bg-indigo-500 group-hover:text-white">
+                        <span className="rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition group-hover:bg-indigo-600 group-hover:text-white">
                           Tanlash
                         </span>
                       </span>
