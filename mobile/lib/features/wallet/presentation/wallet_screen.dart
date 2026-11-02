@@ -154,6 +154,56 @@ class _FormHead extends StatelessWidget {
   }
 }
 
+/// Kartaga yechish komissiyasi — saytdagi src/lib/payout-commission.ts bilan bir xil.
+const kPayoutCommissionPercent = 5;
+
+/// Hamyondan yechiladi / komissiya / kartangizga tushadi.
+class _CommissionBreakdown extends StatelessWidget {
+  const _CommissionBreakdown({required this.amount});
+  final int amount;
+
+  @override
+  Widget build(BuildContext context) {
+    final commission = (amount * kPayoutCommissionPercent / 100).ceil();
+    final net = amount - commission;
+    Widget row(String k, String v, {bool strong = false}) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(k,
+                    style: TextStyle(
+                        color: strong ? WebC.white : WebC.zinc400,
+                        fontSize: 13,
+                        fontWeight: strong ? FontWeight.w600 : FontWeight.normal)),
+              ),
+              Text(v,
+                  style: TextStyle(
+                      color: strong ? WebC.emerald : WebC.zinc400,
+                      fontSize: strong ? 15 : 13,
+                      fontWeight: strong ? FontWeight.w700 : FontWeight.normal)),
+            ],
+          ),
+        );
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: WebC.fill5.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: WebC.border),
+      ),
+      child: Column(
+        children: [
+          row('Hamyondan yechiladi', "${groupDigits(amount)} so'm"),
+          row('Komissiya ($kPayoutCommissionPercent%)', "−${groupDigits(commission)} so'm"),
+          Divider(color: WebC.border, height: 14),
+          row('Kartangizga tushadi', "${groupDigits(net)} so'm", strong: true),
+        ],
+      ),
+    );
+  }
+}
+
 class _Hint extends StatelessWidget {
   const _Hint(this.text);
   final String text;
@@ -576,6 +626,13 @@ class _PayoutFormState extends State<_PayoutForm> {
   (bool, String)? _msg;
 
   @override
+  void initState() {
+    super.initState();
+    // summa yozilganda komissiya hisobi darhol yangilansin
+    _amount.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _card.dispose();
     _cardName.dispose();
@@ -621,6 +678,35 @@ class _PayoutFormState extends State<_PayoutForm> {
           _Hint("Mablag' darhol hisobdan yechiladi va kartangizga o'tkaziladi. "
               "Mavjud: ${groupDigits(widget.balance)} so'm."),
           const SizedBox(height: 12),
+          // saytdagidek: 5% komissiya ogohlantirishi
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.30)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.amber),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(children: [
+                      const TextSpan(
+                        text: 'Diqqat: kartaga yechishda $kPayoutCommissionPercent% komissiya olinadi. ',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const TextSpan(text: "Masalan, 100 000 so'm yechsangiz, kartangizga 95 000 so'm tushadi."),
+                    ]),
+                    style: TextStyle(color: AppColors.amber, fontSize: 13, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           const WebLabel('Karta raqami'),
           TextField(
             controller: _card,
@@ -657,6 +743,10 @@ class _PayoutFormState extends State<_PayoutForm> {
               ),
             ],
           ),
+          if ((int.tryParse(_amount.text.trim()) ?? 0) >= 1000) ...[
+            const SizedBox(height: 12),
+            _CommissionBreakdown(amount: int.parse(_amount.text.trim())),
+          ],
           if (_msg != null) ...[const SizedBox(height: 12), _Msg(ok: _msg!.$1, text: _msg!.$2)],
           const SizedBox(height: 12),
           Align(

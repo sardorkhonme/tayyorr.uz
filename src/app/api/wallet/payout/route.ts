@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { maskCard } from "@/lib/wallet";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { PAYOUT_COMMISSION_PERCENT, payoutNet } from "@/lib/payout-commission";
 
 const MIN = 1_000;
 
@@ -94,6 +95,8 @@ export async function POST(req: Request) {
       user.email ? `Email: ${user.email}` : "",
       user.walletCode ? `Hisob kodi: ${user.walletCode}` : "",
       `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Komissiya (${PAYOUT_COMMISSION_PERCENT}%): ${payoutNet(amount).commission.toLocaleString("ru-RU")} so'm`,
+      `Kartaga o'tkaziladi: ${payoutNet(amount).net.toLocaleString("ru-RU")} so'm`,
       `Karta: ${card}`,
       cardName ? `Karta egasi: ${cardName}` : "",
       `Qolgan balans: ${newBalance.toLocaleString("ru-RU")} so'm`,

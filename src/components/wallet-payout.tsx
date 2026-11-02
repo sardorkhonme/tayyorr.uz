@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/icons";
+import { PAYOUT_COMMISSION_PERCENT, payoutNet } from "@/lib/payout-commission";
 
 function formatCard(v: string) {
   return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
@@ -14,6 +16,8 @@ export function WalletPayout({ balance }: { balance: number }) {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const value = Number(amount) || 0;
+  const { commission, net } = payoutNet(value);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +57,13 @@ export function WalletPayout({ balance }: { balance: number }) {
         Mablag' darhol hisobdan yechiladi va kartangizga o'tkaziladi.
         Mavjud: {balance.toLocaleString("ru-RU")} so'm.
       </p>
+      <div className="flex gap-2.5 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
+        <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+        <p>
+          <span className="font-semibold">Diqqat: kartaga yechishda {PAYOUT_COMMISSION_PERCENT}% komissiya olinadi.</span>{" "}
+          Masalan, 100 000 so&apos;m yechsangiz, kartangizga 95 000 so&apos;m tushadi.
+        </p>
+      </div>
       <div>
         <label className="label">Karta raqami</label>
         <input
@@ -86,6 +97,22 @@ export function WalletPayout({ balance }: { balance: number }) {
           />
         </div>
       </div>
+      {value >= 1000 && (
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm">
+          <div className="flex justify-between text-zinc-400">
+            <span>Hamyondan yechiladi</span>
+            <span>{value.toLocaleString("ru-RU")} so&apos;m</span>
+          </div>
+          <div className="mt-1 flex justify-between text-zinc-400">
+            <span>Komissiya ({PAYOUT_COMMISSION_PERCENT}%)</span>
+            <span>−{commission.toLocaleString("ru-RU")} so&apos;m</span>
+          </div>
+          <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-semibold text-white">
+            <span>Kartangizga tushadi</span>
+            <span className="text-emerald-400">{net.toLocaleString("ru-RU")} so&apos;m</span>
+          </div>
+        </div>
+      )}
       {msg && (
         <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
           {msg.text}

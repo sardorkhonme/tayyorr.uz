@@ -7,6 +7,7 @@ import { mobileJson } from "@/lib/mobile-cors";
 import { maskCard } from "@/lib/wallet";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { PAYOUT_COMMISSION_PERCENT, payoutNet } from "@/lib/payout-commission";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -75,6 +76,8 @@ export async function POST(req: Request) {
     [
       `Foydalanuvchi: ${userLabel(user)}`,
       `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Komissiya (${PAYOUT_COMMISSION_PERCENT}%): ${payoutNet(amount).commission.toLocaleString("ru-RU")} so'm`,
+      `Kartaga o'tkaziladi: ${payoutNet(amount).net.toLocaleString("ru-RU")} so'm`,
       `Karta: ${maskCard(card)}`,
       `So'rov ID: ${payout.id}`,
     ],
