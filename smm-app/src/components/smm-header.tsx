@@ -12,6 +12,7 @@ export type HeaderUser = { name: string; image: string | null; balance: number }
 const PLUS_URL = process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz";
 
 const LINKS: { href: string; label: string; icon: IconName; auth?: boolean }[] = [
+  { href: "/", label: "Xizmatlar", icon: "grid" },
   { href: "/chegirmalar", label: "Chegirmalar", icon: "tag" },
   { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
@@ -23,7 +24,7 @@ function isActive(pathname: string, href: string) {
 }
 
 /**
- * smm.tayyorr.uz sarlavhasi: SMM'da tabbar yo'q — bo'limlar (chegirmalar, buyurtmalar,
+ * smm.tayyorr.uz sarlavhasi: SMM'da tabbar yo'q — bo'limlar (xizmatlar, chegirmalar, buyurtmalar,
  * hamyon, akkaunt) shu yerda; telefonda hammasi yashirin menyuga yig'iladi.
  */
 export function SmmHeader({ user }: { user: HeaderUser }) {

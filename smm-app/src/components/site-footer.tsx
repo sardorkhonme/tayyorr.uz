@@ -11,6 +11,7 @@ const COLS = [
   {
     title: "Bo'limlar",
     links: [
+      { href: "/", label: "Xizmatlar" },
       { href: "/chegirmalar", label: "Chegirmalar" },
       { href: "/orders", label: "Buyurtmalarim" },
       { href: "/wallet", label: "Hamyon" },
