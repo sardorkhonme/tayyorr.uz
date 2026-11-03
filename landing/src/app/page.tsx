@@ -1,6 +1,13 @@
+import { HeroBgVideo } from "@/components/hero-bg-video";
+import { HeroSolar } from "@/components/hero-solar";
+import { LandingVideos } from "@/components/landing-videos";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getLandingMedia } from "@/lib/landing-data";
 import { APP_URL, PLUS_URL, SMM_URL, START_URL } from "@/lib/links";
+
+// hero va video panjarasi admin panelda boshqariladi — 5 daqiqada yangilanadi
+export const revalidate = 300;
 
 const SERVICES = [
   {
@@ -61,7 +68,9 @@ const FAQ = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const media = await getLandingMedia();
+
   return (
     <main className="relative overflow-hidden">
       {/* fon */}
@@ -71,22 +80,23 @@ export default function Home() {
         <div className="absolute left-1/2 top-60 h-[28rem] w-[40rem] -translate-x-1/2 rounded-full bg-indigo-600/15 blur-3xl" />
       </div>
 
+      <HeroBgVideo url={media.heroVideo} />
+
       <SiteHeader />
 
       {/* ---------- hero ---------- */}
-      <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-14 px-6 pb-24 pt-36 lg:grid-cols-[1.1fr_1fr] lg:pt-44">
+      <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 px-6 pb-24 pt-36 lg:grid-cols-[1fr_1.05fr] lg:pt-44">
         <div className="text-center lg:text-left">
-          <p className="animate-rise inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-zinc-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Ilmiy işlar · SMM · tayyorr+
-          </p>
+          {/* shior: Tayyorr.uz — sizga keraklisi tayyorr. */}
           <h1
-            className="animate-rise mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl"
+            className="animate-rise font-display text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl"
             style={{ animationDelay: "60ms" }}
           >
-            Bitta hisob.
+            <span className="text-brand">Tayyorr.uz</span> —
             <br />
-            <span className="text-brand">Hamma xizmatlar.</span>
+            sizga keraklisi
+            <br />
+            <span className="text-brand">tayyorr.</span>
           </h1>
           <p
             className="animate-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-400 lg:mx-0"
@@ -108,7 +118,7 @@ export default function Home() {
           </div>
         </div>
 
-        <HeroOrbit />
+        <HeroSolar />
       </section>
 
       {/* ---------- xizmatlar ---------- */}
@@ -170,13 +180,13 @@ export default function Home() {
       </section>
 
       {/* ---------- mobil ilova ---------- */}
-      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-48 lg:pt-32">
+      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-52 sm:pt-60 lg:pt-44">
         {/* telefon kartadan yuqoriga chiqib turadi */}
-        <div className="card relative p-8 pt-36 sm:p-12 sm:pt-48 lg:pt-12">
+        <div className="card relative p-8 pt-40 sm:p-12 sm:pt-56 lg:min-h-[22rem] lg:pt-12">
           <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/25 blur-3xl" />
           </div>
-          <div className="pointer-events-none absolute -top-40 left-1/2 w-80 -translate-x-1/2 sm:-top-44 sm:w-[26rem] lg:-top-32 lg:left-auto lg:right-8 lg:w-[28rem] lg:translate-x-0">
+          <div className="pointer-events-none absolute -top-44 left-1/2 w-[22rem] max-w-[92vw] -translate-x-1/2 sm:-top-52 sm:w-[30rem] lg:-top-40 lg:left-auto lg:right-2 lg:w-[34rem] lg:translate-x-0">
             <div className="animate-float">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -206,6 +216,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ---------- videolar (admin panelda boshqariladi) ---------- */}
+      <LandingVideos videos={media.videos} />
 
       {/* ---------- savollar ---------- */}
       <section id="savollar" className="relative z-10 mx-auto max-w-3xl scroll-mt-28 px-6 py-20">
@@ -259,48 +272,5 @@ function Check() {
     <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="m5 12.5 4.5 4.5L19 7.5" />
     </svg>
-  );
-}
-
-/** Hero vizuali: markazda tayyorr+, atrofida xizmatlar — aylanib turuvchi orbita. */
-function HeroOrbit() {
-  const tiles = [
-    { mark: "/logo-mark.png", label: "Ilmiy işlar", pos: "left-0 top-[6%]", delay: "0s" },
-    { mark: "/smm-mark.png", label: "Tayyorr SMM", pos: "-right-2 top-[64%] sm:-right-6", delay: "1.5s" },
-  ];
-  return (
-    <div className="animate-rise relative mx-auto aspect-square w-full max-w-[26rem]" style={{ animationDelay: "160ms" }}>
-      <div aria-hidden className="absolute inset-0 rounded-full border border-white/[0.07]" />
-      <div aria-hidden className="absolute inset-[14%] rounded-full border border-dashed border-white/10 animate-spin-slow" />
-      <div aria-hidden className="absolute inset-[30%] rounded-full bg-indigo-500/25 blur-3xl" />
-
-      {/* markaz — tayyorr+ */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-        <span className="grid h-32 w-32 place-items-center rounded-[2rem] bg-white shadow-2xl shadow-indigo-500/40 sm:h-36 sm:w-36">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/plus-mark.png" alt="tayyorr+" className="h-24 w-24 object-contain sm:h-28 sm:w-28" />
-        </span>
-        <p className="mt-3 font-display text-lg font-bold text-white">tayyorr+</p>
-      </div>
-
-      {tiles.map((t) => (
-        <div key={t.label} className={`animate-float absolute ${t.pos}`} style={{ animationDelay: t.delay }}>
-          <div className="glass flex items-center gap-3 rounded-2xl p-2.5 pr-4">
-            <span className="grid h-12 w-12 place-items-center rounded-xl bg-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={t.mark} alt="" className="h-9 w-9 object-contain" />
-            </span>
-            <span className="text-sm font-semibold text-white">{t.label}</span>
-          </div>
-        </div>
-      ))}
-
-      <div className="absolute -bottom-2 left-[38%] -translate-x-1/2">
-        <div className="animate-float glass flex items-center gap-3 whitespace-nowrap rounded-2xl px-4 py-3" style={{ animationDelay: "0.8s" }}>
-          <span className="text-sm text-zinc-400">Umumiy hamyon</span>
-          <span className="font-display text-sm font-bold text-white">1 hisob · 1 hamyon</span>
-        </div>
-      </div>
-    </div>
   );
 }

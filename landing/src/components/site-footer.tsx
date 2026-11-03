@@ -63,9 +63,20 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="border-t border-white/[0.06]">
-        <p className="mx-auto max-w-6xl px-6 py-6 text-xs text-zinc-600">
-          © {new Date().getFullYear()} Tayyorr.uz — barça huquqlar himoyalangan.
-        </p>
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Tayyorr.uz — barça huquqlar himoyalangan.</p>
+          <p>
+            Işlab çiqdi:{" "}
+            <a
+              href="https://sardorkhon.me"
+              target="_blank"
+              rel="noopener"
+              className="font-semibold text-zinc-400 underline-offset-4 transition hover:text-white hover:underline"
+            >
+              sardorkhon.me
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );

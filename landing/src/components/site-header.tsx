@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { LiquidGlass } from "@/components/liquid-glass";
 import { Logo } from "@/components/logo";
 import { LOGIN_URL, START_URL } from "@/lib/links";
 
@@ -13,7 +14,7 @@ const NAV = [
 export function SiteHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
-      <nav className="glass mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5 sm:px-5">
+      <LiquidGlass as="nav" radius={18} bezel={30} scale={90} className="mx-auto flex max-w-6xl items-center justify-between rounded-[18px] px-4 py-2.5 sm:px-5">
         <Link href="/" aria-label="Tayyorr.uz">
           <Logo className="text-xl sm:text-2xl" markClassName="h-8 sm:h-9" />
         </Link>
@@ -32,7 +33,7 @@ export function SiteHeader() {
             Boşlaş
           </a>
         </div>
-      </nav>
+      </LiquidGlass>
     </header>
   );
 }
