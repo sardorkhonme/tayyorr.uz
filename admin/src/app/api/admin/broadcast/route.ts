@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   const bodyEn = str(raw.bodyEn);
   // qaysi platformaga: tayyorr.uz | tayyorr+ | ikkalasi (xabarga belgi qo'yiladi)
   const source: MessageSource =
-    raw.source === "tayyorr+" || raw.source === "ikkalasi" ? raw.source : "tayyorr.uz";
+    raw.source === "tayyorr+" || raw.source === "smm" || raw.source === "ikkalasi" ? raw.source : "tayyorr.uz";
   const textFor = (loc: string | null | undefined) =>
     withSource((loc === "ru" ? bodyRu : loc === "en" ? bodyEn : undefined) ?? body, source);
   const rf = raw.file as

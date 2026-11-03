@@ -18,7 +18,7 @@ import { prepareAdminChatFile, prepareChatFile, type PreparedChatFile } from "@/
 import { presenceText } from "@/lib/presence";
 import { shortDateTime, smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
-import { SOURCE_OPTIONS, type MessageSource } from "@/lib/message-source";
+import { SOURCE_OPTIONS, isForeignSource, type MessageSource } from "@/lib/message-source";
 import { flashMessage } from "@/lib/flash-message";
 
 interface ReplyPreview {
@@ -342,8 +342,8 @@ export function ChatRoom({
         }
         if (data.type === "message" || data.type === "edit") {
           const m = data.message;
-          // tayyorr+ ga xos xabar foydalanuvchining tayyorr.uz chatida ko'rinmaydi
-          if (!asSupport && m.source === "tayyorr+") return;
+          // tayyorr+ / SMM ga xos xabar foydalanuvchining tayyorr.uz chatida ko'rinmaydi
+          if (!asSupport && isForeignSource(m.source)) return;
           // boshqa tomondan kelgan yangi xabar — "tin"
           if (data.type === "message" && m.senderId !== meId && !m.system) playTin();
           merge([
@@ -1244,7 +1244,7 @@ export function ChatRoom({
                       onClick={() => setSendSource(o.value)}
                       className={`rounded-md px-2.5 py-1 font-medium transition ${
                         sendSource === o.value
-                          ? o.value === "tayyorr+"
+                          ? o.value === "tayyorr+" || o.value === "smm"
                             ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white"
                             : "bg-indigo-500 text-white"
                           : "text-zinc-400 hover:text-white"

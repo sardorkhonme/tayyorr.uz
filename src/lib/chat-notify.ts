@@ -11,6 +11,7 @@ import { sendPushToUser } from "@/lib/push";
 import { splitSource, stripSource } from "@/lib/message-source";
 
 const PLUS_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
+const SMM_URL = (process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz").replace(/\/+$/, "");
 
 function snippet(m: Message) {
   if (m.deletedAt) return "xabar";
@@ -52,9 +53,10 @@ export async function deliverMessage(m: Message) {
   // Telegram'dagi tugma tayyorr+ ni ochadi
   const source = splitSource(m.body).source;
   const plusOnly = source === "tayyorr+";
+  const smmOnly = source === "smm";
 
   // tayyorr+ brauzer bildirishnomasi — faqat support xabari tayyorr+ / ikkalasiga bo'lsa
-  if (sender?.isSupport && source !== "tayyorr.uz") {
+  if (sender?.isSupport && (source === "tayyorr+" || source === "ikkalasi")) {
     await sendPushToUser(
       recipientId,
       { title: SUPPORT_NAME, body: snippet(m), url: "/support", tag: `plus-${m.conversationId}` },
@@ -63,7 +65,7 @@ export async function deliverMessage(m: Message) {
   }
 
   // mobil ilova (FCM) va brauzer (web-push) — xatosi xabar yuborishni to'xtatmasin
-  if (!plusOnly) await Promise.allSettled([
+  if (!plusOnly && !smmOnly) await Promise.allSettled([
     sendMobilePush(recipientId, {
       title,
       body: snippet(m),
@@ -88,8 +90,8 @@ export async function deliverMessage(m: Message) {
   await sendTelegramToUser(recipientId, {
     title,
     body: snippet(m),
-    url: plusOnly ? PLUS_URL : siteUrl(`/messages/${m.conversationId}`),
-    buttonLabel: plusOnly ? "tayyorr+ da ko'rish" : "Xabarni ko'rish",
+    url: plusOnly ? PLUS_URL : smmOnly ? SMM_URL : siteUrl(`/messages/${m.conversationId}`),
+    buttonLabel: plusOnly ? "tayyorr+ da ko'rish" : smmOnly ? "Tayyorr SMM da ko'rish" : "Xabarni ko'rish",
   });
 
   // foydalanuvchi support'ga yozgan bo'lsa — admin loglar guruhiga ham tushadi

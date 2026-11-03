@@ -1,19 +1,19 @@
 import { db } from "@/lib/db";
-import { sendPlusPush } from "@/lib/push";
 import { notifyAdmins } from "@/lib/telegram";
 
 /**
  * Support chati — tayyorr.uz dagi "tayyorr.uz support" hisobi bilan bitta suhbat
  * (admin paneldagi "Xabarlar" bo'limida ko'rinadi va javob shu yerdan beriladi).
  * Platformalar ajratilgan (belgi xabar boshida, foydalanuvchiga ko'rsatilmaydi):
- *   "[tayyorr+]" — faqat tayyorr+ da ko'rinadi (SMM, buyurtmalar, shu yerdan yozilganlar)
- *   "[all]"      — ikkala platformada (hisob / pul haqida)
+ *   "[smm]"      — faqat Tayyorr SMM da (SMM buyurtmalari, shu yerdan yozilganlar)
+ *   "[tayyorr+]" — faqat tayyorr+ da
+ *   "[all]"      — barcha platformalarda (hisob / pul haqida)
  *   belgisiz     — faqat tayyorr.uz da
- * tayyorr.uz tomoni: src/lib/message-source.ts.
+ * tayyorr.uz / admin tomoni: lib/message-source.ts.
  */
-export const SOURCE_TAG = "[tayyorr+]";
+export const SOURCE_TAG = "[smm]";
 export const ALL_TAG = "[all]";
-/** tayyorr+ da ko'rinadigan xabarlar */
+/** Tayyorr SMM da ko'rinadigan xabarlar */
 const VISIBLE_HERE = { OR: [{ body: { startsWith: SOURCE_TAG } }, { body: { startsWith: ALL_TAG } }] };
 const SUPPORT_NAME = "tayyorr.uz support";
 /** admin panel — alohida loyiha (admin.tayyorr.uz) */
@@ -46,7 +46,7 @@ async function getConversation(userId: string, create: boolean) {
 
 export type SupportMessage = { id: string; mine: boolean; body: string; createdAt: string };
 
-const stripTag = (body: string) => body.replace(/^\[(tayyorr\+|all)\]\s*/, "");
+const stripTag = (body: string) => body.replace(/^\[(smm|tayyorr\+|all)\]\s*/, "");
 
 /** Suhbat tarixi (oxirgi 60 ta) + support javoblarini o'qilgan deb belgilash. */
 export async function listSupportMessages(userId: string, markRead: boolean) {
@@ -83,7 +83,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
   };
 }
 
-/** Support nomidan foydalanuvchiga xabarnoma — faqat tayyorr+ da ko'rinadi (SMM buyurtmalari va h.k.). */
+/** Support nomidan foydalanuvchiga xabarnoma — faqat Tayyorr SMM da ko'rinadi (buyurtmalar va h.k.). */
 export async function sendSupportNotice(userId: string, text: string) {
   const { conv, supportId } = await getConversation(userId, true);
   const c = conv!;
@@ -96,8 +96,6 @@ export async function sendSupportNotice(userId: string, text: string) {
       data: { lastMessageAt: msg.createdAt, deletedByUsersAt: null },
     });
   });
-  // sayt yopiq bo'lsa ham — brauzer bildirishnomasi
-  await sendPlusPush(userId, { title: SUPPORT_NAME, body: text.slice(0, 140), url: "/support", tag: `plus-${c.id}` }).catch(() => {});
 }
 
 /** Foydalanuvchi support'ga yozadi — xabar tayyorr.uz admin paneliga boradi. */
@@ -122,7 +120,7 @@ export async function sendSupportMessage(userId: string, text: string) {
   const who = `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() || u?.name || (u?.login ? `@${u.login}` : "Foydalanuvchi");
   await notifyAdmins(
     "support",
-    `💬 ${who} — tayyorr+ dan yozdi`,
+    `💬 ${who} — Tayyorr SMM dan yozdi`,
     [text.length > 500 ? `${text.slice(0, 500)}…` : text, u?.login ? `@${u.login}` : u?.email ?? ""],
     { text: "Javob berish", href: `${ADMIN_URL}/messages/${c.id}` },
   );

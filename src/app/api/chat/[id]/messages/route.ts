@@ -16,8 +16,8 @@ import { withSource } from "@/lib/message-source";
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
   replyToId: z.string().optional(),
-  /** faqat admin (support) — qaysi platformaga: tayyorr.uz | tayyorr+ | ikkalasi */
-  source: z.enum(["tayyorr.uz", "tayyorr+", "ikkalasi"]).optional(),
+  /** faqat admin (support) — qaysi platformaga: tayyorr.uz | tayyorr+ | smm | ikkalasi */
+  source: z.enum(["tayyorr.uz", "tayyorr+", "smm", "ikkalasi"]).optional(),
   file: z
     .object({
       key: z.string().min(1),

@@ -129,7 +129,7 @@ export default async function AdminMessages({
                   {last ? (
                     <>
                       {last.senderId === supportId ? "Support: " : ""}
-                      {splitSource(last.body).source === "tayyorr+" ? "[tayyorr+] " : ""}
+                      {splitSource(last.body).source === "tayyorr+" ? "[tayyorr+] " : splitSource(last.body).source === "smm" ? "[SMM] " : ""}
                       {stripSource(last.body) || (
                         <>
                           <Icon name="paperclip" className="mr-0.5 inline-block h-3.5 w-3.5 align-[-2px]" />

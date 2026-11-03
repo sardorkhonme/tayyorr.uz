@@ -243,7 +243,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                 onClick={() => setSource(o.value)}
                 className={`rounded-md px-3 py-1 font-medium transition ${
                   source === o.value
-                    ? o.value === "tayyorr+"
+                    ? o.value === "tayyorr+" || o.value === "smm"
                       ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white"
                       : "bg-indigo-500 text-white"
                     : "text-zinc-400 hover:text-white"

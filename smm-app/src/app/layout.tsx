@@ -5,6 +5,7 @@ import "./globals.css";
 import { GlowPointer } from "@/components/glow-pointer";
 import { SiteFooter } from "@/components/site-footer";
 import { SmmHeader, type HeaderUser } from "@/components/smm-header";
+import { SupportWidget } from "@/components/support-widget";
 import { currentUser } from "@/lib/session";
 
 // shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
@@ -40,6 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
           <SiteFooter />
         </main>
+        <SupportWidget loggedIn={!!u} />
       </body>
     </html>
   );
