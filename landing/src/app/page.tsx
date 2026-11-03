@@ -170,35 +170,39 @@ export default function Home() {
       </section>
 
       {/* ---------- mobil ilova ---------- */}
-      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 py-20">
-        <div className="card relative grid items-center gap-10 overflow-hidden p-8 sm:p-12 lg:grid-cols-[1.2fr_1fr]">
-          <div aria-hidden className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/25 blur-3xl" />
-          <div className="relative">
+      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-56 lg:pt-28">
+        {/* telefon kartadan yuqoriga chiqib turadi */}
+        <div className="card relative p-8 pt-44 sm:p-12 sm:pt-52 lg:pt-12">
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
+            <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/25 blur-3xl" />
+          </div>
+          <div className="pointer-events-none absolute -top-48 left-1/2 w-56 -translate-x-1/2 sm:-top-52 sm:w-64 lg:-top-32 lg:left-auto lg:right-16 lg:w-72 lg:translate-x-0">
+            <div className="animate-float">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/app-phone.webp"
+                alt="Tayyorr.uz Android ilovasi"
+                width={683}
+                height={1024}
+                loading="lazy"
+                className="h-auto w-full drop-shadow-[0_30px_60px_rgba(124,58,237,0.35)]"
+              />
+            </div>
+          </div>
+          <div className="relative text-center lg:max-w-[55%] lg:text-left">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Mobil ilova</p>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Hammasi cho&apos;ntagingizda
             </h2>
-            <p className="mt-4 max-w-md leading-relaxed text-zinc-400">
+            <p className="mx-auto mt-4 max-w-md leading-relaxed text-zinc-400 lg:mx-0">
               Buyurtmalar, xabarlar, hamyon va tayyorr+ — ilovaning o&apos;zida. Yangi xabar kelsa, darhol bilasiz.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
               <a href="/api/app/download" className="btn-white">
                 Android uchun yuklab olish
               </a>
               <span className="btn-ghost cursor-default text-zinc-500">iOS — tez orada</span>
             </div>
-          </div>
-          {/* ilova — telefon */}
-          <div className="animate-float relative mx-auto -my-6 text-center sm:-my-10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/app-phone.webp"
-              alt="Tayyorr.uz Android ilovasi"
-              width={683}
-              height={1024}
-              loading="lazy"
-              className="mx-auto h-auto w-64 sm:w-80 drop-shadow-[0_30px_60px_rgba(124,58,237,0.35)]"
-            />
           </div>
         </div>
       </section>
