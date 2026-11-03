@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { LiquidGlass } from "@/components/liquid-glass";
 import type { LandingVideo } from "@/lib/landing-data";
 
 type Rect = { top: number; left: number; width: number; height: number };
@@ -105,10 +106,7 @@ export function VideoCard({ video, spanClassName }: { video: LandingVideo; spanC
           aria-label={`${video.title} — köriş`}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white opacity-90 transition group-hover:scale-105 group-hover:opacity-100">
-            <PlayIcon />
-            Köriş
-          </span>
+          <GlassPill icon={<PlayIcon />} label="Köriş" />
         </button>
       </div>
 
@@ -141,11 +139,9 @@ export function VideoCard({ video, spanClassName }: { video: LandingVideo; spanC
                   <button
                     type="button"
                     onClick={replay}
-                    className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    className="group absolute inset-0 flex items-center justify-center bg-black/40"
                   >
-                    <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white">
-                      ↻ Qayta köriş
-                    </span>
+                    <GlassPill icon={<ReplayIcon />} label="Qayta köriş" />
                   </button>
                 )}
                 <button
@@ -165,10 +161,40 @@ export function VideoCard({ video, spanClassName }: { video: LandingVideo; spanC
   );
 }
 
+/**
+ * Liquid glass tugma: odatda faqat belgi (doira), karta ustiga kelinganda kengayib yozuv chiqadi.
+ * Ota elementda `group` bo'lishi kerak.
+ */
+function GlassPill({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <LiquidGlass
+      as="span"
+      radius={999}
+      bezel={16}
+      scale={42}
+      className="lg-pill inline-flex h-16 items-center rounded-full px-[1.375rem] text-white shadow-2xl shadow-black/40 transition-[padding,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105 group-hover:px-6"
+    >
+      <span className="relative grid h-5 w-5 shrink-0 place-items-center">{icon}</span>
+      <span className="relative max-w-0 overflow-hidden whitespace-nowrap text-base font-semibold opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:ml-2.5 group-hover:max-w-[9rem] group-hover:opacity-100">
+        {label}
+      </span>
+    </LiquidGlass>
+  );
+}
+
 function PlayIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-5 w-5 translate-x-px" fill="currentColor" aria-hidden>
       <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function ReplayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
     </svg>
   );
 }

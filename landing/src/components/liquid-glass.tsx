@@ -14,9 +14,10 @@ export function LiquidGlass({
   radius = 16,
   bezel = 22,
   scale = 46,
+  style,
   children,
 }: {
-  as?: "div" | "nav";
+  as?: "div" | "nav" | "span";
   className?: string;
   /** burchak radiusi (px) — elementning border-radius bilan bir xil bo'lsin */
   radius?: number;
@@ -24,6 +25,7 @@ export function LiquidGlass({
   bezel?: number;
   /** sinish kuchi */
   scale?: number;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLElement>(null);
@@ -66,7 +68,7 @@ export function LiquidGlass({
       <Tag
         ref={ref as React.Ref<HTMLDivElement>}
         data-refract={refract && map ? "" : undefined}
-        style={{ "--lg-filter": `url(#${id})` } as React.CSSProperties}
+        style={{ ...style, "--lg-filter": `url(#${id})` } as React.CSSProperties}
         className={`liquid-glass ${className}`}
       >
         {children}

@@ -201,6 +201,25 @@ body {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), rgba(10, 10, 18, 0.42);
   backdrop-filter: var(--lg-filter) blur(4px) saturate(1.8) brightness(0.95);
 }
+/* och shisha — quyosh va video tugmalari uchun (orqasi ko'proq ko'rinadi) */
+.liquid-glass.lg-light,
+.liquid-glass.lg-light[data-refract] {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)), rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.liquid-glass.lg-light[data-refract] {
+  backdrop-filter: var(--lg-filter) blur(2px) saturate(1.9) brightness(1.1);
+}
+/* video tugmalari — har qanday kadrda (oq fon ham) yozuv o'qilsin */
+.liquid-glass.lg-pill,
+.liquid-glass.lg-pill[data-refract] {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04)), rgba(12, 12, 22, 0.38);
+  border-color: rgba(255, 255, 255, 0.32);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+.liquid-glass.lg-pill[data-refract] {
+  backdrop-filter: var(--lg-filter) blur(3px) saturate(1.8);
+}
 .liquid-glass::after {
   content: "";
   pointer-events: none;
