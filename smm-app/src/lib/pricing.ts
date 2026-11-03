@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
+import { ADJUST_KEY, adjustPct, parseAdjust, type Adjust, type ServiceRef } from "@/lib/smm-adjust";
 
 /**
  * Narxlash: provayder narxi (USD / 1000 dona) × dollar kursi × (1 + ustama%).
  * Kurs — O'zbekiston Markaziy banki (cbu.uz), 6 soatda bir yangilanadi.
  * Ustama — tayyorr.uz admin panelidan (AppSetting "smmMarkupPercent").
+ * Xizmat/guruh bo'yicha chegirma yoki ustama — AppSetting "smmAdjust" (lib/smm-adjust.ts).
  * Kalitlar tayyorr.uz dagi src/lib/smm-settings.ts bilan bir xil.
  */
 export const MARKUP_KEY = "smmMarkupPercent";
@@ -16,6 +18,7 @@ export type Pricing = {
   fx: number; // 1 USD = fx so'm
   rateDate: string | null; // Markaziy bank sanasi
   markupPercent: number;
+  adjust: Adjust;
 };
 
 type StoredRate = { rate: number; date: string | null; at: string };
@@ -37,9 +40,10 @@ let cache: { value: Pricing; until: number } | null = null;
 export async function getPricing(): Promise<Pricing | null> {
   if (cache && cache.until > Date.now()) return cache.value;
 
-  const [markupRow, rateRow] = await Promise.all([
+  const [markupRow, rateRow, adjustRow] = await Promise.all([
     db.appSetting.findUnique({ where: { key: MARKUP_KEY } }),
     db.appSetting.findUnique({ where: { key: USD_RATE_KEY } }),
+    db.appSetting.findUnique({ where: { key: ADJUST_KEY } }),
   ]);
 
   let stored: StoredRate | null = null;
@@ -66,12 +70,18 @@ export async function getPricing(): Promise<Pricing | null> {
     fx: stored.rate,
     rateDate: stored.date,
     markupPercent: Number.isFinite(pct) && pct >= 0 ? pct : DEFAULT_MARKUP_PERCENT,
+    adjust: parseAdjust(adjustRow?.value ?? null),
   };
   cache = { value, until: Date.now() + 60_000 };
   return value;
 }
 
-/** 1000 dona uchun sotuv narxi (so'm), 100 so'mgacha yuqoriga yaxlitlanadi. */
-export function rateFor(providerRate: number, p: Pricing) {
-  return Math.max(100, Math.ceil((providerRate * p.fx * (1 + p.markupPercent / 100)) / 100) * 100);
+/**
+ * 1000 dona uchun sotuv narxi (so'm), 100 so'mgacha yuqoriga yaxlitlanadi.
+ * `service` berilsa — admin qo'ygan chegirma/ustama ham qo'shiladi.
+ */
+export function rateFor(providerRate: number, p: Pricing, service?: ServiceRef) {
+  const adj = service ? adjustPct(p.adjust, service) : 0;
+  const raw = providerRate * p.fx * (1 + p.markupPercent / 100) * (1 + adj / 100);
+  return Math.max(100, Math.ceil(raw / 100) * 100);
 }

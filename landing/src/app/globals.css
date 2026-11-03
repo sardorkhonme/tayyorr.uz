@@ -57,9 +57,9 @@ body {
   }
   .glass {
     border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(12, 12, 20, 0.6);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: rgba(12, 12, 20, 0.55);
+    /* prefiksni build o'zi qo'shadi (ikkalasini yozsak, faqat -webkit- qolib, Chrome'da blur ishlamasdi) */
+    backdrop-filter: blur(20px) saturate(1.4);
   }
   /* gradient matn — brend ranglari (logodagi ko'k → binafsha) */
   .text-brand {

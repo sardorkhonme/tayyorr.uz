@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/session";
 import { ServicesBoard } from "@/components/services-board";
 import { db } from "@/lib/db";
 import { getPricing, rateFor } from "@/lib/pricing";
+import { isHidden } from "@/lib/smm-adjust";
 import { maybeSyncServices } from "@/lib/sync-services";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export default async function SmmPage({
       orderBy: [{ platform: "asc" }, { sort: "asc" }, { providerRate: "asc" }],
       select: {
         id: true,
+        providerId: true,
         platform: true,
         category: true,
         name: true,
@@ -54,9 +56,14 @@ export default async function SmmPage({
     }),
     getPricing(),
   ]);
-  // narx har safar joriy kurs va admin ustamasi bo'yicha hisoblanadi
+  // narx har safar joriy kurs, admin ustamasi va xizmat bo'yicha tuzatish asosida hisoblanadi
   const services = pricing
-    ? rows.map(({ providerRate, ...s }) => ({ ...s, rate: rateFor(providerRate, pricing) }))
+    ? rows
+        .filter((r) => !isHidden(pricing.adjust, r))
+        .map(({ providerRate, providerId, ...s }) => ({
+          ...s,
+          rate: rateFor(providerRate, pricing, { providerId, ...s }),
+        }))
     : [];
 
   return (

@@ -556,6 +556,17 @@ export function PowerIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+/** Hisobdan chiqish — eshik va strelka (tayyorr+ dagi bilan bir xil). */
+export function LogoutIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M14 4.5h3.5A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5H14" />
+      <path d="M10 8 6 12l4 4" />
+      <path d="M6 12h9" />
+    </svg>
+  );
+}
+
 /** Mikrofon — ovozli xabar. */
 export function MicIcon({ className = "h-[19px] w-[19px]" }: { className?: string }) {
   return (

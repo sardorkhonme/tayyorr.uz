@@ -26,6 +26,7 @@ const BASE: NavLink[] = [
   { href: "/landing", label: "Sayt kontenti", icon: "film" },
   { href: "/app", label: "Mobil ilova", icon: "phone" },
   { href: "/smm", label: "tayyorr+", icon: "rocket", image: "/plus-mark.png" },
+  { href: "/smm-services", label: "SMM xizmatlari", icon: "rocket", image: "/smm-mark.png" },
 ];
 
 export const metadata: Metadata = {
