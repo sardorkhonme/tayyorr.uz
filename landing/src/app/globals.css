@@ -109,6 +109,16 @@ body {
 .animate-spin-slow { animation: spin-slow 40s linear infinite; }
 
 
+/* ---- hero foni ---- */
+.hero-bg {
+  mask-image: linear-gradient(to bottom, black 0%, black 72%, transparent 100%);
+}
+@keyframes bg-in {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-bg-in { animation: bg-in 1.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* ---- header: liquid glass (components/liquid-glass.tsx) ---- */
 .liquid-glass {
   position: relative;
@@ -148,6 +158,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .animate-rise, .animate-float, .animate-spin-slow { animation: none; }
+  .animate-rise, .animate-float, .animate-spin-slow, .animate-bg-in { animation: none; }
   .service-card { transition: none; }
 }

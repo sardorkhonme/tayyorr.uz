@@ -71,11 +71,13 @@ export default async function Home() {
 
   return (
     <main className="relative overflow-hidden">
-      {/* fon */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[60rem]">
-        <div className="absolute -left-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-sky-500/15 blur-3xl" />
-        <div className="absolute -right-40 top-10 h-[34rem] w-[34rem] rounded-full bg-fuchsia-600/15 blur-3xl" />
-        <div className="absolute left-1/2 top-60 h-[28rem] w-[40rem] -translate-x-1/2 rounded-full bg-indigo-600/15 blur-3xl" />
+      {/* hero foni — suyuq shisha lentalar (telefonda tik versiyasi), pastda sahifa foniga singadi */}
+      <div aria-hidden className="hero-bg pointer-events-none absolute inset-x-0 top-0 h-[100svh] min-h-[40rem]">
+        <picture>
+          <source media="(max-width: 767px)" srcSet="/hero-bg-mobile.webp" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/hero-bg.webp" alt="" fetchPriority="high" className="animate-bg-in h-full w-full object-cover" />
+        </picture>
       </div>
 
       <SiteHeader />
