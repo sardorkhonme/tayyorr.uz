@@ -7,6 +7,7 @@ import type { NavLink } from "@/components/nav-menu";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Icon, PowerIcon } from "@/components/icons";
+import { AdminBrand } from "@/components/admin/admin-brand";
 
 /** Admin panel chap paneli (kompyuterda). */
 export function AdminSidebar({ nav }: { nav: NavLink[] }) {
@@ -14,9 +15,8 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-60 flex-col border-r border-white/10 bg-[#08080d]/95 backdrop-blur-xl lg:flex">
-      <Link href="/" className="px-5 py-4 font-semibold">
-        tayyorr<span className="text-indigo-400">.uz</span>{" "}
-        <span className="text-zinc-500">admin</span>
+      <Link href="/" className="px-4 py-4">
+        <AdminBrand />
       </Link>
 
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3">

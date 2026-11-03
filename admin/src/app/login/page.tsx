@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { AdminBrand } from "@/components/admin/admin-brand";
+
 export default function AdminLoginPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +33,9 @@ export default function AdminLoginPage() {
         onSubmit={submit}
         className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.04] p-7"
       >
-        <h1 className="text-lg font-semibold text-white">Admin panel</h1>
-        <p className="mt-1 text-sm text-zinc-500">tayyorr.uz boshqaruvi</p>
+        <AdminBrand size="lg" />
+        <h1 className="mt-5 text-lg font-semibold text-white">Admin panel</h1>
+        <p className="mt-1 text-sm text-zinc-500">Tayyorr boshqaruvi</p>
 
         <div className="mt-6 flex flex-col gap-3">
           <div>

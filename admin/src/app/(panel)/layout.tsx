@@ -9,6 +9,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { NavMenu, type NavLink } from "@/components/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
+import { AdminBrand } from "@/components/admin/admin-brand";
 
 const BASE: NavLink[] = [
   { href: "/", label: "Bosh", icon: "home" },
@@ -70,9 +71,8 @@ export default async function AdminPanelLayout({
       {/* mobil header */}
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#08080d]/85 backdrop-blur-2xl lg:hidden">
         <div className="flex items-center gap-3 px-4 py-3">
-          <Link href="/" className="shrink-0 font-semibold">
-            tayyorr<span className="text-indigo-400">.uz</span>{" "}
-            <span className="text-zinc-500">admin</span>
+          <Link href="/" className="shrink-0">
+            <AdminBrand />
           </Link>
           <div className="ml-auto flex items-center gap-2">
             <AdminPostButton
