@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     "stars",
     "⭐ Star sotib olindi",
     [
-      `Foydalanuvchi: ${userLabel(user)}`,
+      `Foydalanuvçi: ${userLabel(user)}`,
       user?.email ? `Email: ${user.email}` : "",
       `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} söm)`,
       `Yangi star balansi: ${result.newStars} ⭐`,

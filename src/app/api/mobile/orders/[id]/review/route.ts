@@ -69,7 +69,7 @@ export async function POST(
   await logToGroup(
     "completed",
     "⭐ Işga baho qöyildi (mobil)",
-    [`«${order.title}»`, `Baho: ${stars}/5`, comment ? `Sharh: ${comment}` : "", `Buyurtma ID: ${id}`].filter(
+    [`«${order.title}»`, `Baho: ${stars}/5`, comment ? `Şarh: ${comment}` : "", `Buyurtma ID: ${id}`].filter(
       Boolean,
     ),
     siteUrl(`/sardorxon/admin/orders/${id}`),

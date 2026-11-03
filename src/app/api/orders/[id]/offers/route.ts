@@ -113,7 +113,7 @@ export async function POST(
     existing ? "🙋 Taklif yangilandi" : "🙋 Yangi taklif",
     [
       `«${order.title}»`,
-      `Tayyorlovchi: ${userLabel(preparer)}`,
+      `Tayyorlovçi: ${userLabel(preparer)}`,
       preparer?.email ? `Email: ${preparer.email}` : "",
       `Narx: ${parsed.data.price.toLocaleString("ru-RU")} söm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",

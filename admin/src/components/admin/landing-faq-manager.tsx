@@ -84,7 +84,7 @@ function Row({ f }: { f: Faq }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("O'chirilsinmi?")) return;
+    if (!confirm("Öçirilsinmi?")) return;
     setBusy(true);
     await fetch(`/api/admin/landing-faq/${f.id}`, { method: "DELETE" });
     router.refresh();

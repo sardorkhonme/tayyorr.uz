@@ -76,7 +76,7 @@ export async function requestPayout(userId: string, amount: number, cardRaw: str
     "payouts",
     "🏧 Yangi yeçib oliş sörovi (tayyorr+)",
     [
-      `Foydalanuvchi: ${userLabel(u)}`,
+      `Foydalanuvçi: ${userLabel(u)}`,
       u?.email ? `Email: ${u.email}` : "",
       u?.walletCode ? `Hisob kodi: ${u.walletCode}` : "",
       `Summa: ${som(amount)}`,

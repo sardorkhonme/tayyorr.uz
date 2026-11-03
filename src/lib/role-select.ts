@@ -26,7 +26,7 @@ export async function chooseRole(userId: string, role: Role, via: "sayt" | "mobi
   await logToGroup(
     "registrations",
     "🎭 Rol tanlandi (tayyorr+ hisobi tayyorr.uz ga kirdi)",
-    [`Foydalanuvchi: ${userLabel(u)}`, u.email ? `Email: ${u.email}` : "", `Rol: ${label}`, `Qayerdan: ${via}`].filter(Boolean),
+    [`Foydalanuvçi: ${userLabel(u)}`, u.email ? `Email: ${u.email}` : "", `Rol: ${label}`, `Qayerdan: ${via}`].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${userId}`),
   );
   return { ok: true } as const;

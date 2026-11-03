@@ -103,7 +103,7 @@ export async function POST(
         ? "➕ Admin balans qöşdi"
         : "➖ Admin balans ayirdi",
     [
-      `Foydalanuvchi: ${userLabel(user)}`,
+      `Foydalanuvçi: ${userLabel(user)}`,
       user.email ? `Email: ${user.email}` : "",
       user.walletCode ? `Hisob kodi: ${user.walletCode}` : "",
       isStar

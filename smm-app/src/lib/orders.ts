@@ -104,7 +104,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
       "orders",
       "🛒 Yangi SMM buyurtma",
       [
-        `Foydalanuvchi: ${userLabel(u)}`,
+        `Foydalanuvçi: ${userLabel(u)}`,
         `Xizmat: ${service.name}`,
         `Havola: ${link}`,
         `Miqdor: ${num(quantity)}`,
@@ -214,7 +214,7 @@ async function notifyOrderFinished(orderId: string) {
     "orders",
     FINISH_TITLE[o.status] ?? `SMM buyurtma: ${o.status}`,
     [
-      `Foydalanuvchi: ${userLabel(o.user)}`,
+      `Foydalanuvçi: ${userLabel(o.user)}`,
       `Xizmat: ${o.service.name}`,
       `Havola: ${o.link}`,
       `Miqdor: ${num(o.quantity)} · ${som(o.charge)}`,

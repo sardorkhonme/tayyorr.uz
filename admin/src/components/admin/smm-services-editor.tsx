@@ -57,7 +57,7 @@ function PctBadge({ pct }: { pct: number }) {
       }`}
     >
       {pct > 0 ? "+" : "−"}
-      {Math.abs(pct)}% {pct < 0 ? "chegirma" : "ustama"}
+      {Math.abs(pct)}% {pct < 0 ? "çegirma" : "ustama"}
     </span>
   );
 }

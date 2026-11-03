@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       description.length > 500 ? `${description.slice(0, 500)}…` : description,
       budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} söm` : "Byudjet: kelişiladi",
       deadline ? `Muddat: ${shortDateTime(new Date(deadline))}` : "",
-      `Buyurtmachi: ${userLabel(orderer)}`,
+      `Buyurtmaçi: ${userLabel(orderer)}`,
       orderer?.email ? `Email: ${orderer.email}` : "",
       `Buyurtma ID: ${order.id}`,
     ].filter(Boolean),

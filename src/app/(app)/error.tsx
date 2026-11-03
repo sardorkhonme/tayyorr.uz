@@ -50,7 +50,7 @@ export default function AppError({
           disabled={busy}
           className="btn-primary"
         >
-          {busy ? "Yo'naltirilmoqda..." : "Qayta uriniş (Kiriş)"}
+          {busy ? "Yönaltirilmoqda..." : "Qayta uriniş (Kiriş)"}
         </button>
         {!isUserNotFound && (
           <button type="button" onClick={reset} className="btn-secondary">

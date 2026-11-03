@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     "payouts",
     "🏧 Yangi yeçib oliş sörovi (mobil)",
     [
-      `Foydalanuvchi: ${userLabel(user)}`,
+      `Foydalanuvçi: ${userLabel(user)}`,
       `Summa: ${amount.toLocaleString("ru-RU")} söm`,
       `Komissiya (${PAYOUT_COMMISSION_PERCENT}%): ${payoutNet(amount).commission.toLocaleString("ru-RU")} söm`,
       `Kartaga ötkaziladi: ${payoutNet(amount).net.toLocaleString("ru-RU")} söm`,

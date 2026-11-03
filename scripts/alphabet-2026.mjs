@@ -87,7 +87,14 @@ const TECH_ATTRS = new Set([
   "image", "logo", "svgOrigin", "capture", "list", "form", "slot", "tag", "status",
 ]);
 
-const isTechnical = (s) =>
+const isTechnical = (s) => {
+  // o'zbekcha apostrofli so'z (o'chirish, so'ragan) — texnik satrda bo'lmaydi
+  if (new RegExp(`\\p{L}${APOS}\\p{L}`, "u").test(s)) return false;
+  // oxiridagi tinish belgilari ("Chiqish...", "O'chirilsinmi?") texnik belgi emas
+  s = s.replace(/[?!.:…,;)]+$/, "");
+  return isTechnicalCore(s);
+};
+const isTechnicalCore = (s) =>
   s.length === 0 ||
   // bo'shliqsiz va texnik belgilar (yo'l, kalit, klass, kod)
   (!/\s/.test(s) && (/[/_.:#=?&@\\[\]{}<>|]/.test(s) || /^[a-z0-9-]+$/.test(s) || /^[A-Z0-9_-]+$/.test(s))) ||

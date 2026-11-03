@@ -34,7 +34,7 @@ export function AccountNotFound() {
             disabled={busy}
             className="btn-primary w-full justify-center"
           >
-            {busy ? "Yo'naltirilmoqda..." : "Qayta uriniş"}
+            {busy ? "Yönaltirilmoqda..." : "Qayta uriniş"}
           </button>
         </div>
       </div>

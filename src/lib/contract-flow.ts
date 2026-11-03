@@ -117,8 +117,8 @@ async function notice(c: Pick<Contract, "ordererId" | "preparerId" | "orderId">,
 function groupLines(c: ContractFull, extra: string[] = []) {
   return [
     `«${c.order.title}»`,
-    `Buyurtmachi: ${userLabel(c.orderer)}`,
-    `Tayyorlovchi: ${userLabel(c.preparer)}`,
+    `Buyurtmaçi: ${userLabel(c.orderer)}`,
+    `Tayyorlovçi: ${userLabel(c.preparer)}`,
     `Summa: ${som(c.amount)}`,
     ...extra,
     `Şartnoma ID: ${c.id}`,
@@ -394,7 +394,7 @@ async function rejectCancel(c: ContractFull, me: string, reason: string): Promis
     "contracts",
     "⚖️ NIZO — admin qarori kerak",
     groupLines(c, [
-      `So'ragan: ${roleName(c, c.cancelRequestedById ?? "")}`,
+      `Söragan: ${roleName(c, c.cancelRequestedById ?? "")}`,
       `Bekor qiliş sababi: ${c.cancelReason ?? "—"}`,
       `Rad etiş sababi: ${reason}`,
     ]),
@@ -515,7 +515,7 @@ export async function finalizeWork(orderId: string, me: string): Promise<FlowRes
     orderId,
     payout: c.amount,
   });
-  await logToGroup("completed", "✅ Iş yakunlandi", groupLines(c, [`Tayyorlovchiga: ${som(c.amount)}`]), adminUrl(orderId));
+  await logToGroup("completed", "✅ Iş yakunlandi", groupLines(c, [`Tayyorlovçiga: ${som(c.amount)}`]), adminUrl(orderId));
   return OK;
 }
 

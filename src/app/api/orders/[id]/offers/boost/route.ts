@@ -70,7 +70,7 @@ export async function POST(
     "🚀 Navbatda yuqoriga çiqiş",
     [
       `«${order.title}»`,
-      `Tayyorlovchi: ${userLabel(preparer)}`,
+      `Tayyorlovçi: ${userLabel(preparer)}`,
       `Sarflandi: ${parsed.data.stars} ⭐`,
       `Jami star: ${updated.starsSpent} ⭐`,
       `Buyurtma ID: ${id}`,

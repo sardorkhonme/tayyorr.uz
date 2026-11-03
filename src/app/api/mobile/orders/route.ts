@@ -127,7 +127,7 @@ export async function POST(req: Request) {
       `Turi: ${type}`,
       description.length > 500 ? `${description.slice(0, 500)}…` : description,
       budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} söm` : "Byudjet: kelişiladi",
-      `Buyurtmachi: ${userLabel(orderer)}`,
+      `Buyurtmaçi: ${userLabel(orderer)}`,
       `Buyurtma ID: ${order.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${order.id}`),

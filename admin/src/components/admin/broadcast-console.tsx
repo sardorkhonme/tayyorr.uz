@@ -288,7 +288,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             onClick={preview}
             className="btn-ghost self-end"
           >
-            {count != null ? `${count} ta mos` : "Nechta?"}
+            {count != null ? `${count} ta mos` : "Neçta?"}
           </button>
         </div>
         <p className="mt-1.5 text-[11px] text-zinc-600">

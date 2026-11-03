@@ -150,8 +150,8 @@ export async function POST(
     [
       `«${order.title}»`,
       `Summa: ${amount.toLocaleString("ru-RU")} söm`,
-      `Buyurtmachi: ${userLabel(orderer)}`,
-      `Tayyorlovchi: ${userLabel(preparer)}`,
+      `Buyurtmaçi: ${userLabel(orderer)}`,
+      `Tayyorlovçi: ${userLabel(preparer)}`,
       note ? `Tavsif: ${note}` : "",
       `Muddat: ${shortDateTime(dl)}`,
       `Şartnoma ID: ${contract.id}`,

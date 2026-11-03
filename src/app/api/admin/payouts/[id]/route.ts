@@ -122,7 +122,7 @@ export async function POST(
     "payouts",
     action === "PAID" ? "🏧 Pul ötkazildi" : "🏧 Yeçiş rad etildi",
     [
-      `Foydalanuvchi: ${userLabel(p.user)}`,
+      `Foydalanuvçi: ${userLabel(p.user)}`,
       p.user.email ? `Email: ${p.user.email}` : "",
       p.user.walletCode ? `Hisob kodi: ${p.user.walletCode}` : "",
       `Summa: ${p.amount.toLocaleString("ru-RU")} söm`,

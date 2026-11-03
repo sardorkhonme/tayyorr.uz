@@ -97,7 +97,7 @@ export async function POST(req: Request) {
         payTopic,
         `⚠️ Tölov bekor qilindi (Click${smmTag})`,
         [
-          `Foydalanuvchi: ${userLabel(u)}`,
+          `Foydalanuvçi: ${userLabel(u)}`,
           u?.email ? `Email: ${u.email}` : "",
           u?.walletCode ? `Hisob kodi: ${u.walletCode}` : "",
           `Summa: ${wtx.amount.toLocaleString("ru-RU")} söm`,
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
     payTopic,
     `💳 Hisob töldirildi (Click${smmTag})`,
     [
-      `Foydalanuvchi: ${userLabel(updatedUser)}`,
+      `Foydalanuvçi: ${userLabel(updatedUser)}`,
       updatedUser.email ? `Email: ${updatedUser.email}` : "",
       updatedUser.walletCode ? `Hisob kodi: ${updatedUser.walletCode}` : "",
       `Summa: ${wtx.amount.toLocaleString("ru-RU")} söm`,

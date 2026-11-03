@@ -83,7 +83,7 @@ export async function POST(
     [
       `«${order.title}»`,
       `Baho: ${stars}/5`,
-      comment ? `Sharh: ${comment}` : "",
+      comment ? `Şarh: ${comment}` : "",
       `Buyurtma ID: ${id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),

@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     "complaints",
     "⚠️ Yangi şikoyat",
     [
-      `Shikoyatchi: ${userLabel(reporter)}`,
+      `Şikoyatçi: ${userLabel(reporter)}`,
       suspectId ? `Kimga qarşi: ${userLabel(suspect)}` : "",
       orderId ? `Buyurtma ID: ${orderId}` : "",
       messageId ? `Xabar ID: ${messageId}` : "",

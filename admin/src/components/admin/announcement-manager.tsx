@@ -210,7 +210,7 @@ function Row({ b }: { b: Banner }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("O'chirilsinmi?")) return;
+    if (!confirm("Öçirilsinmi?")) return;
     setBusy(true);
     await fetch(`/api/admin/announcement/${b.id}`, { method: "DELETE" });
     router.refresh();
