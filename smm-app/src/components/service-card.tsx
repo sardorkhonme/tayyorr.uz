@@ -51,9 +51,15 @@ export function ServiceCard({
         s.discount ? "ring-2 ring-rose-200" : ""
       }`}
     >
-      {s.discount > 0 && <DiscountBadge pct={s.discount} className="absolute -top-2.5 right-4" />}
-      {label && <span className="text-xs font-semibold uppercase tracking-wide text-indigo-500">{label}</span>}
-      <span className="font-display text-[17px] font-semibold leading-snug text-zinc-900">{title}</span>
+      {s.discount > 0 && <DiscountBadge pct={s.discount} className="absolute right-4 top-4 sm:right-5 sm:top-5" />}
+      {label && (
+        <span className={`text-xs font-semibold uppercase tracking-wide text-indigo-500 ${s.discount ? "pr-16" : ""}`}>{label}</span>
+      )}
+      <span
+        className={`font-display text-[17px] font-semibold leading-snug text-zinc-900 ${s.discount && !label ? "pr-16" : ""}`}
+      >
+        {title}
+      </span>
       <span className="flex flex-wrap gap-1.5 text-xs">
         {tags.slice(0, 4).map((t) => (
           <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-zinc-600">
