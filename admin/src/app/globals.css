@@ -581,16 +581,6 @@ button:hover .hover-pill-label {
 
 /* hero fon videosi — telefonda pastga, kompyuterda o'ng chetga qarab
    xiralashib fonga singib ketadi */
-.hero-video-mask {
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
-}
-@media (min-width: 640px) {
-  .hero-video-mask {
-    -webkit-mask-image: linear-gradient(to right, black 0%, black 55%, transparent 100%);
-    mask-image: linear-gradient(to right, black 0%, black 55%, transparent 100%);
-  }
-}
 
 /* ---- nav menu ---- */
 @keyframes menu-in {

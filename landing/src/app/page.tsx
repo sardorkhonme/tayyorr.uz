@@ -1,12 +1,10 @@
-import { HeroBgVideo } from "@/components/hero-bg-video";
-import { HeroSolar } from "@/components/hero-solar";
 import { LandingVideos } from "@/components/landing-videos";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getLandingMedia } from "@/lib/landing-data";
 import { APP_URL, PLUS_URL, SMM_URL, START_URL } from "@/lib/links";
 
-// hero va video panjarasi admin panelda boshqariladi — 5 daqiqada yangilanadi
+// video panjarasi admin panelda boshqariladi — 5 daqiqada yangilanadi
 export const revalidate = 300;
 
 const SERVICES = [
@@ -80,33 +78,29 @@ export default async function Home() {
         <div className="absolute left-1/2 top-60 h-[28rem] w-[40rem] -translate-x-1/2 rounded-full bg-indigo-600/15 blur-3xl" />
       </div>
 
-      <HeroBgVideo url={media.heroVideo} />
-
       <SiteHeader />
 
       {/* ---------- hero ---------- */}
-      <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 px-6 pb-24 pt-36 lg:grid-cols-[1fr_1.05fr] lg:pt-44">
-        <div className="text-center lg:text-left">
+      <section className="relative z-10 mx-auto flex min-h-[88svh] max-w-5xl flex-col items-center justify-center px-6 pb-20 pt-36 text-center lg:pt-40">
+        <div>
           {/* shior: Tayyorr.uz — sizga keraklisi tayyorr. */}
           <h1
-            className="animate-rise font-display text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl"
+            className="animate-rise font-display text-5xl font-bold leading-[1.04] tracking-tight text-white sm:text-7xl lg:text-8xl"
             style={{ animationDelay: "60ms" }}
           >
-            <span className="text-brand">Tayyorr.uz</span> —
+            <span className="text-brand">Tayyorr.uz</span> — sizga
             <br />
-            sizga keraklisi
-            <br />
-            <span className="text-brand">tayyorr.</span>
+            keraklisi <span className="text-brand">tayyorr.</span>
           </h1>
           <p
-            className="animate-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-400 lg:mx-0"
+            className="animate-rise mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-zinc-400 sm:text-xl"
             style={{ animationDelay: "120ms" }}
           >
             Ilmiy işlaringiz uçun tayyorlovçi toping, ijtimoiy tarmoqlaringizni östiring — barçasi bitta
             hisob va bitta hamyon bilan.
           </p>
           <div
-            className="animate-rise mt-9 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start"
+            className="animate-rise mt-10 flex flex-col justify-center gap-3 sm:flex-row"
             style={{ animationDelay: "180ms" }}
           >
             <a href={START_URL} className="btn-white !px-7 !py-3.5">
@@ -117,8 +111,6 @@ export default async function Home() {
             </a>
           </div>
         </div>
-
-        <HeroSolar />
       </section>
 
       {/* ---------- xizmatlar ---------- */}

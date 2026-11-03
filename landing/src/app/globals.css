@@ -109,81 +109,6 @@ body {
 .animate-spin-slow { animation: spin-slow 40s linear infinite; }
 
 
-/* ---- hero fon videosi: chetdan markazga qarab fonga singib ketadi ---- */
-.hero-video-mask {
-  mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
-}
-@media (min-width: 640px) {
-  .hero-video-mask {
-    mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%),
-      linear-gradient(to bottom, black 70%, transparent 100%);
-    mask-composite: intersect;
-  }
-}
-
-/* ---- hero: 3D quyosh sistemasi (components/hero-solar.tsx) ---- */
-.solar-scene {
-  position: absolute;
-  inset: 0;
-  perspective: 1100px;
-  perspective-origin: 50% 35%;
-}
-.solar-plane {
-  --tilt: 68deg;
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform: rotateX(var(--tilt));
-}
-.solar-ring,
-.solar-orbit {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--size);
-  aspect-ratio: 1;
-  border-radius: 9999px;
-  transform: translate(-50%, -50%);
-  transform-style: preserve-3d;
-}
-.solar-ring {
-  border: 1.5px solid rgba(255, 255, 255, 0.13);
-  box-shadow: 0 0 40px rgba(129, 140, 248, 0.18), inset 0 0 40px rgba(129, 140, 248, 0.12);
-}
-.solar-orbit {
-  animation: solar-spin var(--dur) linear infinite;
-  animation-delay: var(--delay);
-}
-.solar-body {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translate(-50%, -50%);
-  transform-style: preserve-3d;
-}
-.solar-face {
-  transform-style: preserve-3d;
-  animation: solar-counter var(--dur) linear infinite;
-  animation-delay: var(--delay);
-}
-.solar-sun {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  /* kameraga biroz yaqinlashtiriladi — orbita tekisligi quyoshni kesib o'tmasin */
-  transform: translate(-50%, -50%) rotateX(calc(-1 * var(--tilt))) translateZ(70px);
-  transform-style: preserve-3d;
-}
-@keyframes solar-spin {
-  from { transform: translate(-50%, -50%) rotateZ(0deg); }
-  to { transform: translate(-50%, -50%) rotateZ(360deg); }
-}
-/* sayyora doim kameraga qarab turishi uchun: aylanishni va qiyalikni bekor qiladi */
-@keyframes solar-counter {
-  from { transform: rotateZ(0deg) rotateX(calc(-1 * var(--tilt))); }
-  to { transform: rotateZ(-360deg) rotateX(calc(-1 * var(--tilt))); }
-}
-
 /* ---- header: liquid glass (components/liquid-glass.tsx) ---- */
 .liquid-glass {
   position: relative;
@@ -200,15 +125,6 @@ body {
 .liquid-glass[data-refract] {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), rgba(10, 10, 18, 0.42);
   backdrop-filter: var(--lg-filter) blur(4px) saturate(1.8) brightness(0.95);
-}
-/* och shisha — quyosh va video tugmalari uchun (orqasi ko'proq ko'rinadi) */
-.liquid-glass.lg-light,
-.liquid-glass.lg-light[data-refract] {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)), rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-.liquid-glass.lg-light[data-refract] {
-  backdrop-filter: var(--lg-filter) blur(2px) saturate(1.9) brightness(1.1);
 }
 /* video tugmalari — har qanday kadrda (oq fon ham) yozuv o'qilsin */
 .liquid-glass.lg-pill,
@@ -232,7 +148,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .animate-rise, .animate-float, .animate-spin-slow, .solar-orbit, .solar-face { animation: none; }
-  .solar-face { transform: rotateX(calc(-1 * var(--tilt))); }
+  .animate-rise, .animate-float, .animate-spin-slow { animation: none; }
   .service-card { transition: none; }
 }

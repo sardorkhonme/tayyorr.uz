@@ -1,5 +1,4 @@
 import { db } from "@/lib/db";
-import { HeroVideoManager } from "@/components/admin/hero-video-manager";
 import { LandingFaqManager, type Faq } from "@/components/admin/landing-faq-manager";
 import {
   LandingVideoManager,
@@ -7,8 +6,7 @@ import {
 } from "@/components/admin/landing-video-manager";
 
 export default async function AdminLandingContent() {
-  const [heroVideo, faqRows, videoRows] = await Promise.all([
-    db.heroVideo.findUnique({ where: { id: "hero" } }),
+  const [faqRows, videoRows] = await Promise.all([
     db.landingFaq.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
     db.landingVideo.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
   ]);
@@ -40,13 +38,6 @@ export default async function AdminLandingContent() {
         </p>
       </div>
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold text-white">Hero fon videosi</h2>
-        <HeroVideoManager
-          initialUrl={heroVideo?.videoUrl ?? ""}
-          initialActive={heroVideo?.active ?? true}
-        />
-      </section>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-white">Videolar</h2>
