@@ -170,20 +170,20 @@ export default function Home() {
       </section>
 
       {/* ---------- mobil ilova ---------- */}
-      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-56 lg:pt-28">
+      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-48 lg:pt-32">
         {/* telefon kartadan yuqoriga chiqib turadi */}
-        <div className="card relative p-8 pt-44 sm:p-12 sm:pt-52 lg:pt-12">
+        <div className="card relative p-8 pt-36 sm:p-12 sm:pt-48 lg:pt-12">
           <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/25 blur-3xl" />
           </div>
-          <div className="pointer-events-none absolute -top-48 left-1/2 w-56 -translate-x-1/2 sm:-top-52 sm:w-64 lg:-top-32 lg:left-auto lg:right-16 lg:w-72 lg:translate-x-0">
+          <div className="pointer-events-none absolute -top-40 left-1/2 w-80 -translate-x-1/2 sm:-top-44 sm:w-[26rem] lg:-top-32 lg:left-auto lg:right-8 lg:w-[28rem] lg:translate-x-0">
             <div className="animate-float">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/app-phone.webp"
                 alt="Tayyorr.uz Android ilovasi"
-                width={683}
-                height={1024}
+                width={1100}
+                height={943}
                 loading="lazy"
                 className="h-auto w-full drop-shadow-[0_30px_60px_rgba(124,58,237,0.35)]"
               />
