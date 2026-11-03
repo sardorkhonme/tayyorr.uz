@@ -85,3 +85,16 @@ export function rateFor(providerRate: number, p: Pricing, service?: ServiceRef) 
   const raw = providerRate * p.fx * (1 + p.markupPercent / 100) * (1 + adj / 100);
   return Math.max(100, Math.ceil(raw / 100) * 100);
 }
+
+/**
+ * Saytda ko'rsatish uchun narx: chegirma bo'lsa — eski narx va foizi ham.
+ * Ustama (musbat foiz) mijozga ko'rsatilmaydi — u shunchaki narxning ichida.
+ */
+export function priceInfo(providerRate: number, p: Pricing, service: ServiceRef) {
+  const rate = rateFor(providerRate, p, service);
+  const adj = adjustPct(p.adjust, service);
+  if (adj >= 0) return { rate, oldRate: null, discount: 0 };
+  const oldRate = rateFor(providerRate, p);
+  const discount = Math.round(-adj);
+  return oldRate > rate && discount > 0 ? { rate, oldRate, discount } : { rate, oldRate: null, discount: 0 };
+}

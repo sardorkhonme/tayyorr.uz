@@ -2,9 +2,9 @@ import { after } from "next/server";
 
 import { currentUser } from "@/lib/session";
 import { ServicesBoard } from "@/components/services-board";
+import { SaleBanner } from "@/components/sale-banner";
 import { db } from "@/lib/db";
-import { getPricing, rateFor } from "@/lib/pricing";
-import { isHidden } from "@/lib/smm-adjust";
+import { loadCatalog } from "@/lib/catalog";
 import { maybeSyncServices } from "@/lib/sync-services";
 
 export const dynamic = "force-dynamic";
@@ -36,35 +36,9 @@ export default async function SmmPage({
   if ((await db.smmService.count({ where: { active: true } })) === 0) await maybeSyncServices();
   else after(() => maybeSyncServices());
 
-  const [user, rows, pricing] = await Promise.all([
-    currentUser(),
-    db.smmService.findMany({
-      where: { active: true },
-      orderBy: [{ platform: "asc" }, { sort: "asc" }, { providerRate: "asc" }],
-      select: {
-        id: true,
-        providerId: true,
-        platform: true,
-        category: true,
-        name: true,
-        description: true,
-        providerRate: true,
-        min: true,
-        max: true,
-        refill: true,
-      },
-    }),
-    getPricing(),
-  ]);
-  // narx har safar joriy kurs, admin ustamasi va xizmat bo'yicha tuzatish asosida hisoblanadi
-  const services = pricing
-    ? rows
-        .filter((r) => !isHidden(pricing.adjust, r))
-        .map(({ providerRate, providerId, ...s }) => ({
-          ...s,
-          rate: rateFor(providerRate, pricing, { providerId, ...s }),
-        }))
-    : [];
+  const [user, services] = await Promise.all([currentUser(), loadCatalog()]);
+  const sale = services.filter((s) => s.discount > 0);
+  const maxSale = sale.reduce((m, s) => Math.max(m, s.discount), 0);
 
   return (
     <div className="space-y-12">
@@ -78,6 +52,8 @@ export default async function SmmPage({
           <p className="mt-1 text-zinc-500">Obunachilar, layklar va ko&apos;rishlar — bir necha daqiqada.</p>
         </div>
       </header>
+
+      {sale.length > 0 && <SaleBanner count={sale.length} max={maxSale} />}
 
       <ServicesBoard
         services={services}

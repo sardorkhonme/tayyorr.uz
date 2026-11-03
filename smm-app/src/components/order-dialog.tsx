@@ -173,7 +173,10 @@ export function OrderDialog({
             <div className="rounded-2xl bg-zinc-50 p-5 text-[15px]">
               <div className="flex justify-between text-zinc-500">
                 <span>Narx (har 1000 tasi)</span>
-                <span>{som(service.rate)}</span>
+                <span className="flex items-baseline gap-2">
+                  {service.oldRate && <span className="text-zinc-400 line-through">{som(service.oldRate)}</span>}
+                  <span className={service.discount ? "font-semibold text-rose-600" : ""}>{som(service.rate)}</span>
+                </span>
               </div>
               <div className="mt-2 flex justify-between text-zinc-500">
                 <span>Hamyoningizda</span>

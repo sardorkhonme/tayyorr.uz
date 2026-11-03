@@ -5,21 +5,11 @@ import { useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import { OrderDialog } from "@/components/order-dialog";
 import { PlatformIcon } from "@/components/platform-icon";
-import { num, som } from "@/lib/format";
+import { DiscountBadge, ServiceCard, type BoardService } from "@/components/service-card";
 import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
 import { PLATFORMS } from "@/lib/platforms";
 
-export type BoardService = {
-  id: string;
-  platform: string;
-  category: string;
-  name: string;
-  description: string | null;
-  rate: number;
-  min: number;
-  max: number;
-  refill: boolean;
-};
+export type { BoardService };
 
 const PAGE = 12;
 
@@ -59,6 +49,16 @@ export function ServicesBoard({
   const platformCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const s of withKind) m.set(s.platform, (m.get(s.platform) ?? 0) + 1);
+    return m;
+  }, [withKind]);
+
+  // eng katta chegirma: "platforma" va "platforma:tur" bo'yicha (yorliqlar uchun)
+  const maxDiscount = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of withKind) {
+      if (!s.discount) continue;
+      for (const key of [s.platform, `${s.platform}:${s.kind}`]) m.set(key, Math.max(m.get(key) ?? 0, s.discount));
+    }
     return m;
   }, [withKind]);
 
@@ -130,8 +130,11 @@ export function ServicesBoard({
                 }}
                 data-active={active}
                 style={{ "--from": p.from, "--glow": p.from } as React.CSSProperties}
-                className="platform-tile glow-card card flex flex-col items-start gap-4 !rounded-2xl p-5 text-left disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
+                className="platform-tile glow-card card relative flex flex-col items-start gap-4 !rounded-2xl p-5 text-left disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
               >
+                {maxDiscount.get(p.key) ? (
+                  <DiscountBadge pct={maxDiscount.get(p.key)!} className="absolute right-3 top-3" />
+                ) : null}
                 <span
                   className="shine grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white shadow-lg"
                   style={
@@ -184,6 +187,9 @@ export function ServicesBoard({
                         <Icon name={k.icon} className="h-[22px] w-[22px]" />
                       </span>
                       <span className="flex-1 font-display text-lg font-semibold text-zinc-900">{k.label}</span>
+                      {maxDiscount.get(`${platform}:${k.key}`) ? (
+                        <DiscountBadge pct={maxDiscount.get(`${platform}:${k.key}`)!} />
+                      ) : null}
                       <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500">{k.count}</span>
                     </span>
                     <span className="mt-3 block text-sm text-zinc-500">{k.hint}</span>
@@ -220,38 +226,7 @@ export function ServicesBoard({
               <>
                 <div className="grid gap-4 lg:grid-cols-2">
                   {list.slice(0, shown).map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setSelected(s)}
-                      className="card glow-card group flex flex-col gap-4 !rounded-2xl p-5 text-left sm:p-6"
-                    >
-                      <span className="font-display text-[17px] font-semibold leading-snug text-zinc-900">{s.title}</span>
-                      <span className="flex flex-wrap gap-1.5 text-xs">
-                        {s.tags.slice(0, 4).map((t) => (
-                          <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-zinc-600">
-                            {t}
-                          </span>
-                        ))}
-                        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-zinc-600">
-                          {num(s.min)} – {num(s.max)} ta
-                        </span>
-                        {s.refill && (
-                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">
-                            Kafolatli (kamaysa to&apos;ldiriladi)
-                          </span>
-                        )}
-                      </span>
-                      <span className="mt-auto flex items-center justify-between gap-3 border-t border-zinc-100 pt-4">
-                        <span>
-                          <span className="block font-display text-2xl font-bold text-zinc-900">{som(s.rate)}</span>
-                          <span className="text-xs text-zinc-500">har 1000 tasi uchun</span>
-                        </span>
-                        <span className="rounded-xl bg-indigo-50 bg-[length:200%_100%] px-4 py-2.5 text-sm font-semibold text-indigo-700 transition-all duration-500 group-hover:bg-gradient-to-r group-hover:from-indigo-500 group-hover:via-violet-500 group-hover:to-fuchsia-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-fuchsia-500/30">
-                          Tanlash
-                        </span>
-                      </span>
-                    </button>
+                    <ServiceCard key={s.id} service={s} title={s.title} tags={s.tags} onSelect={() => setSelected(s)} />
                   ))}
                 </div>
                 {list.length > shown && (

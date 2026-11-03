@@ -33,9 +33,16 @@ export type IconName =
   | "bolt"
   | "headset"
   | "bell"
-  | "send";
+  | "send"
+  | "tag";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  tag: (
+    <>
+      <path d="M3.5 12.1V4.9A1.4 1.4 0 0 1 4.9 3.5h7.2a1.4 1.4 0 0 1 1 .4l7 7a1.4 1.4 0 0 1 0 2l-7.2 7.2a1.4 1.4 0 0 1-2 0l-7-7a1.4 1.4 0 0 1-.4-1z" />
+      <path d="M8 8h.01" strokeWidth="2.6" />
+    </>
+  ),
   home: (
     <>
       <path d="M3.5 10.5 12 3.5l8.5 7" />
