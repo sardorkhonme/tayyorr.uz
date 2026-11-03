@@ -7,7 +7,7 @@ import { payPlatform } from "@/lib/pay";
 import { safeNext } from "@/lib/sso";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "To'lov" };
+export const metadata = { title: "Hamyonni to'ldirish" };
 
 /**
  * plus.tayyorr.uz/pay?return=<manzil> — barcha platformalar uchun yagona to'lov sahifasi.
