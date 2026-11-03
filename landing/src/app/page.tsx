@@ -190,10 +190,14 @@ export default function Home() {
           </div>
           {/* ilova ikonkasi */}
           <div className="animate-float relative mx-auto text-center">
-            <span className="grid h-40 w-40 place-items-center rounded-[2.5rem] bg-white shadow-2xl shadow-indigo-500/40 sm:h-48 sm:w-48">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-mark.png" alt="Tayyorr ilovasi" className="h-28 w-28 object-contain sm:h-32 sm:w-32" />
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/app-icon.png"
+              alt="Tayyorr ilovasi"
+              width={768}
+              height={768}
+              className="mx-auto h-48 w-48 rounded-[2.75rem] bg-white shadow-2xl shadow-indigo-500/40 ring-1 ring-white/20 sm:h-60 sm:w-60 sm:rounded-[3.25rem]"
+            />
             <p className="mt-4 font-display text-lg font-bold text-white">Tayyorr.uz</p>
             <p className="text-sm text-zinc-500">Android ilovasi</p>
           </div>
