@@ -1,0 +1,99 @@
+# Vercel'ga deploy — faqat o'zgargan loyiha(lar)ga.
+# Vercel'ning o'z git-deployi o'chirilgan (har bir vercel.json: git.deploymentEnabled = false),
+# shuning uchun bitta push faqat kerakli loyihalarni yaratadi va kunlik limitni behuda yemaydi.
+#
+# GitHub → Settings → Secrets and variables → Actions:
+#   VERCEL_TOKEN, VERCEL_ORG_ID,
+#   VERCEL_PROJECT_APP, VERCEL_PROJECT_LANDING, VERCEL_PROJECT_PLUS, VERCEL_PROJECT_SMM, VERCEL_PROJECT_ADMIN
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: "Qaysi loyihalar (vergul bilan): app,landing,plus,smm,admin"
+        required: true
+        default: "app,landing,plus,smm,admin"
+
+concurrency:
+  group: vercel-deploy
+  cancel-in-progress: false
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.pick.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # app.tayyorr.uz — ildiz papka, boshqa loyihalar va mobil ilovadan tashqari hamma narsa
+      - uses: dorny/paths-filter@v3
+        id: root
+        if: github.event_name == 'push'
+        with:
+          predicate-quantifier: every
+          filters: |
+            app:
+              - '**'
+              - '!landing/**'
+              - '!plus/**'
+              - '!smm-app/**'
+              - '!admin/**'
+              - '!mobile/**'
+              - '!.github/**'
+              - '!**/*.md'
+
+      - uses: dorny/paths-filter@v3
+        id: sub
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            landing:
+              - 'landing/**'
+            plus:
+              - 'plus/**'
+              - 'prisma/schema.prisma'
+            smm:
+              - 'smm-app/**'
+              - 'prisma/schema.prisma'
+            admin:
+              - 'admin/**'
+              - 'prisma/schema.prisma'
+
+      - id: pick
+        env:
+          MANUAL: ${{ github.event.inputs.projects }}
+          ROOT: ${{ steps.root.outputs.changes }}
+          SUB: ${{ steps.sub.outputs.changes }}
+        run: |
+          if [ -n "$MANUAL" ]; then
+            list=$(echo "$MANUAL" | tr -d ' ' | jq -R -c 'split(",") | map(select(length > 0))')
+          else
+            list=$(jq -c -n --argjson a "${ROOT:-[]}" --argjson b "${SUB:-[]}" '$a + $b | unique')
+          fi
+          echo "projects=$list" >> "$GITHUB_OUTPUT"
+          echo "Deploy qilinadi: $list"
+
+  deploy:
+    needs: changes
+    if: needs.changes.outputs.projects != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      # Hobby: bir vaqtda bitta build — navbat bilan
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        project: ${{ fromJSON(needs.changes.outputs.projects) }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ matrix.project == 'app' && secrets.VERCEL_PROJECT_APP || matrix.project == 'landing' && secrets.VERCEL_PROJECT_LANDING || matrix.project == 'plus' && secrets.VERCEL_PROJECT_PLUS || matrix.project == 'smm' && secrets.VERCEL_PROJECT_SMM || matrix.project == 'admin' && secrets.VERCEL_PROJECT_ADMIN || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vercel'ga deploy (${{ matrix.project }})
+        run: |
+          test -n "$VERCEL_PROJECT_ID" || { echo "VERCEL_PROJECT_* secret yo'q: ${{ matrix.project }}"; exit 1; }
+          # loyiha sozlamasidagi Root Directory ishlatiladi; build Vercel serverida bo'ladi
+          npx --yes vercel@latest deploy --prod --yes --token="${{ secrets.VERCEL_TOKEN }}"
