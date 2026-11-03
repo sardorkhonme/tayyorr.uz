@@ -11,13 +11,13 @@ import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
 import { toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
-import { withSource } from "@/lib/message-source";
+import { MESSAGE_SOURCES, withSource } from "@/lib/message-source";
 
 const schema = z.object({
   body: z.string().trim().max(8000).optional(),
   replyToId: z.string().optional(),
-  /** faqat admin (support) — qaysi platformaga: tayyorr.uz | tayyorr+ | smm | ikkalasi */
-  source: z.enum(["tayyorr.uz", "tayyorr+", "smm", "ikkalasi"]).optional(),
+  /** faqat admin (support) — qaysi platformaga: bir yoki bir nechta platforma (lib/message-source.ts) */
+  source: z.enum(MESSAGE_SOURCES).optional(),
   file: z
     .object({
       key: z.string().min(1),

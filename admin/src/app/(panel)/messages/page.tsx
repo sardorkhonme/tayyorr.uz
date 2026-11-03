@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { getSupportUserId } from "@/lib/support";
 import { cleanQuery, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
-import { splitSource, stripSource } from "@/lib/message-source";
+import { sourceLabel, splitSource, stripSource } from "@/lib/message-source";
 import { Icon } from "@/components/icons";
 
 export default async function AdminMessages({
@@ -129,7 +129,7 @@ export default async function AdminMessages({
                   {last ? (
                     <>
                       {last.senderId === supportId ? "Support: " : ""}
-                      {splitSource(last.body).source === "tayyorr+" ? "[tayyorr+] " : splitSource(last.body).source === "smm" ? "[SMM] " : ""}
+                      {splitSource(last.body).source !== "tayyorr.uz" ? `[${sourceLabel(splitSource(last.body).source)}] ` : ""}
                       {stripSource(last.body) || (
                         <>
                           <Icon name="paperclip" className="mr-0.5 inline-block h-3.5 w-3.5 align-[-2px]" />

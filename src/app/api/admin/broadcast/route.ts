@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
 import { sendSupportMessage } from "@/lib/support-actions";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
-import { stripSource, withSource, type MessageSource } from "@/lib/message-source";
+import { MESSAGE_SOURCES, stripSource, withSource, type MessageSource } from "@/lib/message-source";
 
 const MAX = 5000;
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   const bodyEn = str(raw.bodyEn);
   // qaysi platformaga: tayyorr.uz | tayyorr+ | ikkalasi (xabarga belgi qo'yiladi)
   const source: MessageSource =
-    raw.source === "tayyorr+" || raw.source === "smm" || raw.source === "ikkalasi" ? raw.source : "tayyorr.uz";
+    (MESSAGE_SOURCES as readonly unknown[]).includes(raw.source) ? (raw.source as MessageSource) : "tayyorr.uz";
   const textFor = (loc: string | null | undefined) =>
     withSource((loc === "ru" ? bodyRu : loc === "en" ? bodyEn : undefined) ?? body, source);
   const rf = raw.file as

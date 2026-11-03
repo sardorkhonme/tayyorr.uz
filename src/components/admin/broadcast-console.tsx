@@ -11,7 +11,8 @@ import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { useDismiss } from "@/components/use-dismiss";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 import { smartTime } from "@/lib/date";
-import { SOURCE_OPTIONS, type MessageSource } from "@/lib/message-source";
+import { type MessageSource } from "@/lib/message-source";
+import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { MessageSourceBadge } from "@/components/message-source-badge";
 
 interface Item {
@@ -228,33 +229,17 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
 
   return (
     <div
-      className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]"
-      style={{ height: "calc(100vh - 12rem)" }}
+      data-wide
+      className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] lg:flex-row"
+      style={{ height: "calc(100dvh - 9rem)" }}
     >
-      {/* ---- filtr (yuqorida) ---- */}
-      <div className="shrink-0 border-b border-white/10 bg-white/[0.03] p-3">
-        <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+      {/* ---- filtr (telefonda yuqorida, kompyuterda chapda) ---- */}
+      <div className="max-h-[45%] shrink-0 overflow-y-auto border-b border-white/10 bg-white/[0.03] p-3 lg:max-h-none lg:w-80 lg:border-b-0 lg:border-r lg:p-4">
+        <div className="mb-3 flex flex-col gap-2 text-sm">
           <span className="text-zinc-400">Qaysi platformaga:</span>
-          <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
-            {SOURCE_OPTIONS.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => setSource(o.value)}
-                className={`rounded-md px-3 py-1 font-medium transition ${
-                  source === o.value
-                    ? o.value === "tayyorr+" || o.value === "smm"
-                      ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white"
-                      : "bg-indigo-500 text-white"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
+          <PlatformCheckboxes value={source} onChange={setSource} />
         </div>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
           <select
             className="input"
             value={role}
@@ -311,6 +296,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
         </p>
       </div>
 
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {/* ---- yuborilganlar (chat) ---- */}
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto p-3">
         {items.length === 0 && (
@@ -463,6 +449,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             <RocketIcon />
           </button>
         </form>
+      </div>
       </div>
 
       {menu &&

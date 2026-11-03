@@ -18,7 +18,8 @@ import { prepareAdminChatFile, prepareChatFile, type PreparedChatFile } from "@/
 import { presenceText } from "@/lib/presence";
 import { shortDateTime, smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
-import { SOURCE_OPTIONS, isForeignSource, type MessageSource } from "@/lib/message-source";
+import { isForeignSource, type MessageSource } from "@/lib/message-source";
+import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { flashMessage } from "@/lib/flash-message";
 
 interface ReplyPreview {
@@ -1235,25 +1236,8 @@ export function ChatRoom({
             </form>
             {asSupport && !editing && (
               <div className="mt-2 flex items-center gap-2 text-xs">
-                <span className="text-zinc-500">Qayerga:</span>
-                <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
-                  {SOURCE_OPTIONS.map((o) => (
-                    <button
-                      key={o.value}
-                      type="button"
-                      onClick={() => setSendSource(o.value)}
-                      className={`rounded-md px-2.5 py-1 font-medium transition ${
-                        sendSource === o.value
-                          ? o.value === "tayyorr+" || o.value === "smm"
-                            ? "bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white"
-                            : "bg-indigo-500 text-white"
-                          : "text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      {o.label}
-                    </button>
-                  ))}
-                </div>
+                <span className="text-zinc-500">Qayerda ko'rinsin:</span>
+                <PlatformCheckboxes value={sendSource} onChange={setSendSource} />
               </div>
             )}
               </>

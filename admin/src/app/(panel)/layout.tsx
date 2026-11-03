@@ -87,7 +87,7 @@ export default async function AdminPanelLayout({
       </header>
 
       <main className="px-4 py-6 sm:px-6 sm:py-8 lg:pl-[15.5rem] lg:pr-8">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-5xl has-[[data-wide]]:max-w-none">
           {children}
           {/* ixcham footer — boshqaruv paneli uchun ortiqcha havolalarsiz */}
           <footer className="mt-14 flex flex-col gap-3 border-t border-white/10 py-6 text-xs text-zinc-600 sm:flex-row sm:items-center sm:justify-between">

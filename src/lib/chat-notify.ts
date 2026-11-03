@@ -8,7 +8,7 @@ import { logToGroup } from "@/lib/telegram-log";
 import { SUPPORT_NAME, getSupportUserId } from "@/lib/support";
 import { sendMobilePush } from "@/lib/fcm";
 import { sendPushToUser } from "@/lib/push";
-import { splitSource, stripSource } from "@/lib/message-source";
+import { platformsOf, splitSource, stripSource } from "@/lib/message-source";
 
 const PLUS_URL = process.env.SMM_SITE_URL || "https://plus.tayyorr.uz";
 const SMM_URL = (process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz").replace(/\/+$/, "");
@@ -52,11 +52,13 @@ export async function deliverMessage(m: Message) {
   // tayyorr+ ga xos xabar — tayyorr.uz ilovasi/brauzeriga push yubormaymiz (u yerda ko'rinmaydi),
   // Telegram'dagi tugma tayyorr+ ni ochadi
   const source = splitSource(m.body).source;
-  const plusOnly = source === "tayyorr+";
-  const smmOnly = source === "smm";
+  const ps = platformsOf(source);
+  const onUz = ps.includes("uz");
+  const plusOnly = !onUz && ps.includes("plus");
+  const smmOnly = !onUz && !plusOnly;
 
   // tayyorr+ brauzer bildirishnomasi — faqat support xabari tayyorr+ / ikkalasiga bo'lsa
-  if (sender?.isSupport && (source === "tayyorr+" || source === "ikkalasi")) {
+  if (sender?.isSupport && ps.includes("plus")) {
     await sendPushToUser(
       recipientId,
       { title: SUPPORT_NAME, body: snippet(m), url: "/support", tag: `plus-${m.conversationId}` },
@@ -65,7 +67,7 @@ export async function deliverMessage(m: Message) {
   }
 
   // mobil ilova (FCM) va brauzer (web-push) — xatosi xabar yuborishni to'xtatmasin
-  if (!plusOnly && !smmOnly) await Promise.allSettled([
+  if (onUz) await Promise.allSettled([
     sendMobilePush(recipientId, {
       title,
       body: snippet(m),

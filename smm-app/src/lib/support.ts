@@ -8,13 +8,16 @@ import { notifyAdmins } from "@/lib/telegram";
  *   "[smm]"      — faqat Tayyorr SMM da (SMM buyurtmalari, shu yerdan yozilganlar)
  *   "[tayyorr+]" — faqat tayyorr+ da
  *   "[all]"      — barcha platformalarda (hisob / pul haqida)
+ *   "[uz+plus]" / "[uz+smm]" / "[plus+smm]" — admin bir nechta platformani belgilasa
  *   belgisiz     — faqat tayyorr.uz da
  * tayyorr.uz / admin tomoni: lib/message-source.ts.
  */
 export const SOURCE_TAG = "[smm]";
 export const ALL_TAG = "[all]";
 /** Tayyorr SMM da ko'rinadigan xabarlar */
-const VISIBLE_HERE = { OR: [{ body: { startsWith: SOURCE_TAG } }, { body: { startsWith: ALL_TAG } }] };
+const VISIBLE_HERE = {
+  OR: [{ body: { startsWith: SOURCE_TAG } }, { body: { startsWith: ALL_TAG } }, { body: { startsWith: "[uz+smm]" } }, { body: { startsWith: "[plus+smm]" } }],
+};
 const SUPPORT_NAME = "tayyorr.uz support";
 /** admin panel — alohida loyiha (admin.tayyorr.uz) */
 const ADMIN_URL = (process.env.NEXT_PUBLIC_ADMIN_URL || "https://admin.tayyorr.uz").replace(/\/+$/, "");
@@ -46,7 +49,7 @@ async function getConversation(userId: string, create: boolean) {
 
 export type SupportMessage = { id: string; mine: boolean; body: string; createdAt: string };
 
-const stripTag = (body: string) => body.replace(/^\[(smm|tayyorr\+|all)\]\s*/, "");
+const stripTag = (body: string) => body.replace(/^\[(tayyorr\+|smm|all|uz\+plus|uz\+smm|plus\+smm)\]\s*/, "");
 
 /** Suhbat tarixi (oxirgi 60 ta) + support javoblarini o'qilgan deb belgilash. */
 export async function listSupportMessages(userId: string, markRead: boolean) {
