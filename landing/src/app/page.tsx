@@ -188,18 +188,17 @@ export default function Home() {
               <span className="btn-ghost cursor-default text-zinc-500">iOS — tez orada</span>
             </div>
           </div>
-          {/* ilova ikonkasi */}
-          <div className="animate-float relative mx-auto text-center">
+          {/* ilova — telefon */}
+          <div className="animate-float relative mx-auto -my-6 text-center sm:-my-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/app-icon.png"
-              alt="Tayyorr ilovasi"
-              width={768}
-              height={768}
-              className="mx-auto h-48 w-48 rounded-[2.75rem] bg-white shadow-2xl shadow-indigo-500/40 ring-1 ring-white/20 sm:h-60 sm:w-60 sm:rounded-[3.25rem]"
+              src="/app-phone.webp"
+              alt="Tayyorr.uz Android ilovasi"
+              width={683}
+              height={1024}
+              loading="lazy"
+              className="mx-auto h-auto w-64 sm:w-80 drop-shadow-[0_30px_60px_rgba(124,58,237,0.35)]"
             />
-            <p className="mt-4 font-display text-lg font-bold text-white">Tayyorr.uz</p>
-            <p className="text-sm text-zinc-500">Android ilovasi</p>
           </div>
         </div>
       </section>
