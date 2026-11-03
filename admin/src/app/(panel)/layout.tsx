@@ -12,18 +12,18 @@ import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { AdminBrand } from "@/components/admin/admin-brand";
 
 const BASE: NavLink[] = [
-  { href: "/", label: "Bosh", icon: "home" },
+  { href: "/", label: "Boş", icon: "home" },
   { href: "/orders", label: "Buyurtmalar", icon: "package" },
   { href: "/messages", label: "Xabarlar", icon: "message" },
   { href: "/broadcast", label: "Ommaviy xabar", icon: "megaphone" },
-  { href: "/announcement", label: "E'lon banneri", icon: "pin" },
-  { href: "/payments", label: "To'lovlar", icon: "card" },
-  { href: "/payouts", label: "Yechib olish", icon: "banknote" },
-  { href: "/complaints", label: "Shikoyatlar", icon: "alert" },
-  { href: "/users", label: "Foydalanuvchilar", icon: "users" },
-  { href: "/sources", label: "Qayerdan eshitgan", icon: "chart" },
+  { href: "/announcement", label: "Eʼlon banneri", icon: "pin" },
+  { href: "/payments", label: "Tölovlar", icon: "card" },
+  { href: "/payouts", label: "Yeçib oliş", icon: "banknote" },
+  { href: "/complaints", label: "Şikoyatlar", icon: "alert" },
+  { href: "/users", label: "Foydalanuvçilar", icon: "users" },
+  { href: "/sources", label: "Qayerdan eşitgan", icon: "chart" },
   { href: "/chats", label: "Suhbatlar", icon: "messages" },
-  { href: "/referrals", label: "Tashriflar", icon: "link" },
+  { href: "/referrals", label: "Taşriflar", icon: "link" },
   { href: "/landing", label: "Sayt kontenti", icon: "film" },
   { href: "/app", label: "Mobil ilova", icon: "phone" },
   { href: "/smm", label: "tayyorr+", icon: "rocket", image: "/plus-mark.png" },
@@ -77,7 +77,7 @@ export default async function AdminPanelLayout({
           <div className="ml-auto flex items-center gap-2">
             <AdminPostButton
               url="/api/admin/logout"
-              label="Chiqish"
+              label="Çiqiş"
               className="rounded-lg px-2 py-1 text-sm text-zinc-500 transition hover:text-red-400"
               redirectTo="/login"
             />
@@ -98,7 +98,7 @@ export default async function AdminPanelLayout({
             </span>
             <span className="flex gap-4">
               {[
-                { href: process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz", label: "Ilmiy ishlar" },
+                { href: process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz", label: "Ilmiy işlar" },
                 { href: process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz", label: "tayyorr+" },
                 { href: process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz", label: "Tayyorr SMM" },
               ].map((l) => (

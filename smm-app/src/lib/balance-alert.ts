@@ -44,11 +44,11 @@ export async function checkProviderBalance() {
   if (!isUzs && !fx) return null;
   const toUzs = (v: number) => (isUzs ? v : v * fx);
   const fmt = (v: number) =>
-    `${num(Math.round(toUzs(v)))} so'm` + (isUzs ? "" : ` ($${v.toFixed(2)})`);
+    `${num(Math.round(toUzs(v)))} söm` + (isUzs ? "" : ` ($${v.toFixed(2)})`);
   const uzs = toUzs(balance);
   const name = providerName();
   const addFundsHref = providerAddFundsUrl();
-  const addFunds = addFundsHref ? { text: `${name} balansini to'ldirish`, href: addFundsHref } : undefined;
+  const addFunds = addFundsHref ? { text: `${name} balansini töldiriş`, href: addFundsHref } : undefined;
 
   const [lastRow, levelRow] = await Promise.all([
     db.appSetting.findUnique({ where: { key: LAST_KEY } }),
@@ -65,7 +65,7 @@ export async function checkProviderBalance() {
       const diff = balance - Number(prevStr);
       await notifyAdmins(
         "system",
-        diff > 0 ? `💰 ${name} hisobi to'ldirildi` : `➖ ${name} hisobidan yechildi`,
+        diff > 0 ? `💰 ${name} hisobi töldirildi` : `➖ ${name} hisobidan yeçildi`,
         [`${diff > 0 ? "+" : "−"}${fmt(Math.abs(diff))}`, `Balans: ${fmt(balance)}`],
       );
     }
@@ -84,7 +84,7 @@ export async function checkProviderBalance() {
         level <= 10_000 ? `🚨 ${name} balansi tugayapti!` : `⚠️ ${name} balansi kamaydi`,
         [
           `Balans: ${fmt(balance)}`,
-          `${num(level)} so'mdan kam qoldi.`,
+          `${num(level)} sömdan kam qoldi.`,
           "Balans tugasa tayyorr+ buyurtmalari rad etiladi (mijozlarga pul qaytadi).",
         ],
         addFunds,

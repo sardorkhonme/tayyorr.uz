@@ -22,18 +22,18 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Noto'g'ri ma'lumot" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Notöğri maʼlumot" }, { status: 400 });
   const { amount, method } = parsed.data;
   if (method !== "click") {
-    return NextResponse.json({ error: "Bu to'lov usuli tez orada ulanadi" }, { status: 400 });
+    return NextResponse.json({ error: "Bu tölov usuli tez orada ulanadi" }, { status: 400 });
   }
   if (!clickConfigured()) {
-    return NextResponse.json({ error: "To'lov vaqtincha ishlamayapti" }, { status: 503 });
+    return NextResponse.json({ error: "Tölov vaqtinça işlamayapti" }, { status: 503 });
   }
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return NextResponse.json(
       {
-        error: `Summa ${CLICK_MIN.toLocaleString("ru-RU")} – ${CLICK_MAX.toLocaleString("ru-RU")} so'm oralig'ida bo'lsin`,
+        error: `Summa ${CLICK_MIN.toLocaleString("ru-RU")} – ${CLICK_MAX.toLocaleString("ru-RU")} söm oraliğida bölsin`,
       },
       { status: 400 },
     );
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       status: "PENDING",
       amount,
       method: "CLICK",
-      note: `Click orqali to'ldirish (${platform.label})`,
+      note: `Click orqali töldiriş (${platform.label})`,
       // source: "smm" — tayyorr+ va SMM to'lovlari alohida Telegram topikka tushadi
       meta: { source: platform.key === "app" ? "uz" : "smm", platform: platform.key, returnTo },
     },

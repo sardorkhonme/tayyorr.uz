@@ -66,7 +66,7 @@ export default async function ChatPage({
         blockedMe={bs.blockedMe}
         other={{
           id: other?.id ?? "",
-          name: other?.name ?? other?.login ?? "Foydalanuvchi",
+          name: other?.name ?? other?.login ?? "Foydalanuvçi",
           login: other?.login ?? null,
           image: hideOther ? null : other?.avatarUrl ?? other?.image ?? null,
           isSupport: other?.isSupport ?? false,

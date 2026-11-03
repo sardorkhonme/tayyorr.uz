@@ -57,8 +57,8 @@ export function ContractPanel({
     ? c.cancelRequestedById === meId
       ? "Siz"
       : isOrderer
-        ? "Tayyorlovchi"
-        : "Buyurtmachi"
+        ? "Tayyorlovçi"
+        : "Buyurtmaçi"
     : "";
 
   function open(f: Form) {
@@ -97,30 +97,30 @@ export function ContractPanel({
       <div>
         <h2 className="flex items-center gap-2 font-semibold text-white">
           <Icon name="file" className="h-[18px] w-[18px] text-emerald-300" />
-          Shartnoma imzolangan
+          Şartnoma imzolangan
         </h2>
         <p className="mt-1 text-sm text-zinc-300">
-          Summa: <b>{c.amount.toLocaleString()} so'm</b>
-          {isOrderer ? " · tayyorlovchi: " + c.preparerName : ""}
+          Summa: <b>{c.amount.toLocaleString()} söm</b>
+          {isOrderer ? " · tayyorlovçi: " + c.preparerName : ""}
         </p>
         {c.deadline && (
           <p className="mt-0.5 text-sm text-zinc-400">
-            Topshirish muddati: <b className="text-zinc-200">{shortDateTime(c.deadline)}</b>
-            {c.revisionCount > 0 && ` · qayta ishlash: ${c.revisionCount} marta`}
+            Topşiriş muddati: <b className="text-zinc-200">{shortDateTime(c.deadline)}</b>
+            {c.revisionCount > 0 && ` · qayta işlaş: ${c.revisionCount} marta`}
           </p>
         )}
         {delivered && c.reviewDueAt && (
           <p className="mt-2 rounded-lg bg-white/[0.04] px-3 py-2 text-xs text-zinc-400">
             <Icon name="package" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px]" />
-            Ish topshirilgan{c.deliveredAt ? ` (${shortDateTime(c.deliveredAt)})` : ""}.{" "}
-            {isOrderer ? "Tekshirib javob bering" : "Buyurtmachi tekshirmoqda"} —{" "}
-            <b className="text-zinc-200">{shortDateTime(c.reviewDueAt)}</b> gacha javob bo'lmasa, ish
-            muvaffaqiyatli deb topiladi va pul tayyorlovchiga o'tadi.
+            Iş topşirilgan{c.deliveredAt ? ` (${shortDateTime(c.deliveredAt)})` : ""}.{" "}
+            {isOrderer ? "Tekşirib javob bering" : "Buyurtmaçi tekşirmoqda"} —{" "}
+            <b className="text-zinc-200">{shortDateTime(c.reviewDueAt)}</b> gaça javob bölmasa, iş
+            muvaffaqiyatli deb topiladi va pul tayyorlovçiga ötadi.
           </p>
         )}
         {!delivered && !c.cancelState && (
           <p className="mt-2 text-xs text-zinc-500">
-            Muddat tugaguncha ish topshirilmasa, shartnoma bekor bo'ladi va pul buyurtmachiga qaytadi.
+            Muddat tugagunça iş topşirilmasa, şartnoma bekor böladi va pul buyurtmaçiga qaytadi.
           </p>
         )}
       </div>
@@ -130,13 +130,13 @@ export function ContractPanel({
         <div className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm">
           <div className="flex items-center gap-1.5 font-medium text-amber-200">
             <Icon name="alert" className="h-4 w-4 shrink-0" />
-            {requester} bekor qilishni so'ra{requester === "Siz" ? "dingiz" : "di"}
+            {requester} bekor qilişni söra{requester === "Siz" ? "dingiz" : "di"}
           </div>
           <div className="mt-1 text-zinc-300">Sabab: {c.cancelReason}</div>
           {c.cancelDueAt && (
             <div className="mt-1 text-xs text-zinc-400">
-              {iRequested ? "Ikkinchi tomon" : "Siz"} {shortDateTime(c.cancelDueAt)} gacha javob{" "}
-              {iRequested ? "beradi" : "bering"}. Javob bo'lmasa — rozi deb hisoblanadi va pul buyurtmachiga
+              {iRequested ? "Ikkinçi tomon" : "Siz"} {shortDateTime(c.cancelDueAt)} gaça javob{" "}
+              {iRequested ? "beradi" : "bering"}. Javob bölmasa — rozi deb hisoblanadi va pul buyurtmaçiga
               qaytariladi.
             </div>
           )}
@@ -149,7 +149,7 @@ export function ContractPanel({
                   onClick={() => {
                     if (
                       window.confirm(
-                        `Shartnoma bekor qilinadi va ${c.amount.toLocaleString()} so'm buyurtmachiga qaytariladi. Rozimisiz?`,
+                        `Şartnoma bekor qilinadi va ${c.amount.toLocaleString()} söm buyurtmaçiga qaytariladi. Rozimisiz?`,
                       )
                     ) {
                       call(`/api/contracts/${c.id}`, "POST", { action: "APPROVE_CANCEL" });
@@ -169,7 +169,7 @@ export function ContractPanel({
                 disabled={busy}
                 onClick={() => call(`/api/contracts/${c.id}`, "POST", { action: "WITHDRAW_CANCEL" })}
               >
-                So'rovni qaytarib olish
+                Sörovni qaytarib oliş
               </button>
             )}
           </div>
@@ -180,12 +180,12 @@ export function ContractPanel({
         <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm">
           <div className="flex items-center gap-1.5 font-medium text-red-200">
             <Icon name="scale" className="h-4 w-4 shrink-0" />
-            Masala administrator ko'rib chiqmoqda
+            Masala administrator körib çiqmoqda
           </div>
-          <div className="mt-1 text-zinc-300">Bekor qilish sababi: {c.cancelReason}</div>
-          <div className="mt-0.5 text-zinc-300">Rad etish sababi: {c.cancelRejectReason}</div>
+          <div className="mt-1 text-zinc-300">Bekor qiliş sababi: {c.cancelReason}</div>
+          <div className="mt-0.5 text-zinc-300">Rad etiş sababi: {c.cancelRejectReason}</div>
           <div className="mt-1 text-xs text-zinc-400">
-            Admin bekor qilish, davom ettirish yoki yakunlash bo'yicha qaror qabul qiladi. Qaror chatga yoziladi.
+            Admin bekor qiliş, davom ettiriş yoki yakunlaş böyiça qaror qabul qiladi. Qaror çatga yoziladi.
           </div>
         </div>
       )}
@@ -200,7 +200,7 @@ export function ContractPanel({
               onClick={() => {
                 if (
                   window.confirm(
-                    `Ish yakunlanadi va ${c.amount.toLocaleString()} so'm to'liq tayyorlovchiga o'tadi. Davom etilsinmi?`,
+                    `Iş yakunlanadi va ${c.amount.toLocaleString()} söm töliq tayyorlovçiga ötadi. Davom etilsinmi?`,
                   )
                 ) {
                   call(`/api/orders/${orderId}/finalize`, "POST");
@@ -208,13 +208,13 @@ export function ContractPanel({
               }}
             >
               <Icon name="check-circle" className="h-4 w-4" />
-              Ishni yakunlash
+              Işni yakunlaş
             </button>
           )}
           {isOrderer && delivered && !c.cancelState && (
             <button className="btn-ghost" disabled={busy} onClick={() => open("revision")}>
               <Icon name="refresh" className="h-4 w-4" />
-              Qayta ishlash
+              Qayta işlaş
             </button>
           )}
           {!isOrderer && status === "IN_PROGRESS" && (
@@ -224,13 +224,13 @@ export function ContractPanel({
               onClick={() => call(`/api/orders/${orderId}`, "PATCH", { status: "DELIVERED" })}
             >
               <Icon name="package" className="h-4 w-4" />
-              Ishni topshirdim
+              Işni topşirdim
             </button>
           )}
           {!c.cancelState && (
             <button className="btn-ghost text-red-300" disabled={busy} onClick={() => open("cancel")}>
               <Icon name="x-circle" className="h-4 w-4" />
-              Bekor qilishni so'rash
+              Bekor qilişni söraş
             </button>
           )}
         </div>
@@ -240,17 +240,17 @@ export function ContractPanel({
         <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3">
           <div className="text-sm font-medium text-white">
             {form === "cancel"
-              ? "Bekor qilish sababi"
+              ? "Bekor qiliş sababi"
               : form === "reject"
                 ? "Nega rozi emassiz?"
-                : "Nimani qayta ishlash kerak?"}
+                : "Nimani qayta işlaş kerak?"}
           </div>
           <p className="text-xs text-zinc-500">
             {form === "cancel"
-              ? "Ikkinchi tomonga yuboriladi. U 3 ish kuni ichida rozi bo'lsa (yoki javob bermasa) — pul buyurtmachiga qaytadi, rozi bo'lmasa — admin hal qiladi."
+              ? "Ikkinçi tomonga yuboriladi. U 3 iş kuni içida rozi bölsa (yoki javob bermasa) — pul buyurtmaçiga qaytadi, rozi bölmasa — admin hal qiladi."
               : form === "reject"
-                ? "Sabab admin va ikkinchi tomonga ko'rinadi. Masalani admin hal qiladi."
-                : "Ish tayyorlovchiga qaytadi. Yangi muddatgacha qayta topshirilmasa — shartnoma bekor bo'lib pul sizga qaytadi."}
+                ? "Sabab admin va ikkinçi tomonga körinadi. Masalani admin hal qiladi."
+                : "Iş tayyorlovçiga qaytadi. Yangi muddatgaça qayta topşirilmasa — şartnoma bekor bölib pul sizga qaytadi."}
           </p>
           <textarea
             className="input"
@@ -274,7 +274,7 @@ export function ContractPanel({
           {localErr && <p className="text-sm text-red-400">{localErr}</p>}
           <div className="flex gap-2">
             <button className="btn-primary" disabled={busy} onClick={submit}>
-              Yuborish
+              Yuboriş
             </button>
             <button className="btn-ghost" disabled={busy} onClick={() => setForm(null)}>
               Bekor

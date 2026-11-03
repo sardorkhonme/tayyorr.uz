@@ -14,7 +14,7 @@ const schema = z.object({
     .trim()
     .min(3, "Havolani kiriting")
     .max(500)
-    .refine((v) => /^(https?:\/\/|@)\S+$/i.test(v), "Havola https:// yoki @ bilan boshlansin"),
+    .refine((v) => /^(https?:\/\/|@)\S+$/i.test(v), "Havola https:// yoki @ bilan boşlansin"),
   quantity: z.coerce.number().int().positive("Miqdorni kiriting"),
 });
 
@@ -36,13 +36,13 @@ export async function POST(req: Request) {
   const userId = await sessionUserId();
   if (!userId) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   if (!providerConfigured()) {
-    return NextResponse.json({ error: "Xizmat vaqtincha ishlamayapti" }, { status: 503 });
+    return NextResponse.json({ error: "Xizmat vaqtinça işlamayapti" }, { status: 503 });
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ma'lumotlar noto'g'ri" },
+      { error: parsed.error.issues[0]?.message ?? "Maʼlumotlar notöğri" },
       { status: 400 },
     );
   }

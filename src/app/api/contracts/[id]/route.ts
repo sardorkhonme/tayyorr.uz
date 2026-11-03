@@ -21,7 +21,7 @@ export async function POST(
   const parsed = contractActionSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Noto'g'ri amal" },
+      { error: parsed.error.issues[0]?.message ?? "Notöğri amal" },
       { status: 400 },
     );
   }

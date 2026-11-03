@@ -19,7 +19,7 @@ export async function DELETE(
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "O'chirish sababini yozing (kamida 3 belgi)" },
+      { error: "Öçiriş sababini yozing (kamida 3 belgi)" },
       { status: 400 },
     );
   }

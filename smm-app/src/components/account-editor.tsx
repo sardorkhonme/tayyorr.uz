@@ -52,7 +52,7 @@ export function AccountEditor({
     try {
       set("avatar", await resizeImage(file));
     } catch {
-      setMsg({ ok: false, text: "Rasmni o'qib bo'lmadi" });
+      setMsg({ ok: false, text: "Rasmni öqib bölmadi" });
     }
   }
 
@@ -68,7 +68,7 @@ export function AccountEditor({
       about: form.about,
       login: form.login,
       newPassword: form.newPassword,
-    }).catch(() => ({ error: "Kutilmagan xatolik, qayta urinib ko'ring" }));
+    }).catch(() => ({ error: "Kutilmagan xatolik, qayta urinib köring" }));
     setBusy(false);
     if (res.error) return setMsg({ ok: false, text: res.error });
     setForm((f) => ({ ...f, newPassword: "" }));
@@ -84,7 +84,7 @@ export function AccountEditor({
             type="button"
             onClick={() => fileRef.current?.click()}
             className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-indigo-100"
-            title="Rasmni almashtirish"
+            title="Rasmni almaştiriş"
           >
             {form.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -104,7 +104,7 @@ export function AccountEditor({
             </p>
             <p className="truncate text-sm text-zinc-500">{form.email}</p>
             <button type="button" onClick={() => fileRef.current?.click()} className="mt-1 text-sm font-semibold text-indigo-600 hover:underline">
-              Rasmni almashtirish
+              Rasmni almaştiriş
             </button>
           </div>
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={pickImage} />
@@ -120,7 +120,7 @@ export function AccountEditor({
             <input className="input" value={form.lastName} onChange={(e) => set("lastName", e.target.value)} />
           </div>
           <div>
-            <label className="label">Tug&apos;ilgan sana</label>
+            <label className="label">Tuğilgan sana</label>
             <input type="date" className="input" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
           </div>
           <div>
@@ -132,7 +132,7 @@ export function AccountEditor({
           </div>
         </div>
         <div className="mt-4">
-          <label className="label">O&apos;zingiz haqingizda</label>
+          <label className="label">Özingiz haqingizda</label>
           <textarea className="input min-h-24 resize-y" rows={3} value={form.about} onChange={(e) => set("about", e.target.value)} />
         </div>
       </section>
@@ -140,7 +140,7 @@ export function AccountEditor({
       <section className="card !rounded-3xl p-6">
         <h2 className="font-display text-lg font-bold text-zinc-900">Xavfsizlik</h2>
         <p className="mt-1 text-sm text-zinc-500">
-          {initial.hasPassword ? "Parolni almashtirish uchun yangisini kiriting." : "Login bilan kirish uchun parol o'rnating."}
+          {initial.hasPassword ? "Parolni almaştiriş uçun yangisini kiriting." : "Login bilan kiriş uçun parol örnating."}
         </p>
         <input
           type="password"
@@ -156,7 +156,7 @@ export function AccountEditor({
         <p className={`rounded-xl px-4 py-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>{msg.text}</p>
       )}
       <button className="btn-primary w-full !py-3.5 sm:w-auto" disabled={busy}>
-        {busy ? "Saqlanmoqda…" : "Saqlash"}
+        {busy ? "Saqlanmoqda…" : "Saqlaş"}
       </button>
     </form>
   );

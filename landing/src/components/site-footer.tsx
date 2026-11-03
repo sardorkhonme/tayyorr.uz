@@ -7,16 +7,16 @@ const COLS = [
   {
     title: "Xizmatlar",
     links: [
-      { href: `${APP_URL}/dashboard`, label: "Ilmiy ishlar" },
+      { href: `${APP_URL}/dashboard`, label: "Ilmiy işlar" },
       { href: SMM_URL, label: "Tayyorr SMM" },
       { href: PLUS_URL, label: "tayyorr+" },
-      { href: "/xizmatlar", label: "Ish turlari" },
+      { href: "/xizmatlar", label: "Iş turlari" },
     ],
   },
   {
     title: "Kompaniya",
     links: [
-      { href: "/#qanday", label: "Qanday ishlaydi" },
+      { href: "/#qanday", label: "Qanday işlaydi" },
       { href: "/#ilova", label: "Mobil ilova" },
       { href: TELEGRAM_URL, label: "Telegram kanal" },
       { href: INSTAGRAM_URL, label: "Instagram" },
@@ -38,7 +38,7 @@ export function SiteFooter() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
-            Ilmiy ishlar, ijtimoiy tarmoqlar uchun SMM va boshqa xizmatlar — bitta hisob va bitta hamyon bilan.
+            Ilmiy işlar, ijtimoiy tarmoqlar uçun SMM va boşqa xizmatlar — bitta hisob va bitta hamyon bilan.
           </p>
         </div>
         {COLS.map((c) => (
@@ -64,7 +64,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-white/[0.06]">
         <p className="mx-auto max-w-6xl px-6 py-6 text-xs text-zinc-600">
-          © {new Date().getFullYear()} Tayyorr.uz — barcha huquqlar himoyalangan.
+          © {new Date().getFullYear()} Tayyorr.uz — barça huquqlar himoyalangan.
         </p>
       </div>
     </footer>

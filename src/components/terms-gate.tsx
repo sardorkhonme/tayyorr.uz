@@ -35,9 +35,9 @@ export function TermsGate({
             className="text-indigo-400 underline underline-offset-2 hover:text-indigo-300"
             onClick={() => setOpen(true)}
           >
-            ommaviy oferta va foydalanish shartlari
+            ommaviy oferta va foydalaniş şartlari
           </button>{" "}
-          bilan tanishdim, ularga roziman va ma'lumotlarni o'z ixtiyorim bilan
+          bilan tanişdim, ularga roziman va maʼlumotlarni öz ixtiyorim bilan
           beraman.
         </span>
       </label>
@@ -75,7 +75,7 @@ function TermsModal({ onClose }: { onClose: () => void }) {
             type="button"
             className="backdrop-blur-sm rounded-lg px-2 py-1 text-sm text-zinc-400 hover:bg-white/5 hover:text-white"
             onClick={onClose}
-            aria-label="Yopish"
+            aria-label="Yopiş"
           >
             <Icon name="close" className="h-4 w-4" />
           </button>
@@ -85,7 +85,7 @@ function TermsModal({ onClose }: { onClose: () => void }) {
         </div>
         <div className="border-t border-white/10 px-5 py-3">
           <button type="button" className="btn-primary w-full" onClick={onClose}>
-            Tushunarli
+            Tuşunarli
           </button>
         </div>
       </div>

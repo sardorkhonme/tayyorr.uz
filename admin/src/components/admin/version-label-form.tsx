@@ -34,11 +34,11 @@ export function VersionLabelForm({ initial, fallback }: { initial: string; fallb
   return (
     <form onSubmit={save} className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
       <div>
-        <h2 className="font-semibold text-white">Versiya yorlig&apos;i</h2>
+        <h2 className="font-semibold text-white">Versiya yorliği</h2>
         <p className="mt-1 text-xs text-zinc-500">
-          Sayt va ilovadagi Akkaunt bo&apos;limi ostida ko&apos;rinadi. Bo&apos;sh qoldirsangiz —
+          Sayt va ilovadagi Akkaunt bölimi ostida körinadi. Böş qoldirsangiz —
           avtomatik: saytda <span className="font-mono text-zinc-300">{fallback}</span>, ilovada esa
-          o&apos;rnatilgan versiyasining raqami.
+          örnatilgan versiyasining raqami.
         </p>
       </div>
       <div className="flex gap-2">
@@ -50,7 +50,7 @@ export function VersionLabelForm({ initial, fallback }: { initial: string; fallb
           onChange={(e) => setValue(e.target.value)}
         />
         <button className="btn-primary" disabled={busy}>
-          {busy ? "..." : "Saqlash"}
+          {busy ? "..." : "Saqlaş"}
         </button>
       </div>
       {msg && <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}

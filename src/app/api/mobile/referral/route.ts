@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   });
   if (!me) return mobileJson({ error: "Topilmadi" }, { status: 404 });
   if (me.role !== "PREPARER") {
-    return mobileJson({ error: "Faqat tayyorlovchilar uchun" }, { status: 403 });
+    return mobileJson({ error: "Faqat tayyorlovçilar uçun" }, { status: 403 });
   }
 
   return mobileJson({

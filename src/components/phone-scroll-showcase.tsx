@@ -179,7 +179,7 @@ export function PhoneScrollShowcase({ slides }: { slides: PhoneSlideData[] }) {
     <section className="relative z-10 mx-auto max-w-6xl px-6 py-20">
       <div className="text-center lg:text-left">
         <div className="text-xs font-medium uppercase tracking-[0.2em] text-indigo-400">
-          Ilova ichida
+          Ilova içida
         </div>
       </div>
 

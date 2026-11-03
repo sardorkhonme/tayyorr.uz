@@ -25,7 +25,7 @@ export async function POST(
   const { id } = await params;
   const parsed = revisionSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: parsed.error.issues[0]?.message ?? "Ma'lumot noto'g'ri" }, { status: 400 });
+    return mobileJson({ error: parsed.error.issues[0]?.message ?? "Maʼlumot notöğri" }, { status: 400 });
   }
   const r = await requestRevision(id, me, parsed.data.reason, new Date(parsed.data.deadline));
   if (!r.ok) return mobileJson({ error: r.error }, { status: r.status });

@@ -21,7 +21,7 @@ export async function POST(
   const parsed = revisionSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ma'lumot noto'g'ri" },
+      { error: parsed.error.issues[0]?.message ?? "Maʼlumot notöğri" },
       { status: 400 },
     );
   }

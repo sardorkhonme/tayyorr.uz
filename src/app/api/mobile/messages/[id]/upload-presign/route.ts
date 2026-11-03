@@ -38,7 +38,7 @@ export async function POST(
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return mobileJson({ error: "Noto'g'ri so'rov" }, { status: 400 });
+  if (!parsed.success) return mobileJson({ error: "Notöğri sörov" }, { status: 400 });
   const { filename, contentType } = parsed.data;
 
   const key = buildKey(`chat/${id}`, filename);

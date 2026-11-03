@@ -11,17 +11,17 @@ const SITE = APP_URL.replace(/\/+$/, "");
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: "🟢 Faol",
   IN_PROGRESS: "🔵 Jarayonda",
-  DELIVERED: "📦 Topshirilgan",
+  DELIVERED: "📦 Topşirilgan",
   DONE: "✅ Tugallangan",
   CANCELLED: "❌ Bekor qilingan",
 };
@@ -58,8 +58,8 @@ function buildText(o: ChannelOrder): string {
     `📌 <b>Holati:</b> ${STATUS_LABEL[o.status] ?? esc(o.status)}`,
     `📂 <b>Turi:</b> ${esc(TYPE_LABEL[o.type] ?? o.type)}`,
     o.budget
-      ? `💰 <b>Byudjet:</b> ${o.budget.toLocaleString("ru-RU")} so'm`
-      : "💰 <b>Byudjet:</b> kelishilgan holda",
+      ? `💰 <b>Byudjet:</b> ${o.budget.toLocaleString("ru-RU")} söm`
+      : "💰 <b>Byudjet:</b> kelişilgan holda",
   ];
   if (o.deadline) lines.push(`🗓 <b>Muddat:</b> ${esc(fmtDate(o.deadline))}`);
   lines.push(
@@ -75,7 +75,7 @@ function buildText(o: ChannelOrder): string {
 function keyboard(orderId: string) {
   return {
     inline_keyboard: [
-      [{ text: "👁 Ishni ko'rish", url: `${SITE}/orders/${orderId}` }],
+      [{ text: "👁 Işni köriş", url: `${SITE}/orders/${orderId}` }],
     ],
   };
 }
@@ -193,11 +193,11 @@ export async function markOrderRemovedInChannel(
   after(async () => {
     try {
       const lines = [
-        "🗑 <b>Buyurtma o'chirildi</b>",
+        "🗑 <b>Buyurtma öçirildi</b>",
         "",
         `<s>${esc(clip(title, 200))}</s>`,
         "",
-        `👤 <b>Kim o'chirdi:</b> ${esc(by)}`,
+        `👤 <b>Kim öçirdi:</b> ${esc(by)}`,
       ];
       if (reason?.trim()) lines.push(`✍️ <b>Sabab:</b> ${esc(clip(reason, 400))}`);
       lines.push("", "— <i>tayyorr.uz</i>");
@@ -223,13 +223,13 @@ export async function telegramSelfTest(): Promise<Record<string, unknown>> {
       ok: false,
       hasToken,
       channel,
-      reason: "env yo'q (TELEGRAM_BOT_TOKEN / TELEGRAM_CHANNEL_ID)",
+      reason: "env yöq (TELEGRAM_BOT_TOKEN / TELEGRAM_CHANNEL_ID)",
     };
   }
   try {
     const res = await tg("sendMessage", {
       chat_id: channel,
-      text: "✅ tayyorr.uz — sinov xabari (Telegram ulanishi ishlayapti).",
+      text: "✅ tayyorr.uz — sinov xabari (Telegram ulanişi işlayapti).",
       disable_web_page_preview: true,
     });
     const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;

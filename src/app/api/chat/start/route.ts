@@ -19,13 +19,13 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   }
   const { userId, orderId } = parsed.data;
 
   if (userId === session.user.id) {
     return NextResponse.json(
-      { error: "O'zingiz bilan suhbat bo'lmaydi" },
+      { error: "Özingiz bilan suhbat bölmaydi" },
       { status: 400 },
     );
   }
@@ -40,19 +40,19 @@ export async function POST(req: Request) {
     select: { id: true },
   });
   if (!other) {
-    return NextResponse.json({ error: "Foydalanuvchi topilmadi" }, { status: 404 });
+    return NextResponse.json({ error: "Foydalanuvçi topilmadi" }, { status: 404 });
   }
 
   const bs = await blockState(session.user.id, userId);
   if (bs.iBlocked) {
     return NextResponse.json(
-      { error: "Siz bu foydalanuvchini bloklagansiz." },
+      { error: "Siz bu foydalanuvçini bloklagansiz." },
       { status: 403 },
     );
   }
   if (bs.blockedMe) {
     return NextResponse.json(
-      { error: "Bu foydalanuvchi sizni bloklagan." },
+      { error: "Bu foydalanuvçi sizni bloklagan." },
       { status: 403 },
     );
   }

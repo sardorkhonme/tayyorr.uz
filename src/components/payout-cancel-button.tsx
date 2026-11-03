@@ -24,7 +24,7 @@ export function PayoutCancelButton({ id }: { id: string }) {
       }}
       className="backdrop-blur-sm shrink-0 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-300 hover:bg-white/10"
     >
-      {busy ? "..." : "Bekor qilish"}
+      {busy ? "..." : "Bekor qiliş"}
     </button>
   );
 }

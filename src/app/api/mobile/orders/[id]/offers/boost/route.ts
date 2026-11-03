@@ -29,19 +29,19 @@ export async function POST(
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Star sonini to'g'ri kiriting" }, { status: 400 });
+    return mobileJson({ error: "Star sonini töğri kiriting" }, { status: 400 });
   }
 
   const order = await db.order.findUnique({ where: { id } });
   if (!order || order.status !== "OPEN") {
-    return mobileJson({ error: "Buyurtma navbat uchun ochiq emas" }, { status: 400 });
+    return mobileJson({ error: "Buyurtma navbat uçun oçiq emas" }, { status: 400 });
   }
 
   const offer = await db.offer.findUnique({
     where: { orderId_preparerId: { orderId: id, preparerId: auth.userId } },
   });
   if (!offer) {
-    return mobileJson({ error: "Avval taklif yuborishingiz kerak" }, { status: 400 });
+    return mobileJson({ error: "Avval taklif yuborişingiz kerak" }, { status: 400 });
   }
 
   const spend = await useStars({ userId: auth.userId, stars: parsed.data.stars });
@@ -57,7 +57,7 @@ export async function POST(
   await logActivity(
     auth.userId,
     "OFFER_BOOST",
-    `Navbatda yuqoriga chiqish uchun ${parsed.data.stars} star sarfladi: «${order.title}» (mobil ilova)`,
+    `Navbatda yuqoriga çiqiş uçun ${parsed.data.stars} star sarfladi: «${order.title}» (mobil ilova)`,
     { orderId: id, offerId: offer.id, stars: parsed.data.stars },
   );
 
@@ -68,7 +68,7 @@ export async function POST(
 
   await logToGroup(
     "stars",
-    "🚀 Navbatda yuqoriga chiqish (mobil)",
+    "🚀 Navbatda yuqoriga çiqiş (mobil)",
     [
       `«${order.title}»`,
       `Tayyorlovchi: ${userLabel(preparer)}`,

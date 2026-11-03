@@ -23,8 +23,8 @@ export function AccountNotFound() {
           Bunday hisob mavjud emas
         </h1>
         <p className="mt-2 text-sm text-zinc-400">
-          Sizning hisobingiz tizimdan o'chirilgan yoki topilmadi. Qaytadan kirish
-          uchun quyidagi tugmani bosing.
+          Sizning hisobingiz tizimdan öçirilgan yoki topilmadi. Qaytadan kiriş
+          uçun quyidagi tugmani bosing.
         </p>
 
         <div className="mt-6">
@@ -34,7 +34,7 @@ export function AccountNotFound() {
             disabled={busy}
             className="btn-primary w-full justify-center"
           >
-            {busy ? "Yo'naltirilmoqda..." : "Qayta urinish"}
+            {busy ? "Yo'naltirilmoqda..." : "Qayta uriniş"}
           </button>
         </div>
       </div>

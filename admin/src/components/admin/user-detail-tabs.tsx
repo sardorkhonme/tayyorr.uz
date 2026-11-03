@@ -7,13 +7,13 @@ function tabs(id: string) {
   const base = `/users/${id}`;
   return [
     { href: base, label: "Umumiy" },
-    { href: `${base}/cheklov`, label: "Cheklov" },
+    { href: `${base}/cheklov`, label: "Çeklov" },
     { href: `${base}/telegram`, label: "Telegram" },
     { href: `${base}/qurilmalar`, label: "Qurilmalar" },
-    { href: `${base}/kirishlar`, label: "Kirishlar" },
+    { href: `${base}/kirishlar`, label: "Kirişlar" },
     { href: `${base}/referallar`, label: "Referallar" },
     { href: `${base}/hamyon`, label: "Hamyon" },
-    { href: `${base}/xabar`, label: "Xabar yuborish" },
+    { href: `${base}/xabar`, label: "Xabar yuboriş" },
     { href: `${base}/suhbatlar`, label: "Suhbatlar" },
     { href: `${base}/jurnal`, label: "Jurnal" },
     { href: `${base}/xavfli`, label: "Xavfli zona", danger: true },

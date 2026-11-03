@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
         className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.04] p-7"
       >
         <h1 className="text-lg font-semibold text-white">Admin panel</h1>
-        <p className="mt-1 text-sm text-zinc-500">tayyorr.uz boshqaruvi</p>
+        <p className="mt-1 text-sm text-zinc-500">tayyorr.uz boşqaruvi</p>
 
         <div className="mt-6 flex flex-col gap-3">
           <div>
@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
           </div>
           {err && <p className="text-sm text-red-400">{err}</p>}
           <button className="btn-primary" disabled={busy}>
-            {busy ? "..." : "Kirish"}
+            {busy ? "..." : "Kiriş"}
           </button>
         </div>
       </form>

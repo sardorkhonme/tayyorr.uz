@@ -39,23 +39,23 @@ export default async function AdminUserOverview({
     ["Email", user.email ?? "—"],
     ["Rol", user.role ?? "—"],
     [
-      "Tug'ilgan sana (kiritgan)",
+      "Tuğilgan sana (kiritgan)",
       user.birthDate
-        ? `${formatBirthday(user.birthDate)} · ${ageFrom(user.birthDate)} yosh`
+        ? `${formatBirthday(user.birthDate)} · ${ageFrom(user.birthDate)} yoş`
         : "kiritilmagan",
     ],
     [
-      "Tug'ilgan kun (Google)",
+      "Tuğilgan kun (Google)",
       user.googleBirthday
         ? formatBirthday(user.googleBirthday)
         : googleBirthdayEnabled()
-          ? "Google bermadi (yashirilgan yoki kiritilmagan)"
+          ? "Google bermadi (yaşirilgan yoki kiritilmagan)"
           : "olinmaydi (Google ruxsati hali yoqilmagan)",
     ],
     ["Hisob kodi", user.walletCode ?? "—"],
     ["Balans", formatSom(user.balance)],
     ["Star balansi", <>{user.starBalance} <StarIcon className="h-3.5 w-3.5" /></>],
-    ["Ro'yxatdan", shortDateTime(user.createdAt)],
+    ["Röyxatdan", shortDateTime(user.createdAt)],
     [
       "Oferta",
       user.termsAcceptedAt
@@ -67,7 +67,7 @@ export default async function AdminUserOverview({
       `${user._count.ordersCreated} / ${user._count.ordersTaken} / ${user._count.offers}`,
     ],
     [
-      "Shikoyatlar (yozgan / ustidan)",
+      "Şikoyatlar (yozgan / ustidan)",
       `${user._count.complaintsMade} / ${user._count.complaintsAgainst}`,
     ],
     [
@@ -89,10 +89,10 @@ export default async function AdminUserOverview({
           : "ulanmagan",
     ],
     [
-      "Qayerdan eshitgan",
+      "Qayerdan eşitgan",
       user.hearAboutUs
         ? `${HEAR_ABOUT_US_LABELS[user.hearAboutUs] ?? user.hearAboutUs}${user.hearAboutUsDetail ? ` (${user.hearAboutUsDetail})` : ""}`
-        : "ko'rsatilmagan",
+        : "körsatilmagan",
     ],
     [
       "Referral havola",
@@ -110,7 +110,7 @@ export default async function AdminUserOverview({
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-      <h2 className="mb-3 font-semibold text-white">Hisob ma'lumotlari</h2>
+      <h2 className="mb-3 font-semibold text-white">Hisob maʼlumotlari</h2>
       <dl className="divide-y divide-white/5 text-sm">
         {info.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-4 py-2">

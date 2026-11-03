@@ -11,13 +11,13 @@ export const MAX_AGE = 100;
  * bo'lishi va yosh [MIN_AGE..MAX_AGE] oralig'ida bo'lishi shart.
  */
 export const birthDateSchema = z
-  .string({ required_error: "Tug'ilgan sanani kiriting" })
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Tug'ilgan sanani kiriting")
+  .string({ required_error: "Tuğilgan sanani kiriting" })
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Tuğilgan sanani kiriting")
   .transform((v, ctx) => {
     const [y, m, d] = v.split("-").map(Number);
     const date = new Date(Date.UTC(y, m - 1, d));
     if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Bunday sana yo'q" });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Bunday sana yöq" });
       return z.NEVER;
     }
     const now = new Date();
@@ -26,7 +26,7 @@ export const birthDateSchema = z
     if (age < MIN_AGE || age > MAX_AGE) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Yosh ${MIN_AGE} dan ${MAX_AGE} gacha bo'lishi kerak`,
+        message: `Yoş ${MIN_AGE} dan ${MAX_AGE} gaça bölişi kerak`,
       });
       return z.NEVER;
     }

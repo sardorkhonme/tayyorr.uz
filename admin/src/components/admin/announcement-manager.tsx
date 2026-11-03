@@ -41,8 +41,8 @@ const EMPTY: Draft = {
 
 const ROLE_LABEL: Record<string, string> = {
   "": "Hammaga",
-  ORDERER: "Buyurtmachilarga",
-  PREPARER: "Tayyorlovchilarga",
+  ORDERER: "Buyurtmaçilarga",
+  PREPARER: "Tayyorlovçilarga",
 };
 
 
@@ -91,8 +91,8 @@ function Fields({
             onChange={(e) => set({ role: e.target.value as Banner["role"] })}
           >
             <option value="">Hammaga</option>
-            <option value="ORDERER">Buyurtmachilarga</option>
-            <option value="PREPARER">Tayyorlovchilarga</option>
+            <option value="ORDERER">Buyurtmaçilarga</option>
+            <option value="PREPARER">Tayyorlovçilarga</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-zinc-300">
@@ -149,14 +149,14 @@ function ClickList({ announcementId }: { announcementId: string }) {
         onClick={toggle}
         className="btn-ghost text-xs"
       >
-        {open ? "Yashirish" : "Kimlar bosgan"}
+        {open ? "Yaşiriş" : "Kimlar bosgan"}
         {clicks ? ` (${clicks.length})` : ""}
       </button>
       {open && (
         <div className="mt-2 rounded-lg border border-white/10 p-2">
           {loading && <div className="p-2 text-xs text-zinc-500">Yuklanmoqda...</div>}
           {!loading && clicks && clicks.length === 0 && (
-            <div className="p-2 text-xs text-zinc-500">Hali hech kim bosmagan</div>
+            <div className="p-2 text-xs text-zinc-500">Hali heç kim bosmagan</div>
           )}
           {!loading &&
             clicks?.map((c) => (
@@ -240,7 +240,7 @@ function Row({ b }: { b: Banner }) {
           disabled={busy}
           className="ml-auto rounded-full bg-red-500/15 px-2 py-0.5 text-red-300 hover:bg-red-500/25"
         >
-          O'chirish
+          Öçiriş
         </button>
       </div>
       <Fields v={v} set={(p) => setV((s) => ({ ...s, ...p }))} />
@@ -252,7 +252,7 @@ function Row({ b }: { b: Banner }) {
           disabled={busy}
           className="btn-primary mt-3 text-sm"
         >
-          {busy ? "..." : "Saqlash"}
+          {busy ? "..." : "Saqlaş"}
         </button>
       )}
     </div>
@@ -281,7 +281,7 @@ export function AnnouncementManager({ initial }: { initial: Banner[] }) {
     <div className="flex flex-col gap-5">
       <div className="rounded-xl border border-dashed border-white/15 p-4">
         <div className="mb-3 text-sm font-medium text-white">
-          Yangi e'lon qo'shish
+          Yangi eʼlon qöşiş
         </div>
         <Fields v={draft} set={(p) => setDraft((s) => ({ ...s, ...p }))} />
         <button
@@ -290,12 +290,12 @@ export function AnnouncementManager({ initial }: { initial: Banner[] }) {
           disabled={busy || !draft.title.trim()}
           className="btn-primary mt-3 text-sm"
         >
-          {busy ? "..." : "Qo'shish"}
+          {busy ? "..." : "Qöşiş"}
         </button>
         {draft.title.trim() && (
           <div className="mt-4">
             <div className="mb-1 text-xs uppercase text-zinc-600">
-              Ko'rinishi (o'zbekcha)
+              Körinişi (özbekça)
             </div>
             <AnnouncementBanner
               a={{
@@ -310,8 +310,8 @@ export function AnnouncementManager({ initial }: { initial: Banner[] }) {
       </div>
 
       <div className="text-xs text-zinc-600">
-        {initial.length} ta e'lon · 2+ faol bo'lsa foydalanuvchida navbatlashib
-        ko'rsatiladi (faqat kompyuterda)
+        {initial.length} ta eʼlon · 2+ faol bölsa foydalanuvçida navbatlaşib
+        körsatiladi (faqat kompyuterda)
       </div>
 
       {initial.map((b) => (

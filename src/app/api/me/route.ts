@@ -48,7 +48,7 @@ export async function PATCH(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri ma'lumot" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri maʼlumot" }, { status: 400 });
   }
   const data = parsed.data;
 

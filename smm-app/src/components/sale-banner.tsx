@@ -13,13 +13,13 @@ export function SaleBanner({ count, max }: { count: number; max: number }) {
         <Icon name="tag" className="h-6 w-6 sm:h-7 sm:w-7" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-display text-xl font-bold sm:text-2xl">−{max}% gacha chegirmalar!</span>
+        <span className="block font-display text-xl font-bold sm:text-2xl">−{max}% gaça çegirmalar!</span>
         <span className="block text-sm text-white/85">
-          {count} ta xizmat arzonlashdi — ulgurib qoling
+          {count} ta xizmat arzonlaşdi — ulgurib qoling
         </span>
       </span>
       <span className="hidden items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-fuchsia-700 sm:inline-flex">
-        Ko&apos;rish
+        Köriş
         <Icon name="arrow-right" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </span>
       <Icon name="arrow-right" className="h-5 w-5 shrink-0 sm:hidden" />

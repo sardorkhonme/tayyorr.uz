@@ -66,7 +66,7 @@ export async function sendTelegramToUser(userId: string, payload: TelegramNotify
       const reply_markup = payload.url
         ? {
             inline_keyboard: [
-              [{ text: payload.buttonLabel || "Ko'rish", url: payload.url }],
+              [{ text: payload.buttonLabel || "Köriş", url: payload.url }],
             ],
           }
         : undefined;

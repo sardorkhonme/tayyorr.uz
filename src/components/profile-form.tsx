@@ -78,11 +78,11 @@ export function ProfileForm({
         </div>
       </div>
       <div>
-        <label className="label">Tug&apos;ilgan sana</label>
+        <label className="label">Tuğilgan sana</label>
         <BirthDateSelect value={birth} onChange={setBirth} />
       </div>
       <div>
-        <label className="label">Qo'shimcha ma'lumot</label>
+        <label className="label">Qöşimça maʼlumot</label>
         <textarea
           className="input"
           rows={4}
@@ -92,7 +92,7 @@ export function ProfileForm({
       </div>
       {msg && <p className="text-sm text-zinc-400">{msg}</p>}
       <button className="btn-primary" disabled={busy}>
-        {busy ? "..." : "Saqlash"}
+        {busy ? "..." : "Saqlaş"}
       </button>
     </form>
   );

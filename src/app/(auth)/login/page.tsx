@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <AuthShell width="max-w-sm">
       <div className="card p-7">
-        <h1 className="text-xl font-semibold text-white">Kirish</h1>
+        <h1 className="text-xl font-semibold text-white">Kiriş</h1>
 
         <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
           <div>
@@ -55,7 +55,7 @@ export default function LoginPage() {
           </div>
           {err && <p className="text-sm text-red-400">{err}</p>}
           <button className="btn-primary mt-1" disabled={busy}>
-            {busy ? "..." : "Kirish"}
+            {busy ? "..." : "Kiriş"}
           </button>
         </form>
 
@@ -72,14 +72,14 @@ export default function LoginPage() {
           onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
         >
           <GoogleGlyph />
-          Google orqali kirish
+          Google orqali kiriş
         </button>
       </div>
 
       <p className="mt-5 text-center text-sm text-zinc-500">
-        Akkountingiz yo'qmi?{" "}
+        Akkountingiz yöqmi?{" "}
         <Link href="/register" className="text-indigo-400 hover:text-indigo-300">
-          Ro'yxatdan o'tish
+          Röyxatdan ötiş
         </Link>
       </p>
     </AuthShell>

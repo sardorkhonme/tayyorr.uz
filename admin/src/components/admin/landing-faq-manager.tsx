@@ -111,7 +111,7 @@ function Row({ f }: { f: Faq }) {
           disabled={busy}
           className="ml-auto rounded-full bg-red-500/15 px-2 py-0.5 text-red-300 hover:bg-red-500/25"
         >
-          O'chirish
+          Öçiriş
         </button>
       </div>
       <Fields v={v} set={(p) => setV((s) => ({ ...s, ...p }))} />
@@ -122,7 +122,7 @@ function Row({ f }: { f: Faq }) {
           disabled={busy}
           className="btn-primary mt-3 text-sm"
         >
-          {busy ? "..." : "Saqlash"}
+          {busy ? "..." : "Saqlaş"}
         </button>
       )}
     </div>
@@ -151,7 +151,7 @@ export function LandingFaqManager({ initial }: { initial: Faq[] }) {
     <div className="flex flex-col gap-5">
       <div className="rounded-xl border border-dashed border-white/15 p-4">
         <div className="mb-3 text-sm font-medium text-white">
-          Yangi savol qo'shish
+          Yangi savol qöşiş
         </div>
         <Fields v={draft} set={(p) => setDraft((s) => ({ ...s, ...p }))} />
         <button
@@ -160,13 +160,13 @@ export function LandingFaqManager({ initial }: { initial: Faq[] }) {
           disabled={busy || !draft.question.trim() || !draft.answer.trim()}
           className="btn-primary mt-3 text-sm"
         >
-          {busy ? "..." : "Qo'shish"}
+          {busy ? "..." : "Qöşiş"}
         </button>
       </div>
 
       <div className="text-xs text-zinc-600">
-        {initial.length} ta savol · landing sahifada tartib raqami bo'yicha
-        chiqadi
+        {initial.length} ta savol · landing sahifada tartib raqami böyiça
+        çiqadi
       </div>
 
       {initial.map((f) => (

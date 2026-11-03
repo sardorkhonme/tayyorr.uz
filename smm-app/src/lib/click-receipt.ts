@@ -20,10 +20,10 @@ export async function requestClickReceipt(id: string, userId: string): Promise<C
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || typeof data.qrCodeURL !== "string") {
-      return { ok: false, error: data.error || "Chekni olib bo'lmadi" };
+      return { ok: false, error: data.error || "Çekni olib bölmadi" };
     }
     return { ok: true, qrCodeURL: data.qrCodeURL };
   } catch {
-    return { ok: false, error: "Chek xizmati vaqtincha ishlamayapti" };
+    return { ok: false, error: "Çek xizmati vaqtinça işlamayapti" };
   }
 }

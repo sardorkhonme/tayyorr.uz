@@ -23,7 +23,7 @@ export { OPTIONS } from "@/lib/mobile-cors";
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
   acceptTerms: z.literal(true, {
-    errorMap: () => ({ message: "Oferta shartlariga rozilik bering" }),
+    errorMap: () => ({ message: "Oferta şartlariga rozilik bering" }),
   }),
   firstName: z.string().min(2).max(50),
   lastName: z.string().min(2).max(50),
@@ -31,7 +31,7 @@ const schema = z.object({
     .string()
     .min(3)
     .max(30)
-    .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat harf, raqam, _ va . dan iborat bo'lsin"),
+    .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat harf, raqam, _ va . dan iborat bölsin"),
   password: z.string().min(6).max(100),
   about: z.string().min(5).max(1000),
   // "YYYY-MM-DD" — yangi ilova doim yuboradi; eski versiyalar ro'yxatdan
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return mobileJson(
-      { error: parsed.error.issues[0]?.message ?? "Barcha maydonlarni to'ldiring" },
+      { error: parsed.error.issues[0]?.message ?? "Barça maydonlarni töldiring" },
       { status: 400 },
     );
   }
@@ -119,7 +119,7 @@ export async function POST(req: Request) {
       data: { starBalance: { increment: 1 } },
     });
 
-    const text = `🌟 ${firstName} ${lastName} (@${login}) siz yuborgan referal havola orqali ro'yxatdan o'tdi va sizga 1 ⭐ taqdim etildi.`;
+    const text = `🌟 ${firstName} ${lastName} (@${login}) siz yuborgan referal havola orqali röyxatdan ötdi va sizga 1 ⭐ taqdim etildi.`;
     const supportId = await getSupportUserId();
     const conv = await getOrCreateConversation(supportId, referrer.id);
     const msg = await createMessage({
@@ -133,15 +133,15 @@ export async function POST(req: Request) {
       title: "🌟 Referal orqali +1 star",
       body: text,
       url: siteUrl("/referral"),
-      buttonLabel: "Referallarni ko'rish",
+      buttonLabel: "Referallarni köriş",
     });
 
     await logToGroup(
       "referrals",
-      "🌟 Shaxsiy referal — +1 star",
+      "🌟 Şaxsiy referal — +1 star",
       [
         `Taklif qilgan: ${userLabel(referrer)}`,
-        `Yangi a'zo: @${login} (${firstName} ${lastName})`,
+        `Yangi aʼzo: @${login} (${firstName} ${lastName})`,
       ],
       siteUrl(`/sardorxon/admin/users/${referrer.id}`),
     );
@@ -151,28 +151,28 @@ export async function POST(req: Request) {
   await logActivity(
     auth.userId,
     "REGISTER",
-    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}) — mobil ilova`,
+    `Röyxatdan ötdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi"}) — mobil ilova`,
   );
   await logToGroup(
     "registrations",
-    "🆕 Yangi ro'yxatdan o'tish (mobil ilova, Google)",
+    "🆕 Yangi röyxatdan ötiş (mobil ilova, Google)",
     [
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
-      `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
+      `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi"}`,
       parsed.data.hearAboutUs
         ? `Qayerdan: ${HEAR_ABOUT_US_LABELS[parsed.data.hearAboutUs] ?? parsed.data.hearAboutUs}`
         : "",
       refLink ? `Referral havola: ${refLink.name}` : "",
-      `Foydalanuvchi ID: ${auth.userId}`,
+      `Foydalanuvçi ID: ${auth.userId}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${auth.userId}`),
   );
   if (refLink) {
     await logToGroup(
       "referrals",
-      "🔗 Referral orqali ro'yxatdan o'tish",
-      [`Havola: ${refLink.name}`, `Yangi foydalanuvchi: @${login}`],
+      "🔗 Referral orqali röyxatdan ötiş",
+      [`Havola: ${refLink.name}`, `Yangi foydalanuvçi: @${login}`],
       siteUrl(`/sardorxon/admin/referrals/${refLink.id}`),
     );
   }

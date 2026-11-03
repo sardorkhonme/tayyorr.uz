@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ro'yxatdan o'tish",
+  title: "Röyxatdan ötiş",
   description:
-    "tayyorr.uz'ga bepul ro'yxatdan o'ting: prezentatsiya, kurs ishi va referat buyurtma qiling yoki tayyorlovchi sifatida daromad qiling.",
+    "tayyorr.uz'ga bepul röyxatdan öting: prezentatsiya, kurs işi va referat buyurtma qiling yoki tayyorlovçi sifatida daromad qiling.",
   alternates: { canonical: "/register" },
 };
 

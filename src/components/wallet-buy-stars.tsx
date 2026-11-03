@@ -59,13 +59,13 @@ export function WalletBuyStars({ starBalance }: { starBalance: number }) {
         </span>
       </div>
       <p className="-mt-2 text-xs text-zinc-500">
-        Buyurtmaga ariza yuborish va navbatda yuqoriga chiqish uchun kerak
-        bo'ladi. 1 <StarIcon className="h-3 w-3" /> = {STAR_PRICE.toLocaleString("ru-RU")} so'm, hamyon
-        balansingizdan yechiladi.
+        Buyurtmaga ariza yuboriş va navbatda yuqoriga çiqiş uçun kerak
+        böladi. 1 <StarIcon className="h-3 w-3" /> = {STAR_PRICE.toLocaleString("ru-RU")} söm, hamyon
+        balansingizdan yeçiladi.
       </p>
 
       <div>
-        <label className="label">Nechta star (dona)</label>
+        <label className="label">Neçta star (dona)</label>
         <input
           className="input"
           type="number"
@@ -79,7 +79,7 @@ export function WalletBuyStars({ starBalance }: { starBalance: number }) {
         />
         {!!Number(stars) && (
           <p className="mt-1 text-xs text-zinc-500">
-            Narxi: {(Number(stars) * STAR_PRICE).toLocaleString("ru-RU")} so'm
+            Narxi: {(Number(stars) * STAR_PRICE).toLocaleString("ru-RU")} söm
           </p>
         )}
       </div>
@@ -104,7 +104,7 @@ export function WalletBuyStars({ starBalance }: { starBalance: number }) {
       )}
 
       <button className="btn-primary" disabled={busy}>
-        {busy ? "..." : "Star sotib olish"}
+        {busy ? "..." : "Star sotib oliş"}
       </button>
     </form>
   );

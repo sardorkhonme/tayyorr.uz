@@ -15,13 +15,13 @@ const schema = z.object({ id: z.string().min(1), userId: z.string().min(1), ts: 
  */
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   const { id, userId, ts, sig } = parsed.data;
   if (Math.abs(Date.now() - ts) > 120_000 || !(await verifyInternal(`click-ofd.${id}.${userId}.${ts}`, sig))) {
-    return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
+    return NextResponse.json({ error: "Ruxsat yöq" }, { status: 401 });
   }
   if (!clickMerchantApiConfigured()) {
-    return NextResponse.json({ error: "Chek hozircha mavjud emas" }, { status: 400 });
+    return NextResponse.json({ error: "Çek hozirça mavjud emas" }, { status: 400 });
   }
 
   const wtx = await db.walletTransaction.findUnique({ where: { id } });

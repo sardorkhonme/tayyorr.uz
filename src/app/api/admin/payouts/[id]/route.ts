@@ -24,12 +24,12 @@ export async function POST(
   const { id } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri amal" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri amal" }, { status: 400 });
   }
   const { action, note } = parsed.data;
   // rad etishda sabab majburiy — foydalanuvchi nega rad etilganini bilishi kerak
   if (action === "REJECT" && (!note || note.length < 3)) {
-    return NextResponse.json({ error: "Rad etish sababini yozing" }, { status: 400 });
+    return NextResponse.json({ error: "Rad etiş sababini yozing" }, { status: 400 });
   }
 
   const p = await db.payoutRequest.findUnique({
@@ -42,7 +42,7 @@ export async function POST(
   });
   if (!p) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (p.status !== "PENDING") {
-    return NextResponse.json({ error: "Allaqachon hal qilingan" }, { status: 400 });
+    return NextResponse.json({ error: "Allaqaçon hal qilingan" }, { status: 400 });
   }
 
   // holat shartli o'zgaradi — ikki marta bosilsa ham pul ikki marta qaytmaydi
@@ -91,14 +91,14 @@ export async function POST(
           type: "REFUND",
           amount: p.amount,
           method: "CARD",
-          note: `Yechib olish rad etildi${note ? `: ${note}` : ""}`,
+          note: `Yeçib oliş rad etildi${note ? `: ${note}` : ""}`,
         },
       });
     });
   }
   } catch (e) {
     if (e instanceof Error && e.message === ALREADY) {
-      return NextResponse.json({ error: "Allaqachon hal qilingan" }, { status: 400 });
+      return NextResponse.json({ error: "Allaqaçon hal qilingan" }, { status: 400 });
     }
     throw e;
   }
@@ -108,8 +108,8 @@ export async function POST(
   const conv = await getOrCreateConversation(supportId, p.userId);
   const body =
     action === "PAID"
-      ? `💳 ${p.amount.toLocaleString("ru-RU")} so'm kartangizga o'tkazildi.`
-      : `💳 ${p.amount.toLocaleString("ru-RU")} so'm yechib olish so'rovi rad etildi, mablag' hisobingizga qaytarildi.${note ? ` Sabab: ${note}` : ""}`;
+      ? `💳 ${p.amount.toLocaleString("ru-RU")} söm kartangizga ötkazildi.`
+      : `💳 ${p.amount.toLocaleString("ru-RU")} söm yeçib oliş sörovi rad etildi, mablağ hisobingizga qaytarildi.${note ? ` Sabab: ${note}` : ""}`;
   const msg = await createMessage({
     conversationId: conv.id,
     senderId: supportId,
@@ -120,17 +120,17 @@ export async function POST(
 
   await logToGroup(
     "payouts",
-    action === "PAID" ? "🏧 Pul o'tkazildi" : "🏧 Yechish rad etildi",
+    action === "PAID" ? "🏧 Pul ötkazildi" : "🏧 Yeçiş rad etildi",
     [
       `Foydalanuvchi: ${userLabel(p.user)}`,
       p.user.email ? `Email: ${p.user.email}` : "",
       p.user.walletCode ? `Hisob kodi: ${p.user.walletCode}` : "",
-      `Summa: ${p.amount.toLocaleString("ru-RU")} so'm`,
+      `Summa: ${p.amount.toLocaleString("ru-RU")} söm`,
       `Karta: ${p.card}`,
       p.cardName ? `Karta egasi: ${p.cardName}` : "",
       note ? `Izoh: ${note}` : "",
-      `So'rov ID: ${p.id}`,
-      `Foydalanuvchi ID: ${p.userId}`,
+      `Sörov ID: ${p.id}`,
+      `Foydalanuvçi ID: ${p.userId}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${p.userId}`),
   );

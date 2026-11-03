@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const userId = await sessionUserId();
   if (!userId) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Maʼlumot notöğri" }, { status: 400 });
   try {
     const p = await requestPayout(userId, parsed.data.amount, parsed.data.card, parsed.data.cardName);
     return NextResponse.json({ ok: true, payoutId: p.id });

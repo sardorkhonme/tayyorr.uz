@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   }
   const { locale } = await req.json().catch(() => ({}));
   if (locale !== "uz" && locale !== "ru" && locale !== "en") {
-    return NextResponse.json({ error: "Noto'g'ri til" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri til" }, { status: 400 });
   }
   await db.user
     .update({ where: { id: session.user.id }, data: { locale } })

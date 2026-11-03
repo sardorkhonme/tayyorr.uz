@@ -29,7 +29,7 @@ export async function fetchClickReceipt(wtx: {
   if (!qrCodeURL) {
     const note =
       typeof ofdRes.data?.error_note === "string" ? ofdRes.data.error_note : null;
-    return { ok: false, error: note || "Bu to'lov uchun fiskal chek hali topilmadi" };
+    return { ok: false, error: note || "Bu tölov uçun fiskal çek hali topilmadi" };
   }
 
   return { ok: true, qrCodeURL, paymentId };

@@ -25,11 +25,11 @@ export function ReferralLinkCard({ userId }: { userId: string }) {
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-semibold text-white">
           <Icon name="gift" className="h-[18px] w-[18px] text-indigo-300" />
-          Do'stlaringizni taklif qiling
+          Döstlaringizni taklif qiling
         </h2>
       </div>
       <p className="-mt-2 text-xs text-zinc-500">
-        Havolangiz orqali ro'yxatdan o'tgan har bir yangi foydalanuvchi uchun
+        Havolangiz orqali röyxatdan ötgan har bir yangi foydalanuvçi uçun
         sizga <b className="text-amber-300">1 <StarIcon className="h-3 w-3" /></b> beriladi.
       </p>
       <div className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export function ReferralLinkCard({ userId }: { userId: string }) {
               Nusxalandi <Icon name="check" className="h-4 w-4" />
             </>
           ) : (
-            "Nusxalash"
+            "Nusxalaş"
           )}
         </button>
       </div>

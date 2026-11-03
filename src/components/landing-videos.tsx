@@ -23,11 +23,11 @@ export function LandingVideos({ videos }: { videos: VideoItem[] }) {
           Amaliyotda
         </div>
         <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          Platforma qanday ishlashini ko&apos;ring
+          Platforma qanday işlaşini köring
         </h2>
         <p className="mt-3 text-zinc-400">
-          Ro&apos;yxatdan o&apos;tishdan tayyor ishni qabul qilishgacha — bir
-          necha qisqa video.
+          Röyxatdan ötişdan tayyor işni qabul qilişgaça — bir
+          neça qisqa video.
         </p>
       </div>
 

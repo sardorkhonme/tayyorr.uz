@@ -21,7 +21,7 @@ function OpenPill() {
   return (
     <span className="relative -ml-4 inline-flex items-center gap-2 overflow-hidden rounded-full px-4 py-2 font-semibold text-indigo-600 transition-[color,box-shadow] duration-300 group-hover:text-white group-hover:shadow-lg group-hover:shadow-fuchsia-500/30">
       <span className="absolute inset-0 -z-0 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <span className="relative">Ochish</span>
+      <span className="relative">Oçiş</span>
       <Icon
         name="arrow-right"
         className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -55,25 +55,25 @@ export default async function DashboardPage({
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-indigo-600 shadow-sm">
               <Icon name="party" />
             </span>
-            Hisobingiz tayyor! Hamyonni to&apos;ldiring va birinchi xizmatdan foydalaning.
+            Hisobingiz tayyor! Hamyonni töldiring va birinçi xizmatdan foydalaning.
           </span>
-          <TopupButton className="btn-primary shrink-0 !py-2.5">Hamyonni to&apos;ldirish</TopupButton>
+          <TopupButton className="btn-primary shrink-0 !py-2.5">Hamyonni töldiriş</TopupButton>
         </div>
       )}
       {topup && user && (
         <div className="animate-rise rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
-          Click to&apos;lovi tekshirilmoqda. To&apos;lov o&apos;tgan bo&apos;lsa, balans bir necha soniyada
+          Click tölovi tekşirilmoqda. Tölov ötgan bölsa, balans bir neça soniyada
           yangilanadi — sahifani yangilang.
         </div>
       )}
 
       <header className="animate-rise">
-        <p className="text-sm font-medium text-indigo-600">{greet ? `Salom, ${greet}!` : "Xush kelibsiz!"}</p>
+        <p className="text-sm font-medium text-indigo-600">{greet ? `Salom, ${greet}!` : "Xuş kelibsiz!"}</p>
         <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
           tayyorr<span className="text-fuchsia-500">+</span> xizmatlari
         </h1>
         <p className="mt-2 max-w-2xl text-zinc-500">
-          Bitta hisob va bitta hamyon bilan barcha xizmatlar. Kerakligini tanlang.
+          Bitta hisob va bitta hamyon bilan barça xizmatlar. Kerakligini tanlang.
         </p>
       </header>
 
@@ -97,7 +97,7 @@ export default async function DashboardPage({
           </div>
           <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">Tayyorr SMM</h2>
           <p className="mt-2 leading-relaxed text-zinc-500">
-            Obunachilar, layklar va ko&apos;rishlar — bir necha daqiqada, avtomatik. Bajarilmasa pul qaytadi.
+            Obunaçilar, layklar va körişlar — bir neça daqiqada, avtomatik. Bajarilmasa pul qaytadi.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {SMM_PLATFORMS.map((key) => {
@@ -129,17 +129,17 @@ export default async function DashboardPage({
           <div className="flex items-start justify-between gap-4">
             <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-indigo-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-mark.png" alt="Ilmiy ishlar" className="h-10 w-10 object-contain" />
+              <img src="/logo-mark.png" alt="Ilmiy işlar" className="h-10 w-10 object-contain" />
             </span>
           </div>
           <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
-            Ilmiy ishlar
+            Ilmiy işlar
           </h2>
           <p className="mt-2 leading-relaxed text-zinc-500">
-            Prezentatsiya, kurs ishi, referat va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling.
+            Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {["Prezentatsiya", "Kurs ishi", "Referat", "Diplom ishi"].map((t) => (
+            {["Prezentatsiya", "Kurs işi", "Referat", "Diplom işi"].map((t) => (
               <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600">
                 {t}
               </span>
@@ -162,16 +162,16 @@ export default async function DashboardPage({
       {/* mehmon uchun taklif */}
       {!user && (
         <section className="shine relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-7 text-white sm:p-9">
-          <h2 className="font-display text-2xl font-bold sm:text-3xl">Bir daqiqada boshlang</h2>
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">Bir daqiqada boşlang</h2>
           <p className="mt-2 max-w-lg text-indigo-100">
-            Ro&apos;yxatdan o&apos;ting yoki tayyorr hisobingiz bilan kiring — hamyon umumiy.
+            Röyxatdan öting yoki tayyorr hisobingiz bilan kiring — hamyon umumiy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link href="/register" className="btn-dark !bg-white !px-6 !py-3.5 !text-zinc-900">
-              Ro&apos;yxatdan o&apos;tish
+              Röyxatdan ötiş
             </Link>
             <Link href="/login" className="rounded-[0.9rem] border border-white/40 px-6 py-3.5 text-center font-semibold hover:bg-white/10">
-              Kirish
+              Kiriş
             </Link>
           </div>
         </section>

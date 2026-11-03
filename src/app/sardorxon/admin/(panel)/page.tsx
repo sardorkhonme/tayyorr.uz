@@ -39,19 +39,19 @@ export default async function AdminHome() {
   const hearTotal = hearAboutUsStats.reduce((s, r) => s + r.count, 0);
 
   const cards = [
-    { label: "Foydalanuvchilar", value: users, href: "/sardorxon/admin/users" },
+    { label: "Foydalanuvçilar", value: users, href: "/sardorxon/admin/users" },
     {
-      label: "Ochiq shikoyatlar",
+      label: "Oçiq şikoyatlar",
       value: openComplaints,
       href: "/sardorxon/admin/complaints",
     },
     {
-      label: "Yechib olish (kutilmoqda)",
+      label: "Yeçib oliş (kutilmoqda)",
       value: pendingPayouts,
       href: "/sardorxon/admin/payouts",
     },
     { label: "24 soatlik amallar", value: txnToday, href: "/sardorxon/admin/payments" },
-    { label: "Cheklangan hisoblar", value: banned, href: "/sardorxon/admin/users" },
+    { label: "Çeklangan hisoblar", value: banned, href: "/sardorxon/admin/users" },
     {
       label: "Sayt daromadi — star (jami)",
       value: formatSom(platform?.balance ?? 0),
@@ -66,7 +66,7 @@ export default async function AdminHome() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold text-white">Boshqaruv paneli</h1>
+      <h1 className="text-xl font-semibold text-white">Boşqaruv paneli</h1>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <Link
@@ -85,7 +85,7 @@ export default async function AdminHome() {
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
           <h2 className="mb-4 flex items-center gap-2 font-semibold text-white">
             <Icon name="chart" className="h-[18px] w-[18px] text-indigo-300" />
-            Qayerdan eshitgan — statistika
+            Qayerdan eşitgan — statistika
           </h2>
           <div className="flex flex-col gap-3">
             {hearAboutUsStats.map((s) => {
@@ -113,7 +113,7 @@ export default async function AdminHome() {
             })}
           </div>
           <p className="mt-3 text-xs text-zinc-600">
-            Jami javob: {hearTotal} · {users - hearTotal} foydalanuvchi hali javob bermagan
+            Jami javob: {hearTotal} · {users - hearTotal} foydalanuvçi hali javob bermagan
           </p>
         </section>
       )}

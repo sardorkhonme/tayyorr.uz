@@ -25,7 +25,7 @@ export async function POST(
   if (!conv) return mobileJson({ error: "Suhbat topilmadi" }, { status: 404 });
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return mobileJson({ error: "Noto'g'ri" }, { status: 400 });
+  if (!parsed.success) return mobileJson({ error: "Notöğri" }, { status: 400 });
 
   const msg = await db.message.findUnique({ where: { id: msgId } });
   if (!msg || msg.conversationId !== id) {

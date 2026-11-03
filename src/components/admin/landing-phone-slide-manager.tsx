@@ -70,7 +70,7 @@ function Row({ s }: { s: PhoneSlide }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("Slayd o'chirilsinmi?")) return;
+    if (!confirm("Slayd öçirilsinmi?")) return;
     setBusy(true);
     await fetch(`/api/admin/landing-phone-slide/${s.id}`, { method: "DELETE" });
     router.refresh();
@@ -115,7 +115,7 @@ function Row({ s }: { s: PhoneSlide }) {
           disabled={busy}
           className="ml-auto rounded-full bg-red-500/15 px-2 py-0.5 text-red-300 hover:bg-red-500/25"
         >
-          O'chirish
+          Öçiriş
         </button>
       </div>
 
@@ -126,7 +126,7 @@ function Row({ s }: { s: PhoneSlide }) {
             <img src={s.imageUrl} alt="" className="aspect-[9/19] w-full object-cover" />
           ) : (
             <div className="flex aspect-[9/19] items-center justify-center text-xs text-zinc-600">
-              rasm yo&apos;q
+              rasm yöq
             </div>
           )}
         </div>
@@ -169,7 +169,7 @@ function Row({ s }: { s: PhoneSlide }) {
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
-              {uploading ? "Yuklanmoqda..." : "Rasmni almashtirish"}
+              {uploading ? "Yuklanmoqda..." : "Rasmni almaştiriş"}
             </button>
           </div>
           {msg && <p className="text-sm text-red-400">{msg}</p>}
@@ -180,7 +180,7 @@ function Row({ s }: { s: PhoneSlide }) {
               disabled={busy}
               className="btn-primary text-sm"
             >
-              {busy ? "..." : "Saqlash"}
+              {busy ? "..." : "Saqlaş"}
             </button>
           )}
         </div>
@@ -228,7 +228,7 @@ export function LandingPhoneSlideManager({ initial }: { initial: PhoneSlide[] })
     <div className="flex flex-col gap-5">
       <div className="rounded-xl border border-dashed border-white/15 p-4">
         <div className="mb-3 text-sm font-medium text-white">
-          Yangi slayd qo&apos;shish (telefon ekranidagi rasm + matn)
+          Yangi slayd qöşiş (telefon ekranidagi rasm + matn)
         </div>
         <div className="grid gap-3">
           <input
@@ -269,14 +269,14 @@ export function LandingPhoneSlideManager({ initial }: { initial: PhoneSlide[] })
           disabled={uploading || !title.trim() || !subtitle.trim()}
           onClick={() => fileRef.current?.click()}
         >
-          {uploading ? "Yuklanmoqda..." : "Rasm tanlash va qo'shish"}
+          {uploading ? "Yuklanmoqda..." : "Rasm tanlaş va qöşiş"}
         </button>
         {msg && <p className="mt-2 text-sm text-red-400">{msg}</p>}
       </div>
 
       <div className="text-xs text-zinc-600">
-        {initial.length} ta slayd · landingda &quot;Ilovani yuklab olish&quot;
-        bo&apos;limidan oldin scroll bilan almashadi
+        {initial.length} ta slayd · landingda &quot;Ilovani yuklab oliş&quot;
+        bölimidan oldin scroll bilan almaşadi
       </div>
 
       {initial.map((s) => (

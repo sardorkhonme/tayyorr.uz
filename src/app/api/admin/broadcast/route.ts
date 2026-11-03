@@ -79,11 +79,11 @@ export async function POST(req: Request) {
 
   if (preview) return NextResponse.json({ count });
   if (count === 0) {
-    return NextResponse.json({ error: "Filtrga mos foydalanuvchi yo'q" }, { status: 400 });
+    return NextResponse.json({ error: "Filtrga mos foydalanuvçi yöq" }, { status: 400 });
   }
   if (count > MAX) {
     return NextResponse.json(
-      { error: `Juda ko'p (${count}). Filtrni toraytiring (maks. ${MAX}).` },
+      { error: `Juda köp (${count}). Filtrni toraytiring (maks. ${MAX}).` },
       { status: 400 },
     );
   }

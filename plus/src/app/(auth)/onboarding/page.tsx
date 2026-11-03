@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { AuthShell } from "../auth-shell";
 import { ProfileWizard } from "../profile-wizard";
 
-export const metadata = { title: "Profilni to'ldirish" };
+export const metadata = { title: "Profilni töldiriş" };
 
 /** Google orqali kirgan, profili to'liq bo'lmagan hisob — ro'yxatdan o'tishni yakunlash. */
 export default async function OnboardingPage() {
@@ -24,7 +24,7 @@ export default async function OnboardingPage() {
   return (
     <AuthShell mode="none">
       <h1 className="font-display text-2xl font-bold text-zinc-900">Deyarli tayyor!</h1>
-      <p className="mb-6 mt-1.5 text-zinc-500">Ro&apos;yxatdan o&apos;tishni yakunlash uchun bir necha savol.</p>
+      <p className="mb-6 mt-1.5 text-zinc-500">Röyxatdan ötişni yakunlaş uçun bir neça savol.</p>
       <ProfileWizard
         needsPassword={!u.passwordHash}
         initial={{

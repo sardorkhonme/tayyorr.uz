@@ -37,8 +37,8 @@ export default async function AdminUserTelegram({
           </p>
           <AdminPostButton
             url={`/api/admin/users/${user.id}/telegram-unlink`}
-            label="Ulanishni uzish"
-            confirmText="Telegram bot ulanishi uzilsinmi?"
+            label="Ulanişni uziş"
+            confirmText="Telegram bot ulanişi uzilsinmi?"
             className="rounded-full bg-red-500/15 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/25"
           />
         </div>

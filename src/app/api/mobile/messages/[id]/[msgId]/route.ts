@@ -18,10 +18,10 @@ async function loadOwn(convId: string, msgId: string, meId: string) {
     return { error: "Xabar topilmadi", status: 404 as const };
   }
   if (msg.senderId !== meId) {
-    return { error: "Faqat o'z xabaringizni o'zgartira olasiz", status: 403 as const };
+    return { error: "Faqat öz xabaringizni özgartira olasiz", status: 403 as const };
   }
   if (msg.deletedAt) {
-    return { error: "Xabar o'chirilgan", status: 400 as const };
+    return { error: "Xabar öçirilgan", status: 400 as const };
   }
   return { msg, conv };
 }
@@ -42,7 +42,7 @@ export async function PATCH(
   if ("error" in found) return mobileJson({ error: found.error }, { status: found.status });
 
   const parsed = editSchema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return mobileJson({ error: "Matn bo'sh bo'lmasin" }, { status: 400 });
+  if (!parsed.success) return mobileJson({ error: "Matn böş bölmasin" }, { status: 400 });
   if (parsed.data.body === found.msg.body) {
     return mobileJson({ message: await toClientMessage(found.msg, me) });
   }

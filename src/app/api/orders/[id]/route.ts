@@ -114,7 +114,7 @@ export async function PATCH(
 
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri status" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri status" }, { status: 400 });
   }
 
   const r =
@@ -144,7 +144,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   }
   if (order.deletedAt) {
-    return NextResponse.json({ error: "Allaqachon o'chirilgan" }, { status: 400 });
+    return NextResponse.json({ error: "Allaqaçon öçirilgan" }, { status: 400 });
   }
   await sweepContracts({ orderId: id });
   const locked = await orderLockedReason(id);
@@ -155,7 +155,7 @@ export async function DELETE(
     await markOrderRemovedInChannel(
       full.telegramMessageId,
       full.title,
-      "Buyurtmachi",
+      "Buyurtmaçi",
       null,
     );
   }
@@ -163,7 +163,7 @@ export async function DELETE(
   await logActivity(
     session.user.id,
     "ORDER_DELETE",
-    `Buyurtmani o'chirdi${full?.title ? `: «${full.title}»` : ""}`,
+    `Buyurtmani öçirdi${full?.title ? `: «${full.title}»` : ""}`,
     { orderId: id },
   );
 

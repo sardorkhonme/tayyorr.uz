@@ -26,16 +26,16 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "Maʼlumot notöğri" }, { status: 400 });
   }
   const { amount, cardName } = parsed.data;
   const card = parsed.data.card.replace(/\D/g, "");
   if (card.length < 16) {
-    return NextResponse.json({ error: "Karta raqami 16 raqamdan iborat bo'lsin" }, { status: 400 });
+    return NextResponse.json({ error: "Karta raqami 16 raqamdan iborat bölsin" }, { status: 400 });
   }
   if (amount < MIN) {
     return NextResponse.json(
-      { error: `Eng kami ${MIN.toLocaleString("ru-RU")} so'm` },
+      { error: `Eng kami ${MIN.toLocaleString("ru-RU")} söm` },
       { status: 400 },
     );
   }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     },
   });
   if (!user || user.balance < amount) {
-    return NextResponse.json({ error: "Hisobda yetarli mablag' yo'q" }, { status: 400 });
+    return NextResponse.json({ error: "Hisobda yetarli mablağ yöq" }, { status: 400 });
   }
 
   let newBalance = user.balance;
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         status: "PENDING",
         amount,
         method: "CARD",
-        note: `Kartaga yechib olindi — ${maskCard(card)}`,
+        note: `Kartaga yeçib olindi — ${maskCard(card)}`,
         meta: { payoutId: p.id, card: maskCard(card) },
       },
     });
@@ -84,24 +84,24 @@ export async function POST(req: Request) {
   await logActivity(
     me,
     "PAYOUT_REQUEST",
-    `Kartaga yechish so'radi: ${amount.toLocaleString("ru-RU")} so'm — ${maskCard(card)}`,
+    `Kartaga yeçiş söradi: ${amount.toLocaleString("ru-RU")} söm — ${maskCard(card)}`,
     { amount, payoutId: payout.id },
   );
   await logToGroup(
     "payouts",
-    "🏧 Yangi yechib olish so'rovi",
+    "🏧 Yangi yeçib oliş sörovi",
     [
       `Foydalanuvchi: ${userLabel(user)}`,
       user.email ? `Email: ${user.email}` : "",
       user.walletCode ? `Hisob kodi: ${user.walletCode}` : "",
-      `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
-      `Komissiya (${PAYOUT_COMMISSION_PERCENT}%): ${payoutNet(amount).commission.toLocaleString("ru-RU")} so'm`,
-      `Kartaga o'tkaziladi: ${payoutNet(amount).net.toLocaleString("ru-RU")} so'm`,
+      `Summa: ${amount.toLocaleString("ru-RU")} söm`,
+      `Komissiya (${PAYOUT_COMMISSION_PERCENT}%): ${payoutNet(amount).commission.toLocaleString("ru-RU")} söm`,
+      `Kartaga ötkaziladi: ${payoutNet(amount).net.toLocaleString("ru-RU")} söm`,
       `Karta: ${card}`,
       cardName ? `Karta egasi: ${cardName}` : "",
-      `Qolgan balans: ${newBalance.toLocaleString("ru-RU")} so'm`,
-      `So'rov ID: ${payout.id}`,
-      `Foydalanuvchi ID: ${me}`,
+      `Qolgan balans: ${newBalance.toLocaleString("ru-RU")} söm`,
+      `Sörov ID: ${payout.id}`,
+      `Foydalanuvçi ID: ${me}`,
     ].filter(Boolean),
     siteUrl("/sardorxon/admin/payouts"),
   );

@@ -21,20 +21,20 @@ export default async function AdminUserBan({
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-      <h2 className="mb-3 font-semibold text-white">Cheklov (ban)</h2>
+      <h2 className="mb-3 font-semibold text-white">Çeklov (ban)</h2>
       {banned ? (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-amber-300">
-            {shortDateTime(user.bannedUntil!)} gacha cheklangan.
+            {shortDateTime(user.bannedUntil!)} gaça çeklangan.
             {user.banReason ? ` Sabab: ${user.banReason}` : ""}
           </p>
           <AdminPostButton
             url={`/api/admin/users/${user.id}/unban`}
-            label="Cheklovni olib tashlash"
+            label="Çeklovni olib taşlaş"
             className="btn-primary w-fit"
           />
           <div className="border-t border-white/10 pt-3">
-            <p className="mb-2 text-xs text-zinc-500">Muddatni yangilash:</p>
+            <p className="mb-2 text-xs text-zinc-500">Muddatni yangilaş:</p>
             <BanForm userId={user.id} />
           </div>
         </div>

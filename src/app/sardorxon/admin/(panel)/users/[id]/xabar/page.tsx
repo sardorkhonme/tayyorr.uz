@@ -30,10 +30,10 @@ export default async function AdminUserSupportMessage({
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-      <h2 className="mb-2 font-semibold text-white">tayyorr.uz support chati</h2>
+      <h2 className="mb-2 font-semibold text-white">tayyorr.uz support çati</h2>
       <p className="mb-4 text-sm text-zinc-400">
-        Oddiy chatdagidek: matn, fayl (yuborishdan oldin ko'rish), ovozli xabar,
-        javob berish, reaksiya va ✓✓ belgilari.
+        Oddiy çatdagidek: matn, fayl (yuborişdan oldin köriş), ovozli xabar,
+        javob beriş, reaksiya va ✓✓ belgilari.
       </p>
       <Link
         href={
@@ -44,7 +44,7 @@ export default async function AdminUserSupportMessage({
         className="btn-primary inline-flex"
       >
         <Icon name="message" className="h-4 w-4" />
-        Chatni ochish
+        Çatni oçiş
       </Link>
     </section>
   );

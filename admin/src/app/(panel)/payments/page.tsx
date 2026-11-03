@@ -8,14 +8,14 @@ import { LiveSearch } from "@/components/admin/live-search";
 import { expireStaleClickTopups } from "@/lib/wallet-pending";
 
 const TYPE_LABEL: Record<string, string> = {
-  TOPUP: "To'ldirish",
-  SPEND: "To'lov",
+  TOPUP: "Töldiriş",
+  SPEND: "Tölov",
   TRANSFER_IN: "Kirim",
-  TRANSFER_OUT: "Chiqim",
-  PAYOUT: "Yechish",
-  REFUND: "Qaytarish",
+  TRANSFER_OUT: "Çiqim",
+  PAYOUT: "Yeçiş",
+  REFUND: "Qaytariş",
   HOLD: "Bloklandi",
-  RELEASE: "Ish haqi",
+  RELEASE: "Iş haqi",
   COMMISSION: "Komissiya",
 };
 
@@ -39,15 +39,15 @@ export default async function AdminPayments({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold text-white">To'lovlar / hisob amallari</h1>
-      <LiveSearch placeholder="Foydalanuvchi (ism, login, ID) yoki chekdagi Amal ID" />
+      <h1 className="text-xl font-semibold text-white">Tölovlar / hisob amallari</h1>
+      <LiveSearch placeholder="Foydalanuvçi (ism, login, ID) yoki çekdagi Amal ID" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
             <tr>
               <th className="px-4 py-2">Sana</th>
-              <th className="px-4 py-2">Foydalanuvchi</th>
+              <th className="px-4 py-2">Foydalanuvçi</th>
               <th className="px-4 py-2">Tur</th>
               <th className="px-4 py-2">Summa</th>
               <th className="px-4 py-2">Usul</th>
@@ -101,7 +101,7 @@ export default async function AdminPayments({
                     href={`/payments/${t.id}`}
                     className="text-xs text-zinc-400 hover:text-white"
                   >
-                    chek →
+                    çek →
                   </Link>
                 </td>
               </tr>
@@ -109,7 +109,7 @@ export default async function AdminPayments({
             {txns.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
-                  Hech narsa topilmadi.
+                  Heç narsa topilmadi.
                 </td>
               </tr>
             )}

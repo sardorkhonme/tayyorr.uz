@@ -27,7 +27,7 @@ function AccountCard({
     return (
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
         <h3 className="text-sm font-semibold text-zinc-400">{title}</h3>
-        <p className="mt-2 text-sm text-zinc-500">Foydalanuvchi o'chirilgan.</p>
+        <p className="mt-2 text-sm text-zinc-500">Foydalanuvçi öçirilgan.</p>
       </div>
     );
   }
@@ -44,9 +44,9 @@ function AccountCard({
         <div>
           Rol:{" "}
           {user.role === "PREPARER"
-            ? "Tayyorlovchi"
+            ? "Tayyorlovçi"
             : user.role === "ORDERER"
-              ? "Buyurtmachi"
+              ? "Buyurtmaçi"
               : "—"}
         </div>
         <div>Balans: {formatSom(user.balance)}</div>
@@ -54,7 +54,7 @@ function AccountCard({
           Holat:{" "}
           {banned ? (
             <span className="text-amber-400">
-              {shortDate(user.bannedUntil!)} gacha cheklangan
+              {shortDate(user.bannedUntil!)} gaça çeklangan
             </span>
           ) : (
             <span className="text-emerald-400">faol</span>
@@ -65,7 +65,7 @@ function AccountCard({
         href={`/users/${user.id}`}
         className="mt-3 inline-block text-sm text-indigo-400 hover:underline"
       >
-        Hisobni ochish (ban / xabar / chatlar) →
+        Hisobni oçiş (ban / xabar / çatlar) →
       </Link>
     </div>
   );
@@ -146,11 +146,11 @@ export default async function AdminComplaintDetail({
         href="/complaints"
         className="text-sm text-zinc-500 hover:text-white"
       >
-        ← Shikoyatlar
+        ← Şikoyatlar
       </Link>
 
       <div>
-        <h1 className="text-xl font-semibold text-white">Shikoyat</h1>
+        <h1 className="text-xl font-semibold text-white">Şikoyat</h1>
         <p className="text-sm text-zinc-500">
           {shortDateTime(c.createdAt)}
           {order && ` · buyurtma: ${order.title}`}
@@ -158,18 +158,18 @@ export default async function AdminComplaintDetail({
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-        <h2 className="mb-2 text-sm font-semibold text-zinc-400">Shikoyat matni</h2>
+        <h2 className="mb-2 text-sm font-semibold text-zinc-400">Şikoyat matni</h2>
         <p className="whitespace-pre-wrap text-sm text-zinc-100">{c.body}</p>
       </div>
 
       {reportedMsg && (
         <div className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-5">
           <h2 className="mb-2 text-sm font-semibold text-amber-300">
-            Shikoyat qilingan xabar
+            Şikoyat qilingan xabar
           </h2>
           <p className="text-xs text-zinc-500">
             {shortDateTime(reportedMsg.createdAt)}
-            {reportedMsg.deletedAt && " · (keyinchalik o'chirilgan)"}
+            {reportedMsg.deletedAt && " · (keyinçalik öçirilgan)"}
           </p>
           <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-100">
             {reportedMsg.fileName && (
@@ -184,13 +184,13 @@ export default async function AdminComplaintDetail({
             href={`/chats/${reportedMsg.conversationId}`}
             className="mt-2 inline-block text-sm text-indigo-400 hover:underline"
           >
-            Yozishmani ko'rish →
+            Yozişmani köriş →
           </Link>
         </div>
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <AccountCard title="Shikoyat qiluvchi" user={c.reporter} />
+        <AccountCard title="Şikoyat qiluvçi" user={c.reporter} />
         <AccountCard title="Gumondor" user={c.suspect} />
       </div>
 
@@ -198,31 +198,31 @@ export default async function AdminComplaintDetail({
         {pairConvId ? (
           <Link href={`/chats/${pairConvId}`} className="btn-ghost">
             <Icon name="messages" className="h-4 w-4" />
-            Ularning yozishmasini ko'rish
+            Ularning yozişmasini köriş
           </Link>
         ) : (
           <span className="text-sm text-zinc-500">
-            Shikoyatchi va gumondor o'rtasida yozishma yo'q.
+            Şikoyatçi va gumondor örtasida yozişma yöq.
           </span>
         )}
         <Link
           href={`/users/${c.reporterId}`}
           className="btn-ghost"
         >
-          Shikoyatchi chatlari
+          Şikoyatçi çatlari
         </Link>
         {c.suspectId && (
           <Link
             href={`/users/${c.suspectId}`}
             className="btn-ghost"
           >
-            Gumondor chatlari
+            Gumondor çatlari
           </Link>
         )}
       </div>
 
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-        <h2 className="mb-3 font-semibold text-white">Ko'rib chiqish</h2>
+        <h2 className="mb-3 font-semibold text-white">Körib çiqiş</h2>
         <ComplaintForm complaintId={c.id} status={c.status} note={c.adminNote} />
       </div>
     </div>

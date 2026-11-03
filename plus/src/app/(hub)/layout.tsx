@@ -16,7 +16,7 @@ export default async function HubLayout({ children }: { children: React.ReactNod
   if (u && !u.login) redirect("/onboarding");
   const user: HubUser = u
     ? {
-        name: u.firstName || u.name || (u.login ? `@${u.login}` : "Foydalanuvchi"),
+        name: u.firstName || u.name || (u.login ? `@${u.login}` : "Foydalanuvçi"),
         image: u.avatarUrl || u.image,
         balance: u.balance,
         walletCode: u.walletCode,

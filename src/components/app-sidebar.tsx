@@ -38,7 +38,7 @@ export function AppSidebar({
     l.href === "/messages" ? { ...l, badge: unreadCount } : l,
   );
   const displayName =
-    user.name || (user.login ? `@${user.login}` : "Foydalanuvchi");
+    user.name || (user.login ? `@${user.login}` : "Foydalanuvçi");
   const roleLabel =
     user.role === "PREPARER"
       ? t("role.preparer")

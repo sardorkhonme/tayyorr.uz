@@ -77,7 +77,7 @@ export function SupportChat({
     }).catch(() => null);
     const data = await res?.json().catch(() => null);
     setSending(false);
-    if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib ko'ring");
+    if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib köring");
     setText("");
     setMsgs((m) => [...m, data.message]);
   }
@@ -92,14 +92,14 @@ export function SupportChat({
         <div className="min-w-0 flex-1">
           <p className="font-display font-semibold">tayyorr support</p>
           <p className="flex items-center gap-1.5 text-xs text-indigo-100">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> Odatda bir necha daqiqada javob beramiz
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> Odatda bir neça daqiqada javob beramiz
           </p>
         </div>
         {closable && (
           <button
             type="button"
             onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
-            aria-label="Supportdan chiqish"
+            aria-label="Supportdan çiqiş"
             className="relative z-[2] grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15 transition hover:bg-white/25"
           >
             <Icon name="close" className="h-5 w-5" />
@@ -117,7 +117,7 @@ export function SupportChat({
                 </span>
                 <p className="mt-3 font-semibold text-zinc-900">Savolingiz bormi?</p>
                 <p className="mt-1 text-sm text-zinc-500">
-                  Buyurtma, to&apos;lov yoki boshqa masala bo&apos;yicha yozing — yordam beramiz.
+                  Buyurtma, tölov yoki boşqa masala böyiça yozing — yordam beramiz.
                 </p>
               </div>
             )}
@@ -162,7 +162,7 @@ export function SupportChat({
               <button
                 className="btn-primary grid h-[46px] w-[46px] shrink-0 !p-0"
                 disabled={sending || !text.trim()}
-                aria-label="Yuborish"
+                aria-label="Yuboriş"
               >
                 <Icon name="send" className="h-5 w-5" />
               </button>
@@ -174,11 +174,11 @@ export function SupportChat({
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
             <Icon name="message" className="h-7 w-7" />
           </span>
-          <p className="mt-4 font-semibold text-zinc-900">Yozish uchun hisobga kiring</p>
-          <p className="mt-1 text-sm text-zinc-500">Javobni shu yerda ko&apos;rasiz.</p>
+          <p className="mt-4 font-semibold text-zinc-900">Yoziş uçun hisobga kiring</p>
+          <p className="mt-1 text-sm text-zinc-500">Javobni şu yerda körasiz.</p>
           <div className="mt-6 flex w-full flex-col gap-2">
-            <Link href="/login" className="btn-primary !py-3">Kirish</Link>
-            <Link href="/register" className="btn-ghost !py-3">Ro&apos;yxatdan o&apos;tish</Link>
+            <Link href="/login" className="btn-primary !py-3">Kiriş</Link>
+            <Link href="/register" className="btn-ghost !py-3">Röyxatdan ötiş</Link>
           </div>
         </div>
       )}

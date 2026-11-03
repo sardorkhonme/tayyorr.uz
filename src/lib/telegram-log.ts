@@ -89,7 +89,7 @@ export async function logToGroup(
           text,
           parse_mode: "HTML",
           reply_markup: url
-            ? { inline_keyboard: [[{ text: "Ko'rish", url }]] }
+            ? { inline_keyboard: [[{ text: "Köriş", url }]] }
             : undefined,
         }),
         signal: AbortSignal.timeout(8000),

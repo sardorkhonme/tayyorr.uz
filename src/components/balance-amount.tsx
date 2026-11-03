@@ -21,7 +21,7 @@ function readHidden(): boolean {
 export function BalanceAmount({
   value,
   className = "",
-  suffix = " so'm",
+  suffix = " söm",
 }: {
   value: number;
   className?: string;
@@ -78,7 +78,7 @@ export function BalanceAmount({
       <button
         type="button"
         onClick={toggle}
-        aria-label={hidden ? "Balansni ko'rsatish" : "Balansni yashirish"}
+        aria-label={hidden ? "Balansni körsatiş" : "Balansni yaşiriş"}
         className="shrink-0 text-zinc-500 transition hover:text-white"
       >
         <EyeIcon off={hidden} />

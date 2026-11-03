@@ -13,17 +13,17 @@ type SortKey = (typeof SORT_KEYS)[number];
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
@@ -33,7 +33,7 @@ const OFFER_BUCKETS: { key: string; label: string; test: (n: number) => boolean 
     { key: "lt5", label: "5 tadan kam", test: (n) => n < 5 },
     { key: "5-10", label: "5 – 10 ta", test: (n) => n >= 5 && n <= 10 },
     { key: "10-50", label: "10 – 50 ta", test: (n) => n > 10 && n <= 50 },
-    { key: "gt50", label: "50 tadan ko'p", test: (n) => n > 50 },
+    { key: "gt50", label: "50 tadan köp", test: (n) => n > 50 },
   ];
 
 export interface OrderRow {
@@ -205,7 +205,7 @@ export function OrdersBrowser({
                 type="button"
                 onClick={() => setTypes((s) => toggle(s, t))}
                 className="text-zinc-500 hover:text-white"
-                aria-label="Olib tashlash"
+                aria-label="Olib taşlaş"
               >
                 <Icon name="close" className="h-3.5 w-3.5" />
               </button>
@@ -221,7 +221,7 @@ export function OrdersBrowser({
                 type="button"
                 onClick={() => setBuckets((s) => toggle(s, b))}
                 className="text-zinc-500 hover:text-white"
-                aria-label="Olib tashlash"
+                aria-label="Olib taşlaş"
               >
                 <Icon name="close" className="h-3.5 w-3.5" />
               </button>
@@ -235,7 +235,7 @@ export function OrdersBrowser({
             }}
             className="rounded-full px-2.5 py-1 text-xs text-zinc-500 hover:text-white"
           >
-            Tozalash
+            Tozalaş
           </button>
         </div>
       )}
@@ -266,7 +266,7 @@ export function OrdersBrowser({
                   <div className="flex items-center gap-2">
                     {o.deleted && (
                       <span className="shrink-0 rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-red-300">
-                        O'CHIRILGAN
+                        ÖÇIRILGAN
                       </span>
                     )}
                     <span className="truncate font-medium text-white">
@@ -276,10 +276,10 @@ export function OrdersBrowser({
                   <div className="mt-1 text-xs text-zinc-500">
                     {TYPE_LABEL[o.type] ?? o.type} ·{" "}
                     {o.deleted
-                      ? "o'chirilgan"
+                      ? "öçirilgan"
                       : STATUS_LABEL[o.status] ?? o.status}
                     {o.ordererLabel && ` · @${o.ordererLabel}`}
-                    {o.budget ? ` · ${o.budget.toLocaleString()} so'm` : ""}
+                    {o.budget ? ` · ${o.budget.toLocaleString()} söm` : ""}
                   </div>
                   {o.deleted && o.deleteReason ? (
                     <div className="mt-1 text-[11px] text-red-300/80">
@@ -318,7 +318,7 @@ export function OrdersBrowser({
                 type="button"
                 onClick={() => setOpen(false)}
                 className="text-zinc-500 hover:text-white"
-                aria-label="Yopish"
+                aria-label="Yopiş"
               >
                 <Icon name="close" className="h-4 w-4" />
               </button>
@@ -327,7 +327,7 @@ export function OrdersBrowser({
             <div className="max-h-[70vh] space-y-5 overflow-y-auto p-4">
               <div>
                 <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Ishning turi
+                  Işning turi
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(TYPE_LABEL).map(([key, label]) => (
@@ -344,7 +344,7 @@ export function OrdersBrowser({
 
               <div>
                 <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Topshirganlar soni
+                  Topşirganlar soni
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {OFFER_BUCKETS.map((b) => (
@@ -369,14 +369,14 @@ export function OrdersBrowser({
                 }}
                 className="text-sm text-zinc-400 hover:text-white"
               >
-                Hammasini tozalash
+                Hammasini tozalaş
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="btn-primary"
               >
-                Ko'rsatish ({filtered.length})
+                Körsatiş ({filtered.length})
               </button>
             </div>
           </div>

@@ -128,8 +128,8 @@ export const HEAR_OPTIONS: {
   { value: "telegram", label: "Telegram", icon: () => <TelegramLogo /> },
   { value: "ai", label: "Suniy intellekt tavsiyasi", icon: () => <AiLogo /> },
   { value: "google", label: "Google", icon: () => <GoogleLogo /> },
-  { value: "friend", label: "Do'stimdan", icon: () => <FriendLogo /> },
-  { value: "other", label: "Boshqa", icon: () => <OtherLogo /> },
+  { value: "friend", label: "Döstimdan", icon: () => <FriendLogo /> },
+  { value: "other", label: "Boşqa", icon: () => <OtherLogo /> },
 ];
 
 export function ChannelBrandIcon({
@@ -196,7 +196,7 @@ export function HearAboutUsSelect({
       {value === "other" && onDetailChange && (
         <div className="animate-fade-in mt-1">
           <label className="mb-1 block text-xs text-zinc-400">
-            Qayerdan eshitganingizni yozing:
+            Qayerdan eşitganingizni yozing:
           </label>
           <input
             type="text"
@@ -204,7 +204,7 @@ export function HearAboutUsSelect({
             maxLength={100}
             value={detail}
             onChange={(e) => onDetailChange(e.target.value)}
-            placeholder="Masalan: YouTube, TikTok, universitetda, ko'cha banneridan..."
+            placeholder="Masalan: YouTube, TikTok, universitetda, köça banneridan..."
             className="input w-full text-sm"
             autoFocus
           />
@@ -220,6 +220,6 @@ export const HEAR_ABOUT_US_LABELS: Record<string, string> = {
   telegram: "Telegram",
   ai: "Suniy intellekt tavsiyasi",
   google: "Google",
-  friend: "Do'stimdan",
-  other: "Boshqa",
+  friend: "Döstimdan",
+  other: "Boşqa",
 };

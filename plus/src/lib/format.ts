@@ -1,5 +1,5 @@
 export function som(n: number) {
-  return `${Math.round(n).toLocaleString("ru-RU").replace(/,/g, " ")} so'm`;
+  return `${Math.round(n).toLocaleString("ru-RU").replace(/,/g, " ")} söm`;
 }
 
 export function num(n: number) {

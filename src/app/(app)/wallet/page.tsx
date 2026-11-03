@@ -16,14 +16,14 @@ import { expireStaleClickTopups, HIDE_UNFINISHED_TOPUPS } from "@/lib/wallet-pen
 
 
 const TXN_LABEL: Record<string, string> = {
-  TOPUP: "To'ldirish",
-  SPEND: "Buyurtma to'lovi",
-  TRANSFER_IN: "Kirim o'tkazma",
-  TRANSFER_OUT: "Chiqim o'tkazma",
-  PAYOUT: "Kartaga yechish",
-  REFUND: "Qaytarish",
-  HOLD: "Shartnoma uchun bloklandi",
-  RELEASE: "Ish haqi (yakunlangan)",
+  TOPUP: "Töldiriş",
+  SPEND: "Buyurtma tölovi",
+  TRANSFER_IN: "Kirim ötkazma",
+  TRANSFER_OUT: "Çiqim ötkazma",
+  PAYOUT: "Kartaga yeçiş",
+  REFUND: "Qaytariş",
+  HOLD: "Şartnoma uçun bloklandi",
+  RELEASE: "Iş haqi (yakunlangan)",
   COMMISSION: "Sayt komissiyasi",
 };
 const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
@@ -74,7 +74,7 @@ export default async function WalletPage({
     <div className="flex flex-col gap-8">
       {fromClick && (
         <p className="rounded-xl border border-indigo-400/30 bg-indigo-500/10 p-3 text-sm text-indigo-200">
-          To'lovingiz qayta ishlanmoqda. Bir necha soniyadan so'ng balansingiz
+          Tölovingiz qayta işlanmoqda. Bir neça soniyadan söng balansingiz
           yangilanadi — topilmasa sahifani qayta yuklang.
         </p>
       )}
@@ -113,8 +113,8 @@ export default async function WalletPage({
 
       {restriction && (
         <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
-          Hisobingiz cheklangan bo'lsa ham hamyon ochiq: mablag'ingizni kartaga
-          yechib olishingiz mumkin.
+          Hisobingiz çeklangan bölsa ham hamyon oçiq: mablağingizni kartaga
+          yeçib olişingiz mumkin.
         </p>
       )}
 
@@ -170,7 +170,7 @@ export default async function WalletPage({
       <div>
         <h2 className="mb-3 font-semibold text-white">Amallar tarixi</h2>
         {txns.length === 0 ? (
-          <div className="card text-sm text-zinc-500">Hozircha amallar yo'q.</div>
+          <div className="card text-sm text-zinc-500">Hozirça amallar yöq.</div>
         ) : (
           <ul className="flex flex-col gap-2">
             {txns.map((tx) => {

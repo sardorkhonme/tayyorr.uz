@@ -9,14 +9,14 @@ import { BalanceAdjustForm } from "@/components/admin/balance-adjust-form";
 import { StarIcon } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
-  TOPUP: "To'ldirish",
-  SPEND: "To'lov",
+  TOPUP: "Töldiriş",
+  SPEND: "Tölov",
   TRANSFER_IN: "Kirim",
-  TRANSFER_OUT: "Chiqim",
-  PAYOUT: "Yechish",
-  REFUND: "Qaytarish",
+  TRANSFER_OUT: "Çiqim",
+  PAYOUT: "Yeçiş",
+  REFUND: "Qaytariş",
   HOLD: "Bloklandi",
-  RELEASE: "Ish haqi",
+  RELEASE: "Iş haqi",
   COMMISSION: "Komissiya",
 };
 
@@ -41,10 +41,10 @@ export default async function AdminUserWallet({
   return (
     <div className="flex flex-col gap-6">
       <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-        <h2 className="mb-3 font-semibold text-white">Balans / Starni to'g'irlash</h2>
+        <h2 className="mb-3 font-semibold text-white">Balans / Starni töğirlaş</h2>
         <p className="mb-3 text-xs text-zinc-500">
           Joriy balans: {formatSom(user.balance)} · {user.starBalance} <StarIcon className="h-3 w-3" />. Sababi
-          foydalanuvchiga ko'rinadi.
+          foydalanuvçiga körinadi.
         </p>
         <BalanceAdjustForm userId={user.id} />
       </section>
@@ -90,12 +90,12 @@ export default async function AdminUserWallet({
                         href={`/payments/${t.id}`}
                         className="text-xs text-zinc-400 hover:text-white"
                       >
-                        chek
+                        çek
                       </Link>
                       {!t.reversedAt && t.status === "SUCCESS" && (
                         <AdminPostButton
                           url={`/api/admin/payments/${t.id}/reverse`}
-                          label="bekor qilish"
+                          label="bekor qiliş"
                           className="text-xs text-amber-400 hover:text-amber-300"
                           confirmText="Amal bekor qilinsinmi?"
                         />

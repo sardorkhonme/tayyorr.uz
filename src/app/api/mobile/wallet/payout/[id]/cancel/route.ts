@@ -23,7 +23,7 @@ export async function POST(
     return mobileJson({ error: "Topilmadi" }, { status: 404 });
   }
   if (p.status !== "PENDING") {
-    return mobileJson({ error: "Bu so'rovni bekor qilib bo'lmaydi" }, { status: 400 });
+    return mobileJson({ error: "Bu sörovni bekor qilib bölmaydi" }, { status: 400 });
   }
 
   await db.$transaction(async (tx) => {
@@ -50,7 +50,7 @@ export async function POST(
         type: "REFUND",
         amount: p.amount,
         method: "CARD",
-        note: "Yechib olish so'rovi bekor qilindi",
+        note: "Yeçib oliş sörovi bekor qilindi",
       },
     });
   });
@@ -58,15 +58,15 @@ export async function POST(
   await logActivity(
     userId,
     "PAYOUT_CANCEL",
-    `Yechish so'rovini bekor qildi: ${p.amount.toLocaleString("ru-RU")} so'm`,
+    `Yeçiş sörovini bekor qildi: ${p.amount.toLocaleString("ru-RU")} söm`,
     { amount: p.amount, payoutId: id },
   );
   await logToGroup(
     "payouts",
-    "↩️ Yechish so'rovi (o'zi) bekor qilindi",
+    "↩️ Yeçiş sörovi (özi) bekor qilindi",
     [
-      `Summa: ${p.amount.toLocaleString("ru-RU")} so'm`,
-      `Foydalanuvchi ID: ${userId}`,
+      `Summa: ${p.amount.toLocaleString("ru-RU")} söm`,
+      `Foydalanuvçi ID: ${userId}`,
     ],
     siteUrl(`/sardorxon/admin/users/${userId}`),
   );

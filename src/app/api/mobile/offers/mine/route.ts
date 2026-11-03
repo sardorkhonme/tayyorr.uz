@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     select: { role: true },
   });
   if (!me || me.role !== "PREPARER") {
-    return mobileJson({ error: "Faqat tayyorlovchilar uchun" }, { status: 403 });
+    return mobileJson({ error: "Faqat tayyorlovçilar uçun" }, { status: 403 });
   }
 
   const offers = await db.offer.findMany({

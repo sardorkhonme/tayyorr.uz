@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Noto'g'ri obuna" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Notöğri obuna" }, { status: 400 });
   const { endpoint, keys } = parsed.data;
   await db.pushSubscription.upsert({
     where: { endpoint },

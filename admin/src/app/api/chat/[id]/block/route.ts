@@ -26,12 +26,12 @@ export async function POST(
   const other = otherUserId(conv, me);
   const supportId = await getSupportUserId();
   if (other === supportId) {
-    return NextResponse.json({ error: "Support'ni bloklab bo'lmaydi" }, { status: 400 });
+    return NextResponse.json({ error: "Supportʼni bloklab bölmaydi" }, { status: 400 });
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri amal" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri amal" }, { status: 400 });
   }
 
   if (parsed.data.action === "BLOCK") {
@@ -50,8 +50,8 @@ export async function POST(
     me,
     parsed.data.action === "BLOCK" ? "USER_BLOCK" : "USER_UNBLOCK",
     parsed.data.action === "BLOCK"
-      ? "Suhbatdoshni blokladi"
-      : "Suhbatdoshni blokdan chiqardi",
+      ? "Suhbatdoşni blokladi"
+      : "Suhbatdoşni blokdan çiqardi",
     { otherId: other, conversationId: conv.id },
   );
 

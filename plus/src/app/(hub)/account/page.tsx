@@ -29,9 +29,9 @@ export default async function AccountPage() {
   const platforms = [
     {
       mark: "/logo-mark.png",
-      title: "Ilmiy ishlar",
+      title: "Ilmiy işlar",
       href: `${APP_URL}/dashboard`,
-      status: full?.role ? (full.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi") : "Rol tanlanmagan",
+      status: full?.role ? (full.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi") : "Rol tanlanmagan",
     },
     {
       mark: "/smm-mark.png",
@@ -45,7 +45,7 @@ export default async function AccountPage() {
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <h1 className="font-display text-3xl font-bold text-zinc-900">Hisoblar</h1>
-        <p className="mt-2 text-zinc-500">Bitta tayyorr hisobi — o&apos;zgarishlar barcha platformalarda bir xil ko&apos;rinadi.</p>
+        <p className="mt-2 text-zinc-500">Bitta tayyorr hisobi — özgarişlar barça platformalarda bir xil körinadi.</p>
       </header>
 
       <AccountEditor initial={account} save={saveAccountAction} />
@@ -71,7 +71,7 @@ export default async function AccountPage() {
       <form action={signOutAction}>
         <button className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100">
           <Icon name="logout" className="h-4 w-4" />
-          Barcha platformalardan chiqish
+          Barça platformalardan çiqiş
         </button>
       </form>
     </div>

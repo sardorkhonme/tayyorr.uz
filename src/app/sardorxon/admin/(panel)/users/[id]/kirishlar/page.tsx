@@ -30,17 +30,17 @@ export default async function AdminUserVisits({
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
       <h2 className="mb-1 font-semibold text-white">
-        Kirishlar (saytga tashriflar){" "}
+        Kirişlar (saytga taşriflar){" "}
         <span className="text-sm font-normal text-zinc-500">({total})</span>
       </h2>
       <p className="mb-4 text-xs text-zinc-500">
-        Login qilish emas — foydalanuvchi allaqachon tizimga kirgan holda
-        saytni har ochishi (yangi brauzer sessiyasi/tab) bitta qator. Bitta
-        tab necha soat ochiq tursa ham faqat bir marta yoziladi.
-        {total > TAKE ? ` So'nggi ${TAKE} tasi ko'rsatilgan.` : ""}
+        Login qiliş emas — foydalanuvçi allaqaçon tizimga kirgan holda
+        saytni har oçişi (yangi brauzer sessiyasi/tab) bitta qator. Bitta
+        tab neça soat oçiq tursa ham faqat bir marta yoziladi.
+        {total > TAKE ? ` Sönggi ${TAKE} tasi körsatilgan.` : ""}
       </p>
       {visits.length === 0 ? (
-        <p className="text-sm text-zinc-500">Hali tashrif qayd etilmagan.</p>
+        <p className="text-sm text-zinc-500">Hali taşrif qayd etilmagan.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10">
           <table className="w-full min-w-[420px] text-sm">

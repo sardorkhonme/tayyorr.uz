@@ -15,7 +15,7 @@ export async function POST(
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
   if (!clickMerchantApiConfigured()) {
-    return NextResponse.json({ error: "Chek hozircha mavjud emas" }, { status: 400 });
+    return NextResponse.json({ error: "Çek hozirça mavjud emas" }, { status: 400 });
   }
 
   const { id } = await params;

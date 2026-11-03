@@ -17,7 +17,7 @@ export function AvatarUpload({
   async function handle(file: File) {
     setErr(null);
     if (file.size > 5 * 1024 * 1024) {
-      setErr("Rasm hajmi 5MB dan oshmasin");
+      setErr("Rasm hajmi 5MB dan oşmasin");
       return;
     }
     setBusy(true);
@@ -39,7 +39,7 @@ export function AvatarUpload({
           <img src={value} alt="avatar" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">
-            rasm yo'q
+            rasm yöq
           </div>
         )}
       </div>
@@ -50,7 +50,7 @@ export function AvatarUpload({
           disabled={busy}
           onClick={() => inputRef.current?.click()}
         >
-          {busy ? "Yuklanmoqda..." : "Rasm tanlash"}
+          {busy ? "Yuklanmoqda..." : "Rasm tanlaş"}
         </button>
         {err && <p className="mt-1 text-xs text-red-400">{err}</p>}
         <input

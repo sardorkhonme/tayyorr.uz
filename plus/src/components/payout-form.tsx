@@ -36,8 +36,8 @@ export function PayoutForm({ balance }: { balance: number }) {
     }).catch(() => null);
     const data = await res?.json().catch(() => null);
     setBusy(false);
-    if (!res?.ok) return setMsg({ ok: false, text: data?.error ?? "Xatolik, qayta urinib ko'ring" });
-    setMsg({ ok: true, text: "So'rov yuborildi — admin tez orada kartangizga o'tkazadi" });
+    if (!res?.ok) return setMsg({ ok: false, text: data?.error ?? "Xatolik, qayta urinib köring" });
+    setMsg({ ok: true, text: "Sörov yuborildi — admin tez orada kartangizga ötkazadi" });
     setCard("");
     setCardName("");
     setAmount("");
@@ -47,15 +47,15 @@ export function PayoutForm({ balance }: { balance: number }) {
   return (
     <form id="payout" onSubmit={submit} className="card scroll-mt-24 space-y-5 !rounded-3xl p-6 sm:p-7">
       <div>
-        <h2 className="font-display text-xl font-bold text-zinc-900">Kartaga yechib olish</h2>
-        <p className="mt-1 text-sm text-zinc-500">Hamyondagi pulni bank kartangizga o&apos;tkazamiz.</p>
+        <h2 className="font-display text-xl font-bold text-zinc-900">Kartaga yeçib oliş</h2>
+        <p className="mt-1 text-sm text-zinc-500">Hamyondagi pulni bank kartangizga ötkazamiz.</p>
       </div>
 
       <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <Icon name="shield" className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
         <p>
-          <span className="font-semibold">Diqqat: kartaga yechishda {COMMISSION}% komissiya olinadi.</span> Masalan,
-          100 000 so&apos;m yechsangiz, kartangizga 95 000 so&apos;m tushadi.
+          <span className="font-semibold">Diqqat: kartaga yeçişda {COMMISSION}% komissiya olinadi.</span> Masalan,
+          100 000 söm yeçsangiz, kartangizga 95 000 söm tuşadi.
         </p>
       </div>
 
@@ -99,13 +99,13 @@ export function PayoutForm({ balance }: { balance: number }) {
           onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
           required
         />
-        {value > balance && <p className="mt-1.5 text-sm text-red-600">Hamyonda yetarli mablag&apos; yo&apos;q</p>}
+        {value > balance && <p className="mt-1.5 text-sm text-red-600">Hamyonda yetarli mablağ yöq</p>}
       </div>
 
       {value >= MIN && (
         <div className="rounded-2xl bg-zinc-50 p-4 text-[15px]">
           <div className="flex justify-between text-zinc-500">
-            <span>Hamyondan yechiladi</span>
+            <span>Hamyondan yeçiladi</span>
             <span>{som(value)}</span>
           </div>
           <div className="mt-1.5 flex justify-between text-zinc-500">
@@ -113,7 +113,7 @@ export function PayoutForm({ balance }: { balance: number }) {
             <span>−{som(commission)}</span>
           </div>
           <div className="mt-3 flex items-end justify-between border-t border-zinc-200 pt-3">
-            <span className="font-medium text-zinc-700">Kartangizga tushadi</span>
+            <span className="font-medium text-zinc-700">Kartangizga tuşadi</span>
             <span className="font-display text-2xl font-bold text-emerald-600">{som(net)}</span>
           </div>
         </div>
@@ -126,7 +126,7 @@ export function PayoutForm({ balance }: { balance: number }) {
       )}
 
       <button className="btn-primary w-full !py-4 !text-base" disabled={!valid || busy}>
-        {busy ? "Yuborilmoqda…" : "Yechib olish"}
+        {busy ? "Yuborilmoqda…" : "Yeçib oliş"}
       </button>
     </form>
   );
@@ -140,19 +140,19 @@ export function PayoutCancelButton({ id }: { id: string }) {
       type="button"
       disabled={busy}
       onClick={async () => {
-        if (!window.confirm("So'rovni bekor qilasizmi? Pul hamyonga qaytadi.")) return;
+        if (!window.confirm("Sörovni bekor qilasizmi? Pul hamyonga qaytadi.")) return;
         setBusy(true);
         const res = await fetch(`/api/wallet/payout/${id}/cancel`, { method: "POST" }).catch(() => null);
         setBusy(false);
         if (!res?.ok) {
           const d = await res?.json().catch(() => null);
-          window.alert(d?.error ?? "Bekor qilib bo'lmadi");
+          window.alert(d?.error ?? "Bekor qilib bölmadi");
         }
         router.refresh();
       }}
       className="shrink-0 rounded-xl border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
     >
-      {busy ? "…" : "Bekor qilish"}
+      {busy ? "…" : "Bekor qiliş"}
     </button>
   );
 }

@@ -47,7 +47,7 @@ export async function POST(
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success || (!parsed.data.body && !parsed.data.file)) {
     return NextResponse.json(
-      { error: "Xabar yoki fayl bo'lishi kerak" },
+      { error: "Xabar yoki fayl bölişi kerak" },
       { status: 400 },
     );
   }
@@ -67,13 +67,13 @@ export async function POST(
     const bs = await blockState(me, otherUserId(conv, me));
     if (bs.iBlocked) {
       return NextResponse.json(
-        { error: "Siz bu foydalanuvchini bloklagansiz. Avval blokdan chiqaring." },
+        { error: "Siz bu foydalanuvçini bloklagansiz. Avval blokdan çiqaring." },
         { status: 403 },
       );
     }
     if (bs.blockedMe) {
       return NextResponse.json(
-        { error: "Bu foydalanuvchi sizni bloklagan." },
+        { error: "Bu foydalanuvçi sizni bloklagan." },
         { status: 403 },
       );
     }

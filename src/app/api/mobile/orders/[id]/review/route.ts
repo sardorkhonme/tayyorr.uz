@@ -32,7 +32,7 @@ export async function POST(
   const { id } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Bahoni to'g'ri tanlang" }, { status: 400 });
+    return mobileJson({ error: "Bahoni töğri tanlang" }, { status: 400 });
   }
 
   const order = await db.order.findUnique({ where: { id }, include: { review: true } });
@@ -41,13 +41,13 @@ export async function POST(
     return mobileJson({ error: "Faqat buyurtma egasi baholaydi" }, { status: 403 });
   }
   if (order.status !== "DONE") {
-    return mobileJson({ error: "Faqat yakunlangan ishni baholash mumkin" }, { status: 400 });
+    return mobileJson({ error: "Faqat yakunlangan işni baholaş mumkin" }, { status: 400 });
   }
   if (!order.preparerId) {
-    return mobileJson({ error: "Tayyorlovchi yo'q" }, { status: 400 });
+    return mobileJson({ error: "Tayyorlovçi yöq" }, { status: 400 });
   }
   if (order.review) {
-    return mobileJson({ error: "Bu ish allaqachon baholangan" }, { status: 409 });
+    return mobileJson({ error: "Bu iş allaqaçon baholangan" }, { status: 409 });
   }
 
   const { stars, comment } = parsed.data;
@@ -68,7 +68,7 @@ export async function POST(
   });
   await logToGroup(
     "completed",
-    "⭐ Ishga baho qo'yildi (mobil)",
+    "⭐ Işga baho qöyildi (mobil)",
     [`«${order.title}»`, `Baho: ${stars}/5`, comment ? `Sharh: ${comment}` : "", `Buyurtma ID: ${id}`].filter(
       Boolean,
     ),

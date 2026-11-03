@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   }
   const { theme } = await req.json().catch(() => ({}));
   if (theme !== "light" && theme !== "dark") {
-    return NextResponse.json({ error: "Noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri" }, { status: 400 });
   }
   await db.user
     .update({ where: { id: session.user.id }, data: { theme } })

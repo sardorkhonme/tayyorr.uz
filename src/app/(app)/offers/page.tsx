@@ -9,23 +9,23 @@ import { StarIcon } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
 
 const OFFER_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Ko'rib chiqilmoqda",
+  PENDING: "Körib çiqilmoqda",
   ACCEPTED: "Qabul qilindi",
   REJECTED: "Rad etildi",
   WITHDRAWN: "Qaytarib olindi",
@@ -33,9 +33,9 @@ const OFFER_STATUS_LABEL: Record<string, string> = {
 
 const FILTERS: { value: string; label: string }[] = [
   { value: "ALL", label: "Hammasi" },
-  { value: "OPEN", label: "Ochiq" },
+  { value: "OPEN", label: "Oçiq" },
   { value: "IN_PROGRESS", label: "Jarayonda" },
-  { value: "DELIVERED", label: "Topshirilgan" },
+  { value: "DELIVERED", label: "Topşirilgan" },
   { value: "DONE", label: "Yakunlangan" },
   { value: "CANCELLED", label: "Bekor qilingan" },
 ];
@@ -81,7 +81,7 @@ export default async function MyOffersPage({
           Mening takliflarim
         </h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Siz yuborgan barcha takliflar (arizalar) shu yerda.
+          Siz yuborgan barça takliflar (arizalar) şu yerda.
         </p>
       </div>
 
@@ -119,7 +119,7 @@ export default async function MyOffersPage({
                       {o.order.title}
                       {o.order.deletedAt && (
                         <span className="ml-2 text-xs text-amber-400">
-                          (o'chirilgan)
+                          (öçirilgan)
                         </span>
                       )}
                     </div>
@@ -134,7 +134,7 @@ export default async function MyOffersPage({
                 </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   <span className="text-zinc-300">
-                    Narx: <b>{o.price.toLocaleString("ru-RU")} so'm</b>
+                    Narx: <b>{o.price.toLocaleString("ru-RU")} söm</b>
                   </span>
                   <span
                     className={

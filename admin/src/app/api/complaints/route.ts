@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Shikoyat matni qisqa" },
+      { error: parsed.error.issues[0]?.message ?? "Şikoyat matni qisqa" },
       { status: 400 },
     );
   }
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
   if (suspectId && suspectId === session.user.id) {
     return NextResponse.json(
-      { error: "O'zingiz ustidan shikoyat yozib bo'lmaydi" },
+      { error: "Özingiz ustidan şikoyat yozib bölmaydi" },
       { status: 400 },
     );
   }
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   await logActivity(
     session.user.id,
     "COMPLAINT_CREATE",
-    `Shikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma bo'yicha)" : ""}`,
+    `Şikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma böyiça)" : ""}`,
     { suspectId: suspectId || null, orderId: orderId || null, messageId: messageId || null },
   );
 
@@ -67,10 +67,10 @@ export async function POST(req: Request) {
 
   await logToGroup(
     "complaints",
-    "⚠️ Yangi shikoyat",
+    "⚠️ Yangi şikoyat",
     [
       `Shikoyatchi: ${userLabel(reporter)}`,
-      suspectId ? `Kimga qarshi: ${userLabel(suspect)}` : "",
+      suspectId ? `Kimga qarşi: ${userLabel(suspect)}` : "",
       orderId ? `Buyurtma ID: ${orderId}` : "",
       messageId ? `Xabar ID: ${messageId}` : "",
       body,

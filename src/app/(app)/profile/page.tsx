@@ -41,7 +41,7 @@ export default async function ProfilePage() {
       </h1>
       <p className="mb-5 text-sm text-zinc-500">
         @{user.login} ·{" "}
-        {user.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}
+        {user.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi"}
         {user.email ? ` · ${user.email}` : ""}
       </p>
       <ProfileForm
@@ -61,7 +61,7 @@ export default async function ProfilePage() {
 
       <div className="mt-8 border-t border-white/10 pt-6">
         <p className="mb-3 text-sm text-zinc-500">
-          Hisobdan chiqsangiz, qayta kirish uchun login/parol yoki Google kerak bo'ladi.
+          Hisobdan çiqsangiz, qayta kiriş uçun login/parol yoki Google kerak böladi.
         </p>
         <SignOutButton />
       </div>

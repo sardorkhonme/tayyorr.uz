@@ -12,15 +12,15 @@ import { Icon } from "@/components/icons";
 export const dynamic = "force-dynamic";
 
 const CHANNELS = [
-  { key: "all", label: "Barchasi" },
+  { key: "all", label: "Barçasi" },
   { key: "instagram", label: "Instagram" },
   { key: "telegram", label: "Telegram" },
   { key: "ai", label: "Suniy intellekt tavsiyasi" },
   { key: "google", label: "Google" },
-  { key: "friend", label: "Do'stimdan" },
-  { key: "other", label: "Boshqa" },
+  { key: "friend", label: "Döstimdan" },
+  { key: "other", label: "Boşqa" },
   { key: "referral", label: "Referral havola orqali" },
-  { key: "unknown", label: "Ko'rsatilmagan" },
+  { key: "unknown", label: "Körsatilmagan" },
 ];
 
 /** Kanal belgisi: brendlar — o'z logotipi, qolganlari — umumiy ikonka. */
@@ -110,11 +110,11 @@ export default async function AdminSourcesPage({
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold text-white">
-          Qayerdan eshitgan — Statistika va manbalar
+          Qayerdan eşitgan — Statistika va manbalar
         </h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Foydalanuvchilar Tayyorr.uz haqida qayerdan eshitgani va qaysi referral
-          havolalardan ro'yxatdan o'tganining to'liq tahlili.
+          Foydalanuvçilar Tayyorr.uz haqida qayerdan eşitgani va qaysi referral
+          havolalardan röyxatdan ötganining töliq tahlili.
         </p>
       </div>
 
@@ -195,7 +195,7 @@ export default async function AdminSourcesPage({
           })}
         </div>
 
-        <LiveSearch placeholder="Foydalanuvchi qidirish (ism, familiya, login, email)..." />
+        <LiveSearch placeholder="Foydalanuvçi qidiriş (ism, familiya, login, email)..." />
       </div>
 
       {/* Foydalanuvchilar ro'yxati jadvali */}
@@ -203,8 +203,8 @@ export default async function AdminSourcesPage({
         <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
             <tr>
-              <th className="px-4 py-2.5">Foydalanuvchi</th>
-              <th className="px-4 py-2.5">Qayerdan eshitgan</th>
+              <th className="px-4 py-2.5">Foydalanuvçi</th>
+              <th className="px-4 py-2.5">Qayerdan eşitgan</th>
               <th className="px-4 py-2.5">Referral havola</th>
               <th className="px-4 py-2.5">Kim taklif qilgan</th>
               <th className="px-4 py-2.5">Rol</th>
@@ -243,7 +243,7 @@ export default async function AdminSourcesPage({
                         </span>
                       </span>
                     ) : (
-                      <span className="text-xs text-zinc-600">ko'rsatilmagan</span>
+                      <span className="text-xs text-zinc-600">körsatilmagan</span>
                     )}
                   </td>
                   <td className="px-4 py-2.5">
@@ -276,9 +276,9 @@ export default async function AdminSourcesPage({
                   </td>
                   <td className="px-4 py-2.5 text-xs text-zinc-400">
                     {u.role === "PREPARER"
-                      ? "Tayyorlovchi"
+                      ? "Tayyorlovçi"
                       : u.role === "ORDERER"
-                        ? "Buyurtmachi"
+                        ? "Buyurtmaçi"
                         : "—"}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-xs text-zinc-500">
@@ -290,7 +290,7 @@ export default async function AdminSourcesPage({
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-sm text-zinc-500">
-                  Foydalanuvchi topilmadi.
+                  Foydalanuvçi topilmadi.
                 </td>
               </tr>
             )}

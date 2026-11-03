@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "tayyorr.uz — prezentatsiya, kurs ishi, referat",
+    name: "tayyorr.uz — prezentatsiya, kurs işi, referat",
     short_name: "tayyorr.uz",
     description:
-      "Prezentatsiya, kurs ishi, referat va diplom ishini buyurtma qiling yoki tayyorlab bering.",
+      "Prezentatsiya, kurs işi, referat va diplom işini buyurtma qiling yoki tayyorlab bering.",
     start_url: "/dashboard",
     scope: "/",
     display: "standalone",

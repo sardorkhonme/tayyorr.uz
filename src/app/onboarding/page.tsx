@@ -69,7 +69,7 @@ function OnboardingInner() {
       return;
     }
     if (hearAboutUs === "other" && !hearAboutUsDetail.trim()) {
-      setErr("Qayerdan eshitganingizni yozing");
+      setErr("Qayerdan eşitganingizni yozing");
       return;
     }
     setStep(2);
@@ -79,12 +79,12 @@ function OnboardingInner() {
     e.preventDefault();
     setErr(null);
     if (!hearAboutUs) {
-      setErr("Bizni qayerdan eshitganingizni tanlang");
+      setErr("Bizni qayerdan eşitganingizni tanlang");
       setStep(1);
       return;
     }
     if (!birth.d || !birth.m || !birth.y) {
-      setErr("Tug'ilgan sanangizni tanlang");
+      setErr("Tuğilgan sanangizni tanlang");
       return;
     }
     if (!avatarUrl) {
@@ -92,7 +92,7 @@ function OnboardingInner() {
       return;
     }
     if (!agree) {
-      setErr("Davom etish uchun oferta shartlariga rozilik bering");
+      setErr("Davom etiş uçun oferta şartlariga rozilik bering");
       return;
     }
     setBusy(true);
@@ -151,15 +151,15 @@ function OnboardingInner() {
     return (
       <AuthShell>
         <div className="card p-7">
-          <h1 className="text-xl font-semibold text-white">Xush kelibsiz, {session.user.name?.split(" ")[0] || `@${session.user.login}`}!</h1>
+          <h1 className="text-xl font-semibold text-white">Xuş kelibsiz, {session.user.name?.split(" ")[0] || `@${session.user.login}`}!</h1>
           <p className="mt-1 text-sm text-zinc-400">
             Hisobingiz tayyor. tayyorr.uz da qanday foydalanasiz? Rolni bir marta tanlaysiz.
           </p>
           <div className="mt-6 grid gap-3">
             {(
               [
-                ["ORDERER", "Buyurtma beruvchi", "Prezentatsiya, kurs ishi va boshqalarni buyurtma qilaman"],
-                ["PREPARER", "Tayyorlovchi", "Ish tayyorlab beraman va daromad qilaman"],
+                ["ORDERER", "Buyurtma beruvçi", "Prezentatsiya, kurs işi va boşqalarni buyurtma qilaman"],
+                ["PREPARER", "Tayyorlovçi", "Iş tayyorlab beraman va daromad qilaman"],
               ] as [Role, string, string][]
             ).map(([r, title, desc]) => (
               <button
@@ -179,7 +179,7 @@ function OnboardingInner() {
           </div>
           {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
           <button type="button" onClick={submitRole} disabled={busy} className="btn-primary mt-6 w-full py-3 text-sm font-semibold">
-            {busy ? "..." : "Davom etish →"}
+            {busy ? "..." : "Davom etiş →"}
           </button>
         </div>
       </AuthShell>
@@ -221,10 +221,10 @@ function OnboardingInner() {
           <div className="flex flex-col gap-5">
             <div>
               <h1 className="text-xl font-semibold text-white">
-                Bizni qayerdan eshitdingiz?
+                Bizni qayerdan eşitdingiz?
               </h1>
               <p className="mt-1 text-sm text-zinc-400">
-                Tayyorr.uz haqida ma'lumotni qayerdan oldingiz? Mos variantni
+                Tayyorr.uz haqida maʼlumotni qayerdan oldingiz? Mos variantni
                 tanlang.
               </p>
             </div>
@@ -247,7 +247,7 @@ function OnboardingInner() {
               }
               className="btn-primary w-full py-3 text-sm font-semibold"
             >
-              Davom etish →
+              Davom etiş →
             </button>
           </div>
         )}
@@ -257,10 +257,10 @@ function OnboardingInner() {
           <div>
             <div>
               <h1 className="text-xl font-semibold text-white">
-                Profilni to'ldiring
+                Profilni töldiring
               </h1>
               <p className="mt-1 text-sm text-zinc-400">
-                Barcha maydonlar majburiy.
+                Barça maydonlar majburiy.
               </p>
             </div>
 
@@ -277,7 +277,7 @@ function OnboardingInner() {
                         : "border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]"
                     }`}
                   >
-                    {r === "ORDERER" ? "Buyurtma beruvchi" : "Tayyorlovchi"}
+                    {r === "ORDERER" ? "Buyurtma beruvçi" : "Tayyorlovçi"}
                   </button>
                 ))}
               </div>
@@ -306,7 +306,7 @@ function OnboardingInner() {
               </div>
 
               <div>
-                <label className="label">Tug&apos;ilgan sana</label>
+                <label className="label">Tuğilgan sana</label>
                 <BirthDateSelect value={birth} onChange={setBirth} required />
               </div>
 
@@ -330,12 +330,12 @@ function OnboardingInner() {
                   onChange={(e) => set("password", e.target.value)}
                 />
                 <p className="mt-1 text-xs text-zinc-500">
-                  Keyinchalik login + parol bilan ham kira olasiz.
+                  Keyinçalik login + parol bilan ham kira olasiz.
                 </p>
               </div>
 
               <div>
-                <label className="label">Qo'shimcha ma'lumot</label>
+                <label className="label">Qöşimça maʼlumot</label>
                 <textarea
                   className="input"
                   rows={3}
@@ -373,7 +373,7 @@ function OnboardingInner() {
                   className="btn-primary flex-1 py-3 text-sm font-semibold"
                   disabled={busy || !agree}
                 >
-                  {busy ? "Saqlanmoqda..." : "Saqlash va davom etish"}
+                  {busy ? "Saqlanmoqda..." : "Saqlaş va davom etiş"}
                 </button>
               </div>
             </form>
@@ -385,12 +385,12 @@ function OnboardingInner() {
       <p className="mt-5 text-center text-sm text-zinc-500">
         Hisobingiz bormi?{" "}
         <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">
-          Kirish
+          Kiriş
         </Link>
       </p>
       <p className="mt-2 text-center text-xs text-zinc-600">
         <Link href="/terms" className="hover:text-zinc-400">
-          Ommaviy oferta va foydalanish shartlari
+          Ommaviy oferta va foydalaniş şartlari
         </Link>
       </p>
     </AuthShell>

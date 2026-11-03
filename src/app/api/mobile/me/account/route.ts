@@ -33,7 +33,7 @@ export async function PATCH(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return mobileJson(
-      { error: parsed.error.issues[0]?.message ?? "Noto'g'ri ma'lumot" },
+      { error: parsed.error.issues[0]?.message ?? "Notöğri maʼlumot" },
       { status: 400 },
     );
   }
@@ -58,7 +58,7 @@ export async function PATCH(req: Request) {
   }
 
   if (Object.keys(data).length === 0) {
-    return mobileJson({ error: "O'zgarish yo'q" }, { status: 400 });
+    return mobileJson({ error: "Özgariş yöq" }, { status: 400 });
   }
 
   const updated = await db.user.update({ where: { id: me }, data });

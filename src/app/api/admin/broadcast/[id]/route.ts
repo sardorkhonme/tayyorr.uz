@@ -36,7 +36,7 @@ export async function PATCH(
 
   const data = (await req.json().catch(() => ({}))) as { body?: unknown };
   const body = typeof data.body === "string" ? data.body.trim() : "";
-  if (!body) return NextResponse.json({ error: "Matn bo'sh" }, { status: 400 });
+  if (!body) return NextResponse.json({ error: "Matn böş" }, { status: 400 });
 
   // platforma belgisi ([tayyorr+] / [all]) tahrirdan keyin ham saqlanadi
   const prev = await db.broadcast.findUnique({ where: { id }, select: { body: true } });

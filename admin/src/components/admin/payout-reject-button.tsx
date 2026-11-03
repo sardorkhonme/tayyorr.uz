@@ -7,11 +7,11 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/components/icons";
 
 const QUICK = [
-  "Karta raqami noto'g'ri",
+  "Karta raqami notöğri",
   "Karta egasi ismi mos kelmadi",
   "Karta bloklangan yoki faol emas",
-  "Bank o'tkazmani qabul qilmadi",
-  "Shubhali amal — support bilan bog'laning",
+  "Bank ötkazmani qabul qilmadi",
+  "Şubhali amal — support bilan boğlaning",
 ];
 
 /** Yechib olishni rad etish — sabab majburiy (foydalanuvchiga xabarda va hamyonda ko'rinadi). */
@@ -48,7 +48,7 @@ export function PayoutRejectButton({ id, amountText }: { id: string; amountText:
         className="inline-flex items-center gap-1 rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
       >
         <Icon name="x-circle" className="h-3.5 w-3.5" />
-        O&apos;tkazib bo&apos;lmadi
+        Ötkazib bölmadi
       </button>
 
       {open &&
@@ -61,9 +61,9 @@ export function PayoutRejectButton({ id, amountText }: { id: string; amountText:
               className="w-full max-w-md space-y-4 rounded-2xl border border-white/10 bg-[#0e0e16] p-5 text-left shadow-2xl"
             >
               <div>
-                <h3 className="font-semibold text-white">Yechib olishni rad etish</h3>
+                <h3 className="font-semibold text-white">Yeçib olişni rad etiş</h3>
                 <p className="mt-1 text-sm text-zinc-400">
-                  {amountText} foydalanuvchi hamyoniga qaytariladi. Sabab unga xabarda va hamyonda ko&apos;rinadi.
+                  {amountText} foydalanuvçi hamyoniga qaytariladi. Sabab unga xabarda va hamyonda körinadi.
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -84,7 +84,7 @@ export function PayoutRejectButton({ id, amountText }: { id: string; amountText:
               </div>
               <textarea
                 className="input min-h-24"
-                placeholder="Rad etish sababi (majburiy)…"
+                placeholder="Rad etiş sababi (majburiy)…"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 maxLength={1000}
@@ -99,7 +99,7 @@ export function PayoutRejectButton({ id, amountText }: { id: string; amountText:
                   className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
                   disabled={busy || reason.trim().length < 3}
                 >
-                  {busy ? "..." : "Rad etish"}
+                  {busy ? "..." : "Rad etiş"}
                 </button>
               </div>
             </form>

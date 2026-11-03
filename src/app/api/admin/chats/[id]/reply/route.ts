@@ -36,7 +36,7 @@ export async function POST(
   if (!conv) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (conv.userAId !== supportId && conv.userBId !== supportId) {
     return NextResponse.json(
-      { error: "Bu support suhbati emas. Foydalanuvchi sahifasidan xabar yozing." },
+      { error: "Bu support suhbati emas. Foydalanuvçi sahifasidan xabar yozing." },
       { status: 400 },
     );
   }

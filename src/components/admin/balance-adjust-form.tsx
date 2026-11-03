@@ -58,7 +58,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
           }`}
         >
           <Icon name="coins" className="h-4 w-4" />
-          So'm
+          Söm
         </button>
         <button
           type="button"
@@ -83,7 +83,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
           }`}
         >
-          + Qo'shish
+          + Qöşiş
         </button>
         <button
           type="button"
@@ -94,12 +94,12 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
               : "bg-white/5 text-zinc-400 hover:bg-white/10"
           }`}
         >
-          − Ayirish
+          − Ayiriş
         </button>
       </div>
       <div>
         <label className="label">
-          Summa ({currency === "STAR" ? "star" : "so'm"})
+          Summa ({currency === "STAR" ? "star" : "söm"})
         </label>
         <input
           className="input"
@@ -112,7 +112,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         />
       </div>
       <div>
-        <label className="label">Sabab (foydalanuvchiga ko'rinadi)</label>
+        <label className="label">Sabab (foydalanuvçiga körinadi)</label>
         <textarea
           className="input"
           rows={2}
@@ -135,7 +135,7 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         className={direction === "ADD" ? "btn-primary w-fit" : "w-fit rounded-xl bg-red-500/80 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"}
         disabled={busy || !amount || !reason.trim()}
       >
-        {busy ? "..." : direction === "ADD" ? "Qo'shish" : "Ayirish"}
+        {busy ? "..." : direction === "ADD" ? "Qöşiş" : "Ayiriş"}
       </button>
     </form>
   );

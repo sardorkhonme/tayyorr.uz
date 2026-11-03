@@ -19,7 +19,9 @@ export const metadata: Metadata = {
     template: "%s — tayyorr+",
   },
   description:
-    "tayyorr+ — tayyorr.uz hisobingiz va hamyoningiz bilan qo'shimcha xizmatlar: Tayyorr SMM (obunachi, layk, ko'rishlar) va boshqalar.",
+    "tayyorr+ — tayyorr.uz hisobingiz va hamyoningiz bilan qöşimça xizmatlar: Tayyorr SMM (obunaçi, layk, körişlar) va boşqalar.",
+  // eski yozuvda ham qidiriladi (2026-yilgi alifbogacha bo'lgan imlo) — Google uchun
+  keywords: ["tayyorr+", "SMM xizmatlari", "obunachi", "körişlar", "hamyon"],
   icons: { icon: "/favicon.png", apple: "/apple-icon.png" },
 };
 

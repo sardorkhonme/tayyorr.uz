@@ -12,7 +12,7 @@ const schema = z.object({ login: z.string(), password: z.string() });
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   }
   const { login, password } = parsed.data;
   if (!checkAdminCredentials(login, password)) {

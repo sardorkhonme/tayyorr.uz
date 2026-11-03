@@ -50,7 +50,7 @@ export async function restrictionApiError(userId: string) {
 
 export function restrictionText(r: Restriction) {
   const when = r.permanent ? "muddatsiz" : shortDateTime(r.until);
-  return `Hisobingiz ${when} cheklangan${
+  return `Hisobingiz ${when} çeklangan${
     r.reason ? `. Sabab: ${r.reason}` : ""
-  }. Savollaringiz bo'lsa «tayyorr.uz support» bilan yozishing.`;
+  }. Savollaringiz bölsa «tayyorr.uz support» bilan yozişing.`;
 }

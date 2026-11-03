@@ -7,7 +7,7 @@ import { PRIVACY, PRIVACY_INTRO, PRIVACY_UPDATED } from "@/lib/privacy";
 export const metadata: Metadata = {
   title: "Maxfiylik siyosati",
   description:
-    "tayyorr.uz qaysi ma'lumotlarni to'playdi, ulardan qanday foydalanadi va qanday himoya qiladi.",
+    "tayyorr.uz qaysi maʼlumotlarni töplaydi, ulardan qanday foydalanadi va qanday himoya qiladi.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -40,10 +40,10 @@ export default function PrivacyPage() {
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/terms" className="btn-ghost">
-            Foydalanish shartlari
+            Foydalaniş şartlari
           </Link>
           <Link href="/" className="btn-ghost">
-            Bosh sahifa
+            Boş sahifa
           </Link>
         </div>
       </div>

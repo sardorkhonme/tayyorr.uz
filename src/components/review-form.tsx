@@ -38,9 +38,9 @@ export function ReviewForm({ orderId }: { orderId: string }) {
 
   return (
     <form onSubmit={submit} className="card flex flex-col gap-3">
-      <h2 className="font-semibold text-white">Tayyorlovchini baholang</h2>
+      <h2 className="font-semibold text-white">Tayyorlovçini baholang</h2>
       <p className="-mt-1 text-sm text-zinc-400">
-        Bahoyingiz tayyorlovchi profilida va o'rtacha reytingida ko'rinadi.
+        Bahoyingiz tayyorlovçi profilida va örtaça reytingida körinadi.
       </p>
       <StarInput value={stars} onChange={setStars} />
       <textarea
@@ -52,7 +52,7 @@ export function ReviewForm({ orderId }: { orderId: string }) {
       />
       {err && <p className="text-sm text-red-400">{err}</p>}
       <button className="btn-primary w-fit" disabled={busy}>
-        {busy ? "..." : "Bahoni yuborish"}
+        {busy ? "..." : "Bahoni yuboriş"}
       </button>
     </form>
   );

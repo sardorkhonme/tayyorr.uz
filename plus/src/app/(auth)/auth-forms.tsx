@@ -47,7 +47,7 @@ function PasswordInput({ autoComplete }: { autoComplete: string }) {
         onClick={() => setShow((v) => !v)}
         className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
       >
-        {show ? "Yashirish" : "Ko'rsatish"}
+        {show ? "Yaşiriş" : "Körsatiş"}
       </button>
     </div>
   );
@@ -62,8 +62,8 @@ export function LoginForm({ initialError }: { initialError?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(loginAction, { error: initialError });
   return (
     <>
-      <h1 className="font-display text-2xl font-bold text-zinc-900">Xush kelibsiz!</h1>
-      <p className="mb-6 mt-1.5 text-zinc-500">Bitta hisob — barcha tayyorr xizmatlarida.</p>
+      <h1 className="font-display text-2xl font-bold text-zinc-900">Xuş kelibsiz!</h1>
+      <p className="mb-6 mt-1.5 text-zinc-500">Bitta hisob — barça tayyorr xizmatlarida.</p>
 
       <form action={action} className="space-y-5">
         <div>
@@ -83,17 +83,17 @@ export function LoginForm({ initialError }: { initialError?: string }) {
         </div>
         <ErrorBox text={state.error} />
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
-          {pending ? "Kirilmoqda…" : "Kirish"}
+          {pending ? "Kirilmoqda…" : "Kiriş"}
         </button>
       </form>
 
       <Divider />
-      <GoogleButton label="Google bilan kirish" />
+      <GoogleButton label="Google bilan kiriş" />
 
       <p className="mt-6 text-center text-[15px] text-zinc-500">
-        Hisobingiz yo&apos;qmi?{" "}
+        Hisobingiz yöqmi?{" "}
         <Link href="/register" className="font-semibold text-indigo-600 hover:underline">
-          Ro&apos;yxatdan o&apos;ting
+          Röyxatdan öting
         </Link>
       </p>
     </>
@@ -107,12 +107,12 @@ export function RegisterForm() {
       <h1 className="font-display text-2xl font-bold text-zinc-900">Hisob yarating</h1>
       <p className="mb-7 mt-1.5 text-zinc-500">Google bilan davom eting.</p>
 
-      <GoogleButton label="Google bilan ro'yxatdan o'tish" />
+      <GoogleButton label="Google bilan röyxatdan ötiş" />
 
       <p className="mt-7 text-center text-[15px] text-zinc-500">
         Hisobingiz bormi?{" "}
         <Link href="/login" className="font-semibold text-indigo-600 hover:underline">
-          Kirish
+          Kiriş
         </Link>
       </p>
     </>

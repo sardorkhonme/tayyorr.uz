@@ -5,59 +5,59 @@ import { APP_URL, PLUS_URL, SMM_URL, START_URL } from "@/lib/links";
 const SERVICES = [
   {
     mark: "/logo-mark.png",
-    title: "Ilmiy ishlar",
+    title: "Ilmiy işlar",
     href: `${APP_URL}/dashboard`,
     glow: "rgba(56, 189, 248, 0.22)",
-    text: "Prezentatsiya, kurs ishi, referat va diplom ishi uchun ishonchli tayyorlovchi toping — yoki o'zingiz tayyorlab daromad qiling.",
-    points: ["Takliflardan narx va reyting bo'yicha tanlaysiz", "Pul ish yakunlanguncha himoyada turadi"],
+    text: "Prezentatsiya, kurs işi, referat va diplom işi uçun işonçli tayyorlovçi toping — yoki özingiz tayyorlab daromad qiling.",
+    points: ["Takliflardan narx va reyting böyiça tanlaysiz", "Pul iş yakunlangunça himoyada turadi"],
   },
   {
     mark: "/smm-mark.png",
     title: "Tayyorr SMM",
     href: SMM_URL,
     glow: "rgba(217, 70, 239, 0.22)",
-    text: "Instagram, Telegram, TikTok va YouTube uchun obunachi, layk va ko'rishlar — buyurtma bir necha daqiqada avtomatik boshlanadi.",
-    points: ["Bajarilmasa — pul avtomatik qaytadi", "Parol so'ralmaydi, faqat havola"],
+    text: "Instagram, Telegram, TikTok va YouTube uçun obunaçi, layk va körişlar — buyurtma bir neça daqiqada avtomatik boşlanadi.",
+    points: ["Bajarilmasa — pul avtomatik qaytadi", "Parol söralmaydi, faqat havola"],
   },
   {
     mark: "/plus-mark.png",
     title: "tayyorr+",
     href: PLUS_URL,
     glow: "rgba(139, 92, 246, 0.25)",
-    text: "Barcha xizmatlarning boshqaruv paneli: bitta hisob, umumiy hamyon va yordam. Yangi xizmatlar ham shu yerda paydo bo'ladi.",
-    points: ["Bir marta kirasiz — hamma joyda kirgansiz", "Hamyon barcha xizmatlarda umumiy"],
+    text: "Barça xizmatlarning boşqaruv paneli: bitta hisob, umumiy hamyon va yordam. Yangi xizmatlar ham şu yerda paydo böladi.",
+    points: ["Bir marta kirasiz — hamma joyda kirgansiz", "Hamyon barça xizmatlarda umumiy"],
   },
 ];
 
 const STEPS = [
-  { n: "01", title: "Ro'yxatdan o'ting", text: "Google orqali bir daqiqada — tayyorr+ da bitta hisob ochasiz." },
-  { n: "02", title: "Hamyonni to'ldiring", text: "Click orqali. Balans barcha xizmatlarda bir xil ishlaydi." },
-  { n: "03", title: "Xizmatni tanlang", text: "Ilmiy ish buyurtma qiling yoki SMM xizmatini ishga tushiring." },
+  { n: "01", title: "Röyxatdan öting", text: "Google orqali bir daqiqada — tayyorr+ da bitta hisob oçasiz." },
+  { n: "02", title: "Hamyonni töldiring", text: "Click orqali. Balans barça xizmatlarda bir xil işlaydi." },
+  { n: "03", title: "Xizmatni tanlang", text: "Ilmiy iş buyurtma qiling yoki SMM xizmatini işga tuşiring." },
 ];
 
 const FEATURES = [
-  { title: "Bitta hisob", text: "Har bir xizmat uchun alohida ro'yxatdan o'tish shart emas." },
-  { title: "Umumiy hamyon", text: "Bir marta to'ldirasiz — hamma xizmatda ishlatasiz." },
-  { title: "Xavfsiz to'lov", text: "Click orqali; bajarilmagan ish uchun pul qaytariladi." },
-  { title: "Tezkor yordam", text: "Savol bo'lsa — sayt ichidagi chat orqali yozing." },
+  { title: "Bitta hisob", text: "Har bir xizmat uçun alohida röyxatdan ötiş şart emas." },
+  { title: "Umumiy hamyon", text: "Bir marta töldirasiz — hamma xizmatda işlatasiz." },
+  { title: "Xavfsiz tölov", text: "Click orqali; bajarilmagan iş uçun pul qaytariladi." },
+  { title: "Tezkor yordam", text: "Savol bölsa — sayt içidagi çat orqali yozing." },
 ];
 
 const FAQ = [
   {
-    q: "Har bir xizmat uchun alohida ro'yxatdan o'tishim kerakmi?",
-    a: "Yo'q. tayyorr+ da bir marta ro'yxatdan o'tasiz — shu hisob bilan barcha xizmatlarga avtomatik kirasiz.",
+    q: "Har bir xizmat uçun alohida röyxatdan ötişim kerakmi?",
+    a: "Yöq. tayyorr+ da bir marta röyxatdan ötasiz — şu hisob bilan barça xizmatlarga avtomatik kirasiz.",
   },
   {
-    q: "Hamyon qanday ishlaydi?",
-    a: "Hamyon bitta: Click orqali to'ldirasiz va balansni istalgan xizmatda ishlatasiz. Pulni kartaga yechib olish ham mumkin.",
+    q: "Hamyon qanday işlaydi?",
+    a: "Hamyon bitta: Click orqali töldirasiz va balansni istalgan xizmatda işlatasiz. Pulni kartaga yeçib oliş ham mumkin.",
   },
   {
-    q: "Xizmat bajarilmasa nima bo'ladi?",
-    a: "SMM buyurtmasi bajarilmasa yoki qisman bajarilsa — pul hamyonga avtomatik qaytadi. Ilmiy ishlarda pul ish qabul qilingunga qadar himoyada turadi.",
+    q: "Xizmat bajarilmasa nima böladi?",
+    a: "SMM buyurtmasi bajarilmasa yoki qisman bajarilsa — pul hamyonga avtomatik qaytadi. Ilmiy işlarda pul iş qabul qilingunga qadar himoyada turadi.",
   },
   {
     q: "Mobil ilova bormi?",
-    a: "Ha, Android uchun ilova bor — pastdagi tugma orqali yuklab oling. iOS versiyasi tez orada.",
+    a: "Ha, Android uçun ilova bor — pastdagi tugma orqali yuklab oling. iOS versiyasi tez orada.",
   },
 ];
 
@@ -78,7 +78,7 @@ export default function Home() {
         <div className="text-center lg:text-left">
           <p className="animate-rise inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Ilmiy ishlar · SMM · tayyorr+
+            Ilmiy işlar · SMM · tayyorr+
           </p>
           <h1
             className="animate-rise mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl"
@@ -92,7 +92,7 @@ export default function Home() {
             className="animate-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-400 lg:mx-0"
             style={{ animationDelay: "120ms" }}
           >
-            Ilmiy ishlaringiz uchun tayyorlovchi toping, ijtimoiy tarmoqlaringizni o&apos;stiring — barchasi bitta
+            Ilmiy işlaringiz uçun tayyorlovçi toping, ijtimoiy tarmoqlaringizni östiring — barçasi bitta
             hisob va bitta hamyon bilan.
           </p>
           <div
@@ -100,10 +100,10 @@ export default function Home() {
             style={{ animationDelay: "180ms" }}
           >
             <a href={START_URL} className="btn-white !px-7 !py-3.5">
-              Bepul boshlash <span aria-hidden>→</span>
+              Bepul boşlaş <span aria-hidden>→</span>
             </a>
             <a href="#xizmatlar" className="btn-ghost !px-7 !py-3.5">
-              Xizmatlarni ko&apos;rish
+              Xizmatlarni köriş
             </a>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function Home() {
                 ))}
               </ul>
               <span className="mt-auto inline-flex items-center gap-1.5 pt-7 text-sm font-semibold text-white transition-[gap] group-hover:gap-2.5">
-                Ochish <span aria-hidden>→</span>
+                Oçiş <span aria-hidden>→</span>
               </span>
             </a>
           ))}
@@ -146,7 +146,7 @@ export default function Home() {
 
       {/* ---------- qanday ishlaydi ---------- */}
       <section id="qanday" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 py-20">
-        <Heading kicker="Qanday ishlaydi" title="Uch qadam — va boshladingiz" />
+        <Heading kicker="Qanday işlaydi" title="Uç qadam — va boşladingiz" />
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="card p-7">
@@ -192,14 +192,14 @@ export default function Home() {
           <div className="relative text-center lg:max-w-[55%] lg:text-left">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Mobil ilova</p>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Hammasi cho&apos;ntagingizda
+              Hammasi çöntagingizda
             </h2>
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-zinc-400 lg:mx-0">
-              Buyurtmalar, xabarlar, hamyon va tayyorr+ — ilovaning o&apos;zida. Yangi xabar kelsa, darhol bilasiz.
+              Buyurtmalar, xabarlar, hamyon va tayyorr+ — ilovaning özida. Yangi xabar kelsa, darhol bilasiz.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
               <a href="/api/app/download" className="btn-white">
-                Android uchun yuklab olish
+                Android uçun yuklab oliş
               </a>
               <span className="btn-ghost cursor-default text-zinc-500">iOS — tez orada</span>
             </div>
@@ -209,7 +209,7 @@ export default function Home() {
 
       {/* ---------- savollar ---------- */}
       <section id="savollar" className="relative z-10 mx-auto max-w-3xl scroll-mt-28 px-6 py-20">
-        <Heading kicker="Savollar" title="Ko'p so'raladigan savollar" />
+        <Heading kicker="Savollar" title="Köp söraladigan savollar" />
         <div className="mt-12 divide-y divide-white/[0.06] rounded-3xl border border-white/[0.08]">
           {FAQ.map((f) => (
             <details key={f.q} className="group px-6 py-5">
@@ -229,13 +229,13 @@ export default function Home() {
       <section className="relative z-10 mx-auto max-w-6xl px-6 pb-24 pt-10">
         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-500 via-indigo-600 to-fuchsia-600 p-10 text-center sm:p-16">
           <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-5xl">
-            Bugun boshlang — bepul
+            Bugun boşlang — bepul
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-indigo-100">
-            Bir daqiqada ro&apos;yxatdan o&apos;ting va barcha xizmatlardan bitta hisob bilan foydalaning.
+            Bir daqiqada röyxatdan öting va barça xizmatlardan bitta hisob bilan foydalaning.
           </p>
           <a href={START_URL} className="btn-white mt-8 !px-8 !py-3.5">
-            Ro&apos;yxatdan o&apos;tish <span aria-hidden>→</span>
+            Röyxatdan ötiş <span aria-hidden>→</span>
           </a>
         </div>
       </section>
@@ -265,7 +265,7 @@ function Check() {
 /** Hero vizuali: markazda tayyorr+, atrofida xizmatlar — aylanib turuvchi orbita. */
 function HeroOrbit() {
   const tiles = [
-    { mark: "/logo-mark.png", label: "Ilmiy ishlar", pos: "left-0 top-[6%]", delay: "0s" },
+    { mark: "/logo-mark.png", label: "Ilmiy işlar", pos: "left-0 top-[6%]", delay: "0s" },
     { mark: "/smm-mark.png", label: "Tayyorr SMM", pos: "-right-2 top-[64%] sm:-right-6", delay: "1.5s" },
   ];
   return (

@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ma'lumotlar noto'g'ri" },
+      { error: parsed.error.issues[0]?.message ?? "Maʼlumotlar notöğri" },
       { status: 400 },
     );
   }
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return NextResponse.json(
       {
-        error: `Summa ${CLICK_MIN.toLocaleString("ru-RU")} – ${CLICK_MAX.toLocaleString("ru-RU")} so'm oralig'ida bo'lsin`,
+        error: `Summa ${CLICK_MIN.toLocaleString("ru-RU")} – ${CLICK_MAX.toLocaleString("ru-RU")} söm oraliğida bölsin`,
       },
       { status: 400 },
     );
@@ -56,8 +56,8 @@ export async function POST(req: Request) {
       method: "CLICK",
       note:
         target.id === session.user.id
-          ? "Click orqali to'ldirish"
-          : `Click orqali to'ldirish (${session.user.login ?? session.user.id})`,
+          ? "Click orqali töldiriş"
+          : `Click orqali töldiriş (${session.user.login ?? session.user.id})`,
     },
   });
 

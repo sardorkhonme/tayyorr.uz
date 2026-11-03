@@ -35,7 +35,7 @@ export function AccountForm({ initial }: { initial: { login: string } }) {
     if (pw) payload.newPassword = pw;
 
     if (Object.keys(payload).length === 0) {
-      setMsg({ ok: false, text: "O'zgartirish kiritilmadi" });
+      setMsg({ ok: false, text: "Özgartiriş kiritilmadi" });
       return;
     }
 
@@ -99,7 +99,7 @@ export function AccountForm({ initial }: { initial: { login: string } }) {
         </p>
       )}
       <button className="btn-primary" disabled={busy}>
-        {busy ? "..." : "Saqlash"}
+        {busy ? "..." : "Saqlaş"}
       </button>
     </form>
   );

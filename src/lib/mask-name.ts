@@ -13,7 +13,7 @@ export function maskName(
   raw: string,
   ratio: number = 0.5,
 ): { visible: string; hiddenLen: number } {
-  const name = raw.trim() || "Tayyorlovchi";
+  const name = raw.trim() || "Tayyorlovçi";
   const cut = Math.max(1, Math.min(name.length - 1, Math.round(name.length * ratio)));
   return { visible: name.slice(0, cut), hiddenLen: Math.max(2, name.length - cut) };
 }

@@ -13,7 +13,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
   if (session.user.role !== "PREPARER") {
-    return NextResponse.json({ error: "Faqat tayyorlovchilar uchun" }, { status: 403 });
+    return NextResponse.json({ error: "Faqat tayyorlovçilar uçun" }, { status: 403 });
   }
   const restricted = await restrictionApiError(session.user.id);
   if (restricted) return restricted;

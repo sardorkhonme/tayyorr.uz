@@ -26,7 +26,7 @@ export async function POST(
   const { id } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Bahoni to'g'ri tanlang" }, { status: 400 });
+    return NextResponse.json({ error: "Bahoni töğri tanlang" }, { status: 400 });
   }
 
   const order = await db.order.findUnique({
@@ -39,15 +39,15 @@ export async function POST(
   }
   if (order.status !== "DONE") {
     return NextResponse.json(
-      { error: "Faqat yakunlangan ishni baholash mumkin" },
+      { error: "Faqat yakunlangan işni baholaş mumkin" },
       { status: 400 },
     );
   }
   if (!order.preparerId) {
-    return NextResponse.json({ error: "Tayyorlovchi yo'q" }, { status: 400 });
+    return NextResponse.json({ error: "Tayyorlovçi yöq" }, { status: 400 });
   }
   if (order.review) {
-    return NextResponse.json({ error: "Bu ish allaqachon baholangan" }, { status: 409 });
+    return NextResponse.json({ error: "Bu iş allaqaçon baholangan" }, { status: 409 });
   }
 
   const { stars, comment } = parsed.data;
@@ -79,7 +79,7 @@ export async function POST(
   );
   await logToGroup(
     "completed",
-    "⭐ Ishga baho qo'yildi",
+    "⭐ Işga baho qöyildi",
     [
       `«${order.title}»`,
       `Baho: ${stars}/5`,

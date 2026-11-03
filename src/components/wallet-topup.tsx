@@ -16,11 +16,11 @@ export function WalletTopUp() {
   return (
     <div className="card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 className="font-semibold text-white">Hisobni to&apos;ldirish</h2>
-        <p className="mt-1 text-xs text-zinc-500">Click · Payme va Uzum tez orada. Karta ma&apos;lumotlari saytda saqlanmaydi.</p>
+        <h2 className="font-semibold text-white">Hisobni töldiriş</h2>
+        <p className="mt-1 text-xs text-zinc-500">Click · Payme va Uzum tez orada. Karta maʼlumotlari saytda saqlanmaydi.</p>
       </div>
       <button type="button" onClick={open} className="btn-primary shrink-0">
-        Hamyonni to&apos;ldirish
+        Hamyonni töldiriş
       </button>
     </div>
   );

@@ -14,7 +14,7 @@ export const maxDuration = 60;
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
+    return NextResponse.json({ error: "Ruxsat yöq" }, { status: 401 });
   }
   const force = new URL(req.url).searchParams.get("services") === "1";
   const checked = await syncOrders();

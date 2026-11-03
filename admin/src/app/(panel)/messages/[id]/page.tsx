@@ -50,7 +50,7 @@ export default async function AdminMessageThread({
         asSupport
         other={{
           id: other?.id ?? "",
-          name: other?.name ?? other?.login ?? "Foydalanuvchi",
+          name: other?.name ?? other?.login ?? "Foydalanuvçi",
           login: other?.login ?? null,
           image: other?.avatarUrl ?? other?.image ?? null,
           isSupport: false,

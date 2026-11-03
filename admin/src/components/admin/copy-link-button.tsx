@@ -27,7 +27,7 @@ export function CopyLinkButton({
   return (
     <button type="button" onClick={copy} className={className}>
       <CopyIcon className="h-3.5 w-3.5" />
-      {done ? "nusxa olindi" : "nusxa olish"}
+      {done ? "nusxa olindi" : "nusxa oliş"}
     </button>
   );
 }

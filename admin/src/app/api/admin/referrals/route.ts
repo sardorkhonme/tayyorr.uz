@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Nom noto'g'ri" },
+      { error: parsed.error.issues[0]?.message ?? "Nom notöğri" },
       { status: 400 },
     );
   }

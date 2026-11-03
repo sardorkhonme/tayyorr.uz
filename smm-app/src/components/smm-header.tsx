@@ -13,7 +13,7 @@ const PLUS_URL = process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyo
 
 const LINKS: { href: string; label: string; icon: IconName; auth?: boolean }[] = [
   { href: "/", label: "Xizmatlar", icon: "grid" },
-  { href: "/chegirmalar", label: "Chegirmalar", icon: "tag" },
+  { href: "/chegirmalar", label: "Çegirmalar", icon: "tag" },
   { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
   { href: "/account", label: "Akkaunt", icon: "users", auth: true },
@@ -78,12 +78,12 @@ export function SmmHeader({ user }: { user: HeaderUser }) {
             </Link>
           ) : (
             <a href="/login" className="btn-primary !px-4 !py-2 !text-sm">
-              Kirish
+              Kiriş
             </a>
           )}
           <a
             href={PLUS_URL}
-            title="tayyorr+ ga qaytish"
+            title="tayyorr+ ga qaytiş"
             className="hidden items-center gap-2 rounded-xl border border-zinc-200 bg-white py-1.5 pl-1.5 pr-3 text-sm font-semibold text-zinc-700 transition hover:border-indigo-200 md:flex"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -131,7 +131,7 @@ export function SmmHeader({ user }: { user: HeaderUser }) {
             <a href={PLUS_URL} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-zinc-700">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/plus-mark.png" alt="" className="h-8 w-8 object-contain" />
-              tayyorr+ ga qaytish
+              tayyorr+ ga qaytiş
             </a>
           </nav>
         </div>

@@ -22,7 +22,7 @@ async function resizeImage(file: File, max = 512): Promise<string> {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
       const i = new Image();
       i.onload = () => resolve(i);
-      i.onerror = () => reject(new Error("Rasmni o'qib bo'lmadi"));
+      i.onerror = () => reject(new Error("Rasmni öqib bölmadi"));
       i.src = url;
     });
     const scale = Math.min(1, max / Math.max(img.width, img.height));
@@ -88,18 +88,18 @@ export function ProfileWizard({
 
   async function pickImage(file: File) {
     if (!file.type.startsWith("image/")) return fail("Rasm faylini tanlang");
-    if (file.size > 15 * 1024 * 1024) return fail("Rasm hajmi 15MB dan oshmasin");
+    if (file.size > 15 * 1024 * 1024) return fail("Rasm hajmi 15MB dan oşmasin");
     try {
       setAvatar(await resizeImage(file));
       setError("");
     } catch (e) {
-      fail(e instanceof Error ? e.message : "Rasmni o'qib bo'lmadi");
+      fail(e instanceof Error ? e.message : "Rasmni öqib bölmadi");
     }
   }
 
   function next() {
     if (!hear) return fail("Variantlardan birini tanlang");
-    if (hear === "other" && !hearDetail.trim()) return fail("Qayerdan eshitganingizni yozing");
+    if (hear === "other" && !hearDetail.trim()) return fail("Qayerdan eşitganingizni yozing");
     setError("");
     setStep(2);
   }
@@ -107,7 +107,7 @@ export function ProfileWizard({
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!avatar) return fail("Profil rasmini yuklang");
-    if (!birth.d || !birth.m || !birth.y) return fail("Tug'ilgan sanangizni tanlang");
+    if (!birth.d || !birth.m || !birth.y) return fail("Tuğilgan sanangizni tanlang");
     const payload = {
       hearAboutUs: hear,
       hearAboutUsDetail: hear === "other" ? hearDetail.trim() : undefined,
@@ -141,7 +141,7 @@ export function ProfileWizard({
       {step === 1 ? (
         <div className="space-y-5">
           <div>
-            <h2 className="font-display text-xl font-bold text-zinc-900">Bizni qayerdan eshitdingiz?</h2>
+            <h2 className="font-display text-xl font-bold text-zinc-900">Bizni qayerdan eşitdingiz?</h2>
             <p className="mt-1 text-zinc-500">Mos variantni tanlang.</p>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
@@ -164,7 +164,7 @@ export function ProfileWizard({
           {hear === "other" && (
             <input
               className="input"
-              placeholder="Masalan: YouTube, TikTok, universitetda, ko'cha banneridan..."
+              placeholder="Masalan: YouTube, TikTok, universitetda, köça banneridan..."
               value={hearDetail}
               onChange={(e) => setHearDetail(e.target.value)}
               maxLength={200}
@@ -173,14 +173,14 @@ export function ProfileWizard({
           )}
           {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           <button type="button" onClick={next} className="btn-primary w-full !py-4 !text-base">
-            Davom etish <Icon name="arrow-right" className="h-5 w-5" strokeWidth={2.2} />
+            Davom etiş <Icon name="arrow-right" className="h-5 w-5" strokeWidth={2.2} />
           </button>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-5">
           <div>
-            <h2 className="font-display text-xl font-bold text-zinc-900">Profilni to&apos;ldiring</h2>
-            <p className="mt-1 text-zinc-500">Barcha maydonlar majburiy.</p>
+            <h2 className="font-display text-xl font-bold text-zinc-900">Profilni töldiring</h2>
+            <p className="mt-1 text-zinc-500">Barça maydonlar majburiy.</p>
           </div>
 
           {/* rasm */}
@@ -189,7 +189,7 @@ export function ProfileWizard({
               type="button"
               onClick={() => fileRef.current?.click()}
               className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-dashed border-zinc-300 bg-zinc-50 text-2xl text-zinc-400 transition hover:border-indigo-400"
-              aria-label="Profil rasmini tanlash"
+              aria-label="Profil rasmini tanlaş"
             >
               {avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -200,7 +200,7 @@ export function ProfileWizard({
             </button>
             <div>
               <button type="button" onClick={() => fileRef.current?.click()} className="btn-ghost !py-2 !text-sm">
-                {avatar ? "Rasmni almashtirish" : "Rasm tanlash"}
+                {avatar ? "Rasmni almaştiriş" : "Rasm tanlaş"}
               </button>
               <p className="mt-1.5 text-xs text-zinc-500">Profil (glavniy) rasm — majburiy</p>
             </div>
@@ -222,7 +222,7 @@ export function ProfileWizard({
             </Field>
           </div>
 
-          <Field label="Tug'ilgan sana">
+          <Field label="Tuğilgan sana">
             <div className="grid grid-cols-[1fr_1.4fr_1.2fr] gap-2">
               <select className="input" value={birth.d} onChange={(e) => setBirth((b) => ({ ...b, d: e.target.value }))} required>
                 <option value="">Kun</option>
@@ -278,14 +278,14 @@ export function ProfileWizard({
                   onClick={() => setShowPw((v) => !v)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
                 >
-                  {showPw ? "Yashirish" : "Ko'rsatish"}
+                  {showPw ? "Yaşiriş" : "Körsatiş"}
                 </button>
               </div>
-              <p className="mt-1.5 text-xs text-zinc-500">Barcha tayyorr xizmatlariga shu login/email va parol bilan kirasiz.</p>
+              <p className="mt-1.5 text-xs text-zinc-500">Barça tayyorr xizmatlariga şu login/email va parol bilan kirasiz.</p>
             </Field>
           )}
 
-          <Field label="O'zingiz haqingizda">
+          <Field label="Özingiz haqingizda">
             <textarea
               className="input min-h-24 resize-y"
               value={form.about}
@@ -299,7 +299,7 @@ export function ProfileWizard({
           {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
           <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
-            {pending ? "Saqlanmoqda…" : "Ro'yxatdan o'tishni yakunlash"}
+            {pending ? "Saqlanmoqda…" : "Röyxatdan ötişni yakunlaş"}
           </button>
           <button
             type="button"

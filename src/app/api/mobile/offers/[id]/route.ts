@@ -28,12 +28,12 @@ export async function PATCH(
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return mobileJson({ error: "Noto'g'ri amal" }, { status: 400 });
+  if (!parsed.success) return mobileJson({ error: "Notöğri amal" }, { status: 400 });
 
   const offer = await db.offer.findUnique({ where: { id }, include: { order: true } });
   if (!offer) return mobileJson({ error: "Topilmadi" }, { status: 404 });
   if (offer.order.ordererId !== auth.userId) {
-    return mobileJson({ error: "Ruxsat yo'q" }, { status: 403 });
+    return mobileJson({ error: "Ruxsat yöq" }, { status: 403 });
   }
 
   if (parsed.data.action === "REJECT") {
@@ -54,7 +54,7 @@ export async function PATCH(
   try {
     await db.$transaction(async (tx) => {
       if (offer.order.status !== "OPEN") {
-        throw new Error("Buyurtma allaqachon band");
+        throw new Error("Buyurtma allaqaçon band");
       }
       await tx.offer.update({ where: { id }, data: { status: "ACCEPTED" } });
       await tx.offer.updateMany({
@@ -68,20 +68,20 @@ export async function PATCH(
       await tx.user.update({ where: { id: offer.preparerId }, data: { isAvailable: false } });
     });
   } catch {
-    return mobileJson({ error: "Buyurtma allaqachon band" }, { status: 400 });
+    return mobileJson({ error: "Buyurtma allaqaçon band" }, { status: 400 });
   }
 
   await updateOrderChannelPost(offer.orderId);
   await logActivity(
     auth.userId,
     "OFFER_ACCEPT",
-    `Taklifni qabul qildi: «${offer.order.title}» — ${offer.price.toLocaleString("ru-RU")} so'm (mobil ilova)`,
+    `Taklifni qabul qildi: «${offer.order.title}» — ${offer.price.toLocaleString("ru-RU")} söm (mobil ilova)`,
     { orderId: offer.orderId, offerId: id, price: offer.price },
   );
   await logToGroup(
     "offers",
     "✅ Taklif qabul qilindi (mobil)",
-    [`«${offer.order.title}»`, `Narx: ${offer.price.toLocaleString("ru-RU")} so'm`],
+    [`«${offer.order.title}»`, `Narx: ${offer.price.toLocaleString("ru-RU")} söm`],
     siteUrl(`/sardorxon/admin/orders/${offer.orderId}`),
   );
 

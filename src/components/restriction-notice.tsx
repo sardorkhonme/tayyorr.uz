@@ -8,11 +8,11 @@ export function RestrictionNotice({ restriction }: { restriction: Restriction })
     <div className="mx-auto max-w-xl rounded-2xl border border-amber-400/30 bg-amber-500/10 p-6 text-center">
       <Icon name="ban" className="mx-auto h-9 w-9 text-amber-300" />
       <h1 className="mt-3 text-lg font-semibold text-amber-100">
-        Bu bo'lim vaqtincha cheklangan
+        Bu bölim vaqtinça çeklangan
       </h1>
       <p className="mt-2 text-sm text-amber-200/90">{restrictionText(restriction)}</p>
       <Link href="/messages" className="btn-primary mt-5 inline-flex">
-        «tayyorr.uz support» bilan bog'lanish
+        «tayyorr.uz support» bilan boğlaniş
       </Link>
     </div>
   );

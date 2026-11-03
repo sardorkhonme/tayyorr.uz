@@ -15,7 +15,7 @@ export const PLATFORMS: Platform[] = [
   { key: "youtube", name: "YouTube", match: /you ?tube|\byt\b/i, from: "#ff0000", to: "#b31217" },
   { key: "facebook", name: "Facebook", match: /facebook|\bfb\b/i, from: "#1877f2", to: "#0c56c4" },
   { key: "twitter", name: "X (Twitter)", match: /twitter|\bx\.com\b/i, from: "#52525b", to: "#18181b" },
-  { key: "other", name: "Boshqa", match: /.^/, from: "#6366f1", to: "#4f46e5" },
+  { key: "other", name: "Boşqa", match: /.^/, from: "#6366f1", to: "#4f46e5" },
 ];
 
 function match(text: string) {

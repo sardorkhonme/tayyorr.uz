@@ -105,7 +105,7 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
           ) : (
             <>
               <Icon name="download" className="h-4 w-4" />
-              Yuklab olish
+              Yuklab oliş
             </>
           )}
         </button>
@@ -113,7 +113,7 @@ function Lightbox({ file, onClose }: { file: ChatFile; onClose: () => void }) {
           type="button"
           onClick={onClose}
           className="backdrop-blur-sm flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg text-white hover:bg-white/20"
-          aria-label="Yopish"
+          aria-label="Yopiş"
         >
           <Icon name="close" className="h-5 w-5" />
         </button>
@@ -326,7 +326,7 @@ function AudioMessage({ file, mine }: { file: ChatFile; mine: boolean }) {
       <button
         type="button"
         onClick={toggle}
-        aria-label={playing ? "To'xtatish" : "Ijro etish"}
+        aria-label={playing ? "Töxtatiş" : "Ijro etiş"}
         className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full text-lg ${
           mine ? "bg-white text-indigo-600" : "bg-indigo-400 text-white"
         }`}
@@ -374,7 +374,7 @@ function AudioMessage({ file, mine }: { file: ChatFile; mine: boolean }) {
             type="button"
             onClick={() => downloadFile(file.url, file.name)}
             className="hover:underline"
-            aria-label="Yuklab olish"
+            aria-label="Yuklab oliş"
           >
             <Icon name="download" className="h-3.5 w-3.5" />
           </button>

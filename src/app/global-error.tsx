@@ -26,7 +26,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           Xatolik yuz berdi
         </h1>
         <p style={{ fontSize: "0.875rem", color: "#71717a", maxWidth: "20rem" }}>
-          Sahifani qaytadan yuklashga urinib ko'ring.
+          Sahifani qaytadan yuklaşga urinib köring.
         </p>
         <button
           type="button"

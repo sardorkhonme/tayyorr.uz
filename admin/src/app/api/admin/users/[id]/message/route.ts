@@ -19,7 +19,7 @@ export async function POST(
   const { id } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Xabar bo'sh bo'lmasin" }, { status: 400 });
+    return NextResponse.json({ error: "Xabar böş bölmasin" }, { status: 400 });
   }
 
   const user = await db.user.findUnique({ where: { id }, select: { id: true } });

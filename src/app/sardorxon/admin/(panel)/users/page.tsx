@@ -41,7 +41,7 @@ export default async function AdminUsers({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold text-white">Foydalanuvchilar</h1>
+      <h1 className="text-xl font-semibold text-white">Foydalanuvçilar</h1>
 
       <LiveSearch placeholder="Ism, familiya, login, ID, email yoki hisob kodi" />
 
@@ -49,7 +49,7 @@ export default async function AdminUsers({
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
             <tr>
-              <th className="px-4 py-2">Foydalanuvchi</th>
+              <th className="px-4 py-2">Foydalanuvçi</th>
               <th className="px-4 py-2">Rol</th>
               <th className="px-4 py-2">Manba</th>
               <th className="px-4 py-2">Balans</th>
@@ -82,9 +82,9 @@ export default async function AdminUsers({
                   </td>
                   <td className="px-4 py-2 text-zinc-400">
                     {u.role === "PREPARER"
-                      ? "Tayyorlovchi"
+                      ? "Tayyorlovçi"
                       : u.role === "ORDERER"
-                        ? "Buyurtmachi"
+                        ? "Buyurtmaçi"
                         : "—"}
                   </td>
                   <td className="px-4 py-2">
@@ -114,7 +114,7 @@ export default async function AdminUsers({
                   <td className="px-4 py-2 text-white">{formatSom(u.balance)}</td>
                   <td className="px-4 py-2">
                     {banned ? (
-                      <span className="text-amber-400">cheklangan</span>
+                      <span className="text-amber-400">çeklangan</span>
                     ) : (
                       <span className="text-emerald-400">faol</span>
                     )}
@@ -123,9 +123,9 @@ export default async function AdminUsers({
                     <AdminPostButton
                       url={`/api/admin/users/${u.id}`}
                       method="DELETE"
-                      label="O'chirish"
+                      label="Öçiriş"
                       className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
-                      confirmText={`«${label}» hisobi va uning BARCHA ma'lumotlari (buyurtmalar, xabarlar, hisob amallari) butunlay o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi. Davom etilsinmi?`}
+                      confirmText={`«${label}» hisobi va uning BARÇA maʼlumotlari (buyurtmalar, xabarlar, hisob amallari) butunlay öçiriladi. Bu amalni ortga qaytarib bölmaydi. Davom etilsinmi?`}
                     />
                   </td>
                 </tr>
@@ -134,7 +134,7 @@ export default async function AdminUsers({
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
-                  Hech narsa topilmadi.
+                  Heç narsa topilmadi.
                 </td>
               </tr>
             )}

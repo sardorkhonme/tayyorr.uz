@@ -25,12 +25,12 @@ export async function POST(
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Star sonini to'g'ri kiriting" }, { status: 400 });
+    return NextResponse.json({ error: "Star sonini töğri kiriting" }, { status: 400 });
   }
 
   const order = await db.order.findUnique({ where: { id } });
   if (!order || order.status !== "OPEN") {
-    return NextResponse.json({ error: "Buyurtma navbat uchun ochiq emas" }, { status: 400 });
+    return NextResponse.json({ error: "Buyurtma navbat uçun oçiq emas" }, { status: 400 });
   }
 
   const offer = await db.offer.findUnique({
@@ -38,7 +38,7 @@ export async function POST(
   });
   if (!offer) {
     return NextResponse.json(
-      { error: "Avval taklif yuborishingiz kerak" },
+      { error: "Avval taklif yuborişingiz kerak" },
       { status: 400 },
     );
   }
@@ -56,7 +56,7 @@ export async function POST(
   await logActivity(
     session.user.id,
     "OFFER_BOOST",
-    `Navbatda yuqoriga chiqish uchun ${parsed.data.stars} star sarfladi: «${order.title}»`,
+    `Navbatda yuqoriga çiqiş uçun ${parsed.data.stars} star sarfladi: «${order.title}»`,
     { orderId: id, offerId: offer.id, stars: parsed.data.stars },
   );
 
@@ -67,7 +67,7 @@ export async function POST(
 
   await logToGroup(
     "stars",
-    "🚀 Navbatda yuqoriga chiqish",
+    "🚀 Navbatda yuqoriga çiqiş",
     [
       `«${order.title}»`,
       `Tayyorlovchi: ${userLabel(preparer)}`,

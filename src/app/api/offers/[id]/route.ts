@@ -24,7 +24,7 @@ export async function PATCH(
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri amal" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri amal" }, { status: 400 });
   }
 
   const offer = await db.offer.findUnique({
@@ -33,7 +33,7 @@ export async function PATCH(
   });
   if (!offer) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (offer.order.ordererId !== session.user.id) {
-    return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 403 });
+    return NextResponse.json({ error: "Ruxsat yöq" }, { status: 403 });
   }
 
   if (parsed.data.action === "REJECT") {
@@ -60,7 +60,7 @@ export async function PATCH(
   // tayyorlovchini "band" qilamiz
   const result = await db.$transaction(async (tx) => {
     if (offer.order.status !== "OPEN") {
-      throw new Error("Buyurtma allaqachon band");
+      throw new Error("Buyurtma allaqaçon band");
     }
     const acceptedOffer = await tx.offer.update({
       where: { id },
@@ -86,7 +86,7 @@ export async function PATCH(
   await logActivity(
     session.user.id,
     "OFFER_ACCEPT",
-    `Taklifni qabul qildi: «${offer.order.title}» — ${offer.price.toLocaleString("ru-RU")} so'm`,
+    `Taklifni qabul qildi: «${offer.order.title}» — ${offer.price.toLocaleString("ru-RU")} söm`,
     { orderId: offer.orderId, offerId: id, price: offer.price },
   );
   await logToGroup(
@@ -94,7 +94,7 @@ export async function PATCH(
     "✅ Taklif qabul qilindi",
     [
       `«${offer.order.title}»`,
-      `Narx: ${offer.price.toLocaleString("ru-RU")} so'm`,
+      `Narx: ${offer.price.toLocaleString("ru-RU")} söm`,
       `Taklif ID: ${id}`,
     ],
     siteUrl(`/sardorxon/admin/orders/${offer.orderId}`),

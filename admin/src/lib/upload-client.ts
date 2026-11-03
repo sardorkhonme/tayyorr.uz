@@ -29,7 +29,7 @@ export async function uploadFile(
   });
   if (!presignRes.ok) {
     const { error } = await presignRes.json().catch(() => ({}));
-    throw new Error(error || "Yuklashni boshlab bo'lmadi");
+    throw new Error(error || "Yuklaşni boşlab bölmadi");
   }
   const { uploadUrl, key, bucket, publicUrl } = await presignRes.json();
 
@@ -102,7 +102,7 @@ async function prepareVia(
     }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Yuklashni boshlab bo'lmadi");
+  if (!res.ok) throw new Error(data.error || "Yuklaşni boşlab bölmadi");
 
   onProgress(0);
   await xhrPut(data.uploadUrl, file, onProgress);

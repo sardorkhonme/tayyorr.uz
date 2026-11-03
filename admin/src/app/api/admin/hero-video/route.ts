@@ -51,11 +51,11 @@ export async function PATCH(req: Request) {
 
   const parsed = toggleSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   }
 
   const found = await db.heroVideo.findUnique({ where: { id: HERO_VIDEO_ID } });
-  if (!found) return NextResponse.json({ error: "Video yo'q" }, { status: 404 });
+  if (!found) return NextResponse.json({ error: "Video yöq" }, { status: 404 });
 
   await db.heroVideo.update({
     where: { id: HERO_VIDEO_ID },

@@ -12,7 +12,7 @@ export function LandingFaq({ faqs }: { faqs: FaqItem[] }) {
           Savol-javob
         </div>
         <h2 className="font-display mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-          Ko&apos;p so&apos;raladigan savollar
+          Köp söraladigan savollar
         </h2>
       </div>
 

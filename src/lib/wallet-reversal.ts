@@ -38,16 +38,16 @@ export async function reverseWalletTopup(wtx: Reversible, reason: string) {
   await logActivity(
     wtx.userId,
     "WALLET_TOPUP",
-    `To'lov bekor qilindi (${reason}): ${wtx.amount.toLocaleString("ru-RU")} so'm hisobdan ayirildi`,
+    `Tölov bekor qilindi (${reason}): ${wtx.amount.toLocaleString("ru-RU")} söm hisobdan ayirildi`,
     { amount: wtx.amount, reason },
   );
 
   await sendTelegramToUser(wtx.userId, {
-    title: "⚠️ To'lov bekor qilindi",
+    title: "⚠️ Tölov bekor qilindi",
     body:
-      `Click orqali to'langan ${wtx.amount.toLocaleString("ru-RU")} so'm bekor qilindi va hisobingizdan ayirildi. ` +
-      `Pulingiz 24 ish soati ichida kartangizga qaytariladi.`,
+      `Click orqali tölangan ${wtx.amount.toLocaleString("ru-RU")} söm bekor qilindi va hisobingizdan ayirildi. ` +
+      `Pulingiz 24 iş soati içida kartangizga qaytariladi.`,
     url: siteUrl("/wallet"),
-    buttonLabel: "Hamyonni ko'rish",
+    buttonLabel: "Hamyonni köriş",
   });
 }

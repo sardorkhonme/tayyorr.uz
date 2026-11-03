@@ -99,9 +99,9 @@ export function ServicesBoard({
         <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
           <Icon name="clock" className="h-8 w-8" />
         </span>
-        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Xizmatlar tez orada qo&apos;shiladi</p>
+        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Xizmatlar tez orada qöşiladi</p>
         <p className="mx-auto mt-3 max-w-md text-zinc-500">
-          Hozir ro&apos;yxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling.
+          Hozir röyxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling.
         </p>
       </section>
     );
@@ -111,7 +111,7 @@ export function ServicesBoard({
     <section id="start" className="scroll-mt-24 space-y-20">
       {/* 1-qadam: tarmoq */}
       <div className="space-y-8">
-        <StepTitle n={1} title="Ijtimoiy tarmoqni tanlang" hint="Qaysi tarmoqdagi sahifangizni o'stirmoqchisiz?" />
+        <StepTitle n={1} title="Ijtimoiy tarmoqni tanlang" hint="Qaysi tarmoqdagi sahifangizni östirmoqçisiz?" />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {platforms.map((p) => {
             const n = platformCounts.get(p.key) ?? 0;
@@ -160,7 +160,7 @@ export function ServicesBoard({
       <div ref={step2} className="scroll-mt-24">
         {platform && (
           <div className="animate-rise space-y-8">
-            <StepTitle n={2} title="Nima kerak?" hint={`${platformName} uchun xizmat turini tanlang`} />
+            <StepTitle n={2} title="Nima kerak?" hint={`${platformName} uçun xizmat turini tanlang`} />
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {kinds.map((k) => {
                 const active = kind === k.key;
@@ -206,10 +206,10 @@ export function ServicesBoard({
         {platform && kind && (
           <div className="animate-rise space-y-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <StepTitle n={3} title="Xizmatni tanlang" hint={`${platformName} · ${kindLabel} — eng arzonidan boshlab`} />
+              <StepTitle n={3} title="Xizmatni tanlang" hint={`${platformName} · ${kindLabel} — eng arzonidan boşlab`} />
               <input
                 className="input sm:max-w-xs"
-                placeholder="Ro'yxatdan qidirish…"
+                placeholder="Röyxatdan qidiriş…"
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -220,7 +220,7 @@ export function ServicesBoard({
 
             {list.length === 0 ? (
               <p className="card px-6 py-10 text-center text-zinc-500">
-                Hech narsa topilmadi
+                Heç narsa topilmadi
               </p>
             ) : (
               <>
@@ -232,7 +232,7 @@ export function ServicesBoard({
                 {list.length > shown && (
                   <div className="text-center">
                     <button type="button" className="btn-ghost" onClick={() => setShown((v) => v + PAGE)}>
-                      Yana ko&apos;rsatish ({list.length - shown})
+                      Yana körsatiş ({list.length - shown})
                     </button>
                   </div>
                 )}

@@ -115,11 +115,11 @@ export function PushSetup() {
           <Icon name="bell" className="h-6 w-6" />
         </div>
         <h3 className="mt-4 font-semibold text-white">
-          Bildirishnomalarni yoqasizmi?
+          Bildirişnomalarni yoqasizmi?
         </h3>
         <p className="mt-1.5 text-sm text-zinc-400">
           Yangi xabarlar, takliflar va buyurtma holati haqida darhol
-          xabardor bo&apos;lasiz.
+          xabardor bölasiz.
         </p>
         <div className="mt-5 flex justify-center gap-2">
           <button
@@ -136,7 +136,7 @@ export function PushSetup() {
             onClick={enable}
             disabled={busy}
           >
-            {busy ? "..." : "Yoqish"}
+            {busy ? "..." : "Yoqiş"}
           </button>
         </div>
       </div>

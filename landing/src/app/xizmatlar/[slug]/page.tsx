@@ -7,10 +7,10 @@ import { SERVICES, getService } from "@/lib/services";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
 
 const STEPS: [string, string][] = [
-  ["Buyurtma qoldiring", "Ish turi, mavzu, hajm va muddatni yozing — bepul."],
-  ["Takliflarni ko'ring", "Tayyorlovchilar narx va namunalari bilan javob beradi."],
-  ["Shartnoma tuzing", "Reyting va narxga qarab tanlang; summa hisobda bloklanadi."],
-  ["Ishni qabul qiling", "Tayyor ishni ko'rib, ma'qullaganda to'lov o'tkaziladi."],
+  ["Buyurtma qoldiring", "Iş turi, mavzu, hajm va muddatni yozing — bepul."],
+  ["Takliflarni köring", "Tayyorlovçilar narx va namunalari bilan javob beradi."],
+  ["Şartnoma tuzing", "Reyting va narxga qarab tanlang; summa hisobda bloklanadi."],
+  ["Işni qabul qiling", "Tayyor işni körib, maʼqullaganda tölov ötkaziladi."],
 ];
 
 export function generateStaticParams() {
@@ -56,7 +56,7 @@ export default async function ServicePage({
           {
             "@type": "ListItem",
             position: 1,
-            name: "Bosh sahifa",
+            name: "Boş sahifa",
             item: SITE_URL,
           },
           {
@@ -93,7 +93,7 @@ export default async function ServicePage({
 
       <nav className="mb-6 text-sm text-zinc-500">
         <Link href="/" className="hover:text-zinc-300">
-          Bosh sahifa
+          Boş sahifa
         </Link>{" "}
         /{" "}
         <Link href="/xizmatlar" className="hover:text-zinc-300">
@@ -123,7 +123,7 @@ export default async function ServicePage({
       </div>
 
       <h2 className="mt-12 text-2xl font-semibold tracking-tight text-white">
-        Qanday ishlaydi
+        Qanday işlaydi
       </h2>
       <ol className="mt-4 space-y-3">
         {STEPS.map(([t, d], i) => (
@@ -152,7 +152,7 @@ export default async function ServicePage({
       </div>
 
       <h2 className="mt-12 text-2xl font-semibold tracking-tight text-white">
-        Ko'p so'raladigan savollar
+        Köp söraladigan savollar
       </h2>
       <div className="mt-4 divide-y divide-white/10 border-y border-white/10">
         {s.faq.map((f) => (
@@ -169,18 +169,18 @@ export default async function ServicePage({
 
       <div className="mt-12 rounded-2xl border border-indigo-400/20 bg-indigo-500/10 p-6 text-center">
         <p className="text-lg font-medium text-white">
-          {s.title.split(" ")[0]} ishini buyurtma qiling
+          {s.title.split(" ")[0]} işini buyurtma qiling
         </p>
         <p className="mt-1 text-sm text-zinc-400">
-          Ro'yxatdan o'tish va buyurtma qoldirish bepul. Bir necha soatda taklif
-          ola boshlaysiz.
+          Röyxatdan ötiş va buyurtma qoldiriş bepul. Bir neça soatda taklif
+          ola boşlaysiz.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-3">
           <Link href="/register" className="btn-white">
-            Buyurtma berish
+            Buyurtma beriş
           </Link>
           <Link href="/xizmatlar" className="btn-ghost">
-            Boshqa xizmatlar
+            Boşqa xizmatlar
           </Link>
         </div>
       </div>

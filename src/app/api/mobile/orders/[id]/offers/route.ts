@@ -34,7 +34,7 @@ export async function POST(
   const me = await db.user.findUnique({ where: { id: auth.userId }, select: { role: true } });
   if (!me) return mobileJson({ error: "Topilmadi" }, { status: 404 });
   if (me.role !== "PREPARER") {
-    return mobileJson({ error: "Faqat tayyorlovchilar taklif yubora oladi" }, { status: 403 });
+    return mobileJson({ error: "Faqat tayyorlovçilar taklif yubora oladi" }, { status: 403 });
   }
 
   const restriction = await getRestriction(auth.userId);
@@ -44,12 +44,12 @@ export async function POST(
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Narxni to'g'ri kiriting" }, { status: 400 });
+    return mobileJson({ error: "Narxni töğri kiriting" }, { status: 400 });
   }
 
   const order = await db.order.findUnique({ where: { id } });
   if (!order || order.status !== "OPEN") {
-    return mobileJson({ error: "Buyurtma takliflar uchun ochiq emas" }, { status: 400 });
+    return mobileJson({ error: "Buyurtma takliflar uçun oçiq emas" }, { status: 400 });
   }
 
   const existing = await db.offer.findUnique({
@@ -79,7 +79,7 @@ export async function POST(
   await logActivity(
     auth.userId,
     existing ? "OFFER_UPDATE" : "OFFER_CREATE",
-    `Taklif ${existing ? "yangiladi" : "yubordi"}: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} so'm (mobil ilova)`,
+    `Taklif ${existing ? "yangiladi" : "yubordi"}: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} söm (mobil ilova)`,
     { orderId: id, price: parsed.data.price },
   );
 
@@ -88,17 +88,17 @@ export async function POST(
     select: { name: true, firstName: true, lastName: true, login: true, email: true },
   });
   const preparerName =
-    preparer?.firstName || preparer?.name || (preparer?.login ? `@${preparer.login}` : "Tayyorlovchi");
+    preparer?.firstName || preparer?.name || (preparer?.login ? `@${preparer.login}` : "Tayyorlovçi");
 
   if (!existing) {
     await sendTelegramToUser(order.ordererId, {
-      title: "🙋 Yangi ko'ngilli topildi",
+      title: "🙋 Yangi köngilli topildi",
       body:
         `«${order.title}» buyurtmangizga ${preparerName} taklif yubordi: ` +
-        `${parsed.data.price.toLocaleString("ru-RU")} so'm` +
+        `${parsed.data.price.toLocaleString("ru-RU")} söm` +
         (parsed.data.message ? `\n\n«${parsed.data.message}»` : ""),
       url: siteUrl(`/orders/${id}`),
-      buttonLabel: "Ko'ngillilarni ko'rish",
+      buttonLabel: "Köngillilarni köriş",
     });
   }
 
@@ -108,9 +108,9 @@ export async function POST(
     [
       `«${order.title}»`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
-      `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
+      `Narx: ${parsed.data.price.toLocaleString("ru-RU")} söm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
-      !existing ? `Ariza uchun sarflandi: ${initialStars} ⭐` : `Jami star: ${offer.starsSpent} ⭐`,
+      !existing ? `Ariza uçun sarflandi: ${initialStars} ⭐` : `Jami star: ${offer.starsSpent} ⭐`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );

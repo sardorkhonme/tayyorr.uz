@@ -18,11 +18,11 @@ export async function POST(
   const txn = await db.walletTransaction.findUnique({ where: { id } });
   if (!txn) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (txn.reversedAt) {
-    return NextResponse.json({ error: "Allaqachon bekor qilingan" }, { status: 400 });
+    return NextResponse.json({ error: "Allaqaçon bekor qilingan" }, { status: 400 });
   }
   if (txn.status !== "SUCCESS") {
     return NextResponse.json(
-      { error: "Faqat muvaffaqiyatli amalni bekor qilish mumkin" },
+      { error: "Faqat muvaffaqiyatli amalni bekor qiliş mumkin" },
       { status: 400 },
     );
   }
@@ -53,9 +53,9 @@ export async function POST(
 
   await sendTelegramToUser(txn.userId, {
     title: "⚠️ Tranzaksiya bekor qilindi",
-    body: `${txn.amount.toLocaleString("ru-RU")} so'mlik amal admin tomonidan bekor qilindi, hisobingiz tuzatildi.`,
+    body: `${txn.amount.toLocaleString("ru-RU")} sömlik amal admin tomonidan bekor qilindi, hisobingiz tuzatildi.`,
     url: siteUrl("/wallet"),
-    buttonLabel: "Tranzaksiyalarni ko'rish",
+    buttonLabel: "Tranzaksiyalarni köriş",
   });
 
   return NextResponse.json({ ok: true });

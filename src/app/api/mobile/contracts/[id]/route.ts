@@ -25,7 +25,7 @@ export async function POST(
   const { id } = await params;
   const parsed = contractActionSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: parsed.error.issues[0]?.message ?? "Noto'g'ri amal" }, { status: 400 });
+    return mobileJson({ error: parsed.error.issues[0]?.message ?? "Notöğri amal" }, { status: 400 });
   }
   const r = await contractAction(id, me, parsed.data);
   if (!r.ok) return mobileJson({ error: r.error }, { status: r.status });

@@ -15,7 +15,7 @@ export function MessageSourceBadge({ source }: { source?: MessageSource }) {
             : "bg-sky-500/80 text-white";
   return (
     <span
-      title="Xabar ko'rinadigan platforma(lar) — faqat adminga ko'rinadi"
+      title="Xabar körinadigan platforma(lar) — faqat adminga körinadi"
       className={`mr-1.5 inline-flex items-center rounded-full px-1.5 py-px align-middle text-[9px] font-semibold leading-tight ${cls}`}
     >
       {sourceLabel(source)}

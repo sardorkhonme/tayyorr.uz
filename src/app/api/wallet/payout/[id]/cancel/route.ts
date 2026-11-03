@@ -20,7 +20,7 @@ export async function POST(
     return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   }
   if (p.status !== "PENDING") {
-    return NextResponse.json({ error: "Bu so'rovni bekor qilib bo'lmaydi" }, { status: 400 });
+    return NextResponse.json({ error: "Bu sörovni bekor qilib bölmaydi" }, { status: 400 });
   }
 
   await db.$transaction(async (tx) => {
@@ -47,7 +47,7 @@ export async function POST(
         type: "REFUND",
         amount: p.amount,
         method: "CARD",
-        note: "Yechib olish so'rovi bekor qilindi",
+        note: "Yeçib oliş sörovi bekor qilindi",
       },
     });
   });
@@ -55,15 +55,15 @@ export async function POST(
   await logActivity(
     session.user.id,
     "PAYOUT_CANCEL",
-    `Yechish so'rovini bekor qildi: ${p.amount.toLocaleString("ru-RU")} so'm`,
+    `Yeçiş sörovini bekor qildi: ${p.amount.toLocaleString("ru-RU")} söm`,
     { amount: p.amount, payoutId: id },
   );
   await logToGroup(
     "payouts",
-    "↩️ Yechish so'rovi (o'zi) bekor qilindi",
+    "↩️ Yeçiş sörovi (özi) bekor qilindi",
     [
-      `Summa: ${p.amount.toLocaleString("ru-RU")} so'm`,
-      `Foydalanuvchi ID: ${session.user.id}`,
+      `Summa: ${p.amount.toLocaleString("ru-RU")} söm`,
+      `Foydalanuvçi ID: ${session.user.id}`,
     ],
     siteUrl(`/sardorxon/admin/users/${session.user.id}`),
   );

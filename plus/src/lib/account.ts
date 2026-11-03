@@ -53,13 +53,13 @@ export async function getAccount(userId: string): Promise<AccountData | null> {
 
 const birthDate = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Tug'ilgan sanani tanlang")
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Tuğilgan sanani tanlang")
   .transform((v, ctx) => {
     const [y, m, d] = v.split("-").map(Number);
     const date = new Date(Date.UTC(y, m - 1, d));
     const age = (Date.now() - date.getTime()) / (365.25 * 24 * 3600 * 1000);
     if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || age < 10 || age > 100) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Tug'ilgan sana noto'g'ri" });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Tuğilgan sana notöğri" });
       return z.NEVER;
     }
     return date;
@@ -76,7 +76,7 @@ const schema = z.object({
     .trim()
     .min(3, "Login kamida 3 belgi")
     .max(30)
-    .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat lotin harf, raqam, _ va . dan iborat bo'lsin"),
+    .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat lotin harf, raqam, _ va . dan iborat bölsin"),
   newPassword: z.union([z.literal(""), z.string().min(6, "Parol kamida 6 belgi").max(100)]).optional(),
 });
 
@@ -86,7 +86,7 @@ const DATA_URL = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/;
 
 export async function saveAccount(userId: string, input: AccountInput, logLabel: string) {
   const parsed = schema.safeParse(input);
-  if (!parsed.success) throw new AccountError(parsed.error.issues[0]?.message ?? "Ma'lumotlarni tekshiring");
+  if (!parsed.success) throw new AccountError(parsed.error.issues[0]?.message ?? "Maʼlumotlarni tekşiring");
   const v = parsed.data;
 
   const me = await db.user.findUnique({
@@ -94,21 +94,21 @@ export async function saveAccount(userId: string, input: AccountInput, logLabel:
     select: { login: true, avatarUrl: true, bannedUntil: true },
   });
   if (!me) throw new AccountError("Hisob topilmadi");
-  if (me.bannedUntil && me.bannedUntil > new Date()) throw new AccountError("Hisobingiz vaqtincha cheklangan");
+  if (me.bannedUntil && me.bannedUntil > new Date()) throw new AccountError("Hisobingiz vaqtinça çeklangan");
 
   if (v.login !== me.login) {
     const clash = await db.user.findFirst({
       where: { login: { equals: v.login, mode: "insensitive" }, NOT: { id: userId } },
       select: { id: true },
     });
-    if (clash) throw new AccountError("Bu login band — boshqasini tanlang");
+    if (clash) throw new AccountError("Bu login band — boşqasini tanlang");
   }
 
   // rasm: yangi tanlangan bo'lsa (kichraytirilgan data URL) — R2 ga yuklanadi
   let avatarUrl: string | undefined;
   const m = v.avatar ? DATA_URL.exec(v.avatar) : null;
   if (m) {
-    if (!r2Configured()) throw new AccountError("Rasm yuklash vaqtincha ishlamayapti");
+    if (!r2Configured()) throw new AccountError("Rasm yuklaş vaqtinça işlamayapti");
     const buf = Buffer.from(m[2], "base64");
     if (buf.length > 2 * 1024 * 1024) throw new AccountError("Rasm hajmi juda katta");
     const ext = m[1] === "jpeg" ? "jpg" : m[1];

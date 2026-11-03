@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   }
 
   const data = parsed.data;

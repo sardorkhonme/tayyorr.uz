@@ -14,7 +14,7 @@ export function contractView(
     // shartnomada muddat bo'lmasa — buyurtma muddati amal qiladi
     deadline: iso(c.deadline ?? order.deadline),
     preparerId: c.preparerId,
-    preparerName: c.preparer.name ?? c.preparer.login ?? "Tayyorlovchi",
+    preparerName: c.preparer.name ?? c.preparer.login ?? "Tayyorlovçi",
     createdAt: c.createdAt.toISOString(),
     deliveredAt: iso(c.deliveredAt),
     reviewDueAt: iso(c.reviewDueAt),

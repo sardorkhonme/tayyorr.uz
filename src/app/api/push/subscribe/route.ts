@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri obuna" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri obuna" }, { status: 400 });
   }
   const { endpoint, keys } = parsed.data;
 

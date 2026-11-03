@@ -42,8 +42,8 @@ export async function softDeleteOrder(
           method: "ESCROW",
           note:
             by === "ADMIN"
-              ? "Buyurtma admin tomonidan o'chirildi — bloklangan mablag' qaytdi"
-              : "Buyurtma o'chirildi — bloklangan mablag' qaytdi",
+              ? "Buyurtma admin tomonidan öçirildi — bloklangan mablağ qaytdi"
+              : "Buyurtma öçirildi — bloklangan mablağ qaytdi",
         },
       });
     }
@@ -68,15 +68,15 @@ export async function softDeleteOrder(
   // buyurtma hech kim tomonidan bajarilmay o'chirildi — ariza yuborganlarga
   // sarflagan starlari qaytariladi (bu ularning aybi emas)
   if (order.status !== "DONE") {
-    await refundOfferStars(orderId, "o'chirildi");
+    await refundOfferStars(orderId, "öçirildi");
   }
 
   await logToGroup(
     "orders",
-    "🗑 Buyurtma o'chirildi",
+    "🗑 Buyurtma öçirildi",
     [
       `«${order.title}»`,
-      `Kim: ${by === "ADMIN" ? "Admin" : "Buyurtmachi"}`,
+      `Kim: ${by === "ADMIN" ? "Admin" : "Buyurtmaçi"}`,
       reason ? `Sabab: ${reason}` : "",
       `Buyurtma ID: ${orderId}`,
     ].filter(Boolean),

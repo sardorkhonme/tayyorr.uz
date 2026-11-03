@@ -29,7 +29,7 @@ export async function POST(
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ma'lumot noto'g'ri" },
+      { error: parsed.error.issues[0]?.message ?? "Maʼlumot notöğri" },
       { status: 400 },
     );
   }
@@ -47,7 +47,7 @@ export async function POST(
   if (isStar) {
     const current = await db.user.findUnique({ where: { id }, select: { starBalance: true } });
     if (!positive && (current?.starBalance ?? 0) < amount) {
-      return NextResponse.json({ error: "Foydalanuvchida yetarli star yo'q" }, { status: 400 });
+      return NextResponse.json({ error: "Foydalanuvçida yetarli star yöq" }, { status: 400 });
     }
   }
 
@@ -81,11 +81,11 @@ export async function POST(
       senderId: supportId,
       body: isStar
         ? `⭐ Hisobingiz${positive ? "ga" : "dan"} ${amount} star ` +
-          `${positive ? "qo'shildi" : "ayirildi"}.\n\nSabab: ${reason}`
+          `${positive ? "qöşildi" : "ayirildi"}.\n\nSabab: ${reason}`
         : // hamyon umumiy — xabar tayyorr.uz va tayyorr+ da ko'rinadi
           withSource(
-            `💰 Hisobingiz${positive ? "ga" : "dan"} ${amount.toLocaleString("ru-RU")} so'm ` +
-              `${positive ? "qo'shildi" : "ayirildi"}.\n\nSabab: ${reason}`,
+            `💰 Hisobingiz${positive ? "ga" : "dan"} ${amount.toLocaleString("ru-RU")} söm ` +
+              `${positive ? "qöşildi" : "ayirildi"}.\n\nSabab: ${reason}`,
             "ikkalasi",
           ),
       system: false,
@@ -97,10 +97,10 @@ export async function POST(
     isStar ? "stars" : "payments",
     isStar
       ? positive
-        ? "➕ Admin star qo'shdi"
+        ? "➕ Admin star qöşdi"
         : "➖ Admin star ayirdi"
       : positive
-        ? "➕ Admin balans qo'shdi"
+        ? "➕ Admin balans qöşdi"
         : "➖ Admin balans ayirdi",
     [
       `Foydalanuvchi: ${userLabel(user)}`,
@@ -108,13 +108,13 @@ export async function POST(
       user.walletCode ? `Hisob kodi: ${user.walletCode}` : "",
       isStar
         ? `Summa: ${amount} ⭐`
-        : `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+        : `Summa: ${amount.toLocaleString("ru-RU")} söm`,
       isStar
         ? `Yangi star balansi: ${updated.starBalance} ⭐`
-        : `Yangi balans: ${updated.balance.toLocaleString("ru-RU")} so'm`,
+        : `Yangi balans: ${updated.balance.toLocaleString("ru-RU")} söm`,
       `Sabab: ${reason}`,
-      `Foydalanuvchiga xabar yuborildi: ${notify ? "ha" : "yo'q"}`,
-      `Foydalanuvchi ID: ${user.id}`,
+      `Foydalanuvçiga xabar yuborildi: ${notify ? "ha" : "yöq"}`,
+      `Foydalanuvçi ID: ${user.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${user.id}`),
   );

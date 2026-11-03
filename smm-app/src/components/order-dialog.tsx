@@ -56,7 +56,7 @@ export function OrderDialog({
     const data = await res?.json().catch(() => null);
     setBusy(false);
     if (!res?.ok) {
-      setError(data?.error ?? "Tarmoq xatosi, qayta urinib ko'ring");
+      setError(data?.error ?? "Tarmoq xatosi, qayta urinib köring");
       return;
     }
     onOrdered(data.balance);
@@ -88,7 +88,7 @@ export function OrderDialog({
               ))}
             </div>
           </div>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopish">
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopiş">
             <Icon name="close" />
           </button>
         </div>
@@ -105,20 +105,20 @@ export function OrderDialog({
               <Icon name="check" className="h-8 w-8" strokeWidth={2.4} />
             </div>
             <p className="font-display text-xl font-bold text-zinc-900">Buyurtma qabul qilindi!</p>
-            <p className="text-sm text-zinc-500">Holatini «Buyurtmalarim» bo'limida kuzatishingiz mumkin.</p>
+            <p className="text-sm text-zinc-500">Holatini «Buyurtmalarim» bölimida kuzatişingiz mumkin.</p>
             <div className="flex gap-2">
-              <button className="btn-ghost flex-1" onClick={onClose}>Yopish</button>
+              <button className="btn-ghost flex-1" onClick={onClose}>Yopiş</button>
               <Link href="/orders" className="btn-primary flex-1">Buyurtmalarim</Link>
             </div>
           </div>
         ) : !loggedIn ? (
           <div className="space-y-3 text-center">
             <p className="text-zinc-600">
-              Buyurtma berish uchun hisobingizga kiring. Bitta tayyorr hisobi — barcha xizmatlarda ishlaydi.
+              Buyurtma beriş uçun hisobingizga kiring. Bitta tayyorr hisobi — barça xizmatlarda işlaydi.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Link href="/register" className="btn-primary flex-1 !py-3.5">Ro&apos;yxatdan o&apos;tish</Link>
-              <Link href="/login" className="btn-ghost flex-1 !py-3.5">Kirish</Link>
+              <Link href="/register" className="btn-primary flex-1 !py-3.5">Röyxatdan ötiş</Link>
+              <Link href="/login" className="btn-ghost flex-1 !py-3.5">Kiriş</Link>
             </div>
           </div>
         ) : (
@@ -137,7 +137,7 @@ export function OrderDialog({
             </div>
             <div>
               <label className="label" htmlFor="qty">
-                2. Nechta kerak? <span className="font-normal text-zinc-400">({num(service.min)} – {num(service.max)})</span>
+                2. Neçta kerak? <span className="font-normal text-zinc-400">({num(service.min)} – {num(service.max)})</span>
               </label>
               <input
                 id="qty"
@@ -165,7 +165,7 @@ export function OrderDialog({
               </div>
               {quantity && !qtyOk && (
                 <p className="mt-2 text-sm text-amber-600">
-                  {num(service.min)} dan {num(service.max)} gacha son kiriting
+                  {num(service.min)} dan {num(service.max)} gaça son kiriting
                 </p>
               )}
             </div>
@@ -183,21 +183,21 @@ export function OrderDialog({
                 <span>{som(balance)}</span>
               </div>
               <div className="mt-3 flex items-end justify-between border-t border-zinc-200 pt-3">
-                <span className="font-medium text-zinc-700">To&apos;lanadi</span>
+                <span className="font-medium text-zinc-700">Tölanadi</span>
                 <span className="font-display text-3xl font-bold text-zinc-900">{qtyOk ? som(total) : "—"}</span>
               </div>
             </div>
 
             {qtyOk && !enough && (
               <p className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800">
-                Mablag' yetarli emas.{" "}
-                <TopupButton className="font-semibold underline">Hamyonni to'ldirish</TopupButton>
+                Mablağ yetarli emas.{" "}
+                <TopupButton className="font-semibold underline">Hamyonni töldiriş</TopupButton>
               </p>
             )}
             {error && <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-600">{error}</p>}
 
             <button className="btn-primary w-full !py-4 !text-base" disabled={busy || !qtyOk || !enough || !link.trim()}>
-              {busy ? "Yuborilmoqda…" : "Buyurtma berish"}
+              {busy ? "Yuborilmoqda…" : "Buyurtma beriş"}
             </button>
             <p className="text-center text-xs text-zinc-500">
               Buyurtma bajarilmasa yoki qisman bajarilsa — pul hamyoningizga avtomatik qaytadi.

@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 
 const TYPES = [
   ["PRESENTATION", "Prezentatsiya"],
-  ["COURSE_WORK", "Kurs ishi"],
+  ["COURSE_WORK", "Kurs işi"],
   ["REFERAT", "Referat"],
   ["ESSAY", "Esse"],
-  ["DIPLOMA", "Diplom ishi"],
-  ["OTHER", "Boshqa"],
+  ["DIPLOMA", "Diplom işi"],
+  ["OTHER", "Boşqa"],
 ] as const;
 
 /** Hozirgi vaqt <input type="datetime-local"> formatida (o'tgan vaqtni tanlamaslik uchun). */
@@ -107,7 +107,7 @@ export function NewOrderForm() {
             minLength={10}
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
-            placeholder="Mavzu, talablar, hajm, formatlash..."
+            placeholder="Mavzu, talablar, hajm, formatlaş..."
           />
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -122,7 +122,7 @@ export function NewOrderForm() {
             />
           </div>
           <div>
-            <label className="label">Byudjet (so'm)</label>
+            <label className="label">Byudjet (söm)</label>
             <input
               className="input"
               type="number"
@@ -136,7 +136,7 @@ export function NewOrderForm() {
         {err && <p className="text-sm text-red-400">{err}</p>}
 
         <button className="btn-primary" disabled={busy}>
-          {busy ? "..." : "Buyurtmani e'lon qilish"}
+          {busy ? "..." : "Buyurtmani eʼlon qiliş"}
         </button>
       </form>
     </div>

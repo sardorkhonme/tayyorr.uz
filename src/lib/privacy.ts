@@ -5,68 +5,68 @@ import type { TermsSection } from "@/lib/terms";
 export const PRIVACY_UPDATED = "2026-10-11";
 
 export const PRIVACY_INTRO =
-  "Ushbu siyosat tayyorr.uz (veb-sayt va Android ilova) qaysi ma'lumotlarni to'plashi, " +
-  "ulardan qanday foydalanishi va qanday himoya qilishini tushuntiradi. Biz ma'lumotlaringizni " +
-  "sotmaymiz va reklama maqsadida uchinchi shaxslarga bermaymiz.";
+  "Uşbu siyosat tayyorr.uz (veb-sayt va Android ilova) qaysi maʼlumotlarni töplaşi, " +
+  "ulardan qanday foydalanişi va qanday himoya qilişini tuşuntiradi. Biz maʼlumotlaringizni " +
+  "sotmaymiz va reklama maqsadida uçinçi şaxslarga bermaymiz.";
 
 export const PRIVACY: TermsSection[] = [
   {
-    title: "1. Google hisobidan olinadigan ma'lumotlar",
+    title: "1. Google hisobidan olinadigan maʼlumotlar",
     body: "Google orqali kirganingizda faqat quyidagilarni olamiz:",
     points: [
-      "ism va familiya, email manzil, profil rasmi — hisobingizni yaratish va sizni tanish uchun;",
-      "tug'ilgan kun — faqat Google oynasida bunga ruxsat bersangiz. U hisobingizdagi yosh ma'lumotini tekshirish uchun ishlatiladi va boshqa foydalanuvchilarga ko'rsatilmaydi.",
-      "Google hisobingizdagi boshqa ma'lumotlar (kontaktlar, fayllar, xatlar va h.k.) olinmaydi.",
+      "ism va familiya, email manzil, profil rasmi — hisobingizni yaratiş va sizni taniş uçun;",
+      "tuğilgan kun — faqat Google oynasida bunga ruxsat bersangiz. U hisobingizdagi yoş maʼlumotini tekşiriş uçun işlatiladi va boşqa foydalanuvçilarga körsatilmaydi.",
+      "Google hisobingizdagi boşqa maʼlumotlar (kontaktlar, fayllar, xatlar va h.k.) olinmaydi.",
     ],
   },
   {
-    title: "2. O'zingiz kiritadigan ma'lumotlar",
+    title: "2. Özingiz kiritadigan maʼlumotlar",
     points: [
-      "ism, familiya, login, parol (shifrlangan holda saqlanadi), tug'ilgan sana, rol, o'zingiz haqingizda ma'lumot va profil rasmi;",
-      "buyurtmalar, takliflar, shartnomalar, sharhlar va baholar;",
-      "chatdagi xabarlar va yuborilgan fayllar (rasm, video, audio, hujjat);",
-      "kartaga yechib olish so'rovida ko'rsatgan karta raqami va karta egasi nomi.",
+      "ism, familiya, login, parol (şifrlangan holda saqlanadi), tuğilgan sana, rol, özingiz haqingizda maʼlumot va profil rasmi;",
+      "buyurtmalar, takliflar, şartnomalar, şarhlar va baholar;",
+      "çatdagi xabarlar va yuborilgan fayllar (rasm, video, audio, hujjat);",
+      "kartaga yeçib oliş sörovida körsatgan karta raqami va karta egasi nomi.",
     ],
   },
   {
-    title: "3. To'lovlar",
+    title: "3. Tölovlar",
     body:
-      "Hisobni to'ldirish Click to'lov tizimining sahifasida amalga oshiriladi — karta ma'lumotlari tayyorr.uz'ga kelmaydi va saqlanmaydi. " +
-      "Biz faqat to'lov summasi, holati va vaqtini saqlaymiz.",
+      "Hisobni töldiriş Click tölov tizimining sahifasida amalga oşiriladi — karta maʼlumotlari tayyorr.uz'ga kelmaydi va saqlanmaydi. " +
+      "Biz faqat tölov summasi, holati va vaqtini saqlaymiz.",
   },
   {
-    title: "4. Texnik ma'lumotlar",
+    title: "4. Texnik maʼlumotlar",
     body:
-      "Xavfsizlik va firibgarlikning oldini olish uchun kirishlar va muhim amallar vaqtida IP manzil va brauzer/qurilma ma'lumoti (User-Agent) saqlanadi. " +
-      "Bildirishnomalar yoqilgan bo'lsa — ularni yetkazish uchun kerakli texnik identifikator saqlanadi. " +
-      "Telegram botni ulasangiz — Telegram chat identifikatoringiz va foydalanuvchi nomingiz saqlanadi.",
+      "Xavfsizlik va firibgarlikning oldini oliş uçun kirişlar va muhim amallar vaqtida IP manzil va brauzer/qurilma maʼlumoti (User-Agent) saqlanadi. " +
+      "Bildirişnomalar yoqilgan bölsa — ularni yetkaziş uçun kerakli texnik identifikator saqlanadi. " +
+      "Telegram botni ulasangiz — Telegram çat identifikatoringiz va foydalanuvçi nomingiz saqlanadi.",
   },
   {
-    title: "5. Ma'lumotlardan foydalanish maqsadi",
+    title: "5. Maʼlumotlardan foydalaniş maqsadi",
     points: [
-      "hisobingizni yuritish va xizmatni ko'rsatish (buyurtma, taklif, chat, hamyon);",
-      "yangi xabar va buyurtma holati haqida bildirishnoma yuborish;",
-      "xavfsizlik, firibgarlik va qoidabuzarliklarning oldini olish, shikoyatlarni ko'rib chiqish;",
-      "qonun talab qilgan hollarda vakolatli organlarga ma'lumot berish.",
+      "hisobingizni yuritiş va xizmatni körsatiş (buyurtma, taklif, çat, hamyon);",
+      "yangi xabar va buyurtma holati haqida bildirişnoma yuboriş;",
+      "xavfsizlik, firibgarlik va qoidabuzarliklarning oldini oliş, şikoyatlarni körib çiqiş;",
+      "qonun talab qilgan hollarda vakolatli organlarga maʼlumot beriş.",
     ],
   },
   {
-    title: "6. Kim ko'radi",
+    title: "6. Kim köradi",
     body:
-      "Profilingizdagi ism, login, rasm, reyting va siz yozgan ma'lumot boshqa foydalanuvchilarga ko'rinadi; email manzil qisman yashirilgan holda ko'rsatiladi. " +
-      "Chat xabarlari faqat suhbat ishtirokchilariga ko'rinadi (shikoyat bo'lganda — moderatorga). " +
-      "Ma'lumotlar xizmatni ta'minlovchi hamkorlar serverlarida (ma'lumotlar bazasi va fayl saqlash) shifrlangan aloqa orqali saqlanadi.",
+      "Profilingizdagi ism, login, rasm, reyting va siz yozgan maʼlumot boşqa foydalanuvçilarga körinadi; email manzil qisman yaşirilgan holda körsatiladi. " +
+      "Çat xabarlari faqat suhbat iştirokçilariga körinadi (şikoyat bölganda — moderatorga). " +
+      "Maʼlumotlar xizmatni taʼminlovçi hamkorlar serverlarida (maʼlumotlar bazasi va fayl saqlaş) şifrlangan aloqa orqali saqlanadi.",
   },
   {
-    title: "7. Saqlash muddati va o'chirish",
+    title: "7. Saqlaş muddati va öçiriş",
     body:
-      "Ma'lumotlar hisobingiz faol bo'lgan davrda saqlanadi. Profil ma'lumotlarini istalgan vaqtda o'zgartirishingiz mumkin. " +
-      "Hisobni va unga tegishli ma'lumotlarni o'chirishni so'rash uchun saytdagi yoki ilovadagi qo'llab-quvvatlash chatiga (\"tayyorr.uz support\") yozing — so'rov 30 kun ichida bajariladi " +
-      "(qonunan saqlanishi shart bo'lgan to'lov yozuvlari bundan mustasno).",
+      "Maʼlumotlar hisobingiz faol bölgan davrda saqlanadi. Profil maʼlumotlarini istalgan vaqtda özgartirişingiz mumkin. " +
+      "Hisobni va unga tegişli maʼlumotlarni öçirişni söraş uçun saytdagi yoki ilovadagi qöllab-quvvatlaş çatiga (\"tayyorr.uz support\") yozing — sörov 30 kun içida bajariladi " +
+      "(qonunan saqlanişi şart bölgan tölov yozuvlari bundan mustasno).",
   },
   {
-    title: "8. Bog'lanish",
+    title: "8. Boğlaniş",
     body:
-      "Savollar va so'rovlar uchun — sayt yoki ilovadagi \"Xabarlar\" bo'limidagi \"tayyorr.uz support\" suhbati.",
+      "Savollar va sörovlar uçun — sayt yoki ilovadagi \"Xabarlar\" bölimidagi \"tayyorr.uz support\" suhbati.",
   },
 ];

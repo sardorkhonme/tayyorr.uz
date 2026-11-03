@@ -57,7 +57,7 @@ export function HeroVideoManager({
   }
 
   async function remove() {
-    if (!confirm("Hero fon videosi o'chirilsinmi?")) return;
+    if (!confirm("Hero fon videosi öçirilsinmi?")) return;
     setBusy(true);
     await fetch("/api/admin/hero-video", { method: "DELETE" });
     setUrl("");
@@ -82,14 +82,14 @@ export function HeroVideoManager({
     <div className="rounded-xl border border-dashed border-white/15 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm font-medium text-white">
-          Hero fon videosi (bosh sahifa, sarlavha ortida)
+          Hero fon videosi (boş sahifa, sarlavha ortida)
         </div>
         {url && (
           <button
             type="button"
             onClick={toggle}
             disabled={busy}
-            title={active ? "O'chirish (nofaol qilish)" : "Yoqish (faollashtirish)"}
+            title={active ? "Öçiriş (nofaol qiliş)" : "Yoqiş (faollaştiriş)"}
             className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${
               active
                 ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
@@ -103,9 +103,9 @@ export function HeroVideoManager({
       </div>
       <p className="mb-3 text-xs text-zinc-500">
         Sahifaning eng yuqorisida, sarlavha matni ortida aylanib turadigan
-        fon video. Kompyuterda o&apos;ng chetga, telefonda pastga qarab
-        xiralashib fonga singib ketadi. Faqat o&apos;chirmasdan vaqtincha
-        yashirish uchun yuqoridagi tugmadan foydalaning.
+        fon video. Kompyuterda öng çetga, telefonda pastga qarab
+        xiralaşib fonga singib ketadi. Faqat öçirmasdan vaqtinça
+        yaşiriş uçun yuqoridagi tugmadan foydalaning.
       </p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
@@ -114,7 +114,7 @@ export function HeroVideoManager({
             <video src={url} className="aspect-video w-full object-cover" muted />
           ) : (
             <div className="flex aspect-video items-center justify-center text-xs text-zinc-600">
-              video yo&apos;q
+              video yöq
             </div>
           )}
         </div>
@@ -136,7 +136,7 @@ export function HeroVideoManager({
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
-              {uploading ? "Yuklanmoqda..." : url ? "Videoni almashtirish" : "Video yuklash"}
+              {uploading ? "Yuklanmoqda..." : url ? "Videoni almaştiriş" : "Video yuklaş"}
             </button>
             {url && (
               <button
@@ -145,7 +145,7 @@ export function HeroVideoManager({
                 disabled={busy}
                 onClick={remove}
               >
-                O&apos;chirish
+                Öçiriş
               </button>
             )}
           </div>

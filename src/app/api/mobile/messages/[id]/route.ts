@@ -75,7 +75,7 @@ export async function GET(
     blockedByMe: bs.iBlocked,
     other: other && {
       id: other.id,
-      name: other.name ?? other.login ?? "Foydalanuvchi",
+      name: other.name ?? other.login ?? "Foydalanuvçi",
       login: other.login,
       image: hidden ? null : (other.avatarUrl ?? other.image ?? null),
       isSupport: other.isSupport,
@@ -113,7 +113,7 @@ export async function POST(
 
   const parsed = sendSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success || (!parsed.data.body && !parsed.data.file)) {
-    return mobileJson({ error: "Xabar yoki fayl bo'lishi kerak" }, { status: 400 });
+    return mobileJson({ error: "Xabar yoki fayl bölişi kerak" }, { status: 400 });
   }
 
   const supportId = await getSupportUserId();
@@ -128,12 +128,12 @@ export async function POST(
     const bs = await blockState(me, otherUserId(conv, me));
     if (bs.iBlocked) {
       return mobileJson(
-        { error: "Siz bu foydalanuvchini bloklagansiz. Avval blokdan chiqaring." },
+        { error: "Siz bu foydalanuvçini bloklagansiz. Avval blokdan çiqaring." },
         { status: 403 },
       );
     }
     if (bs.blockedMe) {
-      return mobileJson({ error: 'Bu foydalanuvchi sizni bloklagan.' }, { status: 403 });
+      return mobileJson({ error: 'Bu foydalanuvçi sizni bloklagan.' }, { status: 403 });
     }
   }
 
@@ -165,7 +165,7 @@ export async function DELETE(
   const otherId = otherUserId(conv, me);
   const other = await db.user.findUnique({ where: { id: otherId }, select: { isSupport: true } });
   if (other?.isSupport) {
-    return mobileJson({ error: "«tayyorr.uz support» suhbatini o'chirib bo'lmaydi" }, { status: 400 });
+    return mobileJson({ error: "«tayyorr.uz support» suhbatini öçirib bölmaydi" }, { status: 400 });
   }
 
   await db.conversation.update({ where: { id }, data: { deletedByUsersAt: new Date() } });

@@ -23,10 +23,10 @@ export default function NotFound() {
         Sahifa topilmadi
       </h1>
       <p className="relative max-w-sm text-sm text-zinc-500">
-        Manzil noto'g'ri yoki sahifa ko'chirilgan bo'lishi mumkin.
+        Manzil notöğri yoki sahifa köçirilgan bölişi mumkin.
       </p>
       <Link href="/" className="btn-primary relative mt-2">
-        Bosh sahifa
+        Boş sahifa
       </Link>
     </main>
   );

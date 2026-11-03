@@ -25,7 +25,7 @@ export function WalletCode({ code }: { code: string }) {
       <button
         type="button"
         onClick={copy}
-        aria-label="Nusxa olish"
+        aria-label="Nusxa oliş"
         className="shrink-0 text-zinc-400 transition hover:text-white"
       >
         {done ? (

@@ -26,7 +26,7 @@ export function DiscountsBoard({
       services.map((s) => ({
         ...s,
         ...splitServiceName(s.name),
-        label: `${PLATFORMS.find((p) => p.key === s.platform)?.name ?? "Boshqa"} · ${
+        label: `${PLATFORMS.find((p) => p.key === s.platform)?.name ?? "Boşqa"} · ${
           KINDS.find((k) => k.key === kindOf(s.category, s.name))?.label ?? ""
         }`,
       })),
@@ -47,12 +47,12 @@ export function DiscountsBoard({
         <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-rose-500">
           <Icon name="tag" className="h-8 w-8" />
         </span>
-        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Hozircha chegirmalar yo&apos;q</p>
+        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Hozirça çegirmalar yöq</p>
         <p className="mx-auto mt-3 max-w-md text-zinc-500">
-          Yangi chegirmalar tez-tez qo&apos;shiladi — kuzatib boring. Hozircha barcha xizmatlarni ko&apos;rishingiz mumkin.
+          Yangi çegirmalar tez-tez qöşiladi — kuzatib boring. Hozirça barça xizmatlarni körişingiz mumkin.
         </p>
         <Link href="/" className="btn-primary mt-6 inline-flex">
-          Barcha xizmatlar
+          Barça xizmatlar
         </Link>
       </section>
     );
@@ -100,7 +100,7 @@ export function DiscountsBoard({
       {list.length > shown && (
         <div className="text-center">
           <button type="button" className="btn-ghost" onClick={() => setShown((v) => v + PAGE)}>
-            Yana ko&apos;rsatish ({list.length - shown})
+            Yana körsatiş ({list.length - shown})
           </button>
         </div>
       )}

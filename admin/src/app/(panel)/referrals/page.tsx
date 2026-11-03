@@ -18,10 +18,10 @@ export default async function AdminReferrals() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-white">Tashriflar</h1>
+        <h1 className="text-xl font-semibold text-white">Taşriflar</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Reklama/kanal uchun nomlangan havola yarating — necha kishi ochgani
-          va ulardan qanchasi ro'yxatdan o'tgani shu yerda ko'rinadi.
+          Reklama/kanal uçun nomlangan havola yarating — neça kişi oçgani
+          va ulardan qançasi röyxatdan ötgani şu yerda körinadi.
         </p>
       </div>
 
@@ -36,8 +36,8 @@ export default async function AdminReferrals() {
               <th className="px-4 py-2">Nomi</th>
               <th className="px-4 py-2">Havola</th>
               <th className="px-4 py-2">Yaratilgan</th>
-              <th className="px-4 py-2">Tashriflar</th>
-              <th className="px-4 py-2">Ro'yxatdan o'tgan</th>
+              <th className="px-4 py-2">Taşriflar</th>
+              <th className="px-4 py-2">Röyxatdan ötgan</th>
               <th className="px-4 py-2"></th>
             </tr>
           </thead>
@@ -75,14 +75,14 @@ export default async function AdminReferrals() {
                       href={`/referrals/${l.id}`}
                       className="text-xs text-indigo-400 hover:underline"
                     >
-                      Ochish
+                      Oçiş
                     </Link>
                     <AdminPostButton
                       url={`/api/admin/referrals/${l.id}`}
                       method="DELETE"
-                      label="O'chirish"
+                      label="Öçiriş"
                       className="text-xs text-red-400 hover:text-red-300"
-                      confirmText="Havolani o'chirish — tashrif va ro'yxatdan o'tganlar statistikasi yo'qoladi (foydalanuvchilar o'zi o'chmaydi). Davom etilsinmi?"
+                      confirmText="Havolani öçiriş — taşrif va röyxatdan ötganlar statistikasi yöqoladi (foydalanuvçilar özi öçmaydi). Davom etilsinmi?"
                     />
                   </div>
                 </td>

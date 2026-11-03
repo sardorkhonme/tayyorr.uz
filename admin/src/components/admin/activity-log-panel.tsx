@@ -76,7 +76,7 @@ export function ActivityLogPanel({ userId }: { userId: string }) {
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           className="input sm:max-w-xs"
-          placeholder="Matn bo'yicha qidirish…"
+          placeholder="Matn böyiça qidiriş…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -105,7 +105,7 @@ export function ActivityLogPanel({ userId }: { userId: string }) {
             value={action}
             onChange={(e) => setAction(e.target.value)}
           >
-            <option value="">— barcha turlar</option>
+            <option value="">— barça turlar</option>
             {groupActions.map((a) => (
               <option key={a} value={a}>
                 {activityLabel(a)}
@@ -154,7 +154,7 @@ export function ActivityLogPanel({ userId }: { userId: string }) {
           disabled={loading}
           onClick={() => load(page + 1, true)}
         >
-          {loading ? "..." : "Ko'proq ko'rsatish"}
+          {loading ? "..." : "Köproq körsatiş"}
         </button>
       )}
     </section>

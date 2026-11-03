@@ -15,13 +15,13 @@ export async function chooseRole(userId: string, role: Role, via: "sayt" | "mobi
     select: { id: true, role: true, login: true, firstName: true, lastName: true, name: true, email: true },
   });
   if (!u) return { error: "Hisob topilmadi", status: 404 } as const;
-  if (!u.login) return { error: "Avval profilni to'ldiring", status: 400 } as const;
+  if (!u.login) return { error: "Avval profilni töldiring", status: 400 } as const;
   if (u.role) return { ok: true } as const;
 
   const upd = await db.user.updateMany({ where: { id: userId, role: null }, data: { role } });
   if (upd.count !== 1) return { ok: true } as const;
 
-  const label = role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi";
+  const label = role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi";
   await logActivity(userId, "PROFILE_UPDATE", `Rol tanlandi — ${label} (${via})`);
   await logToGroup(
     "registrations",

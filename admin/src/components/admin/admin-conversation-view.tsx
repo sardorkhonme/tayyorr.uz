@@ -134,7 +134,7 @@ export function AdminConversationView({
   }, [conversationId, right.id]);
 
   async function delMsg(msgId: string) {
-    if (!window.confirm("Bu xabar butunlay o'chiriladi. Davom etilsinmi?")) return;
+    if (!window.confirm("Bu xabar butunlay öçiriladi. Davom etilsinmi?")) return;
     setDeleting(msgId);
     try {
       const res = await fetch(`/api/admin/messages/${msgId}`, { method: "DELETE" });
@@ -149,7 +149,7 @@ export function AdminConversationView({
       {jumpMiss && (
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
           <span className="rounded-full bg-zinc-900/90 px-3 py-1.5 text-xs text-white shadow-lg">
-            Asl xabar topilmadi (o&apos;chirilgan yoki juda eski)
+            Asl xabar topilmadi (öçirilgan yoki juda eski)
           </span>
         </div>
       )}
@@ -161,7 +161,7 @@ export function AdminConversationView({
       </div>
       <div className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto rounded-xl border border-white/10 bg-[#0b0b12]/40 p-4">
         {messages.length === 0 && (
-          <p className="text-sm text-zinc-500">Xabarlar yo'q.</p>
+          <p className="text-sm text-zinc-500">Xabarlar yöq.</p>
         )}
         {messages.map((m) => {
           if (m.system) {
@@ -189,7 +189,7 @@ export function AdminConversationView({
                     onClick={() => delMsg(m.id)}
                     className="text-red-400/70 hover:text-red-400"
                   >
-                    {deleting === m.id ? "..." : "o'chirish"}
+                    {deleting === m.id ? "..." : "öçiriş"}
                   </button>
                 </div>
                 <div
@@ -203,7 +203,7 @@ export function AdminConversationView({
                 >
                   {m.deleted && (
                     <div className="text-[10px] font-semibold uppercase text-red-400">
-                      o'chirilgan
+                      öçirilgan
                     </div>
                   )}
                   {m.replyTo && (

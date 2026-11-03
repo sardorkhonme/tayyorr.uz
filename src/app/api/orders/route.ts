@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   }
   if (session.user.role !== "ORDERER") {
     return NextResponse.json(
-      { error: "Faqat buyurtma beruvchilar buyurtma qo'sha oladi" },
+      { error: "Faqat buyurtma beruvçilar buyurtma qöşa oladi" },
       { status: 403 },
     );
   }
@@ -74,14 +74,14 @@ export async function POST(req: Request) {
   const parsed = createSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Noto'g'ri ma'lumot" },
+      { error: parsed.error.issues[0]?.message ?? "Notöğri maʼlumot" },
       { status: 400 },
     );
   }
 
   const { title, type, description, deadline, budget } = parsed.data;
   if (deadline && new Date(deadline).getTime() <= Date.now()) {
-    return NextResponse.json({ error: "Muddat o'tib ketgan vaqt bo'lmasin" }, { status: 400 });
+    return NextResponse.json({ error: "Muddat ötib ketgan vaqt bölmasin" }, { status: 400 });
   }
 
   const order = await db.order.create({
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
       `«${title}»`,
       `Turi: ${type}`,
       description.length > 500 ? `${description.slice(0, 500)}…` : description,
-      budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} so'm` : "Byudjet: kelishiladi",
+      budget ? `Byudjet: ${budget.toLocaleString("ru-RU")} söm` : "Byudjet: kelişiladi",
       deadline ? `Muddat: ${shortDateTime(new Date(deadline))}` : "",
       `Buyurtmachi: ${userLabel(orderer)}`,
       orderer?.email ? `Email: ${orderer.email}` : "",

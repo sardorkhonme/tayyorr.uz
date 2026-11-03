@@ -101,7 +101,7 @@ export default async function MessagesPage() {
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-1.5 truncate font-medium text-white">
                       {isSupport && <Icon name="pin" className="h-3.5 w-3.5 shrink-0 text-indigo-400" />}
-                      {other.name ?? other.login ?? "Foydalanuvchi"}
+                      {other.name ?? other.login ?? "Foydalanuvçi"}
                     </span>
                     {last && (
                       <span className="shrink-0 text-xs text-zinc-500">

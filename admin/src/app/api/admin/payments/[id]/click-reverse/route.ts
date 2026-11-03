@@ -38,7 +38,7 @@ export async function POST(
 
   if (!clickMerchantApiConfigured()) {
     return NextResponse.json(
-      { error: "Click Merchant API sozlanmagan (CLICK_MERCHANT_USER_ID yo'q)" },
+      { error: "Click Merchant API sozlanmagan (CLICK_MERCHANT_USER_ID yöq)" },
       { status: 400 },
     );
   }
@@ -50,7 +50,7 @@ export async function POST(
   }
   if (wtx.status !== "SUCCESS" || wtx.reversedAt) {
     return NextResponse.json(
-      { error: "Faqat muvaffaqiyatli va hali bekor qilinmagan to'lovni qaytarish mumkin" },
+      { error: "Faqat muvaffaqiyatli va hali bekor qilinmagan tölovni qaytariş mumkin" },
       { status: 400 },
     );
   }
@@ -72,7 +72,7 @@ export async function POST(
     const revRes = await reverseClickPayment(paymentId);
     if (revRes.data?.error_code !== 0 && !looksAlreadyCancelled(revRes.data?.error_note)) {
       return NextResponse.json(
-        { error: revRes.data?.error_note || "Click to'lovni qaytarishni rad etdi" },
+        { error: revRes.data?.error_note || "Click tölovni qaytarişni rad etdi" },
         { status: 400 },
       );
     }

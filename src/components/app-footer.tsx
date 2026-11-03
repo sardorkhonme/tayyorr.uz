@@ -12,7 +12,7 @@ const INSTAGRAM_URL = "https://instagram.com/tayyorr.uz";
 
 const COLS: { title: string; links: { href: string; label: string }[] }[] = [
   {
-    title: "Bo'limlar",
+    title: "Bölimlar",
     links: [
       { href: "/dashboard", label: "Asosiy menyu" },
       { href: "/messages", label: "Xabarlar" },
@@ -21,11 +21,11 @@ const COLS: { title: string; links: { href: string; label: string }[] }[] = [
     ],
   },
   {
-    title: "Boshqa xizmatlar",
+    title: "Boşqa xizmatlar",
     links: [
       { href: PLUS_URL, label: "tayyorr+" },
       { href: SMM_URL, label: "Tayyorr SMM" },
-      { href: LANDING_URL, label: "Bosh sahifa" },
+      { href: LANDING_URL, label: "Boş sahifa" },
     ],
   },
   {
@@ -49,7 +49,7 @@ export function AppFooter() {
         <div>
           <Logo className="text-xl" markClassName="h-8" />
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-zinc-500">
-            Ilmiy ishlar uchun ishonchli tayyorlovchilar — buyurtma bering yoki o&apos;zingiz tayyorlab daromad qiling.
+            Ilmiy işlar uçun işonçli tayyorlovçilar — buyurtma bering yoki özingiz tayyorlab daromad qiling.
           </p>
           <div className="mt-4 flex gap-2">
             {[
@@ -91,7 +91,7 @@ export function AppFooter() {
         ))}
       </div>
       <p className="mx-auto w-full max-w-5xl border-t border-white/10 py-5 text-xs text-zinc-600">
-        © {new Date().getFullYear()} Tayyorr.uz — barcha huquqlar himoyalangan.
+        © {new Date().getFullYear()} Tayyorr.uz — barça huquqlar himoyalangan.
       </p>
     </footer>
   );

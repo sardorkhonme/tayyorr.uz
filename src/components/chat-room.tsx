@@ -92,9 +92,9 @@ interface Props {
 }
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
@@ -107,9 +107,9 @@ function pinBadge(p: OrderPin): React.ReactNode {
       {text}
     </>
   );
-  if (p.contractStatus === "SENT") return withIcon("file", "Shartnoma yuborilgan");
-  if (p.cancelState === "DISPUTED") return withIcon("scale", "Admin ko'rib chiqmoqda");
-  if (p.cancelState === "PENDING") return withIcon("alert", "Bekor qilish so'ralgan");
+  if (p.contractStatus === "SENT") return withIcon("file", "Şartnoma yuborilgan");
+  if (p.cancelState === "DISPUTED") return withIcon("scale", "Admin körib çiqmoqda");
+  if (p.cancelState === "PENDING") return withIcon("alert", "Bekor qiliş söralgan");
   return ORDER_STATUS_LABEL[p.status] ?? p.status;
 }
 
@@ -224,7 +224,7 @@ export function ChatRoom({
     setHdrMenu(null);
     if (
       !window.confirm(
-        "Suhbat ikkala tomondan ham o'chiriladi. Davom etilsinmi?",
+        "Suhbat ikkala tomondan ham öçiriladi. Davom etilsinmi?",
       )
     )
       return;
@@ -235,7 +235,7 @@ export function ChatRoom({
         router.refresh();
       }
     } catch {
-      setErr("O'chirib bo'lmadi");
+      setErr("Öçirib bölmadi");
     }
   }
   const [peerRead, setPeerRead] = useState(false);
@@ -512,7 +512,7 @@ export function ChatRoom({
       id: m.id,
       authorId: m.senderId,
       text: m.deleted
-        ? "o'chirilgan xabar"
+        ? "öçirilgan xabar"
         : m.body || (m.file ? `📎 ${m.file.name}` : "xabar"),
       deleted: !!m.deleted,
     });
@@ -576,7 +576,7 @@ export function ChatRoom({
 
   async function del(m: Msg) {
     setMenu(null);
-    if (!window.confirm("Xabar ikkala tomondan ham o'chirilsinmi?")) return;
+    if (!window.confirm("Xabar ikkala tomondan ham öçirilsinmi?")) return;
     applyDelete(m.id, Date.now());
     try {
       const res = await fetch(apiUrl(`/api/chat/${conversationId}/messages/${m.id}`), {
@@ -584,7 +584,7 @@ export function ChatRoom({
       });
       if (!res.ok) throw new Error();
     } catch {
-      setErr("O'chirib bo'lmadi");
+      setErr("Öçirib bölmadi");
     }
   }
 
@@ -610,7 +610,7 @@ export function ChatRoom({
         if (!res.ok) throw new Error(data.error);
         merge([data.message]);
       } catch (e2) {
-        setErr(e2 instanceof Error ? e2.message : "Tahrirlab bo'lmadi");
+        setErr(e2 instanceof Error ? e2.message : "Tahrirlab bölmadi");
       }
       return;
     }
@@ -819,7 +819,7 @@ export function ChatRoom({
                 href={orderHref(pinnedOrder.id)}
                 className="shrink-0 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-medium text-indigo-200 transition hover:bg-indigo-500/30"
               >
-                Ishni ko'rish
+                Işni köriş
               </Link>
             </div>
             {orders.length > 1 && (
@@ -855,7 +855,7 @@ export function ChatRoom({
                   className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                 >
                   <Icon name="alert" className="h-4 w-4 shrink-0" />
-                  Shikoyat qilish
+                  Şikoyat qiliş
                 </button>
                 <button
                   type="button"
@@ -863,7 +863,7 @@ export function ChatRoom({
                   className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                 >
                   <Icon name={iBlocked ? "check" : "ban"} className="h-4 w-4 shrink-0" />
-                  {iBlocked ? "Blokdan chiqarish" : "Bloklash"}
+                  {iBlocked ? "Blokdan çiqariş" : "Bloklaş"}
                 </button>
               </>
             )}
@@ -874,7 +874,7 @@ export function ChatRoom({
                 className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
               >
                 <Icon name="trash" className="h-4 w-4 shrink-0" />
-                Suhbatni o'chirish
+                Suhbatni öçiriş
               </button>
             )}
           </div>,
@@ -895,7 +895,7 @@ export function ChatRoom({
           <div className="mx-auto max-w-3xl space-y-2 px-3 pb-36 pt-4 sm:px-4">
             {messages.length === 0 && (
               <p className="mt-10 text-center text-sm text-zinc-500">
-                Suhbatni boshlang.
+                Suhbatni boşlang.
               </p>
             )}
             {messages.map((m) => {
@@ -931,7 +931,7 @@ export function ChatRoom({
                               : "border-white/10 bg-white/5 text-indigo-300 hover:bg-white/10"
                           }`}
                         >
-                          Buyurtmani ko'rish ›
+                          Buyurtmani köriş ›
                         </Link>
                       )}
                     </div>
@@ -1070,8 +1070,8 @@ export function ChatRoom({
               <div className="flex items-center justify-between gap-3 px-1 py-1.5 text-sm text-zinc-400">
                 <span>
                   {iBlocked
-                    ? "Siz bu foydalanuvchini bloklagansiz."
-                    : "Bu foydalanuvchi sizni bloklagan."}
+                    ? "Siz bu foydalanuvçini bloklagansiz."
+                    : "Bu foydalanuvçi sizni bloklagan."}
                 </span>
                 {iBlocked && (
                   <button
@@ -1079,7 +1079,7 @@ export function ChatRoom({
                     onClick={toggleBlock}
                     className="backdrop-blur-sm shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 hover:bg-white/10"
                   >
-                    Blokdan chiqarish
+                    Blokdan çiqariş
                   </button>
                 )}
               </div>
@@ -1087,7 +1087,7 @@ export function ChatRoom({
               <>
             {editing && (
               <div className="mb-2 flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
-                <span>Xabarni tahrirlash</span>
+                <span>Xabarni tahrirlaş</span>
                 <button
                   type="button"
                   onClick={cancelEdit}
@@ -1101,7 +1101,7 @@ export function ChatRoom({
             {jumpMiss && (
               <div className="pointer-events-none mb-2 flex justify-center">
                 <span className="rounded-full bg-zinc-900/90 px-3 py-1.5 text-xs text-white shadow-lg">
-                  Asl xabar topilmadi (o&apos;chirilgan yoki juda eski)
+                  Asl xabar topilmadi (öçirilgan yoki juda eski)
                 </span>
               </div>
             )}
@@ -1125,7 +1125,7 @@ export function ChatRoom({
                   type="button"
                   onClick={() => setReplyingTo(null)}
                   className="shrink-0 text-zinc-500 hover:text-white"
-                  aria-label="Bekor qilish"
+                  aria-label="Bekor qiliş"
                 >
                   <Icon name="close" className="h-4 w-4" />
                 </button>
@@ -1148,7 +1148,7 @@ export function ChatRoom({
                     type="button"
                     onClick={cancelAttachment}
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-zinc-300 hover:bg-white/20 hover:text-white"
-                    aria-label="Bekor qilish"
+                    aria-label="Bekor qiliş"
                   >
                     <Icon name="close" className="h-4 w-4" />
                   </button>
@@ -1175,7 +1175,7 @@ export function ChatRoom({
                   className="btn-ghost flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
                   disabled={uploading}
                   onClick={() => fileInputRef.current?.click()}
-                  title="Fayl biriktirish"
+                  title="Fayl biriktiriş"
                 >
                   {uploading ? "…" : <Icon name="paperclip" className="h-5 w-5" />}
                 </button>
@@ -1186,7 +1186,7 @@ export function ChatRoom({
                   <span className="tabular-nums">
                     {Math.floor(voice.seconds / 60)}:{String(voice.seconds % 60).padStart(2, "0")}
                   </span>
-                  <span className="truncate text-xs text-zinc-400">Qo&apos;yib yuboring — tayyor</span>
+                  <span className="truncate text-xs text-zinc-400">Qöyib yuboring — tayyor</span>
                 </div>
               ) : (
                 <textarea
@@ -1227,8 +1227,8 @@ export function ChatRoom({
                 <button
                   className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
                   disabled={!canSend}
-                  aria-label={editing ? "Saqlash" : "Yuborish"}
-                  title={editing ? "Saqlash" : "Yuborish"}
+                  aria-label={editing ? "Saqlaş" : "Yuboriş"}
+                  title={editing ? "Saqlaş" : "Yuboriş"}
                 >
                   {editing ? <Icon name="check" className="h-5 w-5" strokeWidth={2.2} /> : <RocketIcon />}
                 </button>
@@ -1236,7 +1236,7 @@ export function ChatRoom({
             </form>
             {asSupport && !editing && (
               <div className="mt-2 flex items-center gap-2 text-xs">
-                <span className="text-zinc-500">Qayerda ko'rinsin:</span>
+                <span className="text-zinc-500">Qayerda körinsin:</span>
                 <PlatformCheckboxes value={sendSource} onChange={setSendSource} />
               </div>
             )}
@@ -1283,7 +1283,7 @@ export function ChatRoom({
                 className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
               >
                 <Icon name="reply" className="h-4 w-4 shrink-0" />
-                Javob berish
+                Javob beriş
               </button>
               {menu.msg.mine ? (
                 <>
@@ -1293,7 +1293,7 @@ export function ChatRoom({
                     className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                   >
                     <Icon name="pencil" className="h-4 w-4 shrink-0" />
-                    Tahrirlash
+                    Tahrirlaş
                   </button>
                   <button
                     type="button"
@@ -1301,7 +1301,7 @@ export function ChatRoom({
                     className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
                   >
                     <Icon name="trash" className="h-4 w-4 shrink-0" />
-                    O'chirish
+                    Öçiriş
                   </button>
                 </>
               ) : (
@@ -1312,7 +1312,7 @@ export function ChatRoom({
                     className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                   >
                     <Icon name="alert" className="h-4 w-4 shrink-0" />
-                    Shikoyat qilish
+                    Şikoyat qiliş
                   </button>
                 )
               )}
@@ -1360,7 +1360,7 @@ function ReadTicks({ pending, read }: { pending: boolean; read: boolean }) {
       strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-label={read ? "o'qildi" : "yetkazildi"}
+      aria-label={read ? "öqildi" : "yetkazildi"}
     >
       <path d="M1.5 6.5 5 10l6.5-8" />
       {read && <path d="M8.5 9.2 9.3 10l6.5-8" />}

@@ -25,23 +25,23 @@ export async function logRegistration(
       data: {
         userId: user.id,
         action: "REGISTER",
-        summary: `Ro'yxatdan o'tdi — @${user.login} — tayyorr+ orqali (${how})`,
+        summary: `Röyxatdan ötdi — @${user.login} — tayyorr+ orqali (${how})`,
       },
     })
     .catch(() => {});
   await notifyAdmins(
     "registrations",
-    "🆕 Yangi ro'yxatdan o'tish (tayyorr+ orqali)",
+    "🆕 Yangi röyxatdan ötiş (tayyorr+ orqali)",
     [
       "Manba: tayyorr+ (plus.tayyorr.uz)",
       `Login: @${user.login}`,
       full ? `Ism: ${full}` : "",
       user.email ? `Email: ${user.email}` : "",
       `Usul: ${how === "Google" ? "Google" : "email + parol"}`,
-      "Rol: tanlanmagan (tayyorr.uz ga kirganda so'raladi)",
+      "Rol: tanlanmagan (tayyorr.uz ga kirganda söraladi)",
       source ? `Qayerdan: ${source}${user.hearAboutUsDetail ? ` (${user.hearAboutUsDetail})` : ""}` : "",
-      `Foydalanuvchi ID: ${user.id}`,
+      `Foydalanuvçi ID: ${user.id}`,
     ],
-    { text: "Foydalanuvchi", href: adminUserUrl(user.id) },
+    { text: "Foydalanuvçi", href: adminUserUrl(user.id) },
   );
 }

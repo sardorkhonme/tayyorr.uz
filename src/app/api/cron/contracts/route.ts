@@ -10,7 +10,7 @@ import { sweepContracts } from "@/lib/contract-flow";
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
+    return NextResponse.json({ error: "Ruxsat yöq" }, { status: 401 });
   }
   await sweepContracts({ force: true });
   return NextResponse.json({ ok: true });

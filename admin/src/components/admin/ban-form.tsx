@@ -68,7 +68,7 @@ export function BanForm({ userId }: { userId: string }) {
         Muddatsiz
       </label>
       <div>
-        <label className="label">Sabab (foydalanuvchiga ko'rinadi)</label>
+        <label className="label">Sabab (foydalanuvçiga körinadi)</label>
         <textarea
           className="input"
           rows={2}
@@ -86,7 +86,7 @@ export function BanForm({ userId }: { userId: string }) {
       </label>
       {err && <p className="text-sm text-red-400">{err}</p>}
       <button className="btn-primary w-fit" disabled={busy}>
-        {busy ? "..." : "Cheklash / ban"}
+        {busy ? "..." : "Çeklaş / ban"}
       </button>
     </form>
   );

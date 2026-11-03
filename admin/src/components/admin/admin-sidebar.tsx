@@ -56,7 +56,7 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
         <ThemeToggle />
         <AdminPostButton
           url="/api/admin/logout"
-          label={<span className="inline-flex items-center gap-2"><PowerIcon /> Chiqish</span>}
+          label={<span className="inline-flex items-center gap-2"><PowerIcon /> Çiqiş</span>}
           className="w-full rounded-lg px-3 py-2 text-left text-sm text-zinc-400 transition hover:bg-red-500/10 hover:text-red-400"
           redirectTo="/login"
         />

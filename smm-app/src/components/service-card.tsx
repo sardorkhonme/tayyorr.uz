@@ -71,7 +71,7 @@ export function ServiceCard({
         </span>
         {s.refill && (
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">
-            Kafolatli (kamaysa to&apos;ldiriladi)
+            Kafolatli (kamaysa töldiriladi)
           </span>
         )}
       </span>
@@ -83,10 +83,10 @@ export function ServiceCard({
             </span>
             {s.oldRate && <span className="text-sm text-zinc-400 line-through">{som(s.oldRate)}</span>}
           </span>
-          <span className="text-xs text-zinc-500">har 1000 tasi uchun</span>
+          <span className="text-xs text-zinc-500">har 1000 tasi uçun</span>
         </span>
         <span className="rounded-xl bg-indigo-50 bg-[length:200%_100%] px-4 py-2.5 text-sm font-semibold text-indigo-700 transition-all duration-500 group-hover:bg-gradient-to-r group-hover:from-indigo-500 group-hover:via-violet-500 group-hover:to-fuchsia-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-fuchsia-500/30">
-          Tanlash
+          Tanlaş
         </span>
       </span>
     </button>

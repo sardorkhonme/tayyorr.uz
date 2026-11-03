@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   const { theme } = await req.json().catch(() => ({}));
   if (theme !== "light" && theme !== "dark") {
-    return mobileJson({ error: "Noto'g'ri" }, { status: 400 });
+    return mobileJson({ error: "Notöğri" }, { status: 400 });
   }
   await db.user.update({ where: { id: auth.userId }, data: { theme } }).catch(() => {});
   return mobileJson({ ok: true });

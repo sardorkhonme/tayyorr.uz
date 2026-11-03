@@ -28,7 +28,7 @@ export async function POST(
   const m = await createMessage({
     conversationId: conv.id,
     senderId: supportId,
-    body: withSource("Hisobingizdagi cheklov bekor qilindi. Platformadan to'liq foydalanishingiz mumkin.", "ikkalasi"),
+    body: withSource("Hisobingizdagi çeklov bekor qilindi. Platformadan töliq foydalanişingiz mumkin.", "ikkalasi"),
     system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(m);

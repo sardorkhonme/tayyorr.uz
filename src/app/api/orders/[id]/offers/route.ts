@@ -33,7 +33,7 @@ export async function POST(
   }
   if (session.user.role !== "PREPARER") {
     return NextResponse.json(
-      { error: "Faqat tayyorlovchilar taklif yubora oladi" },
+      { error: "Faqat tayyorlovçilar taklif yubora oladi" },
       { status: 403 },
     );
   }
@@ -43,13 +43,13 @@ export async function POST(
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Narxni to'g'ri kiriting" }, { status: 400 });
+    return NextResponse.json({ error: "Narxni töğri kiriting" }, { status: 400 });
   }
 
   const order = await db.order.findUnique({ where: { id } });
   if (!order || order.status !== "OPEN") {
     return NextResponse.json(
-      { error: "Buyurtma takliflar uchun ochiq emas" },
+      { error: "Buyurtma takliflar uçun oçiq emas" },
       { status: 400 },
     );
   }
@@ -83,7 +83,7 @@ export async function POST(
   await logActivity(
     session.user.id,
     existing ? "OFFER_UPDATE" : "OFFER_CREATE",
-    `Taklif ${existing ? "yangiladi" : "yubordi"}: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
+    `Taklif ${existing ? "yangiladi" : "yubordi"}: «${order.title}» — ${parsed.data.price.toLocaleString("ru-RU")} söm`,
     { orderId: id, price: parsed.data.price },
   );
 
@@ -94,17 +94,17 @@ export async function POST(
   const preparerName =
     preparer?.firstName ||
     preparer?.name ||
-    (preparer?.login ? `@${preparer.login}` : "Tayyorlovchi");
+    (preparer?.login ? `@${preparer.login}` : "Tayyorlovçi");
 
   if (!existing) {
     await sendTelegramToUser(order.ordererId, {
-      title: "🙋 Yangi ko'ngilli topildi",
+      title: "🙋 Yangi köngilli topildi",
       body:
         `«${order.title}» buyurtmangizga ${preparerName} taklif yubordi: ` +
-        `${parsed.data.price.toLocaleString("ru-RU")} so'm` +
+        `${parsed.data.price.toLocaleString("ru-RU")} söm` +
         (parsed.data.message ? `\n\n«${parsed.data.message}»` : ""),
       url: siteUrl(`/orders/${id}`),
-      buttonLabel: "Ko'ngillilarni ko'rish",
+      buttonLabel: "Köngillilarni köriş",
     });
   }
 
@@ -115,10 +115,10 @@ export async function POST(
       `«${order.title}»`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
       preparer?.email ? `Email: ${preparer.email}` : "",
-      `Narx: ${parsed.data.price.toLocaleString("ru-RU")} so'm`,
+      `Narx: ${parsed.data.price.toLocaleString("ru-RU")} söm`,
       parsed.data.message ? `Xabar: ${parsed.data.message}` : "",
       !existing
-        ? `Ariza uchun sarflandi: ${initialStars} ⭐`
+        ? `Ariza uçun sarflandi: ${initialStars} ⭐`
         : `Jami star: ${offer.starsSpent} ⭐`,
       `Buyurtma ID: ${id}`,
       `Taklif ID: ${offer.id}`,

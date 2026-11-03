@@ -2,37 +2,37 @@
 
 export const ACTIVITY_LABEL: Record<string, string> = {
   AUTH_LOGIN: "Saytga kirdi",
-  REGISTER: "Ro'yxatdan o'tdi",
+  REGISTER: "Röyxatdan ötdi",
   PROFILE_UPDATE: "Profilni tahrirladi",
-  ACCOUNT_UPDATE: "Login / parolni o'zgartirdi",
+  ACCOUNT_UPDATE: "Login / parolni özgartirdi",
 
   ORDER_CREATE: "Buyurtma yaratdi",
-  ORDER_DELETE: "Buyurtmani o'chirdi",
+  ORDER_DELETE: "Buyurtmani öçirdi",
   ORDER_CANCEL: "Buyurtmani bekor qildi",
-  ORDER_DELIVER: "Ishni topshirdi",
-  ORDER_FINALIZE: "Ishni yakunladi",
-  ORDER_REVISION: "Ishni qayta ishlashga qaytardi",
+  ORDER_DELIVER: "Işni topşirdi",
+  ORDER_FINALIZE: "Işni yakunladi",
+  ORDER_REVISION: "Işni qayta işlaşga qaytardi",
 
   OFFER_CREATE: "Taklif yubordi",
   OFFER_ACCEPT: "Taklifni qabul qildi",
   OFFER_REJECT: "Taklifni rad etdi",
 
-  CONTRACT_SEND: "Shartnoma yubordi",
-  CONTRACT_ACCEPT: "Shartnomani qabul qildi",
-  CONTRACT_DECLINE: "Shartnomani rad etdi",
-  CONTRACT_CANCEL: "Shartnomani bekor qildi",
-  CONTRACT_CANCEL_REQUEST: "Bekor qilishni so'radi",
-  CONTRACT_CANCEL_RESPOND: "Bekor qilish so'roviga javob berdi",
+  CONTRACT_SEND: "Şartnoma yubordi",
+  CONTRACT_ACCEPT: "Şartnomani qabul qildi",
+  CONTRACT_DECLINE: "Şartnomani rad etdi",
+  CONTRACT_CANCEL: "Şartnomani bekor qildi",
+  CONTRACT_CANCEL_REQUEST: "Bekor qilişni söradi",
+  CONTRACT_CANCEL_RESPOND: "Bekor qiliş söroviga javob berdi",
 
   REVIEW_CREATE: "Baho qoldirdi",
 
-  WALLET_TOPUP: "Hisobni to'ldirdi",
-  PAYOUT_REQUEST: "Kartaga yechish so'radi",
-  PAYOUT_CANCEL: "Yechish so'rovini bekor qildi",
+  WALLET_TOPUP: "Hisobni töldirdi",
+  PAYOUT_REQUEST: "Kartaga yeçiş söradi",
+  PAYOUT_CANCEL: "Yeçiş sörovini bekor qildi",
 
-  COMPLAINT_CREATE: "Shikoyat yubordi",
-  USER_BLOCK: "Foydalanuvchini blokladi",
-  USER_UNBLOCK: "Blokdan chiqardi",
+  COMPLAINT_CREATE: "Şikoyat yubordi",
+  USER_BLOCK: "Foydalanuvçini blokladi",
+  USER_UNBLOCK: "Blokdan çiqardi",
 };
 
 // Filtr uchun mantiqiy guruhlar
@@ -50,7 +50,7 @@ export const ACTIVITY_GROUPS: { label: string; actions: string[] }[] = [
     ],
   },
   {
-    label: "Takliflar / shartnoma",
+    label: "Takliflar / şartnoma",
     actions: [
       "OFFER_CREATE",
       "OFFER_ACCEPT",

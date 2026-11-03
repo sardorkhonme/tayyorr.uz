@@ -12,16 +12,16 @@ import { Stars } from "@/components/stars";
 
 const TYPE: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 const STATUS: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
@@ -62,7 +62,7 @@ export default async function AdminOrderDetail({
       ? (order.contracts.find((c) => c.status === "ACCEPTED") ?? null)
       : null;
   const roleOf = (userId: string | null) =>
-    userId === order.ordererId ? "Buyurtmachi" : "Tayyorlovchi";
+    userId === order.ordererId ? "Buyurtmaçi" : "Tayyorlovçi";
 
   const files = await Promise.all(
     order.files.map(async (f) => ({
@@ -87,7 +87,7 @@ export default async function AdminOrderDetail({
       order.deadline ? shortDateTime(order.deadline) : "—",
     ],
     [
-      "Buyurtmachi",
+      "Buyurtmaçi",
       <Link
         key="o"
         href={`/users/${order.orderer.id}`}
@@ -97,7 +97,7 @@ export default async function AdminOrderDetail({
       </Link>,
     ],
     [
-      "Tayyorlovchi",
+      "Tayyorlovçi",
       order.preparer ? (
         <Link
           key="p"
@@ -115,10 +115,10 @@ export default async function AdminOrderDetail({
     ...(order.deletedAt
       ? ([
           [
-            "O'chirilgan",
-            `${order.deletedByRole === "ADMIN" ? "Admin" : "Buyurtmachi"} · ${shortDateTime(order.deletedAt)}`,
+            "Öçirilgan",
+            `${order.deletedByRole === "ADMIN" ? "Admin" : "Buyurtmaçi"} · ${shortDateTime(order.deletedAt)}`,
           ],
-          ["O'chirish sababi", order.deleteReason ?? "—"],
+          ["Öçiriş sababi", order.deleteReason ?? "—"],
         ] as [string, React.ReactNode][])
       : []),
     [
@@ -161,16 +161,16 @@ export default async function AdminOrderDetail({
         {order.deletedAt ? (
           <span className="inline-flex items-center gap-1 rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-300">
             <Icon name="trash" className="h-3.5 w-3.5" />
-            O'chirilgan
-            {order.deletedByRole === "ADMIN" ? " (admin)" : " (buyurtmachi)"}
+            Öçirilgan
+            {order.deletedByRole === "ADMIN" ? " (admin)" : " (buyurtmaçi)"}
           </span>
         ) : (
           <AdminPostButton
             url={`/api/admin/orders/${order.id}`}
             method="DELETE"
-            label="O'chirish"
+            label="Öçiriş"
             className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs text-red-300 hover:bg-red-500/25"
-            promptReason="O'chirish sababini yozing (buyurtmachiga ko'rinadi):"
+            promptReason="Öçiriş sababini yozing (buyurtmaçiga körinadi):"
             redirectTo="/orders"
           />
         )}
@@ -193,24 +193,24 @@ export default async function AdminOrderDetail({
             ) : (
               <>
                 <Icon name="alert" className="mr-1 inline-block h-4 w-4 align-[-3px] text-amber-300" />
-                Bekor qilish so'rovi (javob kutilmoqda)
+                Bekor qiliş sörovi (javob kutilmoqda)
               </>
             )}
           </div>
           <div className="mt-2 text-zinc-300">
-            So'ragan: <b>{roleOf(active.cancelRequestedById)}</b>
+            Söragan: <b>{roleOf(active.cancelRequestedById)}</b>
             {active.cancelRequestedAt && ` · ${shortDateTime(active.cancelRequestedAt)}`}
           </div>
           <div className="mt-1 text-zinc-300">Sabab: {active.cancelReason}</div>
           {active.cancelRejectReason && (
             <div className="mt-1 text-zinc-300">
-              Rad etish sababi: {active.cancelRejectReason}
+              Rad etiş sababi: {active.cancelRejectReason}
             </div>
           )}
           {active.cancelState === "PENDING" && active.cancelDueAt && (
             <div className="mt-1 text-xs text-zinc-400">
-              {shortDateTime(active.cancelDueAt)} gacha javob bo'lmasa — avtomatik
-              bekor qilinadi (pul buyurtmachiga).
+              {shortDateTime(active.cancelDueAt)} gaça javob bölmasa — avtomatik
+              bekor qilinadi (pul buyurtmaçiga).
             </div>
           )}
           {active.cancelState === "DISPUTED" && (
@@ -248,7 +248,7 @@ export default async function AdminOrderDetail({
           Fayllar ({files.length})
         </h2>
         {files.length === 0 ? (
-          <p className="text-sm text-zinc-600">Fayl yo'q.</p>
+          <p className="text-sm text-zinc-600">Fayl yöq.</p>
         ) : (
           <ul className="flex flex-col gap-1.5 text-sm">
             {files.map((f) => (
@@ -278,7 +278,7 @@ export default async function AdminOrderDetail({
           Takliflar ({order.offers.length})
         </h2>
         {order.offers.length === 0 ? (
-          <p className="text-sm text-zinc-600">Taklif yo'q.</p>
+          <p className="text-sm text-zinc-600">Taklif yöq.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {order.offers.map((o) => (
@@ -308,10 +308,10 @@ export default async function AdminOrderDetail({
 
       <div>
         <h2 className="mb-2 font-semibold text-white">
-          Shartnomalar ({order.contracts.length})
+          Şartnomalar ({order.contracts.length})
         </h2>
         {order.contracts.length === 0 ? (
-          <p className="text-sm text-zinc-600">Shartnoma yo'q.</p>
+          <p className="text-sm text-zinc-600">Şartnoma yöq.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {order.contracts.map((c) => (
@@ -333,9 +333,9 @@ export default async function AdminOrderDetail({
                 {c.note && <p className="mt-1 text-zinc-400">{c.note}</p>}
                 <div className="mt-1 text-xs text-zinc-500">
                   {c.deadline && `Muddat: ${shortDateTime(c.deadline)}`}
-                  {c.deliveredAt && ` · topshirildi ${shortDateTime(c.deliveredAt)}`}
-                  {c.reviewDueAt && ` · tekshiruv ${shortDateTime(c.reviewDueAt)} gacha`}
-                  {c.revisionCount > 0 && ` · qayta ishlash ${c.revisionCount}×`}
+                  {c.deliveredAt && ` · topşirildi ${shortDateTime(c.deliveredAt)}`}
+                  {c.reviewDueAt && ` · tekşiruv ${shortDateTime(c.reviewDueAt)} gaça`}
+                  {c.revisionCount > 0 && ` · qayta işlaş ${c.revisionCount}×`}
                   {c.disputeResolution &&
                     ` · admin qarori: ${c.disputeResolution}${c.disputeNote ? ` (${c.disputeNote})` : ""}`}
                 </div>
@@ -344,7 +344,7 @@ export default async function AdminOrderDetail({
                   {c.commissionAmount
                     ? ` · komissiya ${formatSom(c.commissionAmount)}`
                     : ""}
-                  {c.payoutAmount ? ` · to'lov ${formatSom(c.payoutAmount)}` : ""}
+                  {c.payoutAmount ? ` · tölov ${formatSom(c.payoutAmount)}` : ""}
                   {c.refundAmount ? ` · qaytdi ${formatSom(c.refundAmount)}` : ""}
                 </div>
               </li>

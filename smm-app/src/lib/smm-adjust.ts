@@ -18,12 +18,12 @@ export const EMPTY_ADJUST: Adjust = { groups: {}, services: {} };
 
 /** Xizmat turlari (kinds.ts dagi qoidalar bilan bir xil — admin ham shu bilan guruhlaydi). */
 export const KIND_RULES: { key: string; label: string; match: RegExp }[] = [
-  { key: "followers", label: "Obunachilar", match: /follow|member|subscri|obuna/i },
-  { key: "views", label: "Ko'rishlar", match: /view|impression|watch|reach|plays?\b/i },
+  { key: "followers", label: "Obunaçilar", match: /follow|member|subscri|obuna/i },
+  { key: "views", label: "Körişlar", match: /view|impression|watch|reach|plays?\b/i },
   { key: "likes", label: "Layk va reaksiyalar", match: /like|heart|reaction|react/i },
   { key: "comments", label: "Izohlar", match: /comment/i },
-  { key: "shares", label: "Ulashish va saqlash", match: /share|save|repost|retweet/i },
-  { key: "other", label: "Boshqa", match: /.^/ },
+  { key: "shares", label: "Ulaşiş va saqlaş", match: /share|save|repost|retweet/i },
+  { key: "other", label: "Boşqa", match: /.^/ },
 ];
 
 function matchKind(text: string) {

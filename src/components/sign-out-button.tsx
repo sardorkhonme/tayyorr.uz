@@ -17,7 +17,7 @@ export function SignOutButton() {
       className="btn inline-flex w-fit items-center gap-2 border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
     >
       <LogoutIcon />
-      {busy ? "Chiqilyapti…" : "Hisobdan chiqish"}
+      {busy ? "Çiqilyapti…" : "Hisobdan çiqiş"}
     </button>
   );
 }

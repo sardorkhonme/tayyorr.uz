@@ -16,10 +16,10 @@ async function loadOwn(convId: string, msgId: string, actor: { id: string; suppo
     return { error: "Xabar topilmadi", status: 404 as const };
   }
   if (msg.senderId !== meId) {
-    return { error: "Faqat o'z xabaringizni o'zgartira olasiz", status: 403 as const };
+    return { error: "Faqat öz xabaringizni özgartira olasiz", status: 403 as const };
   }
   if (msg.deletedAt) {
-    return { error: "Xabar o'chirilgan", status: 400 as const };
+    return { error: "Xabar öçirilgan", status: 400 as const };
   }
   return { msg, conv };
 }
@@ -44,7 +44,7 @@ export async function PATCH(
 
   const parsed = editSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Matn bo'sh bo'lmasin" }, { status: 400 });
+    return NextResponse.json({ error: "Matn böş bölmasin" }, { status: 400 });
   }
   // platforma belgisi ([tayyorr+] / [all]) tahrirdan keyin ham saqlanadi
   const nextBody = withSource(parsed.data.body, splitSource(found.msg.body).source);

@@ -33,7 +33,7 @@ export async function POST(
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ma'lumot noto'g'ri" },
+      { error: parsed.error.issues[0]?.message ?? "Maʼlumot notöğri" },
       { status: 400 },
     );
   }
@@ -45,13 +45,13 @@ export async function POST(
     return NextResponse.json({ error: "Faqat buyurtma egasi" }, { status: 403 });
   }
   if (order.status !== "OPEN") {
-    return NextResponse.json({ error: "Buyurtma allaqachon jarayonda" }, { status: 400 });
+    return NextResponse.json({ error: "Buyurtma allaqaçon jarayonda" }, { status: 400 });
   }
   // shartnoma muddati: tanlanmagan bo'lsa — buyurtma muddati
   const dl = deadline ? new Date(deadline) : order.deadline;
   if (!dl || dl.getTime() <= Date.now()) {
     return NextResponse.json(
-      { error: "Shartnoma muddatini (sana va vaqt) belgilang — kelajakdagi vaqt bo'lsin" },
+      { error: "Şartnoma muddatini (sana va vaqt) belgilang — kelajakdagi vaqt bölsin" },
       { status: 400 },
     );
   }
@@ -61,7 +61,7 @@ export async function POST(
   });
   if (!offer) {
     return NextResponse.json(
-      { error: "Bu tayyorlovchi taklif yubormagan" },
+      { error: "Bu tayyorlovçi taklif yubormagan" },
       { status: 400 },
     );
   }
@@ -81,7 +81,7 @@ export async function POST(
     return NextResponse.json(
       {
         error:
-          "Hisobingizda yetarli mablag' yo'q. Avval Hamyon bo'limidan hisobingizni to'ldiring.",
+          "Hisobingizda yetarli mablağ yöq. Avval Hamyon bölimidan hisobingizni töldiring.",
       },
       { status: 400 },
     );
@@ -107,7 +107,7 @@ export async function POST(
           type: "REFUND",
           amount: p.amount,
           method: "ESCROW",
-          note: "Shartnoma almashtirildi — bloklangan mablag' qaytdi",
+          note: "Şartnoma almaştirildi — bloklangan mablağ qaytdi",
         },
       });
     }
@@ -123,7 +123,7 @@ export async function POST(
         type: "HOLD",
         amount,
         method: "ESCROW",
-        note: `Shartnoma bo'yicha bloklandi (buyurtma: ${order.title})`,
+        note: `Şartnoma böyiça bloklandi (buyurtma: ${order.title})`,
       },
     });
 
@@ -144,11 +144,11 @@ export async function POST(
     conversationId: conv.id,
     senderId: me,
     body:
-      `📄 Shartnoma yuborildi. Kelishilgan summa: ${amount.toLocaleString("ru-RU")} so'm ` +
-      `(hisobingizdan bloklandi, ish yakunlangach tayyorlovchiga o'tadi).` +
+      `📄 Şartnoma yuborildi. Kelişilgan summa: ${amount.toLocaleString("ru-RU")} söm ` +
+      `(hisobingizdan bloklandi, iş yakunlangaç tayyorlovçiga ötadi).` +
       (note ? `\n\nTavsif: ${note}` : "") +
-      `\nTopshirish muddati: ${shortDateTime(dl)}.` +
-      `\n\nQabul qilsangiz, ish boshlanadi. Imzolangandan keyin shartnomani faqat ikki tomon roziligi bilan bekor qilish mumkin.`,
+      `\nTopşiriş muddati: ${shortDateTime(dl)}.` +
+      `\n\nQabul qilsangiz, iş boşlanadi. Imzolangandan keyin şartnomani faqat ikki tomon roziligi bilan bekor qiliş mumkin.`,
     system: true,
     orderId: id,
   });
@@ -157,7 +157,7 @@ export async function POST(
   await logActivity(
     me,
     "CONTRACT_SEND",
-    `Shartnoma yubordi: «${order.title}» — ${amount.toLocaleString("ru-RU")} so'm`,
+    `Şartnoma yubordi: «${order.title}» — ${amount.toLocaleString("ru-RU")} söm`,
     { orderId: id, contractId: contract.id, amount },
   );
   const preparer = await db.user.findUnique({
@@ -167,15 +167,15 @@ export async function POST(
 
   await logToGroup(
     "contracts",
-    "📄 Shartnoma yuborildi",
+    "📄 Şartnoma yuborildi",
     [
       `«${order.title}»`,
-      `Summa: ${amount.toLocaleString("ru-RU")} so'm`,
+      `Summa: ${amount.toLocaleString("ru-RU")} söm`,
       `Buyurtmachi: ${userLabel(orderer)}`,
       `Tayyorlovchi: ${userLabel(preparer)}`,
       note ? `Tavsif: ${note}` : "",
       `Muddat: ${shortDateTime(dl)}`,
-      `Shartnoma ID: ${contract.id}`,
+      `Şartnoma ID: ${contract.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/orders/${id}`),
   );

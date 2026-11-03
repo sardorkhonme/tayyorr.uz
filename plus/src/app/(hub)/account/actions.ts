@@ -13,7 +13,7 @@ export async function saveAccountAction(input: AccountInput): Promise<{ error?: 
   } catch (e) {
     if (e instanceof AccountError) return { error: e.message };
     console.error("[plus] account", e);
-    return { error: "Kutilmagan xatolik, qayta urinib ko'ring" };
+    return { error: "Kutilmagan xatolik, qayta urinib köring" };
   }
   revalidatePath("/", "layout");
   return {};

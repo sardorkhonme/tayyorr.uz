@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   }
   const { kind, filename, contentType, orderId, conversationId } = parsed.data;
   const restriction = await getRestriction(me);
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
   }
 
   if (!DOC_TYPES.includes(contentType)) {
-    return NextResponse.json({ error: "Fayl turi qo'llab-quvvatlanmaydi" }, { status: 400 });
+    return NextResponse.json({ error: "Fayl turi qöllab-quvvatlanmaydi" }, { status: 400 });
   }
   const prefix = orderId ? `orders/${orderId}` : `misc/${me}`;
   const key = buildKey(prefix, filename);

@@ -32,7 +32,7 @@ export function PlatformCheckboxes({
         return (
           <label
             key={o.value}
-            title={last ? "Kamida bitta platforma tanlangan bo'lishi kerak" : undefined}
+            title={last ? "Kamida bitta platforma tanlangan bölişi kerak" : undefined}
             className={`inline-flex cursor-pointer select-none items-center gap-1.5 rounded-lg border font-medium transition ${pad} ${
               on
                 ? "border-indigo-400/60 bg-indigo-500/15 text-white"
@@ -55,7 +55,7 @@ export function PlatformCheckboxes({
         onClick={() => onChange(all ? "tayyorr.uz" : "ikkalasi")}
         className={`rounded-lg font-medium text-zinc-500 transition hover:text-white ${pad}`}
       >
-        {all ? "Tozalash" : "Hammasi"}
+        {all ? "Tozalaş" : "Hammasi"}
       </button>
     </div>
   );

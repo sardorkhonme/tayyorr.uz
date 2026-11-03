@@ -46,16 +46,16 @@ export default async function OrdersPage() {
   return (
     <div className="mx-auto max-w-4xl">
         <h1 className="font-display text-3xl font-bold text-zinc-900">Buyurtmalarim</h1>
-        <p className="mt-2 text-zinc-500">Holatlar sahifa ochilganda yangilanadi. Bajarilmagan qism uchun pul avtomatik qaytadi.</p>
+        <p className="mt-2 text-zinc-500">Holatlar sahifa oçilganda yangilanadi. Bajarilmagan qism uçun pul avtomatik qaytadi.</p>
 
         {orders.length === 0 ? (
           <div className="card mt-8 !rounded-3xl px-6 py-16 text-center">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
               <Icon name="package" className="h-8 w-8" />
             </span>
-            <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yo&apos;q</p>
-            <p className="mt-2 text-zinc-500">Birinchi buyurtmangizni bir daqiqada bering.</p>
-            <a href="/" className="btn-primary mt-6">Xizmat tanlash</a>
+            <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yöq</p>
+            <p className="mt-2 text-zinc-500">Birinçi buyurtmangizni bir daqiqada bering.</p>
+            <a href="/" className="btn-primary mt-6">Xizmat tanlaş</a>
           </div>
         ) : (
           <ul className="mt-8 space-y-3">

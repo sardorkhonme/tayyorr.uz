@@ -36,7 +36,7 @@ export function ClickPaymentActions({
   async function reverseViaClick() {
     if (
       !confirm(
-        "Click orqali to'lov qaytariladi (kartaga) va hamyondan ham ayiriladi. Davom etilsinmi?",
+        "Click orqali tölov qaytariladi (kartaga) va hamyondan ham ayiriladi. Davom etilsinmi?",
       )
     )
       return;
@@ -66,7 +66,7 @@ export function ClickPaymentActions({
           disabled={busy}
           className="btn-ghost text-sm"
         >
-          {busy ? "..." : "Click holatini tekshirish"}
+          {busy ? "..." : "Click holatini tekşiriş"}
         </button>
         {canReverse && (
           <button
@@ -75,7 +75,7 @@ export function ClickPaymentActions({
             disabled={busy}
             className="btn-primary text-sm"
           >
-            {busy ? "..." : "Click orqali qaytarish (kartaga)"}
+            {busy ? "..." : "Click orqali qaytariş (kartaga)"}
           </button>
         )}
       </div>

@@ -22,14 +22,14 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Ma'lumotlar noto'g'ri" }, { status: 400 });
+    return mobileJson({ error: "Maʼlumotlar notöğri" }, { status: 400 });
   }
   const { amount, walletCode } = parsed.data;
 
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return mobileJson(
       {
-        error: `Summa ${CLICK_MIN.toLocaleString("ru-RU")} – ${CLICK_MAX.toLocaleString("ru-RU")} so'm oralig'ida bo'lsin`,
+        error: `Summa ${CLICK_MIN.toLocaleString("ru-RU")} – ${CLICK_MAX.toLocaleString("ru-RU")} söm oraliğida bölsin`,
       },
       { status: 400 },
     );
@@ -43,10 +43,10 @@ export async function POST(req: Request) {
     return mobileJson({ error: "Bunday hisob kodi topilmadi" }, { status: 404 });
   }
 
-  let note = "Click orqali to'ldirish (mobil ilova)";
+  let note = "Click orqali töldiriş (mobil ilova)";
   if (target.id !== auth.userId) {
     const me = await db.user.findUnique({ where: { id: auth.userId }, select: { login: true } });
-    note = `Click orqali to'ldirish (${me?.login ?? auth.userId}, mobil ilova)`;
+    note = `Click orqali töldiriş (${me?.login ?? auth.userId}, mobil ilova)`;
   }
 
   const wtx = await db.walletTransaction.create({

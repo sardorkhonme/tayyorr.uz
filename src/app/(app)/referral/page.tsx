@@ -28,7 +28,7 @@ export default async function ReferralPage() {
       <div>
         <h1 className="text-xl font-semibold text-white">Referal</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Do'stlaringizni taklif qiling — har bir ro'yxatdan o'tgan uchun
+          Döstlaringizni taklif qiling — har bir röyxatdan ötgan uçun
           1 <StarIcon className="h-3.5 w-3.5" /> olasiz.
         </p>
       </div>
@@ -41,7 +41,7 @@ export default async function ReferralPage() {
         </h2>
         {user.referredUsers.length === 0 ? (
           <div className="card text-sm text-zinc-500">
-            Hozircha hech kim havolangiz orqali ro'yxatdan o'tmagan.
+            Hozirça heç kim havolangiz orqali röyxatdan ötmagan.
           </div>
         ) : (
           <ul className="flex flex-col gap-2">

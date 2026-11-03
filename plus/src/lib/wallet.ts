@@ -4,14 +4,14 @@ import { db } from "@/lib/db";
 
 /** tayyorr.uz dagi hamyon bilan bir xil (src/lib/wallet.ts, wallet-pending.ts). */
 export const TXN_LABEL: Record<string, string> = {
-  TOPUP: "To'ldirish",
-  SPEND: "Buyurtma to'lovi",
-  TRANSFER_IN: "Kirim o'tkazma",
-  TRANSFER_OUT: "Chiqim o'tkazma",
-  PAYOUT: "Kartaga yechish",
-  REFUND: "Qaytarish",
-  HOLD: "Shartnoma uchun bloklandi",
-  RELEASE: "Ish haqi (yakunlangan)",
+  TOPUP: "Töldiriş",
+  SPEND: "Buyurtma tölovi",
+  TRANSFER_IN: "Kirim ötkazma",
+  TRANSFER_OUT: "Çiqim ötkazma",
+  PAYOUT: "Kartaga yeçiş",
+  REFUND: "Qaytariş",
+  HOLD: "Şartnoma uçun bloklandi",
+  RELEASE: "Iş haqi (yakunlangan)",
   COMMISSION: "Sayt komissiyasi",
 };
 export const OUTFLOW = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);

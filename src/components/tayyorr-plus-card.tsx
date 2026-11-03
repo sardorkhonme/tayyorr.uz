@@ -18,7 +18,7 @@ export function TayyorrPlusCard({ compact = false }: { compact?: boolean }) {
         <span className="block font-display text-sm font-bold leading-tight">
           tayyorr<span className="text-amber-200">+</span>
         </span>
-        <span className="block truncate text-[11px] text-white/80">SMM va boshqalar</span>
+        <span className="block truncate text-[11px] text-white/80">SMM va boşqalar</span>
       </span>
       <Icon name="arrow-up" className="h-4 w-4 rotate-45 opacity-80 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
     </a>

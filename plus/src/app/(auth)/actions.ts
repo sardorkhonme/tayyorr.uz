@@ -24,8 +24,8 @@ export async function loginAction(_prev: AuthState, form: FormData): Promise<Aut
         values: { identifier },
         error:
           code === "no_account"
-            ? "Bunday hisob topilmadi. Ro'yxatdan o'ting — bir daqiqa."
-            : "Login/email yoki parol noto'g'ri",
+            ? "Bunday hisob topilmadi. Röyxatdan öting — bir daqiqa."
+            : "Login/email yoki parol notöğri",
       };
     }
     throw e; // muvaffaqiyatli kirishdagi redirect
@@ -41,7 +41,7 @@ export async function completeProfileAction(input: ProfileInput): Promise<AuthSt
   } catch (e) {
     if (e instanceof ProfileError) return { error: e.message };
     console.error("[plus] complete", e);
-    return { error: "Kutilmagan xatolik, qayta urinib ko'ring" };
+    return { error: "Kutilmagan xatolik, qayta urinib köring" };
   }
   redirect("/?welcome=1");
 }

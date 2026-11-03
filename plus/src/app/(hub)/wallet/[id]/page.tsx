@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { som } from "@/lib/format";
 import { TXN_LABEL } from "@/lib/wallet";
 
-export const metadata = { title: "Chek" };
+export const metadata = { title: "Çek" };
 
 const dateFmt = new Intl.DateTimeFormat("ru-RU", {
   timeZone: "Asia/Tashkent",
@@ -46,7 +46,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
       </Link>
 
       <div className="card !rounded-3xl p-6 sm:p-7">
-        <h1 className="font-display text-2xl font-bold text-zinc-900">Chek</h1>
+        <h1 className="font-display text-2xl font-bold text-zinc-900">Çek</h1>
         <dl className="mt-5 divide-y divide-zinc-100 text-sm">
           {rows.map(([k, v]) => (
             <div key={k} className="flex justify-between gap-4 py-2.5">

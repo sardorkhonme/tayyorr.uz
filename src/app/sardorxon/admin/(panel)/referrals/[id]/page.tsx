@@ -9,8 +9,8 @@ import { CopyLinkButton } from "@/components/admin/copy-link-button";
 export const dynamic = "force-dynamic";
 
 const ROLE_LABEL: Record<string, string> = {
-  PREPARER: "Tayyorlovchi",
-  ORDERER: "Buyurtmachi",
+  PREPARER: "Tayyorlovçi",
+  ORDERER: "Buyurtmaçi",
 };
 
 export default async function AdminReferralDetail({
@@ -45,7 +45,7 @@ export default async function AdminReferralDetail({
         href="/sardorxon/admin/referrals"
         className="text-sm text-zinc-500 hover:text-white"
       >
-        ← Tashriflar
+        ← Taşriflar
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -63,13 +63,13 @@ export default async function AdminReferralDetail({
             <div className="text-2xl font-semibold text-white">
               {link.visits}
             </div>
-            <div className="text-xs text-zinc-500">tashrif</div>
+            <div className="text-xs text-zinc-500">taşrif</div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-emerald-400">
               {link.users.length}
             </div>
-            <div className="text-xs text-zinc-500">ro'yxatdan o'tgan</div>
+            <div className="text-xs text-zinc-500">röyxatdan ötgan</div>
           </div>
         </div>
       </div>
@@ -80,11 +80,11 @@ export default async function AdminReferralDetail({
 
       <div>
         <h2 className="mb-3 font-semibold text-white">
-          Ro'yxatdan o'tganlar ({link.users.length})
+          Röyxatdan ötganlar ({link.users.length})
         </h2>
         {link.users.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 text-sm text-zinc-500">
-            Bu havola orqali hali hech kim ro'yxatdan o'tmagan.
+            Bu havola orqali hali heç kim röyxatdan ötmagan.
           </div>
         ) : (
           <ul className="flex flex-col gap-1.5">

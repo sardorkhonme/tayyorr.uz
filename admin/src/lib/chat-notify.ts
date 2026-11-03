@@ -93,7 +93,7 @@ export async function deliverMessage(m: Message) {
     title,
     body: snippet(m),
     url: plusOnly ? PLUS_URL : smmOnly ? SMM_URL : siteUrl(`/messages/${m.conversationId}`),
-    buttonLabel: plusOnly ? "tayyorr+ da ko'rish" : smmOnly ? "Tayyorr SMM da ko'rish" : "Xabarni ko'rish",
+    buttonLabel: plusOnly ? "tayyorr+ da köriş" : smmOnly ? "Tayyorr SMM da köriş" : "Xabarni köriş",
   });
 
   // foydalanuvchi support'ga yozgan bo'lsa — admin loglar guruhiga ham tushadi

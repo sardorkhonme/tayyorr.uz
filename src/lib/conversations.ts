@@ -57,12 +57,12 @@ export async function listConversations(
       return {
         id: c.id,
         otherId: other.id,
-        name: other.name ?? other.login ?? "Foydalanuvchi",
+        name: other.name ?? other.login ?? "Foydalanuvçi",
         avatar: blockedMe ? null : other.avatarUrl ?? other.image ?? null,
         isSupport,
         blockedMe,
         unread,
-        lastText: last ? stripSource(last.body) || "📎 fayl" : "Suhbat boshlandi",
+        lastText: last ? stripSource(last.body) || "📎 fayl" : "Suhbat boşlandi",
         lastAt: last ? last.createdAt.toISOString() : null,
         lastMine: last ? last.senderId === meId : false,
       } satisfies ConvRow;

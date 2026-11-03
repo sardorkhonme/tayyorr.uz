@@ -44,7 +44,7 @@ export function PeopleModal({
             type="button"
             onClick={onClose}
             className="text-zinc-500 hover:text-white"
-            aria-label="Yopish"
+            aria-label="Yopiş"
           >
             <Icon name="close" className="h-4 w-4" />
           </button>
@@ -57,7 +57,7 @@ export function PeopleModal({
           )}
           {!loading && people.length === 0 && (
             <p className="px-2 py-6 text-center text-sm text-zinc-500">
-              Hali hech kim yo'q.
+              Hali heç kim yöq.
             </p>
           )}
           {people.map((p) => (

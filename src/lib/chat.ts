@@ -10,7 +10,7 @@ export async function getOrCreateConversation(
   otherId: string,
   orderId?: string | null,
 ) {
-  if (meId === otherId) throw new Error("O'zingiz bilan suhbat bo'lmaydi");
+  if (meId === otherId) throw new Error("Özingiz bilan suhbat bölmaydi");
   const [userAId, userBId] = orderedPair(meId, otherId);
 
   const existing = await db.conversation.findUnique({

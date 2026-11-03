@@ -26,7 +26,7 @@ async function sendSupportMessage(userId: string, body: string) {
 async function askForEmail(chatId: string) {
   await sendTelegramMessage(
     chatId,
-    "tayyorr.uz akkauntingizni ulash uchun ro'yxatdan o'tgan email manzilingizni yuboring.",
+    "tayyorr.uz akkauntingizni ulaş uçun röyxatdan ötgan email manzilingizni yuboring.",
   );
 }
 
@@ -52,7 +52,7 @@ export async function handleIncomingMessage(
     if (already) {
       await sendTelegramMessage(
         chatId,
-        `Akkauntingiz allaqachon ulangan ✅ (${already.firstName || already.name || "tayyorr.uz"}). Qayta ulash uchun avval admin bilan bog'laning.`,
+        `Akkauntingiz allaqaçon ulangan ✅ (${already.firstName || already.name || "tayyorr.uz"}). Qayta ulaş uçun avval admin bilan boğlaning.`,
       );
       return;
     }
@@ -67,7 +67,7 @@ export async function handleIncomingMessage(
   if (!session) {
     const already = await db.user.findFirst({ where: { telegramChatId: chatIdStr } });
     if (already) {
-      await sendTelegramMessage(chatId, "Akkauntingiz allaqachon ulangan ✅");
+      await sendTelegramMessage(chatId, "Akkauntingiz allaqaçon ulangan ✅");
       return;
     }
     await db.telegramLinkSession.create({ data: { chatId: chatIdStr } });
@@ -80,7 +80,7 @@ export async function handleIncomingMessage(
     if (!looksLikeEmail(trimmed)) {
       await sendTelegramMessage(
         chatId,
-        "Bu email manzilga o'xshamayapti. Iltimos, tayyorr.uz'da ro'yxatdan o'tgan email manzilingizni to'liq kiriting.",
+        "Bu email manzilga öxşamayapti. Iltimos, tayyorr.uz'da röyxatdan ötgan email manzilingizni töliq kiriting.",
       );
       return;
     }
@@ -91,7 +91,7 @@ export async function handleIncomingMessage(
     if (!user) {
       await sendTelegramMessage(
         chatId,
-        "Bunday email bilan ro'yxatdan o'tgan akkaunt topilmadi. Iltimos, tayyorr.uz'dagi email manzilingizni tekshirib, qayta yuboring.",
+        "Bunday email bilan röyxatdan ötgan akkaunt topilmadi. Iltimos, tayyorr.uz'dagi email manzilingizni tekşirib, qayta yuboring.",
       );
       return;
     }
@@ -104,14 +104,14 @@ export async function handleIncomingMessage(
 
     await sendSupportMessage(
       user.id,
-      `🔐 Tayyorr.uz kirish kodi: ${code}\n\nUshbu kodni Telegram botga kiriting. Kodni hech kimga bermang, uni faqat siz botga kiritishingiz kerak. 10 daqiqa amal qiladi.`,
+      `🔐 Tayyorr.uz kiriş kodi: ${code}\n\nUşbu kodni Telegram botga kiriting. Kodni heç kimga bermang, uni faqat siz botga kiritişingiz kerak. 10 daqiqa amal qiladi.`,
     );
 
     await sendTelegramMessage(
       chatId,
-      `Kod tayyorr.uz'dagi "Qo'llab-quvvatlash" chatingizga yuborildi.\n\n` +
-        `Ko'rish: ${APP_URL}/messages\n\n` +
-        "Kodni shu yerga kiriting.",
+      `Kod tayyorr.uz'dagi "Qöllab-quvvatlaş" çatingizga yuborildi.\n\n` +
+        `Köriş: ${APP_URL}/messages\n\n` +
+        "Kodni şu yerga kiriting.",
     );
     return;
   }
@@ -121,7 +121,7 @@ export async function handleIncomingMessage(
     await db.telegramLinkSession.deleteMany({ where: { chatId: chatIdStr } });
     await sendTelegramMessage(
       chatId,
-      "Kod muddati tugadi. Qaytadan boshlash uchun /start bosing.",
+      "Kod muddati tugadi. Qaytadan boşlaş uçun /start bosing.",
     );
     return;
   }
@@ -132,12 +132,12 @@ export async function handleIncomingMessage(
       await db.telegramLinkSession.deleteMany({ where: { chatId: chatIdStr } });
       await sendTelegramMessage(
         chatId,
-        "Ko'p marta noto'g'ri kod kiritildi. Qaytadan boshlash uchun /start bosing.",
+        "Köp marta notöğri kod kiritildi. Qaytadan boşlaş uçun /start bosing.",
       );
       return;
     }
     await db.telegramLinkSession.update({ where: { chatId: chatIdStr }, data: { attempts } });
-    await sendTelegramMessage(chatId, "Kod noto'g'ri. Qaytadan urinib ko'ring.");
+    await sendTelegramMessage(chatId, "Kod notöğri. Qaytadan urinib köring.");
     return;
   }
 
@@ -166,21 +166,21 @@ export async function handleIncomingMessage(
 
   await sendTelegramMessage(
     chatId,
-    `Salom${displayName ? `, ${displayName}` : ""}! Xush kelibsiz 🎉\n\n` +
-      "Endi quyidagilarni shu yerdan bilib borasiz:\n" +
+    `Salom${displayName ? `, ${displayName}` : ""}! Xuş kelibsiz 🎉\n\n` +
+      "Endi quyidagilarni şu yerdan bilib borasiz:\n" +
       "• Yangi xabarlar\n" +
-      "• Buyurtmangizga yangi takliflar (ko'ngillilar)\n" +
-      "• Shartnoma bilan bog'liq amallar\n" +
-      "• To'lov va tranzaksiyalar\n\n" +
-      "Savol bo'lsa, saytdagi \"Qo'llab-quvvatlash\" chatiga yozing.",
+      "• Buyurtmangizga yangi takliflar (köngillilar)\n" +
+      "• Şartnoma bilan boğliq amallar\n" +
+      "• Tölov va tranzaksiyalar\n\n" +
+      "Savol bölsa, saytdagi \"Qöllab-quvvatlaş\" çatiga yozing.",
   );
 
   const tgIdentity = from.username
     ? `@${from.username}`
-    : from.first_name || "Telegram foydalanuvchisi";
+    : from.first_name || "Telegram foydalanuvçisi";
   await sendSupportMessage(
     userId,
     `✅ Akkauntingizga Telegram bot ulandi.\nUlangan hisob: ${tgIdentity}\n\n` +
-      "Agar bu siz bo'lmasangiz, darhol shu chatga yozib shikoyat qoldiring.",
+      "Agar bu siz bölmasangiz, darhol şu çatga yozib şikoyat qoldiring.",
   );
 }

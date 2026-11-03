@@ -104,7 +104,7 @@ export function SupportProfileForm() {
             disabled={uploading}
             onClick={() => fileRef.current?.click()}
           >
-            {uploading ? "Yuklanmoqda..." : "Rasm tanlash"}
+            {uploading ? "Yuklanmoqda..." : "Rasm tanlaş"}
           </button>
         </div>
         <div>
@@ -126,7 +126,7 @@ export function SupportProfileForm() {
         </div>
         {msg && <p className="text-sm text-zinc-400">{msg}</p>}
         <button className="btn-primary w-fit" disabled={busy}>
-          {busy ? "..." : "Saqlash"}
+          {busy ? "..." : "Saqlaş"}
         </button>
       </form>
     </section>

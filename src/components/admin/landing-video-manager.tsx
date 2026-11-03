@@ -67,7 +67,7 @@ function Row({ v }: { v: Video }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("Video o'chirilsinmi?")) return;
+    if (!confirm("Video öçirilsinmi?")) return;
     setBusy(true);
     await fetch(`/api/admin/landing-video/${v.id}`, { method: "DELETE" });
     router.refresh();
@@ -112,7 +112,7 @@ function Row({ v }: { v: Video }) {
           disabled={busy}
           className="ml-auto rounded-full bg-red-500/15 px-2 py-0.5 text-red-300 hover:bg-red-500/25"
         >
-          O'chirish
+          Öçiriş
         </button>
       </div>
 
@@ -122,7 +122,7 @@ function Row({ v }: { v: Video }) {
             <video src={v.videoUrl} className="aspect-[9/16] w-full object-cover" muted />
           ) : (
             <div className="flex aspect-[9/16] items-center justify-center text-xs text-zinc-600">
-              video yo&apos;q
+              video yöq
             </div>
           )}
         </div>
@@ -159,7 +159,7 @@ function Row({ v }: { v: Video }) {
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
-              {uploading ? "Yuklanmoqda..." : "Videoni almashtirish"}
+              {uploading ? "Yuklanmoqda..." : "Videoni almaştiriş"}
             </button>
           </div>
           {msg && <p className="text-sm text-red-400">{msg}</p>}
@@ -170,7 +170,7 @@ function Row({ v }: { v: Video }) {
               disabled={busy}
               className="btn-primary text-sm"
             >
-              {busy ? "..." : "Saqlash"}
+              {busy ? "..." : "Saqlaş"}
             </button>
           )}
         </div>
@@ -216,7 +216,7 @@ export function LandingVideoManager({ initial }: { initial: Video[] }) {
     <div className="flex flex-col gap-5">
       <div className="rounded-xl border border-dashed border-white/15 p-4">
         <div className="mb-3 text-sm font-medium text-white">
-          Yangi video qo&apos;shish (tavsiya: 4 tagacha)
+          Yangi video qöşiş (tavsiya: 4 tagaça)
         </div>
         <div className="grid gap-3">
           <input
@@ -251,14 +251,14 @@ export function LandingVideoManager({ initial }: { initial: Video[] }) {
           disabled={uploading || !title.trim()}
           onClick={() => fileRef.current?.click()}
         >
-          {uploading ? "Yuklanmoqda..." : "Video tanlash va qo'shish"}
+          {uploading ? "Yuklanmoqda..." : "Video tanlaş va qöşiş"}
         </button>
         {msg && <p className="mt-2 text-sm text-red-400">{msg}</p>}
       </div>
 
       <div className="text-xs text-zinc-600">
-        {initial.length} ta video · landing sahifada "chiroyli grid"da
-        chiqadi
+        {initial.length} ta video · landing sahifada "çiroyli grid"da
+        çiqadi
       </div>
 
       {initial.map((v) => (

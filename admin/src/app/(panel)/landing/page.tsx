@@ -36,7 +36,7 @@ export default async function AdminLandingContent() {
         <h1 className="text-xl font-semibold text-white">Sayt kontenti</h1>
         <p className="mt-1 text-sm text-zinc-500">
           Landing sahifaning footerdan oldingi video va savol-javob
-          bo'limlarini shu yerdan boshqarasiz.
+          bölimlarini şu yerdan boşqarasiz.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export default async function AdminLandingContent() {
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-white">
-          Ko&apos;p so&apos;raladigan savollar
+          Köp söraladigan savollar
         </h2>
         <LandingFaqManager initial={faqs} />
       </section>

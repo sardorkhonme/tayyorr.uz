@@ -18,16 +18,16 @@ import { Icon } from "@/components/icons";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
@@ -129,7 +129,7 @@ export default async function OrderDetailPage({
     isPreparer && !isOrderer
       ? order.offers.map((o, i) => {
           const mine = o.preparerId === me.id;
-          const displayName = o.preparer.name ?? o.preparer.login ?? "Tayyorlovchi";
+          const displayName = o.preparer.name ?? o.preparer.login ?? "Tayyorlovçi";
           return {
             position: i + 1,
             mine,
@@ -161,12 +161,12 @@ export default async function OrderDetailPage({
         <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-sm">
           <div className="flex items-center gap-1.5 font-semibold text-red-300">
             <Icon name="trash" className="h-4 w-4" />
-            Bu buyurtma o'chirilgan
+            Bu buyurtma öçirilgan
           </div>
           <div className="mt-1 text-zinc-400">
             {order.deletedByRole === "ADMIN"
               ? "Administrator tomonidan"
-              : "Buyurtmachi tomonidan"}
+              : "Buyurtmaçi tomonidan"}
             {order.deletedAt &&
               ` · ${shortDateTime(order.deletedAt)}`}
           </div>
@@ -176,7 +176,7 @@ export default async function OrderDetailPage({
             </div>
           )}
           <div className="mt-1 text-xs text-zinc-500">
-            U faqat sizga ko'rinadi, boshqalarga emas.
+            U faqat sizga körinadi, boşqalarga emas.
           </div>
         </div>
       )}
@@ -205,7 +205,7 @@ export default async function OrderDetailPage({
         {order.deadline && (
           <span>Muddat: {shortDateTime(order.deadline)}</span>
         )}
-        {order.budget && <span>Byudjet: {order.budget.toLocaleString()} so'm</span>}
+        {order.budget && <span>Byudjet: {order.budget.toLocaleString()} söm</span>}
       </div>
 
       {files.length > 0 && (
@@ -225,7 +225,7 @@ export default async function OrderDetailPage({
                   </a>
                 ) : (
                   <span className="text-zinc-500">
-                    {f.kind} (kirish uchun ruxsat yo'q)
+                    {f.kind} (kiriş uçun ruxsat yöq)
                   </span>
                 )}
               </li>

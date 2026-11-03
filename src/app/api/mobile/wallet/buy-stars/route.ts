@@ -19,12 +19,12 @@ export async function POST(req: Request) {
   const me = await db.user.findUnique({ where: { id: auth.userId }, select: { role: true } });
   if (!me) return mobileJson({ error: "Topilmadi" }, { status: 404 });
   if (me.role !== "PREPARER") {
-    return mobileJson({ error: "Star faqat tayyorlovchilarga kerak" }, { status: 403 });
+    return mobileJson({ error: "Star faqat tayyorlovçilarga kerak" }, { status: 403 });
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Star sonini to'g'ri kiriting" }, { status: 400 });
+    return mobileJson({ error: "Star sonini töğri kiriting" }, { status: 400 });
   }
 
   const result = await buyStars({ userId: auth.userId, stars: parsed.data.stars });
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     "⭐ Star sotib olindi (mobil)",
     [
       `Foydalanuvchi: ${userLabel(user)}`,
-      `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} so'm)`,
+      `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} söm)`,
       `Yangi star balansi: ${result.newStars} ⭐`,
     ],
     siteUrl(`/sardorxon/admin/users/${auth.userId}`),

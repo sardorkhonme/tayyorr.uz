@@ -16,7 +16,7 @@ export function ClickReceiptButton({ id }: { id: string }) {
     try {
       const res = await fetch(`/api/wallet/${id}/click-ofd`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.qrCodeURL) throw new Error(data.error || "Chekni olib bo'lmadi");
+      if (!res.ok || !data.qrCodeURL) throw new Error(data.error || "Çekni olib bölmadi");
       setQr(data.qrCodeURL);
       window.open(data.qrCodeURL, "_blank", "noopener,noreferrer");
     } catch (e) {
@@ -30,16 +30,16 @@ export function ClickReceiptButton({ id }: { id: string }) {
     <div className="card !rounded-2xl p-5">
       <div className="flex items-center justify-between gap-3">
         <span>
-          <span className="block font-semibold text-zinc-900">Click rasmiy cheki</span>
-          <span className="text-sm text-zinc-500">Soliq qo&apos;mitasining fiskal cheki</span>
+          <span className="block font-semibold text-zinc-900">Click rasmiy çeki</span>
+          <span className="text-sm text-zinc-500">Soliq qömitasining fiskal çeki</span>
         </span>
         {qr ? (
           <a href={qr} target="_blank" rel="noopener noreferrer" className="btn-primary shrink-0 !py-2.5 !text-sm">
-            Chekni ochish <Icon name="external" className="h-4 w-4" />
+            Çekni oçiş <Icon name="external" className="h-4 w-4" />
           </a>
         ) : (
           <button type="button" onClick={load} disabled={busy} className="btn-ghost shrink-0 !py-2.5 !text-sm">
-            {busy ? "Yuklanmoqda…" : "Chekni ko'rish"}
+            {busy ? "Yuklanmoqda…" : "Çekni köriş"}
           </button>
         )}
       </div>

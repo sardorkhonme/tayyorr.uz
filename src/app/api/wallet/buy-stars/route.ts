@@ -16,14 +16,14 @@ export async function POST(req: Request) {
   }
   if (session.user.role !== "PREPARER") {
     return NextResponse.json(
-      { error: "Star faqat tayyorlovchilarga kerak" },
+      { error: "Star faqat tayyorlovçilarga kerak" },
       { status: 403 },
     );
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Star sonini to'g'ri kiriting" }, { status: 400 });
+    return NextResponse.json({ error: "Star sonini töğri kiriting" }, { status: 400 });
   }
 
   const result = await buyStars({ userId: session.user.id, stars: parsed.data.stars });
@@ -42,10 +42,10 @@ export async function POST(req: Request) {
     [
       `Foydalanuvchi: ${userLabel(user)}`,
       user?.email ? `Email: ${user.email}` : "",
-      `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} so'm)`,
+      `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} söm)`,
       `Yangi star balansi: ${result.newStars} ⭐`,
-      `Yangi so'm balansi: ${result.newSom.toLocaleString("ru-RU")} so'm`,
-      `Foydalanuvchi ID: ${session.user.id}`,
+      `Yangi söm balansi: ${result.newSom.toLocaleString("ru-RU")} söm`,
+      `Foydalanuvçi ID: ${session.user.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${session.user.id}`),
   );

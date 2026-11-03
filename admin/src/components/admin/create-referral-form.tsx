@@ -45,7 +45,7 @@ export function CreateReferralForm() {
         />
       </div>
       <button className="btn-primary" disabled={busy || !name.trim()}>
-        {busy ? "..." : "Havola yaratish"}
+        {busy ? "..." : "Havola yaratiş"}
       </button>
       {err && <p className="w-full text-sm text-red-400">{err}</p>}
     </form>

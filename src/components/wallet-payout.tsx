@@ -34,10 +34,10 @@ export function WalletPayout({ balance }: { balance: number }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Amalga oshmadi");
+      if (!res.ok) throw new Error(data.error || "Amalga oşmadi");
       setMsg({
         ok: true,
-        text: "Mablag' hisobdan yechildi va tez orada kartangizga o'tkaziladi.",
+        text: "Mablağ hisobdan yeçildi va tez orada kartangizga ötkaziladi.",
       });
       setCard("");
       setCardName("");
@@ -52,16 +52,16 @@ export function WalletPayout({ balance }: { balance: number }) {
 
   return (
     <form onSubmit={submit} className="card flex flex-col gap-3">
-      <h2 className="font-semibold text-white">Kartaga yechib olish</h2>
+      <h2 className="font-semibold text-white">Kartaga yeçib oliş</h2>
       <p className="-mt-1 text-xs text-zinc-500">
-        Mablag' darhol hisobdan yechiladi va kartangizga o'tkaziladi.
-        Mavjud: {balance.toLocaleString("ru-RU")} so'm.
+        Mablağ darhol hisobdan yeçiladi va kartangizga ötkaziladi.
+        Mavjud: {balance.toLocaleString("ru-RU")} söm.
       </p>
       <div className="flex gap-2.5 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
         <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
         <p>
-          <span className="font-semibold">Diqqat: kartaga yechishda {PAYOUT_COMMISSION_PERCENT}% komissiya olinadi.</span>{" "}
-          Masalan, 100 000 so&apos;m yechsangiz, kartangizga 95 000 so&apos;m tushadi.
+          <span className="font-semibold">Diqqat: kartaga yeçişda {PAYOUT_COMMISSION_PERCENT}% komissiya olinadi.</span>{" "}
+          Masalan, 100 000 söm yeçsangiz, kartangizga 95 000 söm tuşadi.
         </p>
       </div>
       <div>
@@ -85,7 +85,7 @@ export function WalletPayout({ balance }: { balance: number }) {
           />
         </div>
         <div>
-          <label className="label">Summa (so'm)</label>
+          <label className="label">Summa (söm)</label>
           <input
             className="input"
             type="number"
@@ -100,16 +100,16 @@ export function WalletPayout({ balance }: { balance: number }) {
       {value >= 1000 && (
         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-sm">
           <div className="flex justify-between text-zinc-400">
-            <span>Hamyondan yechiladi</span>
-            <span>{value.toLocaleString("ru-RU")} so&apos;m</span>
+            <span>Hamyondan yeçiladi</span>
+            <span>{value.toLocaleString("ru-RU")} söm</span>
           </div>
           <div className="mt-1 flex justify-between text-zinc-400">
             <span>Komissiya ({PAYOUT_COMMISSION_PERCENT}%)</span>
-            <span>−{commission.toLocaleString("ru-RU")} so&apos;m</span>
+            <span>−{commission.toLocaleString("ru-RU")} söm</span>
           </div>
           <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-semibold text-white">
-            <span>Kartangizga tushadi</span>
-            <span className="text-emerald-400">{net.toLocaleString("ru-RU")} so&apos;m</span>
+            <span>Kartangizga tuşadi</span>
+            <span className="text-emerald-400">{net.toLocaleString("ru-RU")} söm</span>
           </div>
         </div>
       )}
@@ -119,7 +119,7 @@ export function WalletPayout({ balance }: { balance: number }) {
         </p>
       )}
       <button className="btn-primary w-fit" disabled={busy}>
-        {busy ? "..." : "Yechib olish"}
+        {busy ? "..." : "Yeçib oliş"}
       </button>
     </form>
   );

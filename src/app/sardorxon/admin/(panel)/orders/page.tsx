@@ -12,16 +12,16 @@ export const dynamic = "force-dynamic";
 
 const TYPE: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 const STATUS: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor",
 };
@@ -65,7 +65,7 @@ export default async function AdminOrders({
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Buyurtmalar</h1>
-      <LiveSearch placeholder="Sarlavha, buyurtmachi yoki tayyorlovchi (ism, login, ID)" />
+      <LiveSearch placeholder="Sarlavha, buyurtmaçi yoki tayyorlovçi (ism, login, ID)" />
 
       {disputes.length > 0 && (
         <div className="flex flex-col gap-2">
@@ -88,7 +88,7 @@ export default async function AdminOrders({
                 ) : (
                   <>
                     <Icon name="alert" className="mr-1 inline-block h-4 w-4 align-[-3px] text-amber-300" />
-                    Bekor qilish so'ralgan
+                    Bekor qiliş söralgan
                   </>
                 )}
                 {" · "}
@@ -109,8 +109,8 @@ export default async function AdminOrders({
             <tr>
               <th className="px-4 py-2">Sana</th>
               <th className="px-4 py-2">Sarlavha</th>
-              <th className="px-4 py-2">Buyurtmachi</th>
-              <th className="px-4 py-2">Tayyorlovchi</th>
+              <th className="px-4 py-2">Buyurtmaçi</th>
+              <th className="px-4 py-2">Tayyorlovçi</th>
               <th className="px-4 py-2">Byudjet</th>
               <th className="px-4 py-2">Holat</th>
               <th className="px-4 py-2"></th>
@@ -166,8 +166,8 @@ export default async function AdminOrders({
                       title={o.deleteReason ?? undefined}
                     >
                       <Icon name="trash" className="mr-1 inline-block h-3.5 w-3.5 align-[-2px]" />
-                      O'chirilgan{" "}
-                      {o.deletedByRole === "ADMIN" ? "(admin)" : "(buyurtmachi)"}
+                      Öçirilgan{" "}
+                      {o.deletedByRole === "ADMIN" ? "(admin)" : "(buyurtmaçi)"}
                     </span>
                   ) : (
                     (STATUS[o.status] ?? o.status)
@@ -178,9 +178,9 @@ export default async function AdminOrders({
                     <AdminPostButton
                       url={`/api/admin/orders/${o.id}`}
                       method="DELETE"
-                      label="O'chirish"
+                      label="Öçiriş"
                       className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/25"
-                      promptReason="O'chirish sababini yozing (buyurtmachiga ko'rinadi):"
+                      promptReason="Öçiriş sababini yozing (buyurtmaçiga körinadi):"
                     />
                   )}
                 </td>
@@ -189,7 +189,7 @@ export default async function AdminOrders({
             {orders.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
-                  Hech narsa topilmadi.
+                  Heç narsa topilmadi.
                 </td>
               </tr>
             )}

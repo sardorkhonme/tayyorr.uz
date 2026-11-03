@@ -12,7 +12,7 @@ export function OrderDeleteButton({ orderId }: { orderId: string }) {
   async function del() {
     if (
       !window.confirm(
-        "Buyurtma o'chirilsinmi? Boshqalarga ko'rinmaydi, lekin sizda «o'chirilgan» holatida qoladi. Faol shartnomadagi mablag' qaytariladi.",
+        "Buyurtma öçirilsinmi? Boşqalarga körinmaydi, lekin sizda «öçirilgan» holatida qoladi. Faol şartnomadagi mablağ qaytariladi.",
       )
     )
       return;
@@ -43,7 +43,7 @@ export function OrderDeleteButton({ orderId }: { orderId: string }) {
         ) : (
           <span className="inline-flex items-center gap-1.5">
             <Icon name="trash" className="h-4 w-4" />
-            Buyurtmani o'chirish
+            Buyurtmani öçiriş
           </span>
         )}
       </button>

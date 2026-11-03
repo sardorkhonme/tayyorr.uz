@@ -7,7 +7,7 @@ import { LiveSearch } from "@/components/admin/live-search";
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: "Yangi",
-  REVIEWING: "Ko'rilmoqda",
+  REVIEWING: "Körilmoqda",
   RESOLVED: "Hal qilindi",
   DISMISSED: "Rad etildi",
 };
@@ -30,11 +30,11 @@ export default async function AdminComplaints({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold text-white">Shikoyatlar</h1>
-      <LiveSearch placeholder="Shikoyat qiluvchi yoki qilinuvchi (ism, login, ID)" />
+      <h1 className="text-xl font-semibold text-white">Şikoyatlar</h1>
+      <LiveSearch placeholder="Şikoyat qiluvçi yoki qilinuvçi (ism, login, ID)" />
 
       {complaints.length === 0 && (
-        <p className="text-sm text-zinc-500">{q ? "Hech narsa topilmadi." : "Shikoyatlar yo'q."}</p>
+        <p className="text-sm text-zinc-500">{q ? "Heç narsa topilmadi." : "Şikoyatlar yöq."}</p>
       )}
 
       <ul className="flex flex-col gap-2">

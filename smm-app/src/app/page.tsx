@@ -13,16 +13,16 @@ export const metadata = { title: "Tayyorr SMM" };
 
 const FAQ = [
   {
-    q: "Buyurtma bajarilmasa nima bo'ladi?",
-    a: "Bekor bo'lsa — pul to'liq, qisman bajarilsa — bajarilmagan qismi hamyoningizga avtomatik qaytadi.",
+    q: "Buyurtma bajarilmasa nima böladi?",
+    a: "Bekor bölsa — pul töliq, qisman bajarilsa — bajarilmagan qismi hamyoningizga avtomatik qaytadi.",
   },
   {
-    q: "Qancha vaqtda bajariladi?",
-    a: "Ko'pchilik xizmatlar bir necha daqiqada boshlanadi. Holatini «Buyurtmalarim» bo'limida kuzatasiz.",
+    q: "Qança vaqtda bajariladi?",
+    a: "Köpçilik xizmatlar bir neça daqiqada boşlanadi. Holatini «Buyurtmalarim» bölimida kuzatasiz.",
   },
   {
-    q: "Parol yoki akkauntimni berishim kerakmi?",
-    a: "Yo'q. Faqat ochiq sahifa, post yoki kanal havolasi kifoya — hech qachon parolingizni so'ramaymiz.",
+    q: "Parol yoki akkauntimni berişim kerakmi?",
+    a: "Yöq. Faqat oçiq sahifa, post yoki kanal havolasi kifoya — heç qaçon parolingizni söramaymiz.",
   },
 ];
 
@@ -49,7 +49,7 @@ export default async function SmmPage({
         </span>
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight text-zinc-900">Tayyorr SMM</h1>
-          <p className="mt-1 text-zinc-500">Obunachilar, layklar va ko&apos;rishlar — bir necha daqiqada.</p>
+          <p className="mt-1 text-zinc-500">Obunaçilar, layklar va körişlar — bir neça daqiqada.</p>
         </div>
       </header>
 

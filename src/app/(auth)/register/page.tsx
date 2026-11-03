@@ -10,8 +10,8 @@ import { TermsGate } from "@/components/terms-gate";
 type Role = "ORDERER" | "PREPARER";
 
 const ROLES: { id: Role; title: string; desc: string }[] = [
-  { id: "ORDERER", title: "Buyurtma beruvchi", desc: "Ish buyuraman" },
-  { id: "PREPARER", title: "Tayyorlovchi", desc: "Ish tayyorlab beraman" },
+  { id: "ORDERER", title: "Buyurtma beruvçi", desc: "Iş buyuraman" },
+  { id: "PREPARER", title: "Tayyorlovçi", desc: "Iş tayyorlab beraman" },
 ];
 
 export default function RegisterPage() {
@@ -30,10 +30,10 @@ export default function RegisterPage() {
   return (
     <AuthShell>
       <div className="card p-7">
-        <h1 className="text-xl font-semibold text-white">Ro'yxatdan o'tish</h1>
+        <h1 className="text-xl font-semibold text-white">Röyxatdan ötiş</h1>
         <p className="mt-1 text-sm text-zinc-400">
           Rolni tanlang, Google bilan davom eting. Keyingi qadamda ism, familiya,
-          login, parol va rasm so'raladi.
+          login, parol va rasm söraladi.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
@@ -82,20 +82,20 @@ export default function RegisterPage() {
           {!role
             ? "Avval rolni tanlang"
             : !agree
-              ? "Shartlarga rozilik bering"
-              : "Google bilan davom etish"}
+              ? "Şartlarga rozilik bering"
+              : "Google bilan davom etiş"}
         </button>
       </div>
 
       <p className="mt-5 text-center text-sm text-zinc-500">
         Hisobingiz bormi?{" "}
         <Link href="/login" className="font-medium text-indigo-400 hover:text-indigo-300">
-          Kirish
+          Kiriş
         </Link>
       </p>
       <p className="mt-2 text-center text-xs text-zinc-600">
         <Link href="/terms" className="hover:text-zinc-400">
-          Ommaviy oferta va foydalanish shartlari
+          Ommaviy oferta va foydalaniş şartlari
         </Link>
       </p>
     </AuthShell>

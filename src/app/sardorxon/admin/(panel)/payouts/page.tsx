@@ -10,8 +10,8 @@ import { LiveSearch } from "@/components/admin/live-search";
 import { Icon } from "@/components/icons";
 
 const STATUS: Record<string, string> = {
-  PENDING: "O'tkazilishi kutilmoqda",
-  PAID: "Kartaga o'tkazildi",
+  PENDING: "Ötkazilişi kutilmoqda",
+  PAID: "Kartaga ötkazildi",
   REJECTED: "Rad etildi (qaytarildi)",
   CANCELLED: "Bekor qilindi",
 };
@@ -38,20 +38,20 @@ export default async function AdminPayouts({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold text-white">Kartaga yechib olish</h1>
+      <h1 className="text-xl font-semibold text-white">Kartaga yeçib oliş</h1>
       <p className="text-sm text-zinc-500">
-        Mablag' foydalanuvchi hisobidan avtomatik yechilgan. Kartaga haqiqatan
-        o'tkazgach «Kartaga o'tkazdim» ni bosing. «O'tkazib bo'lmadi» — mablag'
-        foydalanuvchiga qaytadi.
+        Mablağ foydalanuvçi hisobidan avtomatik yeçilgan. Kartaga haqiqatan
+        ötkazgaç «Kartaga ötkazdim» ni bosing. «Ötkazib bölmadi» — mablağ
+        foydalanuvçiga qaytadi.
       </p>
-      <LiveSearch placeholder="Foydalanuvchi (ism, login, ID) yoki so'rov ID" />
+      <LiveSearch placeholder="Foydalanuvçi (ism, login, ID) yoki sörov ID" />
 
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[820px] text-sm">
           <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
             <tr>
               <th className="px-4 py-2">Sana</th>
-              <th className="px-4 py-2">Foydalanuvchi</th>
+              <th className="px-4 py-2">Foydalanuvçi</th>
               <th className="px-4 py-2">Karta</th>
               <th className="px-4 py-2">Egasi</th>
               <th className="px-4 py-2">Summa</th>
@@ -102,13 +102,13 @@ export default async function AdminPayouts({
                         label={
                           <>
                             <Icon name="check-circle" className="h-3.5 w-3.5" />
-                            Kartaga o'tkazdim
+                            Kartaga ötkazdim
                           </>
                         }
                         className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-500/25"
-                        confirmText="Pul kartaga haqiqatan o'tkazildimi?"
+                        confirmText="Pul kartaga haqiqatan ötkazildimi?"
                       />
-                      <PayoutRejectButton id={p.id} amountText={`${p.amount.toLocaleString("ru-RU")} so'm`} />
+                      <PayoutRejectButton id={p.id} amountText={`${p.amount.toLocaleString("ru-RU")} söm`} />
                     </div>
                   )}
                   {p.adminNote && (
@@ -123,7 +123,7 @@ export default async function AdminPayouts({
             {rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
-                  {q ? "Hech narsa topilmadi." : "So'rovlar yo'q."}
+                  {q ? "Heç narsa topilmadi." : "Sörovlar yöq."}
                 </td>
               </tr>
             )}

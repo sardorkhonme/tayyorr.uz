@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       },
       select: ME_SELECT,
     });
-    await logActivity(user.id, "AUTH_LOGIN", "Google bilan ro'yxatdan o'tdi (mobil ilova)");
+    await logActivity(user.id, "AUTH_LOGIN", "Google bilan röyxatdan ötdi (mobil ilova)");
   } else {
     await logActivity(user.id, "AUTH_LOGIN", "Google bilan kirdi (mobil ilova)");
   }

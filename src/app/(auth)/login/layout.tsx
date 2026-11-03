@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Kirish",
+  title: "Kiriş",
   alternates: { canonical: "/login" },
   robots: { index: false, follow: true },
 };

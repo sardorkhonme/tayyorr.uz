@@ -27,14 +27,14 @@ export async function POST(
   const { id } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri so'rov" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri sörov" }, { status: 400 });
   }
   const { until: untilRaw, indefinite, reason, notify } = parsed.data;
 
   const user = await db.user.findUnique({ where: { id }, select: { isSupport: true } });
   if (!user) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (user.isSupport) {
-    return NextResponse.json({ error: "Support hisobini cheklab bo'lmaydi" }, { status: 400 });
+    return NextResponse.json({ error: "Support hisobini çeklab bölmaydi" }, { status: 400 });
   }
 
   let until: Date;
@@ -44,7 +44,7 @@ export async function POST(
     until = new Date(untilRaw);
     if (Number.isNaN(until.getTime()) || until.getTime() <= Date.now()) {
       return NextResponse.json(
-        { error: "Sana va soat kelajakda bo'lishi kerak" },
+        { error: "Sana va soat kelajakda bölişi kerak" },
         { status: 400 },
       );
     }
@@ -60,9 +60,9 @@ export async function POST(
     const conv = await getOrCreateConversation(supportId, id);
     const when =
       indefinite || !untilRaw ? "muddatsiz" : `${shortDateTime(until)}gacha`;
-    const body = `Siz ${when} cheklov oldingiz.${
+    const body = `Siz ${when} çeklov oldingiz.${
       reason ? ` Sabab: ${reason}.` : ""
-    } Bu davrda siz faqat «tayyorr.uz support» bilan yozisha olasiz. Savollaringiz bo'lsa shu yerga yozing.`;
+    } Bu davrda siz faqat «tayyorr.uz support» bilan yozişa olasiz. Savollaringiz bölsa şu yerga yozing.`;
     const m = await createMessage({
       conversationId: conv.id,
       senderId: supportId,

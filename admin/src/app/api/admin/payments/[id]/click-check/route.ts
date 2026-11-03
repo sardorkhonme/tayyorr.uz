@@ -14,7 +14,7 @@ export async function POST(
 
   if (!clickMerchantApiConfigured()) {
     return NextResponse.json(
-      { error: "Click Merchant API sozlanmagan (CLICK_MERCHANT_USER_ID yo'q)" },
+      { error: "Click Merchant API sozlanmagan (CLICK_MERCHANT_USER_ID yöq)" },
       { status: 400 },
     );
   }

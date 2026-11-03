@@ -54,7 +54,7 @@ function snippet(m: {
   fileName: string | null;
   deletedAt: Date | null;
 }): string {
-  if (m.deletedAt) return "o'chirilgan xabar";
+  if (m.deletedAt) return "öçirilgan xabar";
   const body = stripSource(m.body);
   if (body) return body.length > 90 ? body.slice(0, 90) + "…" : body;
   if (m.fileName) return `📎 ${m.fileName}`;

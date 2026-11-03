@@ -22,8 +22,8 @@ export function AccountNotFound() {
           </div>
           <h1 className="mt-5 font-display text-2xl font-bold text-zinc-900">Bunday hisob mavjud emas</h1>
           <p className="mt-2 leading-relaxed text-zinc-500">
-            Hisobingiz tizimdan o&apos;chirilgan yoki topilmadi. Qaytadan kirish yoki ro&apos;yxatdan o&apos;tish
-            uchun quyidagi tugmani bosing.
+            Hisobingiz tizimdan öçirilgan yoki topilmadi. Qaytadan kiriş yoki röyxatdan ötiş
+            uçun quyidagi tugmani bosing.
           </p>
           <button
             type="button"
@@ -31,7 +31,7 @@ export function AccountNotFound() {
             disabled={pending}
             className="btn-primary mt-7 w-full !py-4 !text-base"
           >
-            {pending ? "Yo'naltirilmoqda…" : "Qayta urinish"}
+            {pending ? "Yönaltirilmoqda…" : "Qayta uriniş"}
           </button>
         </div>
       </div>

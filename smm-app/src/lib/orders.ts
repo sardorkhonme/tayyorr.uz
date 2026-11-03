@@ -23,7 +23,7 @@ const USER_SELECT = {
 } as const;
 
 function som(n: number) {
-  return `${num(n)} so'm`;
+  return `${num(n)} söm`;
 }
 
 export const FINAL_STATUSES = ["COMPLETED", "PARTIAL", "CANCELED", "FAILED"];
@@ -43,20 +43,20 @@ export async function placeOrder(userId: string, serviceId: string, link: string
   const service = await db.smmService.findUnique({ where: { id: serviceId } });
   if (!service || !service.active) throw new OrderError("Xizmat topilmadi", 404);
   if (quantity < service.min || quantity > service.max) {
-    throw new OrderError(`Miqdor ${service.min} – ${service.max} oralig'ida bo'lsin`);
+    throw new OrderError(`Miqdor ${service.min} – ${service.max} oraliğida bölsin`);
   }
 
   const user = await db.user.findUnique({ where: { id: userId }, select: { bannedUntil: true } });
   if (!user) throw new OrderError("Hisob topilmadi", 401);
   if (user.bannedUntil && user.bannedUntil > new Date()) {
-    throw new OrderError("Hisobingiz vaqtincha cheklangan", 403);
+    throw new OrderError("Hisobingiz vaqtinça çeklangan", 403);
   }
 
   const pricing = await getPricing();
-  if (!pricing) throw new OrderError("Narxni hisoblab bo'lmadi, birozdan keyin urinib ko'ring", 503);
+  if (!pricing) throw new OrderError("Narxni hisoblab bölmadi, birozdan keyin urinib köring", 503);
   if (isHidden(pricing.adjust, service)) throw new OrderError("Xizmat topilmadi", 404);
   const charge = chargeFor(rateFor(service.providerRate, pricing, service), quantity);
-  if (charge <= 0) throw new OrderError("Summa noto'g'ri");
+  if (charge <= 0) throw new OrderError("Summa notöğri");
 
   const order = await db.$transaction(async (tx) => {
     // shartli yechish — parallel so'rovlarda balans manfiy bo'lmaydi
@@ -64,7 +64,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
       where: { id: userId, balance: { gte: charge } },
       data: { balance: { decrement: charge } },
     });
-    if (upd.count !== 1) throw new OrderError("Hamyonda mablag' yetarli emas", 402);
+    if (upd.count !== 1) throw new OrderError("Hamyonda mablağ yetarli emas", 402);
 
     const o = await tx.smmOrder.create({
       data: { userId, serviceId: service.id, link, quantity, charge },
@@ -87,7 +87,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
       data: {
         userId,
         action: "SMM_ORDER",
-        summary: `tayyorr+ buyurtma: ${service.name} × ${quantity} (${charge} so'm)`,
+        summary: `tayyorr+ buyurtma: ${service.name} × ${quantity} (${charge} söm)`,
         meta: { smmOrderId: order.id, link },
       },
     })
@@ -113,7 +113,7 @@ export async function placeOrder(userId: string, serviceId: string, link: string
         `${providerName()} buyurtma: #${providerOrderId}`,
         `Buyurtma ID: ${order.id}`,
       ],
-      { text: "Foydalanuvchi", href: adminUserUrl(userId) },
+      { text: "Foydalanuvçi", href: adminUserUrl(userId) },
     );
     return updated;
   } catch (e) {
@@ -128,15 +128,15 @@ export async function placeOrder(userId: string, serviceId: string, link: string
       .catch(() => {});
     await notifyAdmins(
       "orders",
-      `⏳ SMM buyurtma: ${providerName()} javob bermadi — tekshiring`,
+      `⏳ SMM buyurtma: ${providerName()} javob bermadi — tekşiring`,
       [
         `Xizmat: ${service.name}`,
         `Havola: ${link}`,
         `Miqdor: ${num(quantity)} · ${som(charge)}`,
-        `Buyurtma PENDING holatda qoldi (pul yechilgan). ${providerName()} kabinetida yaratilganini tekshiring.`,
+        `Buyurtma PENDING holatda qoldi (pul yeçilgan). ${providerName()} kabinetida yaratilganini tekşiring.`,
         `Buyurtma ID: ${order.id}`,
       ],
-      { text: "Foydalanuvchi", href: adminUserUrl(userId) },
+      { text: "Foydalanuvçi", href: adminUserUrl(userId) },
     );
     return order;
   }
@@ -174,7 +174,7 @@ export async function finishOrder(
         note:
           status === "PARTIAL"
             ? `tayyorr+: qisman bajarildi — qolgan qismi qaytdi (${o.service.name})`
-            : `tayyorr+: buyurtma bekor bo'ldi — pul qaytdi (${o.service.name})`,
+            : `tayyorr+: buyurtma bekor böldi — pul qaytdi (${o.service.name})`,
         meta: { smmOrderId: o.id },
       },
     });
@@ -192,7 +192,7 @@ const FINISH_TITLE: Record<string, string> = {
 
 const USER_NOTICE: Record<string, (o: { title: string; qty: string; refund: string }) => string> = {
   COMPLETED: (o) => `✅ Buyurtmangiz bajarildi: ${o.title} — ${o.qty} ta.`,
-  PARTIAL: (o) => `🟡 Buyurtmangiz qisman bajarildi: ${o.title}. Bajarilmagan qism uchun ${o.refund} hamyoningizga qaytarildi.`,
+  PARTIAL: (o) => `🟡 Buyurtmangiz qisman bajarildi: ${o.title}. Bajarilmagan qism uçun ${o.refund} hamyoningizga qaytarildi.`,
   CANCELED: (o) => `❌ Buyurtmangiz bekor qilindi: ${o.title}. ${o.refund} hamyoningizga qaytarildi.`,
   FAILED: (o) => `⛔ Buyurtma qabul qilinmadi: ${o.title}. ${o.refund} hamyoningizga qaytarildi.`,
 };
@@ -224,7 +224,7 @@ async function notifyOrderFinished(orderId: string) {
       o.providerOrderId ? `${providerName()} buyurtma: #${o.providerOrderId}` : "",
       `Buyurtma ID: ${o.id}`,
     ],
-    { text: "Foydalanuvchi", href: adminUserUrl(o.userId) },
+    { text: "Foydalanuvçi", href: adminUserUrl(o.userId) },
   );
 }
 

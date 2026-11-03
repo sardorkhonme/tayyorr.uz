@@ -11,18 +11,18 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
 
 const BASE: NavLink[] = [
-  { href: "/sardorxon/admin", label: "Bosh", icon: "home" },
+  { href: "/sardorxon/admin", label: "Boş", icon: "home" },
   { href: "/sardorxon/admin/orders", label: "Buyurtmalar", icon: "package" },
   { href: "/sardorxon/admin/messages", label: "Xabarlar", icon: "message" },
   { href: "/sardorxon/admin/broadcast", label: "Ommaviy xabar", icon: "megaphone" },
-  { href: "/sardorxon/admin/announcement", label: "E'lon banneri", icon: "pin" },
-  { href: "/sardorxon/admin/payments", label: "To'lovlar", icon: "card" },
-  { href: "/sardorxon/admin/payouts", label: "Yechib olish", icon: "banknote" },
-  { href: "/sardorxon/admin/complaints", label: "Shikoyatlar", icon: "alert" },
-  { href: "/sardorxon/admin/users", label: "Foydalanuvchilar", icon: "users" },
-  { href: "/sardorxon/admin/sources", label: "Qayerdan eshitgan", icon: "chart" },
+  { href: "/sardorxon/admin/announcement", label: "Eʼlon banneri", icon: "pin" },
+  { href: "/sardorxon/admin/payments", label: "Tölovlar", icon: "card" },
+  { href: "/sardorxon/admin/payouts", label: "Yeçib oliş", icon: "banknote" },
+  { href: "/sardorxon/admin/complaints", label: "Şikoyatlar", icon: "alert" },
+  { href: "/sardorxon/admin/users", label: "Foydalanuvçilar", icon: "users" },
+  { href: "/sardorxon/admin/sources", label: "Qayerdan eşitgan", icon: "chart" },
   { href: "/sardorxon/admin/chats", label: "Suhbatlar", icon: "messages" },
-  { href: "/sardorxon/admin/referrals", label: "Tashriflar", icon: "link" },
+  { href: "/sardorxon/admin/referrals", label: "Taşriflar", icon: "link" },
   { href: "/sardorxon/admin/landing", label: "Sayt kontenti", icon: "film" },
   { href: "/sardorxon/admin/app", label: "Mobil ilova", icon: "phone" },
   { href: "/sardorxon/admin/smm", label: "tayyorr+", icon: "rocket", image: "/plus-mark.png" },
@@ -76,7 +76,7 @@ export default async function AdminPanelLayout({
           <div className="ml-auto flex items-center gap-2">
             <AdminPostButton
               url="/api/admin/logout"
-              label="Chiqish"
+              label="Çiqiş"
               className="rounded-lg px-2 py-1 text-sm text-zinc-500 transition hover:text-red-400"
               redirectTo="/sardorxon/admin/login"
             />

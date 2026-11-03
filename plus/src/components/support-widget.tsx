@@ -171,7 +171,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
           <div
             ref={panelRef}
             role="dialog"
-            aria-label="Support chati"
+            aria-label="Support çati"
             className="animate-pop fixed bottom-24 right-5 z-[44] h-[min(560px,calc(100dvh-8rem))] w-[390px] overflow-hidden rounded-3xl border border-zinc-200 shadow-2xl shadow-zinc-900/15"
           >
             <SupportChat loggedIn={loggedIn} className="h-full" autoFocus />

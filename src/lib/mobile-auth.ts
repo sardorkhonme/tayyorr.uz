@@ -15,7 +15,7 @@ const SECRET = process.env.MOBILE_JWT_SECRET || "";
 const EXPIRES_IN = "30d";
 
 export function signMobileToken(userId: string): string {
-  if (!SECRET) throw new Error("MOBILE_JWT_SECRET yo'q");
+  if (!SECRET) throw new Error("MOBILE_JWT_SECRET yöq");
   return jwt.sign({ sub: userId }, SECRET, { expiresIn: EXPIRES_IN });
 }
 

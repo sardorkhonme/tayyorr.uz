@@ -65,7 +65,7 @@ export async function GET(
     blockedByMe: bs.iBlocked,
     other: other && {
       id: other.id,
-      name: other.name ?? other.login ?? "Foydalanuvchi",
+      name: other.name ?? other.login ?? "Foydalanuvçi",
       login: other.login,
       image: hidden ? null : other.avatarUrl ?? other.image ?? null,
       lastSeenAt:
@@ -96,7 +96,7 @@ export async function DELETE(
   });
   if (other?.isSupport) {
     return NextResponse.json(
-      { error: "«tayyorr.uz support» suhbatini o'chirib bo'lmaydi" },
+      { error: "«tayyorr.uz support» suhbatini öçirib bölmaydi" },
       { status: 400 },
     );
   }

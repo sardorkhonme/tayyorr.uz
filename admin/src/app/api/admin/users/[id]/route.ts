@@ -19,7 +19,7 @@ export async function DELETE(
   if (!user) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (user.isSupport || user.isPlatform) {
     return NextResponse.json(
-      { error: "Tizim hisobini o'chirib bo'lmaydi" },
+      { error: "Tizim hisobini öçirib bölmaydi" },
       { status: 400 },
     );
   }
@@ -42,7 +42,7 @@ export async function DELETE(
           type: "REFUND",
           amount: c.amount,
           method: "ESCROW",
-          note: "Tayyorlovchi hisobi o'chirildi — bloklangan mablag' qaytdi",
+          note: "Tayyorlovçi hisobi öçirildi — bloklangan mablağ qaytdi",
         },
       });
     }

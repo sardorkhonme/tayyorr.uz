@@ -39,12 +39,12 @@ export async function PATCH(
   const msg = await db.message.findUnique({ where: { id } });
   if (!msg) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
   if (msg.deletedAt) {
-    return NextResponse.json({ error: "Xabar o'chirilgan" }, { status: 400 });
+    return NextResponse.json({ error: "Xabar öçirilgan" }, { status: 400 });
   }
 
   const parsed = editSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Matn bo'sh bo'lmasin" }, { status: 400 });
+    return NextResponse.json({ error: "Matn böş bölmasin" }, { status: 400 });
   }
   if (parsed.data.body === msg.body) {
     return NextResponse.json({

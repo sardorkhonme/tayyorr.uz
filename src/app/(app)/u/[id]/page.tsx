@@ -12,20 +12,20 @@ import { shortDate } from "@/lib/date";
 import { maskName } from "@/lib/mask-name";
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: "Ochiq",
+  OPEN: "Oçiq",
   IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topshirilgan",
+  DELIVERED: "Topşirilgan",
   DONE: "Yakunlangan",
   CANCELLED: "Bekor qilingan",
 };
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs ishi",
+  COURSE_WORK: "Kurs işi",
   REFERAT: "Referat",
   ESSAY: "Esse",
-  DIPLOMA: "Diplom ishi",
-  OTHER: "Boshqa",
+  DIPLOMA: "Diplom işi",
+  OTHER: "Boşqa",
 };
 
 export default async function PublicProfile({
@@ -72,7 +72,7 @@ export default async function PublicProfile({
   const displayName =
     user.name ||
     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() ||
-    "Foydalanuvchi";
+    "Foydalanuvçi";
 
   if (blockedMe) {
     return (
@@ -117,7 +117,7 @@ export default async function PublicProfile({
       : [];
   const showDone = !!user.role;
   const doneTitle = isPreparerProfile
-    ? "Bajarilgan ishlar"
+    ? "Bajarilgan işlar"
     : "Berilgan buyurtmalar";
 
   return (
@@ -145,9 +145,9 @@ export default async function PublicProfile({
           <div className="mt-0.5 text-sm text-zinc-500">
             @{user.login ?? "—"} ·{" "}
             {user.role === "PREPARER"
-              ? "Tayyorlovchi"
+              ? "Tayyorlovçi"
               : user.role === "ORDERER"
-                ? "Buyurtma beruvchi"
+                ? "Buyurtma beruvçi"
                 : "—"}
           </div>
           {(() => {
@@ -184,11 +184,11 @@ export default async function PublicProfile({
         <dl className="divide-y divide-white/5 text-sm">
           <Row k="Email" v={<MaskedEmail email={user.email} full={isOwner} />} />
           <Row
-            k="Ro'yxatdan o'tgan"
+            k="Röyxatdan ötgan"
             v={shortDate(user.createdAt)}
           />
           {user.role === "PREPARER" ? (
-            <Row k="Olingan ishlar" v={String(user._count.ordersTaken)} />
+            <Row k="Olingan işlar" v={String(user._count.ordersTaken)} />
           ) : (
             <Row k="Berilgan buyurtmalar" v={String(user._count.ordersCreated)} />
           )}
@@ -207,7 +207,7 @@ export default async function PublicProfile({
             {doneTitle} ({doneOrders.length})
           </h2>
           {doneOrders.length === 0 ? (
-            <div className="card text-sm text-zinc-500">Hozircha yo'q.</div>
+            <div className="card text-sm text-zinc-500">Hozirça yöq.</div>
           ) : (
             <ul className="flex flex-col gap-2">
               {doneOrders.map((o) => (

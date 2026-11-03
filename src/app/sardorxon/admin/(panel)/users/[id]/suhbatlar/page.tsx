@@ -30,7 +30,7 @@ export default async function AdminUserConversations({
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
       <h2 className="mb-3 font-semibold text-white">Suhbatlar</h2>
       {convs.length === 0 ? (
-        <p className="text-sm text-zinc-500">Suhbat yo'q.</p>
+        <p className="text-sm text-zinc-500">Suhbat yöq.</p>
       ) : (
         <ul className="flex flex-col gap-1 text-sm">
           {convs.map((c) => {
@@ -44,7 +44,7 @@ export default async function AdminUserConversations({
                   <span className="text-zinc-200">
                     {other.isSupport ? "tayyorr.uz support" : `@${other.login ?? other.name ?? "—"}`}
                     {c.hiddenFromUsersAt && (
-                      <span className="ml-2 text-xs text-amber-400">yashirilgan</span>
+                      <span className="ml-2 text-xs text-amber-400">yaşirilgan</span>
                     )}
                   </span>
                   <span className="text-zinc-500">{c._count.messages} xabar</span>

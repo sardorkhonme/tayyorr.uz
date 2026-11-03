@@ -48,11 +48,11 @@ export async function PATCH(req: Request) {
 
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: "Noto'g'ri ma'lumot" }, { status: 400 });
+    return mobileJson({ error: "Notöğri maʼlumot" }, { status: 400 });
   }
   const data = parsed.data;
   if (Object.keys(data).length === 0) {
-    return mobileJson({ error: "O'zgartirish uchun maydon yo'q" }, { status: 400 });
+    return mobileJson({ error: "Özgartiriş uçun maydon yöq" }, { status: 400 });
   }
 
   const user = await db.user.update({

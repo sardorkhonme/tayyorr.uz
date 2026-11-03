@@ -8,16 +8,16 @@ import { Providers } from "@/components/providers";
 // sarlavhalar uchun asosiy (display) shrift — geometrik, lekin haddan
 // tashqari o'yinqaro (Baloo) ham, haddan tashqari qat'iy (Orbitron) ham emas
 const headingFont = Space_Grotesk({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
   variable: "--font-heading",
   display: "swap",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tayyorr.uz";
-const TITLE = "tayyorr.uz — prezentatsiya, kurs ishi va referat buyurtma qilish";
+const TITLE = "tayyorr.uz — prezentatsiya, kurs işi va referat buyurtma qiliş";
 const DESCRIPTION =
-  "tayyorr.uz — talabalar uchun platforma: prezentatsiya, kurs ishi, referat, esse va diplom ishini ishonchli tayyorlovchilarga buyurtma qiling yoki o'zingiz tayyorlab daromad qiling. Xavfsiz to'lov, kelishuv va baholash tizimi. Tayyorr SMM — obunachi, layk va ko'rishlar. Bitta hisob va bitta hamyon.";
+  "tayyorr.uz — talabalar uçun platforma: prezentatsiya, kurs işi, referat, esse va diplom işini işonçli tayyorlovçilarga buyurtma qiling yoki özingiz tayyorlab daromad qiling. Xavfsiz tölov, kelişuv va baholaş tizimi. Tayyorr SMM — obunaçi, layk va körişlar. Bitta hisob va bitta hamyon.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -28,21 +28,32 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   applicationName: "tayyorr.uz",
   keywords: [
-    "prezentatsiya tayyorlash",
-    "kurs ishi",
+    "prezentatsiya tayyorlaş",
+    "kurs işi",
     "referat",
     "esse",
-    "diplom ishi",
-    "mustaqil ish",
-    "slayd tayyorlash",
-    "talabalar uchun",
-    "buyurtma qilish",
+    "diplom işi",
+    "mustaqil iş",
+    "slayd tayyorlaş",
+    "talabalar uçun",
+    "buyurtma qiliş",
     "tayyorr",
     "tayyorr.uz",
     "smm panel",
-    "instagram obunachi",
-    "telegram obunachi",
-    "O'zbekiston",
+    "instagram obunaçi",
+    "telegram obunaçi",
+    "Özbekiston",
+    // eski yozuvda ham qidiriladi (2026-yilgi alifbogacha bo'lgan imlo) — Google uchun
+    "prezentatsiya tayyorlaş",
+    "kurs işi",
+    "diplom işi",
+    "mustaqil iş",
+    "slayd tayyorlaş",
+    "talabalar uçun",
+    "buyurtma qiliş",
+    "instagram obunaçi",
+    "telegram obunaçi",
+    "Özbekiston",
   ],
   authors: [{ name: "tayyorr.uz" }],
   creator: "tayyorr.uz",
@@ -72,7 +83,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "tayyorr.uz — prezentatsiya, kurs ishi va referat buyurtma qilish",
+        alt: "tayyorr.uz — prezentatsiya, kurs işi va referat buyurtma qiliş",
       },
     ],
   },

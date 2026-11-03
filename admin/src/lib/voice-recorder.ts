@@ -45,7 +45,7 @@ export function useVoiceRecorder(onDone: (file: File) => void, onError: (msg: st
   const start = useCallback(async () => {
     if (rec.current) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      onError("Brauzeringiz ovoz yozishni qo'llamaydi");
+      onError("Brauzeringiz ovoz yozişni qöllamaydi");
       return;
     }
     wantStop.current = false;
@@ -73,7 +73,7 @@ export function useVoiceRecorder(onDone: (file: File) => void, onError: (msg: st
       cleanup();
       if (cancelled.current) return;
       if (dur < 0.6 || blob.size < 500) {
-        onError("Yozib olish uchun tugmani bosib turing");
+        onError("Yozib oliş uçun tugmani bosib turing");
         return;
       }
       const stamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");

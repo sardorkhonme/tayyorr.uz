@@ -32,7 +32,7 @@ export function SmmSettingsForm({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
-      setMsg({ ok: true, text: kind === "save" ? "Saqlandi — narxlar 1 daqiqa ichida yangilanadi" : "Kurs yangilandi" });
+      setMsg({ ok: true, text: kind === "save" ? "Saqlandi — narxlar 1 daqiqa içida yangilanadi" : "Kurs yangilandi" });
       router.refresh();
     } catch (err) {
       setMsg({ ok: false, text: err instanceof Error ? err.message : "Xatolik" });
@@ -53,7 +53,7 @@ export function SmmSettingsForm({
         <h2 className="font-semibold text-white">Ustama (foyda)</h2>
         <p className="mt-1 text-xs text-zinc-500">
           Sotuv narxi = provayder narxi (USD) × dollar kursi × (1 + ustama%).
-          {markupIsDefault && " Hozir standart qiymat ishlatilmoqda."}
+          {markupIsDefault && " Hozir standart qiymat işlatilmoqda."}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -67,16 +67,16 @@ export function SmmSettingsForm({
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">%</span>
         </div>
         <button className="btn-primary" disabled={busy !== null || !Number.isFinite(pct)}>
-          {busy === "save" ? "..." : "Saqlash"}
+          {busy === "save" ? "..." : "Saqlaş"}
         </button>
         <button type="button" className="btn-ghost" disabled={busy !== null} onClick={() => call("rate")}>
-          {busy === "rate" ? "..." : "Kursni hozir yangilash"}
+          {busy === "rate" ? "..." : "Kursni hozir yangilaş"}
         </button>
       </div>
       {example != null && (
         <p className="text-sm text-zinc-400">
-          Misol: provayderda 1000 dona <span className="text-white">$1.00</span> bo&apos;lsa — saytda{" "}
-          <span className="font-semibold text-white">{example.toLocaleString("ru-RU")} so&apos;m</span>
+          Misol: provayderda 1000 dona <span className="text-white">$1.00</span> bölsa — saytda{" "}
+          <span className="font-semibold text-white">{example.toLocaleString("ru-RU")} söm</span>
         </p>
       )}
       {msg && <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}

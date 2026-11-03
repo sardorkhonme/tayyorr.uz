@@ -28,10 +28,10 @@ export default async function AdminAnnouncement() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">E'lon bannerlari</h1>
+        <h1 className="text-xl font-semibold text-white">Eʼlon bannerlari</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Buyurtmalar ro'yxati ustida (faqat kompyuterda) ko'rinadi. Bir nechta
-          faol bo'lsa navbatlashib turadi.
+          Buyurtmalar röyxati ustida (faqat kompyuterda) körinadi. Bir neçta
+          faol bölsa navbatlaşib turadi.
         </p>
       </div>
       <AnnouncementManager initial={initial} />

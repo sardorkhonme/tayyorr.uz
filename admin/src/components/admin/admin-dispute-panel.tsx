@@ -28,15 +28,15 @@ export function AdminDisputePanel({
 
   async function decide(decision: "CANCEL" | "CONTINUE" | "COMPLETE") {
     if (note.trim().length < 3) {
-      setErr("Qaror izohini yozing (ikkala tomonga ko'rinadi)");
+      setErr("Qaror izohini yozing (ikkala tomonga körinadi)");
       return;
     }
     const text =
       decision === "CANCEL"
-        ? `Shartnoma bekor qilinadi, ${amount.toLocaleString()} so'm buyurtmachiga qaytadi.`
+        ? `Şartnoma bekor qilinadi, ${amount.toLocaleString()} söm buyurtmaçiga qaytadi.`
         : decision === "COMPLETE"
-          ? `Ish yakunlanadi, ${amount.toLocaleString()} so'm tayyorlovchiga o'tadi.`
-          : "Shartnoma davom etadi.";
+          ? `Iş yakunlanadi, ${amount.toLocaleString()} söm tayyorlovçiga ötadi.`
+          : "Şartnoma davom etadi.";
     if (!window.confirm(`${text} Tasdiqlaysizmi?`)) return;
     setBusy(true);
     setErr(null);
@@ -67,7 +67,7 @@ export function AdminDisputePanel({
         rows={3}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Qaror izohi (ikkala tomonga chatda ko'rinadi)"
+        placeholder="Qaror izohi (ikkala tomonga çatda körinadi)"
       />
       <div>
         <label className="label">Davom ettirilsa — yangi muddat</label>
@@ -82,15 +82,15 @@ export function AdminDisputePanel({
       <div className="flex flex-wrap gap-2">
         <button className="btn-ghost text-red-300" disabled={busy} onClick={() => decide("CANCEL")}>
           <Icon name="x-circle" className="h-4 w-4" />
-          Bekor qilish (pul buyurtmachiga)
+          Bekor qiliş (pul buyurtmaçiga)
         </button>
         <button className="btn-ghost" disabled={busy} onClick={() => decide("CONTINUE")}>
           <Icon name="play" className="h-4 w-4" />
-          Davom ettirish
+          Davom ettiriş
         </button>
         <button className="btn-primary" disabled={busy} onClick={() => decide("COMPLETE")}>
           <Icon name="check-circle" className="h-4 w-4" />
-          Yakunlash (pul tayyorlovchiga)
+          Yakunlaş (pul tayyorlovçiga)
         </button>
       </div>
     </div>

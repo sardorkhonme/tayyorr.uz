@@ -35,9 +35,9 @@ export default async function AdminSmmServices() {
           SMM xizmatlari
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-zinc-500">
-          Butun guruhga (masalan Instagram → Ko&apos;rishlar) yoki alohida xizmatga chegirma (−) yoki ustama (+) qo&apos;ying,
-          keraksizlarini yashiring. Umumiy ustama ({settings.markupPercent}%) ustidan hisoblanadi; xizmatning o&apos;z foizi
-          guruh foizidan ustun turadi. Saqlangach saytda 1 daqiqa ichida yangilanadi.
+          Butun guruhga (masalan Instagram → Körişlar) yoki alohida xizmatga çegirma (−) yoki ustama (+) qöying,
+          keraksizlarini yaşiring. Umumiy ustama ({settings.markupPercent}%) ustidan hisoblanadi; xizmatning öz foizi
+          guruh foizidan ustun turadi. Saqlangaç saytda 1 daqiqa içida yangilanadi.
         </p>
       </div>
 
@@ -50,7 +50,7 @@ export default async function AdminSmmServices() {
         />
       ) : (
         <p className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-red-400">
-          Dollar kursini olib bo&apos;lmadi — narxlarni hisoblash uchun birozdan keyin qayta oching.
+          Dollar kursini olib bölmadi — narxlarni hisoblaş uçun birozdan keyin qayta oçing.
         </p>
       )}
     </div>

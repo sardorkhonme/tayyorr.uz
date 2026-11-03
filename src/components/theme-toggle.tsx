@@ -16,8 +16,8 @@ function apply(mode: Mode) {
 }
 
 const OPTS: [Mode, IconName, string][] = [
-  ["light", "sun", "Yorug'"],
-  ["dark", "moon", "Qorong'i"],
+  ["light", "sun", "Yoruğ"],
+  ["dark", "moon", "Qoronği"],
 ];
 
 /** Yorug'/qorong'i rejim tanlagichi. */

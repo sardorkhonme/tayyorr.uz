@@ -64,15 +64,15 @@ export function ReportDialog({
       >
         {done ? (
           <p className="text-sm text-emerald-400">
-            Shikoyatingiz yuborildi. Administrator ko'rib chiqadi.
+            Şikoyatingiz yuborildi. Administrator körib çiqadi.
           </p>
         ) : (
           <form onSubmit={submit} className="flex flex-col gap-3">
             <h3 className="font-semibold text-white">
-              {messageId ? "Xabar ustidan shikoyat" : "Shikoyat"}
+              {messageId ? "Xabar ustidan şikoyat" : "Şikoyat"}
             </h3>
             <p className="text-xs text-zinc-400">
-              Nomaqbul xatti-harakatni batafsil yozing. Ma'lumot faqat
+              Nomaqbul xatti-harakatni batafsil yozing. Maʼlumot faqat
               administratorga boradi.
             </p>
             <textarea
@@ -82,7 +82,7 @@ export function ReportDialog({
               required
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Nima bo'ldi?"
+              placeholder="Nima böldi?"
             />
             {err && <p className="text-sm text-red-400">{err}</p>}
             <div className="flex justify-end gap-2">
@@ -95,7 +95,7 @@ export function ReportDialog({
                 Bekor
               </button>
               <button className="btn-primary" disabled={busy}>
-                {busy ? "..." : "Yuborish"}
+                {busy ? "..." : "Yuboriş"}
               </button>
             </div>
           </form>
@@ -109,7 +109,7 @@ export function ReportDialog({
 export function ReportButton({
   suspectId,
   orderId,
-  label = "Shikoyat qilish",
+  label = "Şikoyat qiliş",
   className = "btn-ghost",
 }: {
   suspectId?: string;

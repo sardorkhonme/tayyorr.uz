@@ -82,7 +82,7 @@ function WalletCard({ user }: { user: NonNullable<HubUser> }) {
       {user.walletCode && <p className="mt-0.5 text-[11px] text-indigo-200">kod: {user.walletCode}</p>}
       <TopupButton className="mt-3 w-full rounded-xl bg-white/15 py-2 text-sm font-semibold transition hover:bg-white/25">
         <span className="inline-flex items-center gap-1.5">
-          <Icon name="plus" className="h-4 w-4" strokeWidth={2.2} /> To&apos;ldirish
+          <Icon name="plus" className="h-4 w-4" strokeWidth={2.2} /> Töldiriş
         </span>
       </TopupButton>
     </div>
@@ -93,10 +93,10 @@ function GuestCard() {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-4">
       <p className="text-sm font-semibold text-zinc-900">Hisobingizga kiring</p>
-      <p className="mt-1 text-xs leading-relaxed text-zinc-500">Bitta hisob — barcha tayyorr xizmatlarida.</p>
+      <p className="mt-1 text-xs leading-relaxed text-zinc-500">Bitta hisob — barça tayyorr xizmatlarida.</p>
       <div className="mt-3 flex flex-col gap-2">
-        <Link href="/register" className="btn-primary !py-2.5 !text-sm">Ro&apos;yxatdan o&apos;tish</Link>
-        <Link href="/login" className="btn-ghost !py-2.5 !text-sm">Kirish</Link>
+        <Link href="/register" className="btn-primary !py-2.5 !text-sm">Röyxatdan ötiş</Link>
+        <Link href="/login" className="btn-ghost !py-2.5 !text-sm">Kiriş</Link>
       </div>
     </div>
   );
@@ -109,7 +109,7 @@ function SignOut() {
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-50">
           <Icon name="logout" className="h-[18px] w-[18px]" />
         </span>
-        Chiqish
+        Çiqiş
       </button>
     </form>
   );
@@ -130,7 +130,7 @@ export function HubSidebar({ user }: { user: HubUser }) {
               <Avatar user={user} />
               <span className="min-w-0">
                 <span className="block truncate font-semibold text-zinc-900">{user.name}</span>
-                <span className="block text-xs text-zinc-500">tayyorr+ a&apos;zosi</span>
+                <span className="block text-xs text-zinc-500">tayyorr+ aʼzosi</span>
               </span>
             </div>
             <WalletCard user={user} />

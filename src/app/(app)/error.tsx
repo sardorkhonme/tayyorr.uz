@@ -36,12 +36,12 @@ export default function AppError({
         strokeWidth={1.4}
       />
       <h1 className="text-xl font-semibold text-white">
-        {isUserNotFound ? "Bunday hisob mavjud emas" : "Nimadir noto'g'ri ketdi"}
+        {isUserNotFound ? "Bunday hisob mavjud emas" : "Nimadir notöğri ketdi"}
       </h1>
       <p className="max-w-xs text-sm text-zinc-400">
         {isUserNotFound
-          ? "Sizning hisobingiz tizimdan o'chirilgan yoki topilmadi. Qaytadan kirish uchun quyidagi tugmani bosing."
-          : "Vaqtinchalik xatolik. Qaytadan urinib ko'ring yoki hisobdan chiqib qayta kiring."}
+          ? "Sizning hisobingiz tizimdan öçirilgan yoki topilmadi. Qaytadan kiriş uçun quyidagi tugmani bosing."
+          : "Vaqtinçalik xatolik. Qaytadan urinib köring yoki hisobdan çiqib qayta kiring."}
       </p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
         <button
@@ -50,7 +50,7 @@ export default function AppError({
           disabled={busy}
           className="btn-primary"
         >
-          {busy ? "Yo'naltirilmoqda..." : "Qayta urinish (Kirish)"}
+          {busy ? "Yo'naltirilmoqda..." : "Qayta uriniş (Kiriş)"}
         </button>
         {!isUserNotFound && (
           <button type="button" onClick={reset} className="btn-secondary">
@@ -58,7 +58,7 @@ export default function AppError({
           </button>
         )}
         <Link href="/" className="btn-ghost">
-          Bosh sahifa
+          Boş sahifa
         </Link>
       </div>
     </div>

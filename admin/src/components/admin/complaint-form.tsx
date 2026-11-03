@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 const STATUSES = [
   ["OPEN", "Yangi"],
-  ["REVIEWING", "Ko'rilmoqda"],
+  ["REVIEWING", "Körilmoqda"],
   ["RESOLVED", "Hal qilindi"],
   ["DISMISSED", "Rad etildi"],
 ] as const;
@@ -73,7 +73,7 @@ export function ComplaintForm({
       </div>
       {msg && <p className="text-xs text-zinc-400">{msg}</p>}
       <button className="btn-primary w-fit" disabled={busy}>
-        {busy ? "..." : "Saqlash"}
+        {busy ? "..." : "Saqlaş"}
       </button>
     </form>
   );

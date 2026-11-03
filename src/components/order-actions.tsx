@@ -17,7 +17,7 @@ import type { ContractView } from "@/lib/contract-view";
 import { Icon, StarIcon } from "@/components/icons";
 
 export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
-  PENDING: { label: "Ko'rib chiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
+  PENDING: { label: "Körib çiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
   ACCEPTED: { label: "Qabul qilingan", cls: "bg-emerald-500/15 text-emerald-300" },
   REJECTED: { label: "Rad etilgan", cls: "bg-red-500/15 text-red-300" },
   WITHDRAWN: { label: "Qaytarib olingan", cls: "bg-zinc-500/15 text-zinc-400" },
@@ -125,7 +125,7 @@ export function OrderActions(props: Props) {
     }
     const deadline = localInputToIso(cDeadline);
     if (!deadline || new Date(deadline).getTime() <= Date.now()) {
-      setErr("Shartnoma muddatini (sana va vaqt) tanlang");
+      setErr("Şartnoma muddatini (sana va vaqt) tanlang");
       return;
     }
     const ok = await call(`/api/orders/${orderId}/contract`, "POST", {
@@ -160,7 +160,7 @@ export function OrderActions(props: Props) {
         body: JSON.stringify({ userId, orderId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Chat ochilmadi");
+      if (!res.ok) throw new Error(data.error || "Çat oçilmadi");
       router.push(`/messages/${data.conversationId}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");
@@ -201,7 +201,7 @@ export function OrderActions(props: Props) {
           onClick={() => startChat(ordererId)}
         >
           <Icon name="message" className="h-4 w-4" />
-          Buyurtmachi bilan yozishish
+          Buyurtmaçi bilan yozişiş
         </button>
       )}
 
@@ -210,15 +210,15 @@ export function OrderActions(props: Props) {
         <div className="card border-indigo-400/30 bg-indigo-500/5">
           <h2 className="flex items-center gap-2 font-semibold text-white">
             <Icon name="file" className="h-[18px] w-[18px] text-indigo-300" />
-            Sizga shartnoma yuborildi
+            Sizga şartnoma yuborildi
           </h2>
           <p className="mt-1 text-sm text-zinc-300">
-            Kelishilgan summa:{" "}
-            <b>{myIncomingContract.amount.toLocaleString()} so'm</b>
+            Kelişilgan summa:{" "}
+            <b>{myIncomingContract.amount.toLocaleString()} söm</b>
           </p>
           {myIncomingContract.deadline && (
             <p className="mt-1 text-sm text-zinc-300">
-              Topshirish muddati:{" "}
+              Topşiriş muddati:{" "}
               <b>{shortDateTime(myIncomingContract.deadline)}</b>
             </p>
           )}
@@ -228,9 +228,9 @@ export function OrderActions(props: Props) {
             </p>
           )}
           <p className="mt-2 text-xs text-zinc-500">
-            Qabul qilganingizdan keyin shartnomani faqat ikki tomon roziligi
-            (yoki admin qarori) bilan bekor qilish mumkin. Muddatgacha ish
-            topshirilmasa — shartnoma bekor bo'ladi.
+            Qabul qilganingizdan keyin şartnomani faqat ikki tomon roziligi
+            (yoki admin qarori) bilan bekor qiliş mumkin. Muddatgaça iş
+            topşirilmasa — şartnoma bekor böladi.
           </p>
           <div className="mt-3 flex gap-2">
             <button
@@ -242,7 +242,7 @@ export function OrderActions(props: Props) {
                 })
               }
             >
-              Qabul qilish va boshlash
+              Qabul qiliş va boşlaş
             </button>
             <button
               className="btn-ghost"
@@ -253,7 +253,7 @@ export function OrderActions(props: Props) {
                 })
               }
             >
-              Rad etish
+              Rad etiş
             </button>
           </div>
         </div>
@@ -264,8 +264,8 @@ export function OrderActions(props: Props) {
         <div className="card border-indigo-400/30 bg-indigo-500/5">
           <p className="text-sm text-zinc-300">
             <Icon name="file" className="mr-1 inline-block h-4 w-4 align-[-3px] text-indigo-300" />
-            <b>{sentContract.preparerName}</b> ga shartnoma yuborildi —{" "}
-            {sentContract.amount.toLocaleString()} so'm. Javob kutilmoqda.
+            <b>{sentContract.preparerName}</b> ga şartnoma yuborildi —{" "}
+            {sentContract.amount.toLocaleString()} söm. Javob kutilmoqda.
           </p>
           <button
             className="btn-ghost mt-2"
@@ -274,7 +274,7 @@ export function OrderActions(props: Props) {
               call(`/api/contracts/${sentContract.id}`, "POST", { action: "CANCEL" })
             }
           >
-            Bekor qilish
+            Bekor qiliş
           </button>
         </div>
       )}
@@ -293,10 +293,10 @@ export function OrderActions(props: Props) {
           className="card flex flex-col gap-3"
         >
           <h2 className="font-semibold">
-            {myOffer ? "Taklifni yangilash" : "Taklif yuborish"}
+            {myOffer ? "Taklifni yangilaş" : "Taklif yuboriş"}
           </h2>
           <div>
-            <label className="label">Narx (so'm)</label>
+            <label className="label">Narx (söm)</label>
             <input
               className="input"
               type="number"
@@ -318,7 +318,7 @@ export function OrderActions(props: Props) {
           {!myOffer && (
             <div>
               <label className="label">
-                Star (navbatdagi boshlang'ich o'rningiz — kamida{" "}
+                Star (navbatdagi boşlanğiç örningiz — kamida{" "}
                 {MIN_OFFER_STARS})
               </label>
               <input
@@ -333,7 +333,7 @@ export function OrderActions(props: Props) {
               <p className="mt-1 text-xs text-amber-300">
                 <StarIcon className="mr-1 h-3 w-3" />
                 Kamida {MIN_OFFER_STARS} star talab qiladi — navbatda
-                yuqoriroqda turish uchun boshidanoq ko'proq yuborishingiz
+                yuqoriroqda turiş uçun boşidanoq köproq yuborişingiz
                 mumkin. Star balansingizdan sarflanadi.{" "}
                 <Link href="/wallet" className="underline hover:text-amber-200">
                   Star yetarli emasmi? Hamyondan sotib oling →
@@ -343,10 +343,10 @@ export function OrderActions(props: Props) {
           )}
           <button className="btn-primary" disabled={busy}>
             {myOffer ? (
-              "Yangilash"
+              "Yangilaş"
             ) : (
               <span>
-                Yuborish ({Number(offerStars) || MIN_OFFER_STARS}{" "}
+                Yuboriş ({Number(offerStars) || MIN_OFFER_STARS}{" "}
                 <StarIcon className="h-3.5 w-3.5" />)
               </span>
             )}
@@ -376,13 +376,13 @@ export function OrderActions(props: Props) {
                   onClick={boost}
                 >
                   <Icon name="rocket" className="h-4 w-4" />
-                  Navbatda yuqoriga chiqish
+                  Navbatda yuqoriga çiqiş
                 </button>
               </div>
               <p className="text-xs text-zinc-600">
-                Navbatda ko'proq star sarflaganlar yuqorida turadi.{" "}
+                Navbatda köproq star sarflaganlar yuqorida turadi.{" "}
                 <Link href="/wallet" className="underline hover:text-zinc-400">
-                  Star sotib olish →
+                  Star sotib oliş →
                 </Link>
               </p>
             </div>
@@ -396,8 +396,8 @@ export function OrderActions(props: Props) {
         <div className="card flex flex-col gap-2">
           <h2 className="font-semibold">Navbat ({queue.length})</h2>
           <p className="text-xs text-zinc-500">
-            Ko'proq star sarflagan yuqorida turadi. Boshqa ishtirokchilarning
-            ismi qisman yashiringan.
+            Köproq star sarflagan yuqorida turadi. Boşqa iştirokçilarning
+            ismi qisman yaşiringan.
           </p>
           <ul className="flex flex-col gap-1.5">
             {queue.map((q) => (
@@ -440,7 +440,7 @@ export function OrderActions(props: Props) {
         <div className="flex flex-col gap-3">
           <h2 className="font-semibold">Takliflar ({offers.length})</h2>
           {offers.length === 0 && (
-            <p className="text-sm text-zinc-500">Hozircha taklif yo'q.</p>
+            <p className="text-sm text-zinc-500">Hozirça taklif yöq.</p>
           )}
           {offers.map((o) => (
             <div key={o.id} className="card flex flex-col gap-2">
@@ -474,7 +474,7 @@ export function OrderActions(props: Props) {
                 <p className="text-xs text-zinc-500">{o.preparer.about}</p>
               )}
               <div className="text-sm">
-                Narx: <b>{o.price.toLocaleString()} so'm</b>
+                Narx: <b>{o.price.toLocaleString()} söm</b>
               </div>
               {o.message && <p className="text-sm text-zinc-300">{o.message}</p>}
 
@@ -486,12 +486,12 @@ export function OrderActions(props: Props) {
                   onClick={() => startChat(o.preparerId)}
                 >
                   <Icon name="message" className="h-4 w-4" />
-                  Chat
+                  Çat
                 </button>
                 <ReportButton
                   suspectId={o.preparerId}
                   orderId={orderId}
-                  label="Shikoyat"
+                  label="Şikoyat"
                 />
                 {status === "OPEN" && o.status === "PENDING" && !sentContract && (
                   <>
@@ -512,7 +512,7 @@ export function OrderActions(props: Props) {
                       }}
                     >
                       <Icon name="file" className="h-4 w-4" />
-                      Shartnoma tuzish
+                      Şartnoma tuziş
                     </button>
                     <button
                       className="btn-ghost"
@@ -521,7 +521,7 @@ export function OrderActions(props: Props) {
                         call(`/api/offers/${o.id}`, "PATCH", { action: "REJECT" })
                       }
                     >
-                      Rad etish
+                      Rad etiş
                     </button>
                   </>
                 )}
@@ -535,10 +535,10 @@ export function OrderActions(props: Props) {
               {contractFor === o.preparerId && (
                 <div className="mt-1 flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3">
                   <div className="text-sm font-medium text-white">
-                    Kelishilgan shartnoma
+                    Kelişilgan şartnoma
                   </div>
                   <div>
-                    <label className="label">Kelishilgan summa (so'm)</label>
+                    <label className="label">Kelişilgan summa (söm)</label>
                     <input
                       className="input"
                       type="number"
@@ -548,7 +548,7 @@ export function OrderActions(props: Props) {
                     />
                   </div>
                   <div>
-                    <label className="label">Topshirish muddati (sana va vaqt)</label>
+                    <label className="label">Topşiriş muddati (sana va vaqt)</label>
                     <input
                       className="input"
                       type="datetime-local"
@@ -558,7 +558,7 @@ export function OrderActions(props: Props) {
                     />
                   </div>
                   <div>
-                    <label className="label">Izoh / shartlar (ixtiyoriy)</label>
+                    <label className="label">Izoh / şartlar (ixtiyoriy)</label>
                     <textarea
                       className="input"
                       rows={2}
@@ -571,7 +571,7 @@ export function OrderActions(props: Props) {
                     disabled={busy}
                     onClick={() => sendContract(o.preparerId)}
                   >
-                    Shartnoma yuborish
+                    Şartnoma yuboriş
                   </button>
                 </div>
               )}
@@ -597,19 +597,19 @@ export function OrderActions(props: Props) {
       {/* Tayyorlovchiga qo'yilgan baho va sharh */}
       {isAssigned && status === "DONE" && (
         <div className="card">
-          <h2 className="mb-1 font-semibold text-white">Sizga qo'yilgan baho</h2>
+          <h2 className="mb-1 font-semibold text-white">Sizga qöyilgan baho</h2>
           {reviewed ? (
             <>
               <Stars value={myReview?.stars ?? 0} size="md" />
               {myReview?.comment ? (
                 <p className="mt-2 text-sm text-zinc-400">«{myReview.comment}»</p>
               ) : (
-                <p className="mt-2 text-sm text-zinc-500">Sharh qoldirilmagan.</p>
+                <p className="mt-2 text-sm text-zinc-500">Şarh qoldirilmagan.</p>
               )}
             </>
           ) : (
             <p className="text-sm text-zinc-500">
-              Buyurtmachi hali baho qo'ymagan.
+              Buyurtmaçi hali baho qöymagan.
             </p>
           )}
         </div>
@@ -640,7 +640,7 @@ export function OrderActions(props: Props) {
               }
             }}
           >
-            Buyurtmani bekor qilish
+            Buyurtmani bekor qiliş
           </button>
         </div>
       )}

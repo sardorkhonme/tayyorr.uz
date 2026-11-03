@@ -19,16 +19,16 @@ export default async function AdminUserDangerZone({
     <section className="rounded-xl border border-red-500/25 bg-red-500/5 p-5">
       <h2 className="mb-1 font-semibold text-red-300">Xavfli zona</h2>
       <p className="mb-3 text-sm text-zinc-400">
-        Hisob va barcha bog'liq ma'lumotlar (buyurtmalar, xabarlar, suhbatlar,
-        takliflar, hisob amallari) butunlay o'chiriladi. Tayyorlovchi bo'lgan
-        faol shartnomalardagi mablag' buyurtmachiga qaytariladi.
+        Hisob va barça boğliq maʼlumotlar (buyurtmalar, xabarlar, suhbatlar,
+        takliflar, hisob amallari) butunlay öçiriladi. Tayyorlovçi bölgan
+        faol şartnomalardagi mablağ buyurtmaçiga qaytariladi.
       </p>
       <AdminPostButton
         url={`/api/admin/users/${user.id}`}
         method="DELETE"
-        label="Hisobni butunlay o'chirish"
+        label="Hisobni butunlay öçiriş"
         className="rounded-xl bg-red-500/20 px-4 py-2 text-sm font-medium text-red-200 hover:bg-red-500/30"
-        confirmText="Foydalanuvchi va uning BARCHA ma'lumotlari o'chiriladi. Bu amalni ortga qaytarib bo'lmaydi. Davom etilsinmi?"
+        confirmText="Foydalanuvçi va uning BARÇA maʼlumotlari öçiriladi. Bu amalni ortga qaytarib bölmaydi. Davom etilsinmi?"
         redirectTo="/sardorxon/admin/users"
       />
     </section>

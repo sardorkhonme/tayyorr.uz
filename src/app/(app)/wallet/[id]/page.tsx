@@ -8,14 +8,14 @@ import { shortDateTime } from "@/lib/date";
 import { ClickReceiptButton } from "@/components/click-receipt-button";
 
 const TXN_LABEL: Record<string, string> = {
-  TOPUP: "To'ldirish",
-  SPEND: "Buyurtma to'lovi",
-  TRANSFER_IN: "Kirim o'tkazma",
-  TRANSFER_OUT: "Chiqim o'tkazma",
-  PAYOUT: "Kartaga yechish",
-  REFUND: "Qaytarish",
-  HOLD: "Shartnoma uchun bloklandi",
-  RELEASE: "Ish haqi (yakunlangan)",
+  TOPUP: "Töldiriş",
+  SPEND: "Buyurtma tölovi",
+  TRANSFER_IN: "Kirim ötkazma",
+  TRANSFER_OUT: "Çiqim ötkazma",
+  PAYOUT: "Kartaga yeçiş",
+  REFUND: "Qaytariş",
+  HOLD: "Şartnoma uçun bloklandi",
+  RELEASE: "Iş haqi (yakunlangan)",
   COMMISSION: "Sayt komissiyasi",
 };
 
@@ -52,7 +52,7 @@ export default async function WalletReceiptPage({
       </Link>
 
       <div className="card">
-        <h1 className="text-lg font-semibold text-white">Chek</h1>
+        <h1 className="text-lg font-semibold text-white">Çek</h1>
         <dl className="mt-4 divide-y divide-white/5 text-sm">
           {rows.map(([k, v]) => (
             <div key={k} className="flex justify-between gap-4 py-2">

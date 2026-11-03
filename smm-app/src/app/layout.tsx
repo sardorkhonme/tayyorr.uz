@@ -18,9 +18,11 @@ const headingFont = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz"),
-  title: { default: "Tayyorr SMM — obunachi, layk va ko'rishlar", template: "%s — Tayyorr SMM" },
+  title: { default: "Tayyorr SMM — obunaçi, layk va körişlar", template: "%s — Tayyorr SMM" },
   description:
-    "Tayyorr SMM: Instagram, Telegram, TikTok va YouTube uchun obunachi, layk va ko'rishlar — avtomatik, bajarilmasa pul qaytadi. tayyorr+ hisobi bilan.",
+    "Tayyorr SMM: Instagram, Telegram, TikTok va YouTube uçun obunaçi, layk va körişlar — avtomatik, bajarilmasa pul qaytadi. tayyorr+ hisobi bilan.",
+  // eski yozuvda ham qidiriladi (2026-yilgi alifbogacha bo'lgan imlo) — Google uchun
+  keywords: ["smm panel", "instagram obunaçi", "telegram obunaçi", "tiktok körişlar", "arzon obunaçi", "layk", "körişlar", "Tayyorr SMM"],
   icons: { icon: "/favicon.png", apple: "/apple-icon.png" },
 };
 
@@ -30,7 +32,7 @@ export const viewport: Viewport = { themeColor: "#ffffff" };
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const u = await currentUser();
   const user: HeaderUser = u
-    ? { name: u.firstName || u.name || u.login || "Foydalanuvchi", image: u.avatarUrl || u.image, balance: u.balance }
+    ? { name: u.firstName || u.name || u.login || "Foydalanuvçi", image: u.avatarUrl || u.image, balance: u.balance }
     : null;
   return (
     <html lang="uz" className={headingFont.variable}>

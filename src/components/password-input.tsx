@@ -22,7 +22,7 @@ export function PasswordInput({ className = "input", ...rest }: Props) {
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
-        aria-label={show ? "Yashirish" : "Ko'rsatish"}
+        aria-label={show ? "Yaşiriş" : "Körsatiş"}
         tabIndex={-1}
         className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition hover:text-white"
       >

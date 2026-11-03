@@ -18,7 +18,7 @@ function personName(u: {
   login: string | null;
 }): string {
   const full = [u.firstName, u.lastName].filter(Boolean).join(" ").trim();
-  return full || u.name || u.login || "Foydalanuvchi";
+  return full || u.name || u.login || "Foydalanuvçi";
 }
 
 /** Ommaviy xabar bo'yicha: kim yoqtirdi / yoqtirmadi / ko'rdi. */

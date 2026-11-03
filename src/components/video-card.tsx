@@ -119,12 +119,12 @@ export function VideoCard({
         <button
           type="button"
           onClick={play}
-          aria-label={`${video.title} — ko'rish`}
+          aria-label={`${video.title} — köriş`}
           className="absolute inset-0 flex items-center justify-center"
         >
           <span className="hover-pill">
             <PlayIcon className="h-4 w-4" />
-            <span className="hover-pill-label">Boshlash</span>
+            <span className="hover-pill-label">Boşlaş</span>
           </span>
         </button>
       </div>
@@ -160,19 +160,19 @@ export function VideoCard({
                 <button
                   type="button"
                   onClick={replay}
-                  aria-label="Qayta boshlash"
+                  aria-label="Qayta boşlaş"
                   className="backdrop-blur-sm absolute inset-0 flex items-center justify-center bg-black/50"
                 >
                   <span className="hover-pill">
                     <ReplayIcon className="h-4 w-4" />
-                    <span className="hover-pill-label">Qayta boshlash</span>
+                    <span className="hover-pill-label">Qayta boşlaş</span>
                   </span>
                 </button>
               )}
               <button
                 type="button"
                 onClick={close}
-                aria-label="Yopish"
+                aria-label="Yopiş"
                 className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
               >
                 <Icon name="close" className="h-5 w-5" />

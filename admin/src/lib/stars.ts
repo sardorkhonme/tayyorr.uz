@@ -23,7 +23,7 @@ export async function buyStars(opts: {
   stars: number;
 }): Promise<{ ok: true; newSom: number; newStars: number } | { ok: false; error: string }> {
   if (opts.stars <= 0 || !Number.isInteger(opts.stars)) {
-    return { ok: false, error: "Star soni noto'g'ri" };
+    return { ok: false, error: "Star soni notöğri" };
   }
   const amount = opts.stars * STAR_PRICE;
 
@@ -34,7 +34,7 @@ export async function buyStars(opts: {
   if (!user || user.balance < amount) {
     return {
       ok: false,
-      error: `Hisobda yetarli mablag' yo'q. ${opts.stars} ⭐ = ${amount.toLocaleString("ru-RU")} so'm kerak.`,
+      error: `Hisobda yetarli mablağ yöq. ${opts.stars} ⭐ = ${amount.toLocaleString("ru-RU")} söm kerak.`,
     };
   }
 
@@ -85,7 +85,7 @@ export async function useStars(opts: {
   stars: number;
 }): Promise<{ ok: true; newStars: number } | { ok: false; error: string }> {
   if (opts.stars <= 0 || !Number.isInteger(opts.stars)) {
-    return { ok: false, error: "Star soni noto'g'ri" };
+    return { ok: false, error: "Star soni notöğri" };
   }
 
   const user = await db.user.findUnique({
@@ -96,7 +96,7 @@ export async function useStars(opts: {
     const missing = opts.stars - (user?.starBalance ?? 0);
     return {
       ok: false,
-      error: `Star yetarli emas — yana ${missing} ⭐ kerak. Avval hamyon bo'limidan star sotib oling.`,
+      error: `Star yetarli emas — yana ${missing} ⭐ kerak. Avval hamyon bölimidan star sotib oling.`,
     };
   }
 
@@ -158,7 +158,7 @@ export async function refundOfferStars(orderId: string, reason: string) {
       title: "⭐ Star qaytarildi",
       body: text,
       url: siteUrl("/wallet"),
-      buttonLabel: "Hamyonni ko'rish",
+      buttonLabel: "Hamyonni köriş",
     });
   }
 
@@ -168,7 +168,7 @@ export async function refundOfferStars(orderId: string, reason: string) {
     [
       `«${order?.title ?? "Buyurtma"}»`,
       `Sabab: ${reason}`,
-      `${offers.length} ta tayyorlovchiga jami ${totalStars} ⭐ qaytarildi`,
+      `${offers.length} ta tayyorlovçiga jami ${totalStars} ⭐ qaytarildi`,
       `Buyurtma ID: ${orderId}`,
     ],
     adminUrl(`/sardorxon/admin/orders/${orderId}`),

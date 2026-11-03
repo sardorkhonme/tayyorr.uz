@@ -19,7 +19,7 @@ import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
 const schema = z.object({
   role: z.enum(["ORDERER", "PREPARER"]),
   acceptTerms: z.literal(true, {
-    errorMap: () => ({ message: "Oferta shartlariga rozilik bering" }),
+    errorMap: () => ({ message: "Oferta şartlariga rozilik bering" }),
   }),
   firstName: z.string().min(2).max(50),
   lastName: z.string().min(2).max(50),
@@ -27,7 +27,7 @@ const schema = z.object({
     .string()
     .min(3)
     .max(30)
-    .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat harf, raqam, _ va . dan iborat bo'lsin"),
+    .regex(/^[a-zA-Z0-9_.]+$/, "Login faqat harf, raqam, _ va . dan iborat bölsin"),
   password: z.string().min(6).max(100),
   about: z.string().min(5).max(1000),
   // "YYYY-MM-DD" — ro'yxatdan o'tishda majburiy
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Barcha maydonlarni to'ldiring" },
+      { error: parsed.error.issues[0]?.message ?? "Barça maydonlarni töldiring" },
       { status: 400 },
     );
   }
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   });
   if (!userRecord) {
     return NextResponse.json(
-      { error: "Bunday hisob mavjud emas. Qaytadan kiring yoki ro'yxatdan o'ting" },
+      { error: "Bunday hisob mavjud emas. Qaytadan kiring yoki röyxatdan öting" },
       { status: 404 },
     );
   }
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
       data: { starBalance: { increment: 1 } },
     });
 
-    const text = `🌟 ${firstName} ${lastName} (@${login}) siz yuborgan referal havola orqali ro'yxatdan o'tdi va sizga 1 ⭐ taqdim etildi.`;
+    const text = `🌟 ${firstName} ${lastName} (@${login}) siz yuborgan referal havola orqali röyxatdan ötdi va sizga 1 ⭐ taqdim etildi.`;
     const supportId = await getSupportUserId();
     const conv = await getOrCreateConversation(supportId, referrer.id);
     const msg = await createMessage({
@@ -140,15 +140,15 @@ export async function POST(req: Request) {
       title: "🌟 Referal orqali +1 star",
       body: text,
       url: siteUrl("/referral"),
-      buttonLabel: "Referallarni ko'rish",
+      buttonLabel: "Referallarni köriş",
     });
 
     await logToGroup(
       "referrals",
-      "🌟 Shaxsiy referal — +1 star",
+      "🌟 Şaxsiy referal — +1 star",
       [
         `Taklif qilgan: ${userLabel(referrer)}`,
-        `Yangi a'zo: @${login} (${firstName} ${lastName})`,
+        `Yangi aʼzo: @${login} (${firstName} ${lastName})`,
       ],
       siteUrl(`/sardorxon/admin/users/${referrer.id}`),
     );
@@ -158,29 +158,29 @@ export async function POST(req: Request) {
   await logActivity(
     session.user.id,
     "REGISTER",
-    `Ro'yxatdan o'tdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"})${fromSmm ? " — tayyorr+ orqali" : ""}`,
+    `Röyxatdan ötdi — @${login} (${parsed.data.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi"})${fromSmm ? " — tayyorr+ orqali" : ""}`,
   );
   await logToGroup(
     "registrations",
-    fromSmm ? "🆕 Yangi ro'yxatdan o'tish (tayyorr+ orqali)" : "🆕 Yangi ro'yxatdan o'tish",
+    fromSmm ? "🆕 Yangi röyxatdan ötiş (tayyorr+ orqali)" : "🆕 Yangi röyxatdan ötiş",
     [
       fromSmm ? "Manba: tayyorr+ (plus.tayyorr.uz)" : "",
       `Login: @${login}`,
       `Ism: ${firstName} ${lastName}`,
       session.user.email ? `Email: ${session.user.email}` : "",
-      `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovchi" : "Buyurtma beruvchi"}`,
+      `Rol: ${parsed.data.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi"}`,
       `Qayerdan: ${HEAR_ABOUT_US_LABELS[parsed.data.hearAboutUs] ?? parsed.data.hearAboutUs}${parsed.data.hearAboutUsDetail ? ` (${parsed.data.hearAboutUsDetail})` : ""}`,
       refLink ? `Referral havola: ${refLink.name}` : "",
-      referrer ? `Shaxsiy referal: ${userLabel(referrer)}` : "",
-      `Foydalanuvchi ID: ${session.user.id}`,
+      referrer ? `Şaxsiy referal: ${userLabel(referrer)}` : "",
+      `Foydalanuvçi ID: ${session.user.id}`,
     ].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${session.user.id}`),
   );
   if (refLink) {
     await logToGroup(
       "referrals",
-      "🔗 Referral orqali ro'yxatdan o'tish",
-      [`Havola: ${refLink.name}`, `Yangi foydalanuvchi: @${login}`],
+      "🔗 Referral orqali röyxatdan ötiş",
+      [`Havola: ${refLink.name}`, `Yangi foydalanuvçi: @${login}`],
       siteUrl(`/sardorxon/admin/referrals/${refLink.id}`),
     );
   }

@@ -33,7 +33,7 @@ export default async function AdminUserDetailLayout({
   return (
     <div className="flex flex-col gap-6">
       <Link href="/users" className="text-sm text-zinc-500 hover:text-white">
-        ← Foydalanuvchilar
+        ← Foydalanuvçilar
       </Link>
 
       <div className="flex items-center gap-4">
@@ -55,7 +55,7 @@ export default async function AdminUserDetailLayout({
             @{user.login}
             {banned && (
               <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-300">
-                {shortDate(user.bannedUntil!)} gacha cheklangan
+                {shortDate(user.bannedUntil!)} gaça çeklangan
               </span>
             )}
           </p>

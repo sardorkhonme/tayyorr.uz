@@ -71,7 +71,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
         ? "Yoqtirganlar"
         : kind === "dislikes"
           ? "Yoqtirmaganlar"
-          : "Ko'rganlar";
+          : "Körganlar";
     setPeople({ title, loading: true, list: [] });
     try {
       const res = await fetch(`/api/admin/broadcast/${it.id}/stats`);
@@ -153,7 +153,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
 
   async function delItem(id: string) {
     setMenu(null);
-    if (!window.confirm("Bu ommaviy xabar barcha foydalanuvchilardan o'chiriladi. Davom etilsinmi?"))
+    if (!window.confirm("Bu ommaviy xabar barça foydalanuvçilardan öçiriladi. Davom etilsinmi?"))
       return;
     try {
       const res = await fetch(`/api/admin/broadcast/${id}`, { method: "DELETE" });
@@ -190,7 +190,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
     if (
       !window.confirm(
         count != null
-          ? `${count} ta foydalanuvchiga yuborilsinmi?`
+          ? `${count} ta foydalanuvçiga yuborilsinmi?`
           : "Filtrga mos hammaga yuborilsinmi?",
       )
     )
@@ -245,9 +245,9 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="">Barcha rollar</option>
-            <option value="ORDERER">Buyurtma beruvchilar</option>
-            <option value="PREPARER">Tayyorlovchilar</option>
+            <option value="">Barça rollar</option>
+            <option value="ORDERER">Buyurtma beruvçilar</option>
+            <option value="PREPARER">Tayyorlovçilar</option>
           </select>
           <input
             className="input"
@@ -261,12 +261,12 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             className="input"
             type="number"
             min={0}
-            placeholder="Balans gacha"
+            placeholder="Balans gaça"
             value={balanceMax}
             onChange={(e) => setBalanceMax(e.target.value)}
           />
           <label className="flex flex-col text-[11px] text-zinc-500">
-            Ro'yxatdan — dan
+            Röyxatdan — dan
             <input
               className="input"
               type="date"
@@ -275,7 +275,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             />
           </label>
           <label className="flex flex-col text-[11px] text-zinc-500">
-            Ro'yxatdan — gacha
+            Röyxatdan — gaça
             <input
               className="input"
               type="date"
@@ -292,7 +292,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
           </button>
         </div>
         <p className="mt-1.5 text-[11px] text-zinc-600">
-          Bo'sh maydonlar hisobga olinmaydi (hammasi).
+          Böş maydonlar hisobga olinmaydi (hammasi).
         </p>
       </div>
 
@@ -390,7 +390,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                   setUploadName("");
                 }}
                 className="shrink-0 text-zinc-500 hover:text-white"
-                aria-label="Olib tashlash"
+                aria-label="Olib taşlaş"
               >
                 <Icon name="close" className="h-4 w-4" />
               </button>
@@ -467,21 +467,21 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
                 className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
               >
                 <Icon name="eye" className="h-4 w-4 shrink-0" />
-                {menu.item.readCount ?? 0} kishi ko'rdi
+                {menu.item.readCount ?? 0} kişi kördi
               </button>
               <button
                 type="button"
                 onClick={() => editItem(menu.item)}
                 className="backdrop-blur-sm block w-full px-3 py-2 text-left text-zinc-200 hover:bg-white/5"
               >
-                Tahrirlash
+                Tahrirlaş
               </button>
               <button
                 type="button"
                 onClick={() => delItem(menu.item.id)}
                 className="backdrop-blur-sm block w-full px-3 py-2 text-left text-red-400 hover:bg-white/5"
               >
-                Hamma uchun o'chirish
+                Hamma uçun öçiriş
               </button>
             </div>
           </div>,

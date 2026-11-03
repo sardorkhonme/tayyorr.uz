@@ -11,9 +11,9 @@ const QUICK = [10_000, 25_000, 50_000, 100_000, 200_000, 500_000];
 const MAIN_URL = process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz";
 
 const TRUST: { icon: IconName; title: string; text: string }[] = [
-  { icon: "shield", title: "Xavfsiz to'lov", text: "Karta ma'lumotlari saytda saqlanmaydi" },
-  { icon: "bolt", title: "Darhol tushadi", text: "Balans to'lovdan so'ng bir necha soniyada yangilanadi" },
-  { icon: "wallet", title: "Bitta hamyon", text: "Barcha tayyorr xizmatlarida ishlaydi" },
+  { icon: "shield", title: "Xavfsiz tölov", text: "Karta maʼlumotlari saytda saqlanmaydi" },
+  { icon: "bolt", title: "Darhol tuşadi", text: "Balans tölovdan söng bir neça soniyada yangilanadi" },
+  { icon: "wallet", title: "Bitta hamyon", text: "Barça tayyorr xizmatlarida işlaydi" },
 ];
 
 /**
@@ -40,7 +40,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
         body: JSON.stringify({ amount: value, method, returnTo }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.payUrl) throw new Error(data.error || "To'lovni boshlab bo'lmadi");
+      if (!res.ok || !data.payUrl) throw new Error(data.error || "Tölovni boşlab bölmadi");
       window.location.href = data.payUrl;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Xatolik");
@@ -71,13 +71,13 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
 
         <div className="mt-8 lg:my-auto">
           <p className="text-sm font-medium text-indigo-100">{platform} · hamyon</p>
-          <h1 className="mt-2 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">Hamyonni to&apos;ldirish</h1>
+          <h1 className="mt-2 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">Hamyonni töldiriş</h1>
 
           {/* jonli summa kartasi */}
           <div className="mt-6 rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-md sm:p-6 lg:mt-10">
-            <p className="text-sm text-indigo-100">To&apos;lanadigan summa</p>
+            <p className="text-sm text-indigo-100">Tölanadigan summa</p>
             <p className="mt-1 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-              {num(value)} <span className="text-2xl font-semibold text-indigo-100">so&apos;m</span>
+              {num(value)} <span className="text-2xl font-semibold text-indigo-100">söm</span>
             </p>
             <div className="mt-4 flex items-center gap-3 border-t border-white/15 pt-4 text-sm">
               <span className="grid h-9 w-14 place-items-center rounded-lg bg-white px-2">
@@ -120,7 +120,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
               value={value ? num(value) : ""}
               onChange={(e) => setAmount(e.target.value)}
             />
-            <span className="font-display text-2xl font-semibold text-zinc-400">so&apos;m</span>
+            <span className="font-display text-2xl font-semibold text-zinc-400">söm</span>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {QUICK.map((q) => (
@@ -139,7 +139,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
             ))}
           </div>
 
-          <p className="mt-10 text-sm font-semibold text-zinc-900">To&apos;lov usuli</p>
+          <p className="mt-10 text-sm font-semibold text-zinc-900">Tölov usuli</p>
           <div className="mt-3 grid grid-cols-3 gap-3">
             {PAY_METHODS.map((m) => {
               const active = method === m.key;
@@ -179,24 +179,24 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
 
           <button type="button" onClick={pay} disabled={!valid || busy} className="btn-primary mt-10 w-full !rounded-2xl !py-4 !text-base">
             {busy ? (
-              "Yo'naltirilmoqda…"
+              "Yönaltirilmoqda…"
             ) : (
               <>
                 <Icon name="shield" className="h-5 w-5" />
-                {valid ? `${num(value)} so'm to'lash` : "To'lash"}
+                {valid ? `${num(value)} söm tölaş` : "Tölaş"}
               </>
             )}
           </button>
           <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
             {value > 0 && !valid
-              ? `Summa ${num(CLICK_MIN)} – ${num(CLICK_MAX)} so'm oralig'ida bo'lsin`
+              ? `Summa ${num(CLICK_MIN)} – ${num(CLICK_MAX)} söm oraliğida bölsin`
               : (
                 <>
-                  To&apos;lash orqali{" "}
+                  Tölaş orqali{" "}
                   <a href={`${MAIN_URL}/terms`} target="_blank" rel="noopener noreferrer" className="underline hover:text-zinc-800">
                     ommaviy oferta
                   </a>{" "}
-                  shartlariga rozilik bildirasiz.
+                  şartlariga rozilik bildirasiz.
                 </>
               )}
           </p>

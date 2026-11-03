@@ -36,7 +36,7 @@ export async function ensureWalletCode(userId: string): Promise<string> {
 
 export function formatSom(value: number) {
   const grouped = value.toLocaleString("ru-RU").replace(/\s/g, " ");
-  return `${grouped} so'm`;
+  return `${grouped} söm`;
 }
 
 /** "8600123456789012" -> "8600 **** **** 9012" */

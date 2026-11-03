@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const denied = await adminApiGuard();
   if (denied) return denied;
   const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "30 belgidan oshmasin" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "30 belgidan oşmasin" }, { status: 400 });
   await setVersionLabel(parsed.data.label);
   return NextResponse.json({ ok: true });
 }

@@ -21,7 +21,7 @@ export async function POST(
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "Notöğri" }, { status: 400 });
   }
 
   const msg = await db.message.findUnique({ where: { id: msgId } });

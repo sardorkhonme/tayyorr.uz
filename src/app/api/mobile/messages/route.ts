@@ -44,7 +44,7 @@ export async function GET(req: Request) {
         id: c.id,
         other: {
           id: other.id,
-          name: other.name ?? other.login ?? "Foydalanuvchi",
+          name: other.name ?? other.login ?? "Foydalanuvçi",
           login: other.login,
           image: other.avatarUrl ?? other.image ?? null,
           isSupport: other.id === supportId,

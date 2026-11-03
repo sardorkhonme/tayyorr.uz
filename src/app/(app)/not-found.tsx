@@ -12,12 +12,12 @@ export default function AppNotFound() {
         Sahifa topilmadi
       </h1>
       <p className="max-w-xs text-sm text-zinc-500">
-        Bu buyurtma yoki sahifa mavjud emas, o'chirilgan yoki sizga
-        ko'rinmaydi.
+        Bu buyurtma yoki sahifa mavjud emas, öçirilgan yoki sizga
+        körinmaydi.
       </p>
       <div className="mt-2 flex gap-2">
         <Link href="/dashboard" className="btn-primary">
-          Asosiy menyuga qaytish
+          Asosiy menyuga qaytiş
         </Link>
         <Link href="/messages" className="btn-ghost">
           Xabarlar

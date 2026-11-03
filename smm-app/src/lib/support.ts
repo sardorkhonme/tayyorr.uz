@@ -120,12 +120,12 @@ export async function sendSupportMessage(userId: string, text: string) {
     where: { id: userId },
     select: { firstName: true, lastName: true, name: true, login: true, email: true },
   });
-  const who = `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() || u?.name || (u?.login ? `@${u.login}` : "Foydalanuvchi");
+  const who = `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() || u?.name || (u?.login ? `@${u.login}` : "Foydalanuvçi");
   await notifyAdmins(
     "support",
     `💬 ${who} — Tayyorr SMM dan yozdi`,
     [text.length > 500 ? `${text.slice(0, 500)}…` : text, u?.login ? `@${u.login}` : u?.email ?? ""],
-    { text: "Javob berish", href: `${ADMIN_URL}/messages/${c.id}` },
+    { text: "Javob beriş", href: `${ADMIN_URL}/messages/${c.id}` },
   );
   return { id: m.id, mine: true, body: text, createdAt: m.createdAt.toISOString() } satisfies SupportMessage;
 }

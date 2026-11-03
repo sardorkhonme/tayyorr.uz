@@ -47,18 +47,18 @@ export async function sendWelcome(userId: string, firstName?: string | null) {
     conversationId: conv.id,
     senderId: supportId,
     body:
-      `${hi} tayyorr.uz'ga xush kelibsiz 🎉\n\n` +
-      `Bu — tayyorr.uz support. Har qanday savol, muammo yoki taklif bo'lsa ` +
-      `shu yerga yozing — yordam beramiz.`,
+      `${hi} tayyorr.uz'ga xuş kelibsiz 🎉\n\n` +
+      `Bu — tayyorr.uz support. Har qanday savol, muammo yoki taklif bölsa ` +
+      `şu yerga yozing — yordam beramiz.`,
     system: false, // support xabari — oddiy bubble
   });
   await deliverMessage(m1);
 
   // 2-xabar — Telegram kanal
   const channelBody = isPreparer
-    ? `📢 Yangi buyurtmalarni birinchilardan bo'lib ko'rish uchun Telegram kanalimizga qo'shiling:\n${TELEGRAM_WORKS_URL}\n\n` +
-      `Saytda e'lon qilingan har bir yangi buyurtma o'sha zahoti kanalga chiqadi — kanalda bo'lsangiz, ishni boshqalardan oldin ko'rib, birinchi bo'lib taklif yuborasiz.`
-    : `📢 Platforma yangiliklari, aksiyalar va yangi imkoniyatlardan boxabar bo'lib turish uchun Telegram kanalimizga obuna bo'ling:\n${TELEGRAM_NEWS_URL}`;
+    ? `📢 Yangi buyurtmalarni birinçilardan bölib köriş uçun Telegram kanalimizga qöşiling:\n${TELEGRAM_WORKS_URL}\n\n` +
+      `Saytda eʼlon qilingan har bir yangi buyurtma öşa zahoti kanalga çiqadi — kanalda bölsangiz, işni boşqalardan oldin körib, birinçi bölib taklif yuborasiz.`
+    : `📢 Platforma yangiliklari, aksiyalar va yangi imkoniyatlardan boxabar bölib turiş uçun Telegram kanalimizga obuna böling:\n${TELEGRAM_NEWS_URL}`;
 
   const m2 = await createMessage({
     conversationId: conv.id,

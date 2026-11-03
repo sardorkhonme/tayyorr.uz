@@ -80,30 +80,30 @@ export default async function AdminChatView({
             url={`/api/admin/chats/${conv.id}/hide`}
             label={
               conv.hiddenFromUsersAt
-                ? "Foydalanuvchilarga qaytarish"
-                : "Foydalanuvchilardan yashirish"
+                ? "Foydalanuvçilarga qaytariş"
+                : "Foydalanuvçilardan yaşiriş"
             }
             className="btn-ghost"
           />
           <AdminPostButton
             url={`/api/admin/chats/${conv.id}`}
             method="DELETE"
-            label="Suhbatni o'chirish"
+            label="Suhbatni öçiriş"
             className="rounded-xl bg-red-500/15 px-4 py-2 text-sm text-red-300 hover:bg-red-500/25"
-            confirmText="Suhbat va barcha xabarlar butunlay o'chiriladi. Davom etilsinmi?"
+            confirmText="Suhbat va barça xabarlar butunlay öçiriladi. Davom etilsinmi?"
             redirectTo="/sardorxon/admin/chats"
           />
         </div>
       </div>
 
       <p className="text-xs text-zinc-500">
-        Faqat ko'rish uchun — bu yozishmaga javob yoza olmaysiz.
+        Faqat köriş uçun — bu yozişmaga javob yoza olmaysiz.
       </p>
 
       {conv.hiddenFromUsersAt && (
         <p className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">
-          Bu suhbat {shortDateTime(conv.hiddenFromUsersAt)} da yashirilgan —
-          foydalanuvchilar ko'rmaydi, lekin bazada saqlanmoqda.
+          Bu suhbat {shortDateTime(conv.hiddenFromUsersAt)} da yaşirilgan —
+          foydalanuvçilar körmaydi, lekin bazada saqlanmoqda.
         </p>
       )}
 

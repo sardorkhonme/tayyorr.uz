@@ -4,7 +4,7 @@ import { DiscountsBoard } from "@/components/discounts-board";
 import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Chegirmalar — Tayyorr SMM" };
+export const metadata = { title: "Çegirmalar — Tayyorr SMM" };
 
 export default async function DiscountsPage() {
   const [user, services] = await Promise.all([currentUser(), loadCatalog()]);
@@ -17,8 +17,8 @@ export default async function DiscountsPage() {
           <Icon name="tag" className="h-7 w-7" />
         </span>
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-zinc-900">Chegirmalar</h1>
-          <p className="mt-1 text-zinc-500">Arzonlashgan xizmatlar — eng katta chegirmadan boshlab.</p>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-zinc-900">Çegirmalar</h1>
+          <p className="mt-1 text-zinc-500">Arzonlaşgan xizmatlar — eng katta çegirmadan boşlab.</p>
         </div>
       </header>
 

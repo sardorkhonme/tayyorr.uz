@@ -48,7 +48,7 @@ export function ChatContactsRail({
       <div className="flex-1 overflow-y-auto px-2 pb-3">
         {rows.length === 0 && (
           <p className="px-3 py-6 text-center text-xs text-zinc-600">
-            Suhbat yo'q.
+            Suhbat yöq.
           </p>
         )}
         {rows.map((c) => {

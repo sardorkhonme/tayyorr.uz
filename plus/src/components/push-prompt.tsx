@@ -81,13 +81,13 @@ export function PushPrompt() {
         <span className="shine mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
           <Icon name="bell" className="h-7 w-7" />
         </span>
-        <h3 className="mt-5 font-display text-xl font-bold text-zinc-900">Bildirishnomalarni yoqasizmi?</h3>
+        <h3 className="mt-5 font-display text-xl font-bold text-zinc-900">Bildirişnomalarni yoqasizmi?</h3>
         <p className="mt-2 leading-relaxed text-zinc-500">
-          Support javoblari va buyurtmalaringiz holati haqida sayt yopiq bo&apos;lsa ham darhol xabar olasiz.
+          Support javoblari va buyurtmalaringiz holati haqida sayt yopiq bölsa ham darhol xabar olasiz.
         </p>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row-reverse">
           <button type="button" className="btn-primary flex-1 !py-3.5" onClick={enable} disabled={busy}>
-            {busy ? "…" : "Yoqish"}
+            {busy ? "…" : "Yoqiş"}
           </button>
           <button type="button" className="btn-ghost flex-1 !py-3.5" onClick={later} disabled={busy}>
             Keyinroq

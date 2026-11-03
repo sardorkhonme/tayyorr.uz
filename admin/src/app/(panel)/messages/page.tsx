@@ -60,18 +60,18 @@ export default async function AdminMessages({
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Xabarlar (tayyorr.uz support)</h1>
       <p className="text-sm text-zinc-500">
-        Foydalanuvchilar bilan yozishmalar. Javoblar «tayyorr.uz support» nomidan
+        Foydalanuvçilar bilan yozişmalar. Javoblar «tayyorr.uz support» nomidan
         boradi.
       </p>
-      <LiveSearch placeholder="Ism, familiya, login yoki foydalanuvchi ID" />
+      <LiveSearch placeholder="Ism, familiya, login yoki foydalanuvçi ID" />
 
       {rows.length === 0 && fresh.length === 0 && (
-        <p className="text-sm text-zinc-500">{q ? "Hech narsa topilmadi." : "Hozircha suhbat yo'q."}</p>
+        <p className="text-sm text-zinc-500">{q ? "Heç narsa topilmadi." : "Hozirça suhbat yöq."}</p>
       )}
 
       {fresh.length > 0 && (
         <div className="flex flex-col gap-2">
-          <div className="text-xs uppercase tracking-wide text-zinc-500">Yangi suhbat boshlash</div>
+          <div className="text-xs uppercase tracking-wide text-zinc-500">Yangi suhbat boşlaş</div>
           {fresh.map((u) => (
             <Link
               key={u.id}
@@ -89,7 +89,7 @@ export default async function AdminMessages({
               </span>
               <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-indigo-300">
                 <Icon name="message" className="h-3.5 w-3.5" />
-                Yozish
+                Yoziş
               </span>
             </Link>
           ))}

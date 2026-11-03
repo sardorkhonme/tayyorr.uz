@@ -89,7 +89,7 @@ export async function GET(
     if (me?.role === "PREPARER") {
       queue = order.offers.map((o, i) => {
         const mine = o.preparerId === auth.userId;
-        const displayName = o.preparer.name ?? o.preparer.login ?? "Tayyorlovchi";
+        const displayName = o.preparer.name ?? o.preparer.login ?? "Tayyorlovçi";
         const masked = mine ? { visible: displayName, hiddenLen: 0 } : maskName(displayName, 0.2);
         return { position: i + 1, mine, starsSpent: o.starsSpent, ...masked };
       });
@@ -179,7 +179,7 @@ export async function PATCH(
   }
 
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return mobileJson({ error: "Noto'g'ri status" }, { status: 400 });
+  if (!parsed.success) return mobileJson({ error: "Notöğri status" }, { status: 400 });
 
   const r =
     parsed.data.status === "DELIVERED"
@@ -206,7 +206,7 @@ export async function DELETE(
     return mobileJson({ error: "Topilmadi" }, { status: 404 });
   }
   if (order.deletedAt) {
-    return mobileJson({ error: "Allaqachon o'chirilgan" }, { status: 400 });
+    return mobileJson({ error: "Allaqaçon öçirilgan" }, { status: 400 });
   }
   await sweepContracts({ orderId: id });
   const locked = await orderLockedReason(id);
@@ -214,10 +214,10 @@ export async function DELETE(
 
   const full = await softDeleteOrder(id, "ORDERER", null);
   if (full?.telegramMessageId) {
-    await markOrderRemovedInChannel(full.telegramMessageId, full.title, "Buyurtmachi", null);
+    await markOrderRemovedInChannel(full.telegramMessageId, full.title, "Buyurtmaçi", null);
   }
 
-  await logActivity(auth.userId, "ORDER_DELETE", `Buyurtmani o'chirdi${full?.title ? `: «${full.title}»` : ""} (mobil ilova)`, {
+  await logActivity(auth.userId, "ORDER_DELETE", `Buyurtmani öçirdi${full?.title ? `: «${full.title}»` : ""} (mobil ilova)`, {
     orderId: id,
   });
 

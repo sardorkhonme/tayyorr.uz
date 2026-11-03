@@ -21,7 +21,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   FAILED: { label: "Xatolik", cls: "text-red-300" },
 };
 
-const som = (n: number) => `${n.toLocaleString("ru-RU")} so'm`;
+const som = (n: number) => `${n.toLocaleString("ru-RU")} söm`;
 
 export default async function AdminSmm() {
   await requireAdmin();
@@ -52,7 +52,7 @@ export default async function AdminSmm() {
 
   const stats = [
     { label: "Buyurtmalar", value: total.toLocaleString("ru-RU"), sub: `24 soatda: ${today}` },
-    { label: "Aylanma (qaytarilganlarsiz)", value: som(turnover), sub: "mijozlar to'lagan summa" },
+    { label: "Aylanma (qaytarilganlarsiz)", value: som(turnover), sub: "mijozlar tölagan summa" },
     { label: "Faol xizmatlar", value: services.toLocaleString("ru-RU"), sub: "provayderdan 6 soatda avtomatik yangilanadi" },
   ];
 
@@ -79,12 +79,12 @@ export default async function AdminSmm() {
             Dollar kursi (Markaziy bank)
           </span>
           <span className="mt-1 text-3xl font-semibold text-white">
-            {settings.usd ? `${settings.usd.rate.toLocaleString("ru-RU")} so'm` : "—"}
+            {settings.usd ? `${settings.usd.rate.toLocaleString("ru-RU")} söm` : "—"}
           </span>
           <span className="text-xs text-zinc-500">
             {settings.usd
               ? `CBU sanasi: ${settings.usd.date ?? "—"} · yangilangan: ${shortDateTime(settings.usd.at)}`
-              : "Kursni olib bo'lmadi"}
+              : "Kursni olib bölmadi"}
           </span>
           <span className="mt-2 text-xs text-zinc-600">Har 6 soatda avtomatik yangilanadi.</span>
         </div>
@@ -112,7 +112,7 @@ export default async function AdminSmm() {
             <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
               <tr>
                 <th className="px-4 py-2">Sana</th>
-                <th className="px-4 py-2">Foydalanuvchi</th>
+                <th className="px-4 py-2">Foydalanuvçi</th>
                 <th className="px-4 py-2">Xizmat</th>
                 <th className="px-4 py-2 text-right">Miqdor</th>
                 <th className="px-4 py-2 text-right">Summa</th>
@@ -151,7 +151,7 @@ export default async function AdminSmm() {
               {orders.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
-                    Hali buyurtma yo&apos;q.
+                    Hali buyurtma yöq.
                   </td>
                 </tr>
               )}

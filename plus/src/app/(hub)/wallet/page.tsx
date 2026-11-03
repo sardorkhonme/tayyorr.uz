@@ -49,12 +49,12 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <h1 className="font-display text-3xl font-bold text-zinc-900">Hamyon</h1>
-        <p className="mt-2 text-zinc-500">Barcha tayyorr xizmatlari uchun bitta hamyon — amallar hamma joyda bir xil.</p>
+        <p className="mt-2 text-zinc-500">Barça tayyorr xizmatlari uçun bitta hamyon — amallar hamma joyda bir xil.</p>
       </header>
 
       {topup && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
-          To&apos;lov tekshirilmoqda — o&apos;tgan bo&apos;lsa, balans bir necha soniyada yangilanadi. Sahifani yangilang.
+          Tölov tekşirilmoqda — ötgan bölsa, balans bir neça soniyada yangilanadi. Sahifani yangilang.
         </div>
       )}
 
@@ -69,13 +69,13 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
         </p>
         <div className="relative z-[2] mt-6 flex flex-col gap-2 sm:flex-row">
           <TopupButton className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-indigo-700 transition hover:bg-indigo-50">
-            <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} /> Hamyonni to&apos;ldirish
+            <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} /> Hamyonni töldiriş
           </TopupButton>
           <a
             href="#payout"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 px-5 py-3 font-semibold text-white transition hover:bg-white/10"
           >
-            <Icon name="wallet" className="h-4 w-4" /> Kartaga yechish
+            <Icon name="wallet" className="h-4 w-4" /> Kartaga yeçiş
           </a>
         </div>
       </section>
@@ -84,7 +84,7 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
 
       {payouts.length > 0 && (
         <section>
-          <h2 className="font-display text-xl font-bold text-zinc-900">Yechib olish so&apos;rovlari</h2>
+          <h2 className="font-display text-xl font-bold text-zinc-900">Yeçib oliş sörovlari</h2>
           <ul className="mt-4 space-y-2.5">
             {payouts.map((p) => (
               <li key={p.id} className="card flex items-center gap-4 !rounded-2xl p-4">
@@ -119,7 +119,7 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
       <section>
         <h2 className="font-display text-xl font-bold text-zinc-900">Amallar tarixi</h2>
         {txns.length === 0 ? (
-          <div className="card mt-4 !rounded-3xl px-6 py-12 text-center text-zinc-500">Hozircha amallar yo&apos;q.</div>
+          <div className="card mt-4 !rounded-3xl px-6 py-12 text-center text-zinc-500">Hozirça amallar yöq.</div>
         ) : (
           <ul className="mt-4 space-y-2.5">
             {txns.map((tx) => {

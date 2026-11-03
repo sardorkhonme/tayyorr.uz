@@ -8,9 +8,9 @@ import { SITE_URL } from "@/lib/links";
 const heading = localFont({ src: "../fonts/SpaceGrotesk.woff2", weight: "500 700", variable: "--font-heading", display: "swap" });
 const body = localFont({ src: "../fonts/Inter.woff2", weight: "400 700", variable: "--font-body", display: "swap" });
 
-const TITLE = "Tayyorr.uz — ilmiy ishlar, SMM va boshqa xizmatlar bitta hisobda";
+const TITLE = "Tayyorr.uz — ilmiy işlar, SMM va boşqa xizmatlar bitta hisobda";
 const DESCRIPTION =
-  "Prezentatsiya, kurs ishi, referat va diplom ishi uchun ishonchli tayyorlovchi toping; Instagram, Telegram, TikTok uchun obunachi va layklar. Bitta hisob, bitta hamyon.";
+  "Prezentatsiya, kurs işi, referat va diplom işi uçun işonçli tayyorlovçi toping; Instagram, Telegram, TikTok uçun obunaçi va layklar. Bitta hisob, bitta hamyon.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -18,17 +18,28 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   applicationName: "Tayyorr.uz",
   keywords: [
-    "prezentatsiya tayyorlash",
-    "kurs ishi",
+    "prezentatsiya tayyorlaş",
+    "kurs işi",
     "referat",
-    "diplom ishi",
-    "mustaqil ish",
+    "diplom işi",
+    "mustaqil iş",
     "smm panel",
-    "instagram obunachi",
-    "telegram obunachi",
+    "instagram obunaçi",
+    "telegram obunaçi",
     "tayyorr",
     "tayyorr.uz",
+    // eski yozuvda ham qidiriladi (2026-yilgi alifbogacha bo'lgan imlo) — Google uchun
+    "prezentatsiya tayyorlaş",
+    "kurs işi",
+    "diplom işi",
+    "mustaqil iş",
+    "instagram obunaçi",
+    "telegram obunaçi",
+    "ilmiy işlar",
+    "SMM xizmatlari",
+    "Özbekiston",
   ],
+
   alternates: { canonical: "/" },
   icons: {
     icon: [

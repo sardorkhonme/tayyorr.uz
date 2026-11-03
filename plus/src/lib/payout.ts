@@ -10,9 +10,9 @@ export const PAYOUT_MIN = 1_000;
 export const PAYOUT_COMMISSION_PERCENT = 5;
 
 export const PAYOUT_STATUS: Record<string, string> = {
-  PENDING: "Kartaga o'tkazilmoqda",
-  PAID: "Kartaga o'tkazildi",
-  REJECTED: "Rad etildi (mablag' qaytarildi)",
+  PENDING: "Kartaga ötkazilmoqda",
+  PAID: "Kartaga ötkazildi",
+  REJECTED: "Rad etildi (mablağ qaytarildi)",
   CANCELLED: "Bekor qilindi",
 };
 
@@ -30,7 +30,7 @@ export function maskCard(d: string) {
 
 export async function requestPayout(userId: string, amount: number, cardRaw: string, cardName?: string) {
   const card = cardRaw.replace(/\D/g, "");
-  if (card.length !== 16) throw new PayoutError("Karta raqami 16 raqamdan iborat bo'lsin");
+  if (card.length !== 16) throw new PayoutError("Karta raqami 16 raqamdan iborat bölsin");
   if (!Number.isInteger(amount) || amount < PAYOUT_MIN) throw new PayoutError(`Eng kami ${som(PAYOUT_MIN)}`);
   const { commission, net } = payoutNet(amount);
 
@@ -40,7 +40,7 @@ export async function requestPayout(userId: string, amount: number, cardRaw: str
       where: { id: userId, balance: { gte: amount } },
       data: { balance: { decrement: amount } },
     });
-    if (upd.count !== 1) throw new PayoutError("Hisobda yetarli mablag' yo'q");
+    if (upd.count !== 1) throw new PayoutError("Hisobda yetarli mablağ yöq");
     const p = await tx.payoutRequest.create({
       data: { userId, amount, card, cardName: cardName?.trim() || null },
     });
@@ -51,7 +51,7 @@ export async function requestPayout(userId: string, amount: number, cardRaw: str
         status: "PENDING",
         amount,
         method: "CARD",
-        note: `Kartaga yechib olindi — ${maskCard(card)} (tayyorr+, ${PAYOUT_COMMISSION_PERCENT}% komissiya)`,
+        note: `Kartaga yeçib olindi — ${maskCard(card)} (tayyorr+, ${PAYOUT_COMMISSION_PERCENT}% komissiya)`,
         meta: { payoutId: p.id, card: maskCard(card), commission, net, source: "plus" },
       },
     });
@@ -67,27 +67,27 @@ export async function requestPayout(userId: string, amount: number, cardRaw: str
       data: {
         userId,
         action: "PAYOUT_REQUEST",
-        summary: `Kartaga yechish so'radi (tayyorr+): ${som(amount)} — ${maskCard(card)}`,
+        summary: `Kartaga yeçiş söradi (tayyorr+): ${som(amount)} — ${maskCard(card)}`,
         meta: { amount, payoutId: payout.id, commission, net },
       },
     })
     .catch(() => {});
   await notifyAdmins(
     "payouts",
-    "🏧 Yangi yechib olish so'rovi (tayyorr+)",
+    "🏧 Yangi yeçib oliş sörovi (tayyorr+)",
     [
       `Foydalanuvchi: ${userLabel(u)}`,
       u?.email ? `Email: ${u.email}` : "",
       u?.walletCode ? `Hisob kodi: ${u.walletCode}` : "",
       `Summa: ${som(amount)}`,
       `Komissiya (${PAYOUT_COMMISSION_PERCENT}%): ${som(commission)}`,
-      `Kartaga o'tkaziladi: ${som(net)}`,
+      `Kartaga ötkaziladi: ${som(net)}`,
       `Karta: ${card}`,
       cardName ? `Karta egasi: ${cardName}` : "",
       `Qolgan balans: ${som(u?.balance ?? 0)}`,
-      `So'rov ID: ${payout.id}`,
+      `Sörov ID: ${payout.id}`,
     ],
-    { text: "Foydalanuvchi", href: adminUserUrl(userId) },
+    { text: "Foydalanuvçi", href: adminUserUrl(userId) },
   );
   return payout;
 }
@@ -101,19 +101,19 @@ export async function cancelPayout(userId: string, id: string) {
       where: { id, status: "PENDING" },
       data: { status: "CANCELLED", resolvedAt: new Date() },
     });
-    if (upd.count !== 1) throw new PayoutError("Bu so'rovni bekor qilib bo'lmaydi");
+    if (upd.count !== 1) throw new PayoutError("Bu sörovni bekor qilib bölmaydi");
     await tx.user.update({ where: { id: userId }, data: { balance: { increment: p.amount } } });
     await tx.walletTransaction.updateMany({
       where: { userId, type: "PAYOUT", status: "PENDING", meta: { path: ["payoutId"], equals: id } },
       data: { status: "FAILED", reversedAt: new Date() },
     });
     await tx.walletTransaction.create({
-      data: { userId, type: "REFUND", amount: p.amount, method: "CARD", note: "Yechib olish so'rovi bekor qilindi" },
+      data: { userId, type: "REFUND", amount: p.amount, method: "CARD", note: "Yeçib oliş sörovi bekor qilindi" },
     });
     return p;
   });
-  await notifyAdmins("payouts", "↩️ Yechish so'rovi (o'zi) bekor qilindi — tayyorr+", [
+  await notifyAdmins("payouts", "↩️ Yeçiş sörovi (özi) bekor qilindi — tayyorr+", [
     `Summa: ${som(done.amount)}`,
-    `Foydalanuvchi ID: ${userId}`,
+    `Foydalanuvçi ID: ${userId}`,
   ]);
 }

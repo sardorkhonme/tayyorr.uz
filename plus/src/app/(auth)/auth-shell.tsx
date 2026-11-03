@@ -5,10 +5,10 @@ import { Logo } from "@/components/logo";
 import { MAIN_URL } from "@/lib/format";
 
 const POINTS = [
-  "Barcha xizmatlar uchun bitta hisob va bitta hamyon",
-  "Tayyorr SMM — obunachi, layk va ko'rishlar",
-  "Bajarilmagan xizmat uchun pul avtomatik qaytadi",
-  "Yangi xizmatlar doimiy qo'shib boriladi",
+  "Barça xizmatlar uçun bitta hisob va bitta hamyon",
+  "Tayyorr SMM — obunaçi, layk va körişlar",
+  "Bajarilmagan xizmat uçun pul avtomatik qaytadi",
+  "Yangi xizmatlar doimiy qöşib boriladi",
 ];
 
 /** Kirish / ro'yxatdan o'tish sahifalari uchun umumiy ramka (yorliqlar bilan). */
@@ -21,7 +21,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
           <Logo className="text-2xl" light />
         </Link>
         <div className="my-auto max-w-md">
-          <h2 className="font-display text-4xl font-bold leading-tight">Bitta hisob — ko&apos;p xizmat</h2>
+          <h2 className="font-display text-4xl font-bold leading-tight">Bitta hisob — köp xizmat</h2>
           <ul className="mt-10 space-y-4 text-lg text-indigo-50">
             {POINTS.map((p) => (
               <li key={p} className="flex items-start gap-3">
@@ -53,7 +53,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
                   mode === "login" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                Kirish
+                Kiriş
               </Link>
               <Link
                 href="/register"
@@ -61,7 +61,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
                   mode === "register" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                Ro&apos;yxatdan o&apos;tish
+                Röyxatdan ötiş
               </Link>
             </div>
             )}
@@ -71,7 +71,7 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
           <p className="mt-6 text-center text-xs leading-relaxed text-zinc-500">
             Davom etib,{" "}
             <a href={`${MAIN_URL}/terms`} className="underline hover:text-zinc-800">
-              foydalanish shartlari
+              foydalaniş şartlari
             </a>{" "}
             va{" "}
             <a href={`${MAIN_URL}/privacy`} className="underline hover:text-zinc-800">

@@ -70,7 +70,7 @@ export function HeroMockup() {
           <div className="h-1.5 w-2/3 rounded-full bg-white/10" />
         </div>
         <span className="mt-5 inline-block rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
-          Referat / Kurs ishi
+          Referat / Kurs işi
         </span>
       </div>
 

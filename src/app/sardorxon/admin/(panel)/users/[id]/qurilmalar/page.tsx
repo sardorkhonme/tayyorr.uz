@@ -28,7 +28,7 @@ export default async function AdminUserDevices({
     { device: string; lastIp: string | null; firstSeen: Date; lastSeen: Date; count: number }
   >();
   for (const l of logins) {
-    const device = describeDevice(l.userAgent) ?? "Noma'lum qurilma";
+    const device = describeDevice(l.userAgent) ?? "Nomaʼlum qurilma";
     const cur = byDevice.get(device);
     if (!cur) {
       byDevice.set(device, {
@@ -55,11 +55,11 @@ export default async function AdminUserDevices({
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
       <h2 className="mb-1 font-semibold text-white">Qurilmalar</h2>
       <p className="mb-4 text-xs text-zinc-500">
-        Saytga kirish (login) tarixidan aniqlangan — bitta qurilmadan bir necha
-        marta kirilgan bo'lsa, bitta qator sifatida ko'rsatiladi.
+        Saytga kiriş (login) tarixidan aniqlangan — bitta qurilmadan bir neça
+        marta kirilgan bölsa, bitta qator sifatida körsatiladi.
       </p>
       {devices.length === 0 ? (
-        <p className="text-sm text-zinc-500">Hali kirish qayd etilmagan.</p>
+        <p className="text-sm text-zinc-500">Hali kiriş qayd etilmagan.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {devices.map((d) => (
@@ -70,7 +70,7 @@ export default async function AdminUserDevices({
               <div>
                 <div className="font-medium text-zinc-200">{d.device}</div>
                 <div className="mt-0.5 text-xs text-zinc-500">
-                  Birinchi: {shortDateTime(d.firstSeen)} · Oxirgi:{" "}
+                  Birinçi: {shortDateTime(d.firstSeen)} · Oxirgi:{" "}
                   {shortDateTime(d.lastSeen)}
                   {d.lastIp ? ` · ${d.lastIp}` : ""}
                 </div>

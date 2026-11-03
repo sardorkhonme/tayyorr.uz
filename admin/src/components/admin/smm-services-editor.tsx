@@ -32,7 +32,7 @@ const PLATFORM_NAMES: Record<string, string> = {
   youtube: "YouTube",
   facebook: "Facebook",
   twitter: "X (Twitter)",
-  other: "Boshqa",
+  other: "Boşqa",
 };
 const PLATFORM_ORDER = Object.keys(PLATFORM_NAMES);
 const QUICK = [-20, -10, 0, 10, 20];
@@ -187,7 +187,7 @@ export function SmmServicesEditor({
       const clean = parseAdjust(data.adjust);
       setAdjust(clean);
       setSaved(JSON.stringify(clean));
-      setMsg({ ok: true, text: "Saqlandi — saytda 1 daqiqa ichida yangilanadi" });
+      setMsg({ ok: true, text: "Saqlandi — saytda 1 daqiqa içida yangilanadi" });
       router.refresh();
     } catch (err) {
       setMsg({ ok: false, text: err instanceof Error ? err.message : "Xatolik" });
@@ -229,12 +229,12 @@ export function SmmServicesEditor({
 
       <p className="text-xs text-zinc-500">
         Jami {services.length} ta faol xizmat
-        {hiddenCount > 0 && <> · <span className="text-red-300">{hiddenCount} tasi saytda yashirilgan</span></>}
+        {hiddenCount > 0 && <> · <span className="text-red-300">{hiddenCount} tasi saytda yaşirilgan</span></>}
       </p>
 
       {tree.length === 0 && (
         <p className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-zinc-500">
-          Hech narsa topilmadi.
+          Heç narsa topilmadi.
         </p>
       )}
 
@@ -267,7 +267,7 @@ export function SmmServicesEditor({
                           <PctBadge pct={gPct} />
                         </span>
                         <span className="block text-xs text-zinc-500">
-                          {k.services.length} ta xizmat · 1000 dona: {som(Math.min(...prices))} – {som(Math.max(...prices))} so&apos;m
+                          {k.services.length} ta xizmat · 1000 dona: {som(Math.min(...prices))} – {som(Math.max(...prices))} söm
                           {ownCount > 0 && ` · ${ownCount} tasida alohida sozlama`}
                         </span>
                       </span>
@@ -301,9 +301,9 @@ export function SmmServicesEditor({
                           <tr>
                             <th className="px-4 py-2">Xizmat</th>
                             <th className="px-4 py-2 text-right">Asosiy narx</th>
-                            <th className="px-4 py-2 text-right">O&apos;z foizi</th>
+                            <th className="px-4 py-2 text-right">Öz foizi</th>
                             <th className="px-4 py-2 text-right">Saytda</th>
-                            <th className="px-4 py-2 text-center">Ko&apos;rinadi</th>
+                            <th className="px-4 py-2 text-center">Körinadi</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -371,7 +371,7 @@ export function SmmServicesEditor({
               <span className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</span>
             ) : (
               <>
-                <span className="text-sm text-zinc-300">Saqlanmagan o&apos;zgarishlar bor</span>
+                <span className="text-sm text-zinc-300">Saqlanmagan özgarişlar bor</span>
                 <button
                   type="button"
                   className="btn-ghost"
@@ -382,10 +382,10 @@ export function SmmServicesEditor({
                     setMsg(null);
                   }}
                 >
-                  Bekor qilish
+                  Bekor qiliş
                 </button>
                 <button type="button" className="btn-primary" disabled={busy} onClick={save}>
-                  {busy ? "..." : "Saqlash"}
+                  {busy ? "..." : "Saqlaş"}
                 </button>
               </>
             )}

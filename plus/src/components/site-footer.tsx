@@ -9,7 +9,7 @@ const SMM_URL = (process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz").re
 
 const COLS = [
   {
-    title: "Bo'limlar",
+    title: "Bölimlar",
     links: [
       { href: "/", label: "Asosiy" },
       { href: "/wallet", label: "Hamyon" },
@@ -17,11 +17,11 @@ const COLS = [
     ],
   },
   {
-    title: "Boshqa xizmatlar",
+    title: "Boşqa xizmatlar",
     links: [
-      { href: `${APP_URL}/dashboard`, label: "Ilmiy ishlar" },
+      { href: `${APP_URL}/dashboard`, label: "Ilmiy işlar" },
       { href: SMM_URL, label: "Tayyorr SMM" },
-      { href: MAIN_URL, label: "Bosh sahifa" },
+      { href: MAIN_URL, label: "Boş sahifa" },
     ],
   },
   {
@@ -50,7 +50,7 @@ export function SiteFooter() {
               tayyorr<span className="bg-gradient-to-br from-indigo-500 to-fuchsia-500 bg-clip-text text-transparent">+</span>
             </span>
           </Link>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-zinc-500">Barcha tayyorr xizmatlari bir joyda: bitta hisob, umumiy hamyon va yordam.</p>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-zinc-500">Barça tayyorr xizmatlari bir joyda: bitta hisob, umumiy hamyon va yordam.</p>
           <div className="mt-4 flex gap-2">
             {SOCIAL.map((s) => (
               <a
@@ -89,7 +89,7 @@ export function SiteFooter() {
         ))}
       </div>
       <p className="border-t border-zinc-200/80 py-5 text-xs text-zinc-400">
-        © {new Date().getFullYear()} Tayyorr.uz — barcha huquqlar himoyalangan.
+        © {new Date().getFullYear()} Tayyorr.uz — barça huquqlar himoyalangan.
       </p>
     </footer>
   );

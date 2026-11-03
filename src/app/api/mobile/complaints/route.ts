@@ -24,12 +24,12 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return mobileJson({ error: parsed.error.issues[0]?.message ?? "Shikoyat matni qisqa" }, { status: 400 });
+    return mobileJson({ error: parsed.error.issues[0]?.message ?? "Şikoyat matni qisqa" }, { status: 400 });
   }
   const { suspectId, orderId, messageId, body } = parsed.data;
 
   if (suspectId && suspectId === me) {
-    return mobileJson({ error: "O'zingiz ustidan shikoyat yozib bo'lmaydi" }, { status: 400 });
+    return mobileJson({ error: "Özingiz ustidan şikoyat yozib bölmaydi" }, { status: 400 });
   }
 
   await db.complaint.create({
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   await logActivity(
     me,
     "COMPLAINT_CREATE",
-    `Shikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma bo'yicha)" : ""} (mobil ilova)`,
+    `Şikoyat yubordi${messageId ? " (xabar ustidan)" : orderId ? " (buyurtma böyiça)" : ""} (mobil ilova)`,
     { suspectId: suspectId || null, orderId: orderId || null, messageId: messageId || null },
   );
 
@@ -64,10 +64,10 @@ export async function POST(req: Request) {
 
   await logToGroup(
     "complaints",
-    "⚠️ Yangi shikoyat (mobil)",
+    "⚠️ Yangi şikoyat (mobil)",
     [
       `Shikoyatchi: ${userLabel(reporter)}`,
-      suspectId ? `Kimga qarshi: ${userLabel(suspect)}` : "",
+      suspectId ? `Kimga qarşi: ${userLabel(suspect)}` : "",
       orderId ? `Buyurtma ID: ${orderId}` : "",
       messageId ? `Xabar ID: ${messageId}` : "",
       body,

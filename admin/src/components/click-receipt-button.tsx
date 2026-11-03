@@ -30,14 +30,14 @@ export function ClickReceiptButton({ apiBase }: { apiBase: string }) {
 
   return (
     <div className="card flex flex-col gap-3">
-      <div className="text-sm font-medium text-white">Click cheki</div>
+      <div className="text-sm font-medium text-white">Click çeki</div>
       <button
         type="button"
         onClick={fetchReceipt}
         disabled={busy}
         className="btn-ghost w-fit text-sm"
       >
-        {busy ? "..." : "Click chekini ko'rish"}
+        {busy ? "..." : "Click çekini köriş"}
       </button>
       {qr && (
         <a
@@ -46,7 +46,7 @@ export function ClickReceiptButton({ apiBase }: { apiBase: string }) {
           rel="noopener noreferrer"
           className="btn-primary w-fit text-sm"
         >
-          Rasmiy chekni ochish ↗
+          Rasmiy çekni oçiş ↗
         </a>
       )}
       {err && <p className="text-sm text-red-400">{err}</p>}

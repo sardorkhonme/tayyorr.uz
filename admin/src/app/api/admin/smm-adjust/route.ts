@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (denied) return denied;
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Ma'lumot noto'g'ri" }, { status: 400 });
+    return NextResponse.json({ error: "Maʼlumot notöğri" }, { status: 400 });
   }
   const adjust = parseAdjust(body);
   const value = JSON.stringify(adjust);
@@ -23,9 +23,9 @@ export async function POST(req: Request) {
 
   const groups = Object.entries(adjust.groups).map(([k, v]) => `${k}: ${v > 0 ? "+" : ""}${v}%`);
   const svcs = Object.values(adjust.services);
-  await logToGroup("smmSystem", "⚙️ SMM xizmatlari narxi o'zgartirildi", [
-    groups.length ? `Guruhlar: ${groups.join(", ")}` : "Guruhlar: tuzatish yo'q",
-    `Alohida xizmatlar: ${svcs.filter((s) => s.pct !== undefined).length} ta foiz, ${svcs.filter((s) => s.off).length} ta yashirilgan`,
+  await logToGroup("smmSystem", "⚙️ SMM xizmatlari narxi özgartirildi", [
+    groups.length ? `Guruhlar: ${groups.join(", ")}` : "Guruhlar: tuzatiş yöq",
+    `Alohida xizmatlar: ${svcs.filter((s) => s.pct !== undefined).length} ta foiz, ${svcs.filter((s) => s.off).length} ta yaşirilgan`,
   ]);
   return NextResponse.json({ ok: true, adjust });
 }

@@ -5,7 +5,7 @@ import { LOGIN_URL, START_URL } from "@/lib/links";
 
 const NAV = [
   { href: "/#xizmatlar", label: "Xizmatlar" },
-  { href: "/#qanday", label: "Qanday ishlaydi" },
+  { href: "/#qanday", label: "Qanday işlaydi" },
   { href: "/#ilova", label: "Ilova" },
   { href: "/#savollar", label: "Savollar" },
 ];
@@ -26,10 +26,10 @@ export function SiteHeader() {
         </div>
         <div className="flex items-center gap-1.5">
           <a href={LOGIN_URL} className="rounded-xl px-3.5 py-2 text-sm font-medium text-zinc-300 transition hover:text-white">
-            Kirish
+            Kiriş
           </a>
           <a href={START_URL} className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-zinc-200">
-            Boshlash
+            Boşlaş
           </a>
         </div>
       </nav>

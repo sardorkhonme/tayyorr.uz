@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       sign_string,
     })
   ) {
-    await logToGroup("errors", "🚨 Click imzosi noto'g'ri (Complete)", [
+    await logToGroup("errors", "🚨 Click imzosi notöğri (Complete)", [
       `click_trans_id: ${click_trans_id}`,
       `service_id: ${service_id}`,
       `merchant_trans_id: ${merchant_trans_id}`,
@@ -95,18 +95,18 @@ export async function POST(req: Request) {
       });
       await logToGroup(
         payTopic,
-        `⚠️ To'lov bekor qilindi (Click${smmTag})`,
+        `⚠️ Tölov bekor qilindi (Click${smmTag})`,
         [
           `Foydalanuvchi: ${userLabel(u)}`,
           u?.email ? `Email: ${u.email}` : "",
           u?.walletCode ? `Hisob kodi: ${u.walletCode}` : "",
-          `Summa: ${wtx.amount.toLocaleString("ru-RU")} so'm`,
-          `Yangi balans: ${u ? u.balance.toLocaleString("ru-RU") : "?"} so'm`,
+          `Summa: ${wtx.amount.toLocaleString("ru-RU")} söm`,
+          `Yangi balans: ${u ? u.balance.toLocaleString("ru-RU") : "?"} söm`,
           `Tranzaksiya ID: ${wtx.id}`,
           `click_trans_id: ${click_trans_id}`,
           `merchant_trans_id: ${merchant_trans_id}`,
           `service_id: ${service_id}`,
-          `Foydalanuvchi ID: ${wtx.userId}`,
+          `Foydalanuvçi ID: ${wtx.userId}`,
         ].filter(Boolean),
         logSiteUrl(`/sardorxon/admin/payments/${wtx.id}`),
       );
@@ -156,30 +156,30 @@ export async function POST(req: Request) {
   await logActivity(
     wtx.userId,
     "WALLET_TOPUP",
-    `Hisobni Click orqali to'ldirdi: ${wtx.amount.toLocaleString("ru-RU")} so'm`,
+    `Hisobni Click orqali töldirdi: ${wtx.amount.toLocaleString("ru-RU")} söm`,
     { amount: wtx.amount, clickTransId: click_trans_id },
   );
 
   await sendTelegramToUser(wtx.userId, {
-    title: "💳 Hisob to'ldirildi",
-    body: `${wtx.amount.toLocaleString("ru-RU")} so'm Click orqali hamyoningizga tushdi.`,
+    title: "💳 Hisob töldirildi",
+    body: `${wtx.amount.toLocaleString("ru-RU")} söm Click orqali hamyoningizga tuşdi.`,
     url: returnTo ?? (fromSmm ? SMM_SITE_URL : siteUrl("/wallet")),
-    buttonLabel: "Tranzaksiyalarni ko'rish",
+    buttonLabel: "Tranzaksiyalarni köriş",
   });
   await logToGroup(
     payTopic,
-    `💳 Hisob to'ldirildi (Click${smmTag})`,
+    `💳 Hisob töldirildi (Click${smmTag})`,
     [
       `Foydalanuvchi: ${userLabel(updatedUser)}`,
       updatedUser.email ? `Email: ${updatedUser.email}` : "",
       updatedUser.walletCode ? `Hisob kodi: ${updatedUser.walletCode}` : "",
-      `Summa: ${wtx.amount.toLocaleString("ru-RU")} so'm`,
-      `Yangi balans: ${updatedUser.balance.toLocaleString("ru-RU")} so'm`,
+      `Summa: ${wtx.amount.toLocaleString("ru-RU")} söm`,
+      `Yangi balans: ${updatedUser.balance.toLocaleString("ru-RU")} söm`,
       `Tranzaksiya ID: ${wtx.id}`,
       `click_trans_id: ${click_trans_id}`,
       `merchant_trans_id: ${merchant_trans_id}`,
       `service_id: ${service_id}`,
-      `Foydalanuvchi ID: ${wtx.userId}`,
+      `Foydalanuvçi ID: ${wtx.userId}`,
     ].filter(Boolean),
     logSiteUrl(`/sardorxon/admin/payments/${wtx.id}`),
   );
