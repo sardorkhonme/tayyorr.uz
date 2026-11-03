@@ -1,5 +1,7 @@
 {
-  "ignoreCommand": "git diff --quiet ${VERCEL_GIT_PREVIOUS_SHA:-HEAD^} HEAD -- . ':(exclude)landing' ':(exclude)admin' ':(exclude)plus' ':(exclude)smm-app' ':(exclude)mobile'",
+  "git": {
+    "deploymentEnabled": false
+  },
   "crons": [
     {
       "path": "/api/cron/contracts",
