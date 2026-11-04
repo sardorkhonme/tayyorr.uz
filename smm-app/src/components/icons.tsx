@@ -34,6 +34,11 @@ export type IconName =
   | "headset"
   | "bell"
   | "send"
+  | "image"
+  | "download"
+  | "play"
+  | "pause"
+  | "file"
   | "tag";
 
 const PATHS: Record<IconName, React.ReactNode> = {
@@ -204,6 +209,33 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <rect x="3.5" y="13" width="4" height="6" rx="1.8" />
       <rect x="16.5" y="13" width="4" height="6" rx="1.8" />
       <path d="M18.5 19v.5a2 2 0 0 1-2 2H13" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="m20.5 15.5-4.2-4.2a1.2 1.2 0 0 0-1.7 0L6.5 19.5" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M12 4v11" />
+      <path d="m7.5 10.5 4.5 4.5 4.5-4.5" />
+      <path d="M5 19.5h14" />
+    </>
+  ),
+  play: <path d="M8 5.5v13a.8.8 0 0 0 1.2.7l10.3-6.5a.8.8 0 0 0 0-1.4L9.2 4.8A.8.8 0 0 0 8 5.5z" />,
+  pause: (
+    <>
+      <path d="M8.5 5.5v13" />
+      <path d="M15.5 5.5v13" />
+    </>
+  ),
+  file: (
+    <>
+      <path d="M13.5 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8.5z" />
+      <path d="M13.5 3.5v5h5" />
     </>
   ),
   send: (

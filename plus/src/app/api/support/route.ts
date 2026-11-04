@@ -18,15 +18,38 @@ export async function GET(req: Request) {
   return NextResponse.json({ ...data, balance: user?.balance ?? null });
 }
 
-const schema = z.object({ text: z.string().trim().min(1, "Xabar yozing").max(2000, "Xabar juda uzun") });
+const MAX_IMAGE = 4 * 1024 * 1024; // Vercel so'rov chegarasi ~4.5MB — rasm brauzerda kichraytirib yuboriladi
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const textSchema = z.string().trim().max(2000, "Xabar juda uzun");
 
+/** Matn (JSON) yoki rasm + izoh (multipart: file, text). Bu yerdan faqat rasm yuboriladi. */
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
-  const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Xabar yozing" }, { status: 400 });
+
+  let raw: unknown = "";
+  let image: { name: string; type: string; bytes: Uint8Array } | undefined;
+  if ((req.headers.get("content-type") ?? "").includes("multipart/form-data")) {
+    const form = await req.formData().catch(() => null);
+    if (!form) return NextResponse.json({ error: "Notöğri söröv" }, { status: 400 });
+    raw = form.get("text") ?? "";
+    const f = form.get("file");
+    if (f instanceof File && f.size > 0) {
+      if (!IMAGE_TYPES.includes(f.type)) return NextResponse.json({ error: "Faqat rasm yuboriş mumkin" }, { status: 400 });
+      if (f.size > MAX_IMAGE) return NextResponse.json({ error: "Rasm juda katta (4 MB gaça)" }, { status: 400 });
+      image = { name: f.name, type: f.type, bytes: new Uint8Array(await f.arrayBuffer()) };
+    }
+  } else {
+    raw = ((await req.json().catch(() => null)) as { text?: unknown } | null)?.text ?? "";
   }
-  const message = await sendSupportMessage(session.user.id, parsed.data.text);
+  const parsed = textSchema.safeParse(raw);
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Xabar yozing" }, { status: 400 });
+  if (!parsed.data && !image) return NextResponse.json({ error: "Xabar yozing" }, { status: 400 });
+
+  const message = await sendSupportMessage(session.user.id, parsed.data, image).catch((e) => {
+    console.error("support send", e);
+    return null;
+  });
+  if (!message) return NextResponse.json({ error: "Yuborilmadi, qayta urinib köring" }, { status: 500 });
   return NextResponse.json({ message });
 }

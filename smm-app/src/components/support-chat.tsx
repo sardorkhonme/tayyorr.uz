@@ -4,10 +4,30 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Icon } from "@/components/icons";
 import { Linkify } from "@/components/linkify";
 
-type Msg = { id: string; mine: boolean; body: string; createdAt: string };
+type Msg = { id: string; mine: boolean; body: string; createdAt: string; file?: ChatFile | null };
+
+/** Rasmni yuborishdan oldin kichraytiradi (uzun tomoni 1920px, JPEG) — tez yuklansin va 4 MB dan oshmasin. */
+async function shrinkImage(file: File): Promise<File> {
+  if (file.type === "image/gif" && file.size <= 4 * 1024 * 1024) return file;
+  if (file.size <= 600 * 1024 && ["image/jpeg", "image/png", "image/webp"].includes(file.type)) return file;
+  try {
+    const bmp = await createImageBitmap(file);
+    const k = Math.min(1, 1920 / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bmp.width * k);
+    canvas.height = Math.round(bmp.height * k);
+    canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.85));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 const timeFmt = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
 
@@ -36,6 +56,19 @@ export function SupportChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  // tanlangan rasm (yuborishdan oldin ko'rinadi)
+  const [image, setImage] = useState<{ file: File; preview: string } | null>(null);
+  useEffect(() => () => {
+    if (image) URL.revokeObjectURL(image.preview);
+  }, [image]);
+
+  function pickImage(f: File | undefined) {
+    if (!f) return;
+    if (!f.type.startsWith("image/")) return setError("Faqat rasm yuboriş mumkin");
+    setError("");
+    setImage({ file: f, preview: URL.createObjectURL(f) });
+  }
 
   const load = useCallback(async () => {
     if (!loggedIn) return;
@@ -67,18 +100,24 @@ export function SupportChat({
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const body = text.trim();
-    if (!body || sending) return;
+    if ((!body && !image) || sending) return;
     setSending(true);
     setError("");
-    const res = await fetch("/api/support", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text: body }),
-    }).catch(() => null);
+    let req: RequestInit;
+    if (image) {
+      const form = new FormData();
+      form.append("text", body);
+      form.append("file", await shrinkImage(image.file));
+      req = { method: "POST", body: form };
+    } else {
+      req = { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: body }) };
+    }
+    const res = await fetch("/api/support", req).catch(() => null);
     const data = await res?.json().catch(() => null);
     setSending(false);
     if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib köring");
     setText("");
+    setImage(null);
     setMsgs((m) => [...m, data.message]);
   }
 
@@ -130,9 +169,16 @@ export function SupportChat({
                       : "rounded-bl-md border border-zinc-100 bg-white text-zinc-800"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words">
-                <Linkify text={m.body} mine={m.mine} />
-              </p>
+                  {m.file && (
+                    <div className={m.body ? "-mx-1.5 -mt-0.5 mb-1.5" : "-mx-1.5 -mt-0.5"}>
+                      <ChatFileView file={m.file} mine={m.mine} />
+                    </div>
+                  )}
+                  {m.body && (
+                    <p className="whitespace-pre-wrap break-words">
+                      <Linkify text={m.body} mine={m.mine} />
+                    </p>
+                  )}
                   <p className={`mt-0.5 text-right text-[10px] ${m.mine ? "text-indigo-100" : "text-zinc-400"}`}>
                     {timeFmt.format(new Date(m.createdAt))}
                   </p>
@@ -143,10 +189,57 @@ export function SupportChat({
 
           <form onSubmit={send} className="border-t border-zinc-100 bg-white p-3">
             {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+            {image && (
+              <div className="mb-2 flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={image.preview} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-zinc-800">{image.file.name}</span>
+                  <span className="block text-xs text-zinc-500">{sending ? "Yuborilmoqda…" : "Izoh yozişingiz mumkin"}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setImage(null)}
+                  disabled={sending}
+                  aria-label="Rasmni olib taşlaş"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-zinc-500 transition hover:bg-zinc-200"
+                >
+                  <Icon name="close" className="h-4 w-4" />
+                </button>
+              </div>
+            )}
             <div className="flex items-end gap-2">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  pickImage(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={sending}
+                aria-label="Rasm yuboriş"
+                title="Rasm yuboriş"
+                className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-500 transition hover:border-indigo-200 hover:text-indigo-600"
+              >
+                <Icon name="image" className="h-5 w-5" />
+              </button>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
+                onPaste={(e) => {
+                  // nusxalangan rasmni (Ctrl+V) ham yuborish mumkin
+                  const f = [...e.clipboardData.files].find((x) => x.type.startsWith("image/"));
+                  if (f) {
+                    e.preventDefault();
+                    pickImage(f);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -161,7 +254,7 @@ export function SupportChat({
               />
               <button
                 className="btn-primary grid h-[46px] w-[46px] shrink-0 !p-0"
-                disabled={sending || !text.trim()}
+                disabled={sending || (!text.trim() && !image)}
                 aria-label="Yuboriş"
               >
                 <Icon name="send" className="h-5 w-5" />

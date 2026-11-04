@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
+import { presignPrivate, putPrivate } from "@/lib/r2";
 import { notifyAdmins } from "@/lib/telegram";
+import { randomUUID } from "crypto";
 
 /**
  * Support chati — tayyorr.uz dagi "tayyorr.uz support" hisobi bilan bitta suhbat
@@ -47,7 +49,16 @@ async function getConversation(userId: string, create: boolean) {
   return { conv, supportId };
 }
 
-export type SupportMessage = { id: string; mine: boolean; body: string; createdAt: string };
+export type SupportFile = { name: string; type: string; size: number; url: string; downloadUrl: string };
+export type SupportMessage = { id: string; mine: boolean; body: string; createdAt: string; file: SupportFile | null };
+
+/** Fayl uchun vaqtinchalik havolalar (ko'rish + yuklab olish) — tayyorr.uz chatidagi kabi 1 soat. */
+async function fileOf(m: { fileKey: string | null; fileName: string | null; fileType: string | null; fileSize: number | null }) {
+  if (!m.fileKey) return null;
+  const name = m.fileName ?? "fayl";
+  const [url, downloadUrl] = await Promise.all([presignPrivate(m.fileKey), presignPrivate(m.fileKey, { download: name })]);
+  return { name, type: m.fileType ?? "application/octet-stream", size: m.fileSize ?? 0, url, downloadUrl } satisfies SupportFile;
+}
 
 const stripTag = (body: string) => body.replace(/^\[(tayyorr\+|smm|all|uz\+plus|uz\+smm|plus\+smm)\]\s*/, "");
 
@@ -62,12 +73,14 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
     where: { conversationId: conv.id, deletedAt: null, ...VISIBLE_HERE },
     orderBy: { createdAt: "desc" },
     take: 60,
-    select: { id: true, senderId: true, body: true, createdAt: true, readAt: true, fileName: true },
+    select: { id: true, senderId: true, body: true, createdAt: true, readAt: true, fileKey: true, fileName: true, fileType: true, fileSize: true },
   });
   const unreadRows = rows.filter((m) => m.senderId === supportId && !m.readAt);
   const unread = unreadRows.length;
   // eng yangi o'qilmagan javob — bildirishnoma (toast) uchun
-  const latest = unreadRows[0] ? stripTag(unreadRows[0].body).slice(0, 140) || "Yangi xabar" : null;
+  const latest = unreadRows[0]
+    ? stripTag(unreadRows[0].body).slice(0, 140) || (unreadRows[0].fileName ? `📎 ${unreadRows[0].fileName}` : "Yangi xabar")
+    : null;
   if (markRead && unread) {
     await db.message.updateMany({
       where: { conversationId: conv.id, senderId: supportId, readAt: null, ...VISIBLE_HERE },
@@ -77,12 +90,15 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
   return {
     unread: markRead ? 0 : unread,
     latest: markRead ? null : latest,
-    messages: rows.reverse().map((m) => ({
-      id: m.id,
-      mine: m.senderId === userId,
-      body: stripTag(m.body) || (m.fileName ? `📎 ${m.fileName}` : ""),
-      createdAt: m.createdAt.toISOString(),
-    })),
+    messages: await Promise.all(
+      rows.reverse().map(async (m) => ({
+        id: m.id,
+        mine: m.senderId === userId,
+        body: stripTag(m.body),
+        createdAt: m.createdAt.toISOString(),
+        file: await fileOf(m).catch(() => null),
+      })),
+    ),
   };
 }
 
@@ -102,12 +118,24 @@ export async function sendSupportNotice(userId: string, text: string) {
 }
 
 /** Foydalanuvchi support'ga yozadi — xabar tayyorr.uz admin paneliga boradi. */
-export async function sendSupportMessage(userId: string, text: string) {
+export async function sendSupportMessage(
+  userId: string,
+  text: string,
+  image?: { name: string; type: string; bytes: Uint8Array },
+) {
   const { conv } = await getConversation(userId, true);
   const c = conv!;
+  // rasm — tayyorr.uz chatidagi kabi private bucketga, kalit "chat/<suhbat>/..."
+  let file: { fileKey: string; fileName: string; fileType: string; fileSize: number } | null = null;
+  if (image) {
+    const ext = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : image.type === "image/gif" ? "gif" : "jpg";
+    const key = `chat/${c.id.replace(/[^a-z0-9_-]/gi, "")}/${Date.now()}-${randomUUID()}.${ext}`;
+    await putPrivate(key, image.bytes, image.type);
+    file = { fileKey: key, fileName: image.name.slice(0, 200) || `rasm.${ext}`, fileType: image.type, fileSize: image.bytes.byteLength };
+  }
   const m = await db.$transaction(async (tx) => {
     const msg = await tx.message.create({
-      data: { conversationId: c.id, senderId: userId, body: `${SOURCE_TAG} ${text}` },
+      data: { conversationId: c.id, senderId: userId, body: `${SOURCE_TAG} ${text}`.trimEnd(), ...file },
     });
     await tx.conversation.update({
       where: { id: c.id },
@@ -124,8 +152,14 @@ export async function sendSupportMessage(userId: string, text: string) {
   await notifyAdmins(
     "support",
     `💬 ${who} — Tayyorr SMM dan yozdi`,
-    [text.length > 500 ? `${text.slice(0, 500)}…` : text, u?.login ? `@${u.login}` : u?.email ?? ""],
+    [[file ? "🖼 Rasm" : "", text.length > 500 ? `${text.slice(0, 500)}…` : text].filter(Boolean).join("\n"), u?.login ? `@${u.login}` : u?.email ?? ""],
     { text: "Javob beriş", href: `${ADMIN_URL}/messages/${c.id}` },
   );
-  return { id: m.id, mine: true, body: text, createdAt: m.createdAt.toISOString() } satisfies SupportMessage;
+  return {
+    id: m.id,
+    mine: true,
+    body: text,
+    createdAt: m.createdAt.toISOString(),
+    file: await fileOf(m).catch(() => null),
+  } satisfies SupportMessage;
 }

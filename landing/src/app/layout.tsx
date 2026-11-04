@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
 import "./globals.css";
+import { PlatformTransition } from "@/components/platform-transition";
 import { SITE_URL } from "@/lib/links";
 
 // shriftlar loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
@@ -65,7 +66,7 @@ export const viewport: Viewport = { themeColor: "#06060b", colorScheme: "dark" }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uz" className={`${heading.variable} ${body.variable}`}>
+    <html lang="uz" className={`${heading.variable} ${body.variable}`} suppressHydrationWarning>
       <body className="min-h-screen font-sans antialiased">
         <script
           type="application/ld+json"
@@ -80,6 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         {children}
+        <PlatformTransition theme="dark" />
       </body>
     </html>
   );

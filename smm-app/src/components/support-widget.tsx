@@ -111,6 +111,8 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
     // oynadan tashqariga bosilsa yopiladi
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
+      // rasmni to'liq ko'rish oynasi (lightbox) ham chat qismi
+      if ((t as Element).closest?.("[data-chat-lightbox]")) return;
       if (!panelRef.current?.contains(t) && !btnRef.current?.contains(t)) setOpen(false);
     };
     window.addEventListener("keydown", onKey);

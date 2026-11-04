@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 
 import "./globals.css";
 import { GlowPointer } from "@/components/glow-pointer";
+import { PlatformTransition } from "@/components/platform-transition";
 import { SiteFooter } from "@/components/site-footer";
 import { SmmHeader, type HeaderUser } from "@/components/smm-header";
 import { SupportWidget } from "@/components/support-widget";
@@ -35,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     ? { name: u.firstName || u.name || u.login || "Foydalanuvçi", image: u.avatarUrl || u.image, balance: u.balance }
     : null;
   return (
-    <html lang="uz" className={headingFont.variable}>
+    <html lang="uz" className={headingFont.variable} suppressHydrationWarning>
       <body className="min-h-dvh antialiased">
         <GlowPointer />
         <SmmHeader user={user} />
@@ -44,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <SiteFooter />
         </main>
         <SupportWidget loggedIn={!!u} />
+        <PlatformTransition />
       </body>
     </html>
   );

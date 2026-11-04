@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
+import { PlatformTransition } from "@/components/platform-transition";
 import { Providers } from "@/components/providers";
 
 // sarlavhalar uchun asosiy (display) shrift — geometrik, lekin haddan
@@ -121,6 +122,7 @@ export default async function RootLayout({
   return (
     <html
       lang="uz"
+      suppressHydrationWarning
       className={[light ? "light" : "", headingFont.variable].filter(Boolean).join(" ")}
     >
       <head>
@@ -159,6 +161,7 @@ export default async function RootLayout({
           }}
         />
         <Providers>{children}</Providers>
+        <PlatformTransition theme="auto" />
       </body>
     </html>
   );
