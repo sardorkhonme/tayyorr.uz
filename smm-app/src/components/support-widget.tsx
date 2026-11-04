@@ -17,6 +17,8 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   // yangi javob kelganda — tugma ustida qisqa bildirishnoma + "tin"
   const [toast, setToast] = useState<string | null>(null);
   const prevUnread = useRef<number | null>(null);
+  // hamyon balansi — o'zgarsa sahifadagi summalar yangilanadi
+  const prevBalance = useRef<number | null>(null);
   const toggleRef = useRef<() => void>(() => {});
   // push obunasi bo'lsa bildirishnomani service worker chiqaradi — sahifadan takrorlamaymiz
   const hasPushRef = useRef(false);
@@ -37,6 +39,10 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
     const res = await fetch("/api/support", { cache: "no-store" }).catch(() => null);
     const data = await res?.json().catch(() => null);
     if (!res?.ok || !data) return;
+    if (typeof data.balance === "number") {
+      if (prevBalance.current !== null && data.balance !== prevBalance.current) router.refresh();
+      prevBalance.current = data.balance;
+    }
     const n: number = data.unread ?? 0;
     // birinchi tekshiruvda emas, faqat yangi javob qo'shilganda
     if (prevUnread.current !== null && n > prevUnread.current && data.latest) {
@@ -64,7 +70,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
     }
     prevUnread.current = n;
     setUnread(n);
-  }, [loggedIn]);
+  }, [loggedIn, router]);
 
   useEffect(() => {
     if (open) return;

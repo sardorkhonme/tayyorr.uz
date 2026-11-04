@@ -1,6 +1,5 @@
 import { after } from "next/server";
 
-import { maybeCheckProviderBalance } from "@/lib/balance-alert";
 import { currentUser } from "@/lib/session";
 import { ServicesBoard } from "@/components/services-board";
 import { SaleBanner } from "@/components/sale-banner";
@@ -36,7 +35,6 @@ export default async function SmmPage({
 
   if ((await db.smmService.count({ where: { active: true } })) === 0) await maybeSyncServices();
   else after(() => maybeSyncServices());
-  after(() => maybeCheckProviderBalance());
 
   const [user, services] = await Promise.all([currentUser(), loadCatalog()]);
   const sale = services.filter((s) => s.discount > 0);

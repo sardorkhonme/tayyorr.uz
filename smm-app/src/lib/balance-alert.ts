@@ -24,18 +24,22 @@ async function swap(key: string, prev: string | null, next: string | null) {
   return (await db.appSetting.updateMany({ where: { key, value: prev }, data: { value: next } })).count === 1;
 }
 
-/** Oxirgi tekshiruv vaqti — tez-tez chaqiriladigan joylardan (poll) tekshiruvni siyraklashtirish uchun. */
+/** Oxirgi tekshiruv vaqti — admin panel shuni "tekshirildi" deb ko'rsatadi. Kalit admin bilan bir xil. */
 const CHECKED_KEY = "smmProviderBalanceCheckedAt";
-const CHECK_EVERY_MS = 60_000;
 
 /**
- * Daqiqada ko'pi bilan bir marta `checkProviderBalance` — support xabarlari polli va sahifalar
- * shu orqali chaqiradi. Navbat shartli yozuv bilan olinadi, parallel so'rovlarda takrorlanmaydi.
+ * `minGapMs` ichida ko'pi bilan bir marta `checkProviderBalance` (admin "Yangilash" tugmasi
+ * ochiq endpoint orqali chaqiradi). Navbat shartli yozuv bilan olinadi — parallel so'rovlarda takrorlanmaydi.
  */
-export async function maybeCheckProviderBalance() {
+/** Admin uchun: vaqt + provayder nomi va to'ldirish havolasi (admin'da provayder sozlamalari yo'q). */
+function checkedValue() {
+  return JSON.stringify({ at: new Date().toISOString(), name: providerName(), addFunds: providerAddFundsUrl() });
+}
+
+export async function maybeCheckProviderBalance(minGapMs = 60_000) {
   const now = new Date();
   const claimed = await db.appSetting.updateMany({
-    where: { key: CHECKED_KEY, updatedAt: { lt: new Date(now.getTime() - CHECK_EVERY_MS) } },
+    where: { key: CHECKED_KEY, updatedAt: { lt: new Date(now.getTime() - minGapMs) } },
     data: { value: now.toISOString() },
   });
   if (claimed.count !== 1) {
@@ -64,6 +68,13 @@ export async function checkProviderBalance() {
   } catch {
     return null;
   }
+  await db.appSetting
+    .upsert({
+      where: { key: CHECKED_KEY },
+      update: { value: checkedValue() },
+      create: { key: CHECKED_KEY, value: checkedValue() },
+    })
+    .catch(() => {});
   const fx = (await getPricing())?.fx ?? 0;
   const isUzs = currency === "UZS";
   if (!isUzs && !fx) return null;

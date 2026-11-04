@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin";
 import { shortDateTime } from "@/lib/date";
 import { getSmmSettings, refreshSmmUsdRate } from "@/lib/smm-settings";
+import { SmmProviderBalance } from "@/components/admin/smm-provider-balance";
 import { SmmSettingsForm } from "@/components/admin/smm-settings-form";
 import { Icon } from "@/components/icons";
 
@@ -23,6 +24,28 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 
 const som = (n: number) => `${n.toLocaleString("ru-RU")} söm`;
 
+/** smm.tayyorr.uz yozib boradigan provayder balansi (kalitlar smm-app/src/lib/balance-alert.ts bilan bir xil). */
+async function getProviderBalance() {
+  const [last, checked] = await Promise.all([
+    db.appSetting.findUnique({ where: { key: "smmProviderLastBalance" } }),
+    db.appSetting.findUnique({ where: { key: "smmProviderBalanceCheckedAt" } }),
+  ]);
+  let info: { at?: string; name?: string; addFunds?: string | null } = {};
+  try {
+    const v = checked ? JSON.parse(checked.value) : null;
+    if (v && typeof v === "object") info = v;
+  } catch {
+    /* eski format — faqat vaqt */
+  }
+  const usd = last ? Number(last.value) : NaN;
+  return {
+    usd: Number.isFinite(usd) ? usd : null,
+    checkedAt: info.at ?? checked?.updatedAt.toISOString() ?? null,
+    name: info.name ?? "Provayder",
+    addFundsUrl: info.addFunds ?? null,
+  };
+}
+
 export default async function AdminSmm() {
   await requireAdmin();
 
@@ -32,6 +55,7 @@ export default async function AdminSmm() {
     settings = await getSmmSettings();
   }
 
+  const provider = await getProviderBalance();
   const dayAgo = new Date(Date.now() - 24 * 3600 * 1000);
   const [total, today, charged, refunded, services, orders] = await Promise.all([
     db.smmOrder.count(),
@@ -72,7 +96,14 @@ export default async function AdminSmm() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[1fr_1.4fr]">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr]">
+        <SmmProviderBalance
+          name={provider.name}
+          usd={provider.usd}
+          fx={settings.usd?.rate ?? null}
+          checkedAt={provider.checkedAt}
+          addFundsUrl={provider.addFundsUrl}
+        />
         <div className="flex flex-col gap-1 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <span className="flex items-center gap-1.5 text-sm text-zinc-400">
             <Icon name="banknote" className="h-4 w-4" />

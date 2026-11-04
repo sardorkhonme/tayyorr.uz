@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -43,6 +44,9 @@ export function UnreadProvider({
   const clearedAt = useRef<Record<string, number>>({});
   // oldingi poll natijasi — biror suhbatda o'qilmaganlar ko'paysa "tin"
   const prevPerConv = useRef<Record<string, number> | null>(null);
+  // hamyon balansi — o'zgarsa (to'lov, buyurtma, admin) sahifadagi summalar yangilanadi
+  const prevBalance = useRef<number | null>(null);
+  const router = useRouter();
 
   const reconcile = useCallback((s: UnreadState) => {
     setState(() => {
@@ -66,7 +70,11 @@ export function UnreadProvider({
     try {
       const r = await fetch("/api/me/unread", { cache: "no-store" });
       if (!r.ok) return;
-      const d = (await r.json()) as UnreadState;
+      const d = (await r.json()) as UnreadState & { balance?: number | null };
+      if (typeof d.balance === "number") {
+        if (prevBalance.current !== null && d.balance !== prevBalance.current) router.refresh();
+        prevBalance.current = d.balance;
+      }
       const prev = prevPerConv.current;
       // ochiq turgan suhbatning o'zida chat-room SSE orqali chaladi — bu yerda
       // faqat boshqa suhbatlardagi yangi xabarlar
@@ -84,7 +92,7 @@ export function UnreadProvider({
     } catch {
       /* jim */
     }
-  }, [reconcile]);
+  }, [reconcile, router]);
 
   useEffect(() => {
     primeTin();

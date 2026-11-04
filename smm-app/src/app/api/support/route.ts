@@ -1,7 +1,6 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { maybeCheckProviderBalance } from "@/lib/balance-alert";
 import { currentUser } from "@/lib/session";
 import { listSupportMessages, sendSupportMessage } from "@/lib/support";
 
@@ -10,9 +9,8 @@ export async function GET(req: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   const open = new URL(req.url).searchParams.get("open") === "1";
-  // xabarlar bilan birga provayder balansi ham tekshirib turiladi (daqiqada 1 marta)
-  after(() => maybeCheckProviderBalance());
-  return NextResponse.json(await listSupportMessages(user.id, open));
+  // balans ham — hamyon o'zgarsa sahifa yangilanadi (support-widget)
+  return NextResponse.json({ ...(await listSupportMessages(user.id, open)), balance: user.balance });
 }
 
 const schema = z.object({ text: z.string().trim().min(1, "Xabar yozing").max(2000, "Xabar juda uzun") });

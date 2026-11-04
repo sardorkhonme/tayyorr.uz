@@ -35,8 +35,11 @@ export async function GET() {
     total += n;
   }
 
+  // hamyon balansi ham — o'zgarsa sahifa yangilanadi (unread-provider)
+  const me = await db.user.findUnique({ where: { id: uid }, select: { balance: true } });
+
   return NextResponse.json(
-    { total, perConv },
+    { total, perConv, balance: me?.balance ?? null },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
