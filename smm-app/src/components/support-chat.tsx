@@ -8,7 +8,25 @@ import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Icon } from "@/components/icons";
 import { Linkify } from "@/components/linkify";
 
-type Msg = { id: string; mine: boolean; body: string; createdAt: string; file?: ChatFile | null };
+type Msg = { id: string; mine: boolean; body: string; createdAt: string; file?: ChatFile | null; fileAt?: number };
+
+/** Fayl havolasi 1 soat amal qiladi — 45 daqiqagacha eskisini ishlatamiz. */
+const FILE_URL_TTL = 45 * 60 * 1000;
+
+/**
+ * Server har so'rovda faylga yangi vaqtinchalik havola beradi. Havola o'zgarsa brauzer rasm/video/audioni
+ * qaytadan yuklaydi (ijro boshidan boshlanadi) — shuning uchun mavjud xabarning havolasini saqlab qolamiz.
+ */
+function keepFileUrls(prev: Msg[], next: Msg[]): Msg[] {
+  const old = new Map(prev.map((m) => [m.id, m]));
+  const now = Date.now();
+  return next.map((m) => {
+    if (!m.file) return m;
+    const o = old.get(m.id);
+    if (o?.file && o.fileAt && now - o.fileAt < FILE_URL_TTL) return { ...m, file: o.file, fileAt: o.fileAt };
+    return { ...m, fileAt: now };
+  });
+}
 
 /** Rasmni yuborishdan oldin kichraytiradi (uzun tomoni 1920px, JPEG) — tez yuklansin va 4 MB dan oshmasin. */
 async function shrinkImage(file: File): Promise<File> {
@@ -74,7 +92,7 @@ export function SupportChat({
     if (!loggedIn) return;
     const res = await fetch("/api/support?open=1", { cache: "no-store" }).catch(() => null);
     const data = await res?.json().catch(() => null);
-    if (res?.ok && data) setMsgs(data.messages ?? []);
+    if (res?.ok && data) setMsgs((prev) => keepFileUrls(prev, data.messages ?? []));
   }, [loggedIn]);
 
   // ochiq chat: 3 soniyada + yorliqqa qaytganda darhol (tayyorr.uz chati kabi)
@@ -118,7 +136,7 @@ export function SupportChat({
     if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib köring");
     setText("");
     setImage(null);
-    setMsgs((m) => [...m, data.message]);
+    setMsgs((m) => [...m, { ...data.message, fileAt: Date.now() }]);
   }
 
   return (
