@@ -98,7 +98,7 @@ export default async function AdminPanelLayout({
             </span>
             <span className="flex gap-4">
               {[
-                { href: process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz", label: "Ilmiy işlar" },
+                { href: process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz", label: "Tayyorr.uz" },
                 { href: process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyorr.uz", label: "tayyorr+" },
                 { href: process.env.NEXT_PUBLIC_SMM_URL || "https://smm.tayyorr.uz", label: "Tayyorr SMM" },
               ].map((l) => (

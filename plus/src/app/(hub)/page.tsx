@@ -129,11 +129,11 @@ export default async function DashboardPage({
           <div className="flex items-start justify-between gap-4">
             <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-indigo-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-mark.png" alt="Ilmiy işlar" className="h-10 w-10 object-contain" />
+              <img src="/logo-mark.png" alt="Tayyorr.uz" className="h-10 w-10 object-contain" />
             </span>
           </div>
           <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
-            Ilmiy işlar
+            Tayyorr.uz
           </h2>
           <p className="mt-2 leading-relaxed text-zinc-500">
             Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.

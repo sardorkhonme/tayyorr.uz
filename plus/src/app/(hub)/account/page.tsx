@@ -29,7 +29,7 @@ export default async function AccountPage() {
   const platforms = [
     {
       mark: "/logo-mark.png",
-      title: "Ilmiy işlar",
+      title: "Tayyorr.uz",
       href: `${APP_URL}/dashboard`,
       status: full?.role ? (full.role === "PREPARER" ? "Tayyorlovçi" : "Buyurtma beruvçi") : "Rol tanlanmagan",
     },

@@ -19,7 +19,7 @@ const COLS = [
   {
     title: "Boşqa xizmatlar",
     links: [
-      { href: `${APP_URL}/dashboard`, label: "Ilmiy işlar" },
+      { href: `${APP_URL}/dashboard`, label: "Tayyorr.uz" },
       { href: SMM_URL, label: "Tayyorr SMM" },
       { href: MAIN_URL, label: "Boş sahifa" },
     ],

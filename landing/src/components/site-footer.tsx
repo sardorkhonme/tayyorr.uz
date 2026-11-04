@@ -7,7 +7,7 @@ const COLS = [
   {
     title: "Xizmatlar",
     links: [
-      { href: `${APP_URL}/dashboard`, label: "Ilmiy işlar" },
+      { href: `${APP_URL}/dashboard`, label: "Tayyorr.uz" },
       { href: SMM_URL, label: "Tayyorr SMM" },
       { href: PLUS_URL, label: "tayyorr+" },
       { href: "/xizmatlar", label: "Iş turlari" },

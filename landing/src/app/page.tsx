@@ -10,7 +10,7 @@ export const revalidate = 300;
 const SERVICES = [
   {
     mark: "/logo-mark.png",
-    title: "Ilmiy işlar",
+    title: "Tayyorr.uz",
     href: `${APP_URL}/dashboard`,
     glow: "rgba(56, 189, 248, 0.22)",
     text: "Prezentatsiya, kurs işi, referat va diplom işi uçun işonçli tayyorlovçi toping — yoki özingiz tayyorlab daromad qiling.",
