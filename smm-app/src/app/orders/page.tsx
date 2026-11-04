@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { currentUser, loginUrl } from "@/lib/session";
@@ -6,27 +7,17 @@ import { PlatformIcon } from "@/components/platform-icon";
 import { splitServiceName } from "@/lib/kinds";
 import { db } from "@/lib/db";
 import { num, som } from "@/lib/format";
+import { ACTIVE, progressOf, statusOf } from "@/lib/order-view";
 import { syncOrders } from "@/lib/orders";
 import { platformOf } from "@/lib/platforms";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Buyurtmalarim" };
 
-const STATUS: Record<string, { label: string; cls: string }> = {
-  PENDING: { label: "Navbatda", cls: "bg-zinc-100 text-zinc-600" },
-  PROCESSING: { label: "Qabul qilindi", cls: "bg-sky-50 text-sky-700" },
-  IN_PROGRESS: { label: "Bajarilmoqda", cls: "bg-indigo-50 text-indigo-700" },
-  COMPLETED: { label: "Bajarildi", cls: "bg-emerald-50 text-emerald-700" },
-  PARTIAL: { label: "Qisman", cls: "bg-amber-50 text-amber-700" },
-  CANCELED: { label: "Bekor qilindi", cls: "bg-red-50 text-red-700" },
-  FAILED: { label: "Xatolik", cls: "bg-red-50 text-red-700" },
-};
-
 const dateFmt = new Intl.DateTimeFormat("ru-RU", {
   timeZone: "Asia/Tashkent",
   day: "2-digit",
   month: "2-digit",
-  year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
 });
@@ -43,53 +34,93 @@ export default async function OrdersPage() {
     include: { service: { select: { name: true, platform: true } } },
   });
 
+  const active = orders.filter((o) => ACTIVE.includes(o.status)).length;
+  const done = orders.filter((o) => o.status === "COMPLETED" || o.status === "PARTIAL").length;
+  const spent = orders.reduce((s, o) => s + o.charge - (o.refundAmount ?? 0), 0);
+  const delivered = orders.reduce((s, o) => s + progressOf(o).delivered, 0);
+
   return (
     <div className="mx-auto max-w-4xl">
-        <h1 className="font-display text-3xl font-bold text-zinc-900">Buyurtmalarim</h1>
-        <p className="mt-2 text-zinc-500">Holatlar sahifa oçilganda yangilanadi. Bajarilmagan qism uçun pul avtomatik qaytadi.</p>
+      <h1 className="font-display text-3xl font-bold text-zinc-900">Buyurtmalarim</h1>
+      <p className="mt-2 text-zinc-500">Batafsil körish uçun buyurtmani bosing. Bajarilmagan qism uçun pul avtomatik qaytadi.</p>
 
-        {orders.length === 0 ? (
-          <div className="card mt-8 !rounded-3xl px-6 py-16 text-center">
-            <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
-              <Icon name="package" className="h-8 w-8" />
-            </span>
-            <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yöq</p>
-            <p className="mt-2 text-zinc-500">Birinçi buyurtmangizni bir daqiqada bering.</p>
-            <a href="/" className="btn-primary mt-6">Xizmat tanlaş</a>
+      {orders.length === 0 ? (
+        <div className="card mt-8 !rounded-3xl px-6 py-16 text-center">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
+            <Icon name="package" className="h-8 w-8" />
+          </span>
+          <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yöq</p>
+          <p className="mt-2 text-zinc-500">Birinçi buyurtmangizni bir daqiqada bering.</p>
+          <a href="/" className="btn-primary mt-6">Xizmat tanlaş</a>
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: "Jami buyurtma", value: num(orders.length), icon: "package" as const },
+              { label: "Bajarilmoqda", value: num(active), icon: "clock" as const },
+              { label: "Yetkazildi", value: num(delivered), sub: `${num(done)} ta buyurtmada`, icon: "check" as const },
+              { label: "Sarflandi", value: som(spent), icon: "wallet" as const },
+            ].map((s) => (
+              <div key={s.label} className="card p-4">
+                <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+                  <Icon name={s.icon} className="h-3.5 w-3.5" />
+                  {s.label}
+                </span>
+                <p className="mt-1.5 font-display text-xl font-bold tabular-nums text-zinc-900">{s.value}</p>
+                {s.sub && <p className="text-xs text-zinc-400">{s.sub}</p>}
+              </div>
+            ))}
           </div>
-        ) : (
-          <ul className="mt-8 space-y-3">
+
+          <ul className="mt-6 space-y-3">
             {orders.map((o) => {
               const p = platformOf(o.service.platform);
-              const st = STATUS[o.status] ?? STATUS.PENDING;
-              const done = o.remains != null ? Math.max(o.quantity - o.remains, 0) : null;
+              const st = statusOf(o.status);
+              const pr = progressOf(o);
+              const showBar = o.status !== "FAILED" && o.status !== "CANCELED";
               return (
-                <li key={o.id} className="card glow-card flex gap-4 p-5">
-                  <span
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white"
-                    style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
+                <li key={o.id}>
+                  <Link
+                    href={`/orders/${o.id}`}
+                    className="card glow-card group flex items-center gap-4 p-4 transition hover:-translate-y-0.5 sm:p-5"
+                    style={{ "--glow": p.to } as React.CSSProperties}
                   >
-                    <PlatformIcon platform={p.key} className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="font-medium leading-snug text-zinc-900">{splitServiceName(o.service.name).title}</p>
-                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+                    <span
+                      className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white"
+                      style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}
+                    >
+                      <PlatformIcon platform={p.key} className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="line-clamp-1 font-medium text-zinc-900">{splitServiceName(o.service.name).title}</p>
+                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-zinc-500">
+                        <span className="tabular-nums">{num(o.quantity)} dona</span>
+                        <span className="tabular-nums">{som(o.charge)}</span>
+                        <span className="text-zinc-400">{dateFmt.format(o.createdAt)}</span>
+                      </div>
+                      {showBar && (
+                        <div className="mt-2.5 flex items-center gap-3">
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100">
+                            <div className={`h-full rounded-full ${st.bar}`} style={{ width: `${pr.pct}%` }} />
+                          </div>
+                          <span className="w-24 shrink-0 text-right text-xs tabular-nums text-zinc-500">
+                            {num(pr.delivered)} / {num(o.quantity)}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <p className="mt-1 truncate text-sm text-zinc-500">{o.link}</p>
-                    <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
-                      <span>{num(o.quantity)} dona</span>
-                      <span>{som(o.charge)}</span>
-                      {done != null && o.status === "IN_PROGRESS" && <span>Bajarildi: {num(done)}</span>}
-                      {o.refundAmount ? <span className="font-medium text-emerald-700">Qaytarildi: {som(o.refundAmount)}</span> : null}
-                      <span className="text-zinc-400">{dateFmt.format(o.createdAt)}</span>
-                    </div>
-                  </div>
+                    <Icon name="arrow-right" className="h-4 w-4 shrink-0 text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-zinc-500" />
+                  </Link>
                 </li>
               );
             })}
           </ul>
-        )}
+        </>
+      )}
     </div>
   );
 }

@@ -138,6 +138,7 @@ export default async function AdminSmm() {
 
       <section className="flex flex-col gap-3">
         <h2 className="font-semibold text-white">Oxirgi buyurtmalar</h2>
+        <p className="-mt-2 text-xs text-zinc-500">Batafsil ma'lumot uçun buyurtmani bosing.</p>
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full min-w-[760px] text-sm">
             <thead className="bg-white/[0.03] text-left text-xs uppercase text-zinc-500">
@@ -154,15 +155,17 @@ export default async function AdminSmm() {
               {orders.map((o) => {
                 const st = STATUS[o.status] ?? STATUS.PENDING;
                 return (
-                  <tr key={o.id} className="border-t border-white/5 align-top">
-                    <td className="whitespace-nowrap px-4 py-2 text-zinc-400">{shortDateTime(o.createdAt)}</td>
+                  <tr key={o.id} className="border-t border-white/5 align-top transition hover:bg-white/[0.03]">
+                    <td className="whitespace-nowrap px-4 py-2 text-zinc-400">
+                      <Link href={`/smm/orders/${o.id}`} className="hover:text-white">{shortDateTime(o.createdAt)}</Link>
+                    </td>
                     <td className="px-4 py-2">
                       <Link href={`/users/${o.user.id}`} className="text-indigo-400 hover:underline">
                         {o.user.name ?? "—"} <span className="text-zinc-500">@{o.user.login ?? "—"}</span>
                       </Link>
                     </td>
                     <td className="px-4 py-2 text-zinc-300">
-                      <div className="line-clamp-2 max-w-xs">{o.service.name}</div>
+                      <Link href={`/smm/orders/${o.id}`} className="line-clamp-2 block max-w-xs hover:text-white hover:underline">{o.service.name}</Link>
                       <a href={o.link} target="_blank" rel="noreferrer" className="block max-w-xs truncate text-xs text-zinc-500 hover:text-zinc-300">
                         {o.link}
                       </a>
