@@ -7,6 +7,8 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/components/icons";
 import { SupportChat } from "@/components/support-chat";
 
+export const OPEN_SUPPORT_EVENT = "tayyorr:open-support";
+
 /**
  * Pastki o'ng burchakdagi support tugmasi. Kompyuterda — chat oynasi (popup,
  * fon xiralashtirilmaydi), telefon va planshetda — alohida /support sahifasi.
@@ -118,6 +120,16 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
       window.removeEventListener("pointerdown", onDown);
     };
   }, [open]);
+
+  // sahifadagi "Supportga yozish" tugmalari (SupportLink) — xuddi shu popupni ochadi
+  useEffect(() => {
+    const onOpen = () => {
+      if (window.matchMedia("(max-width: 1023px)").matches) router.push("/support");
+      else setOpen(true);
+    };
+    window.addEventListener(OPEN_SUPPORT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_SUPPORT_EVENT, onOpen);
+  }, [router]);
 
   // /support sahifasining o'zida tugma kerak emas
   if (pathname === "/support") return null;

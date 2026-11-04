@@ -18,7 +18,7 @@ export function SiteHeader() {
         <Link href="/" aria-label="Tayyorr.uz">
           <Logo className="text-xl sm:text-2xl" markClassName="h-8 sm:h-9" />
         </Link>
-        <div className="hidden items-center gap-7 text-sm text-zinc-400 md:flex">
+        <div className="hidden items-center gap-7 text-sm text-zinc-400 lg:flex">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className="transition hover:text-white">
               {n.label}

@@ -38,17 +38,21 @@ body {
     background: #fff;
     color: #0b0b12;
   }
-  .btn-white:hover {
-    background: #e7e7f0;
+  @media (hover: hover) {
+    .btn-white:hover {
+      background: #e7e7f0;
+    }
   }
   .btn-ghost {
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.04);
     color: #e4e4ec;
   }
-  .btn-ghost:hover {
-    border-color: rgba(255, 255, 255, 0.24);
-    background: rgba(255, 255, 255, 0.08);
+  @media (hover: hover) {
+    .btn-ghost:hover {
+      border-color: rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.08);
+    }
   }
   .card {
     border-radius: 1.5rem;
@@ -84,12 +88,16 @@ body {
     background: radial-gradient(420px circle at 50% 0%, var(--glow, rgba(99, 102, 241, 0.25)), transparent 70%);
     transition: opacity 0.35s ease;
   }
-  .service-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.18);
+  @media (hover: hover) {
+    .service-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
   }
-  .service-card:hover::before {
-    opacity: 1;
+  @media (hover: hover) {
+    .service-card:hover::before {
+      opacity: 1;
+    }
   }
 }
 

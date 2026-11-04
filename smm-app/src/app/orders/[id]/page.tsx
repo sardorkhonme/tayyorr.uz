@@ -5,6 +5,7 @@ import { currentUser, loginUrl } from "@/lib/session";
 import { Icon, type IconName } from "@/components/icons";
 import { OrderAutoRefresh } from "@/components/order-auto-refresh";
 import { PlatformIcon } from "@/components/platform-icon";
+import { SupportLink } from "@/components/support-link";
 import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
 import { db } from "@/lib/db";
 import { num, som } from "@/lib/format";
@@ -100,25 +101,31 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
       {/* sarlavha */}
       <div className="card mt-4 overflow-hidden !rounded-3xl">
-        <div className="relative px-5 py-6 text-white sm:px-7" style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}>
-          <div className="flex items-start gap-4">
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/20 backdrop-blur">
-              <PlatformIcon platform={p.key} className="h-7 w-7" />
+        <div className="relative px-4 py-5 text-white sm:px-7 sm:py-6" style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}>
+          <div className="flex items-start gap-3 sm:gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20 backdrop-blur sm:h-14 sm:w-14">
+              <PlatformIcon platform={p.key} className="h-6 w-6 sm:h-7 sm:w-7" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-white/80">
-                {p.name} · {kind.label}
+              {/* telefonda holat nishoni platforma nomi yonida — sarlavhaga to'liq kenglik qoladi */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className="text-sm font-medium text-white/80">
+                  {p.name} · {kind.label}
+                </p>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold sm:hidden ${st.cls}`}>{st.label}</span>
+              </div>
+              <h1 className="mt-0.5 break-words font-display text-lg font-bold leading-snug sm:text-2xl">{title}</h1>
+              <p className="mt-1 text-xs text-white/70">
+                Buyurtma #{o.id.slice(-8).toUpperCase()} · {dateFmt.format(o.createdAt)}
               </p>
-              <h1 className="mt-0.5 font-display text-xl font-bold leading-snug sm:text-2xl">{title}</h1>
-              <p className="mt-1 text-xs text-white/70">Buyurtma #{o.id.slice(-8).toUpperCase()} · {dateFmt.format(o.createdAt)}</p>
             </div>
-            <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+            <span className={`hidden shrink-0 rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex ${st.cls}`}>{st.label}</span>
           </div>
         </div>
 
         {/* bajarilish */}
-        <div className="flex flex-col items-center gap-6 px-5 py-6 sm:flex-row sm:px-7">
-          <div className="relative h-36 w-36 shrink-0">
+        <div className="flex flex-col items-center gap-5 px-4 py-5 sm:flex-row sm:gap-6 sm:px-7 sm:py-6">
+          <div className="relative h-32 w-32 shrink-0 sm:h-36 sm:w-36">
             <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
               <circle cx="60" cy="60" r="52" fill="none" stroke="#f1f1f6" strokeWidth="10" />
               <circle
@@ -145,10 +152,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
           <div className="w-full min-w-0 flex-1">
-            <p className="font-display text-2xl font-bold tabular-nums text-zinc-900">
+            <p className="text-center font-display text-2xl font-bold tabular-nums text-zinc-900 sm:text-left">
               {num(pr.delivered)} <span className="text-zinc-400">/ {num(o.quantity)}</span>
             </p>
-            <p className="mt-1 text-sm text-zinc-500">{st.hint}</p>
+            <p className="mt-1 text-center text-sm text-zinc-500 sm:text-left">{st.hint}</p>
             <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-zinc-100">
               <div className={`h-full rounded-full ${st.bar} transition-all`} style={{ width: `${pr.pct}%` }} />
             </div>
@@ -166,22 +173,22 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* statistika */}
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
         {stats.map((s) => (
-          <div key={s.label} className="card p-4">
+          <div key={s.label} className="card min-w-0 p-3.5 sm:p-4">
             <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-500">
-              <Icon name={s.icon} className="h-3.5 w-3.5" />
-              {s.label}
+              <Icon name={s.icon} className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{s.label}</span>
             </span>
-            <p className="mt-1.5 font-display text-xl font-bold tabular-nums text-zinc-900">{s.value}</p>
-            {s.sub && <p className="text-xs text-zinc-400">{s.sub}</p>}
+            <p className="mt-1.5 break-words font-display text-lg font-bold tabular-nums text-zinc-900 sm:text-xl">{s.value}</p>
+            {s.sub && <p className="break-words text-xs text-zinc-400">{s.sub}</p>}
           </div>
         ))}
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {/* jarayon */}
-        <div className="card p-5">
+        <div className="card min-w-0 p-4 sm:p-5">
           <h2 className="font-semibold text-zinc-900">Jarayon</h2>
           <ol className="mt-4 space-y-0">
             {steps.map((s, i) => (
@@ -210,7 +217,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* havola va xizmat */}
-        <div className="card flex flex-col gap-4 p-5">
+        <div className="card flex min-w-0 flex-col gap-4 p-4 sm:p-5">
           <div>
             <h2 className="font-semibold text-zinc-900">Havola</h2>
             <a
@@ -246,7 +253,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <ul className="mt-2 space-y-1.5 text-sm">
                 {txns.map((t) => (
                   <li key={t.id} className="flex items-center justify-between gap-3">
-                    <span className="text-zinc-500">
+                    <span className="min-w-0 text-zinc-500">
                       {t.type === "REFUND" ? "Qaytarildi" : "Töländi"} · {dateFmt.format(t.createdAt)}
                     </span>
                     <span className={`font-medium tabular-nums ${t.type === "REFUND" ? "text-emerald-700" : "text-zinc-900"}`}>
@@ -265,15 +272,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
-      <div className="card mt-4 flex flex-col items-start justify-between gap-3 p-5 sm:flex-row sm:items-center">
+      <div className="card mt-4 flex flex-col items-stretch justify-between gap-3 p-4 sm:flex-row sm:items-center sm:p-5">
         <div>
           <p className="font-medium text-zinc-900">Buyurtma bilan muammo bormi?</p>
           <p className="text-sm text-zinc-500">Buyurtma raqamini yozib supportga murojaat qiling — tez yordam beramiz.</p>
         </div>
-        <Link href="/support" className="btn-primary shrink-0">
+        <SupportLink className="btn-primary shrink-0">
           <Icon name="headset" className="h-4 w-4" />
           Supportga yoziş
-        </Link>
+        </SupportLink>
       </div>
     </div>
   );
