@@ -9,6 +9,7 @@ import { ReportDialog } from "@/components/report-button";
 import { ChatFileView, humanSize, type ChatFile } from "@/components/chat-file";
 import { Linkify } from "@/components/linkify";
 import { playTin, primeTin } from "@/lib/notify-sound";
+import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 import { RocketIcon, BlockedIcon, MicIcon, Icon, type IconName } from "@/components/icons";
 import { ProgressRing } from "@/components/progress-ring";
 import { useVoiceRecorder } from "@/lib/voice-recorder";
@@ -383,9 +384,14 @@ export function ChatRoom({
     return () => es.close();
   }, [conversationId, meId, merge, applyDelete, markRead]);
 
-  // polling fallback (yangi + tahrirlangan + o'chirilgan)
+  // yangi + tahrirlangan + o'chirilgan xabarlar: real-time signal kelganda darhol,
+  // ulanmagan bo'lsa — har 4 soniyada, ulangan bo'lsa — faqat siyrak ehtiyot tekshiruvi
+  const fetchSinceRef = useRef<() => void>(() => {});
+  const rtLive = useRealtime((e) => {
+    if (e.name === "chat" && (!e.data.c || e.data.c === conversationId)) fetchSinceRef.current();
+  });
   useEffect(() => {
-    const iv = setInterval(async () => {
+    const fetchSince = async () => {
       try {
         const res = await fetch(
           apiUrl(`/api/chat/${conversationId}?since=${sinceRef.current}`),
@@ -410,9 +416,11 @@ export function ChatRoom({
       } catch {
         /* ignore */
       }
-    }, 4000);
+    };
+    fetchSinceRef.current = fetchSince;
+    const iv = setInterval(fetchSince, rtLive ? SAFETY_POLL_MS : 4000);
     return () => clearInterval(iv);
-  }, [conversationId, meId, merge, markRead]);
+  }, [conversationId, meId, merge, markRead, rtLive]);
 
   useEffect(() => {
     markRead();

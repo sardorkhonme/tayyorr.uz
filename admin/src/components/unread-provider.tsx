@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { playTin, primeTin } from "@/lib/notify-sound";
+import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 
 interface UnreadState {
   total: number;
@@ -86,10 +87,15 @@ export function UnreadProvider({
     }
   }, [reconcile]);
 
+  // real-time: yangi xabar yoki hamyon o'zgarsa — darhol tekshiramiz
+  const live = useRealtime((e) => {
+    if (e.name === "chat" || e.name === "wallet") void poll();
+  });
+
   useEffect(() => {
     primeTin();
     poll();
-    const iv = setInterval(poll, 10000);
+    const iv = setInterval(poll, live ? SAFETY_POLL_MS : 10000);
     const onVis = () => {
       if (document.visibilityState === "visible") poll();
     };
@@ -100,7 +106,7 @@ export function UnreadProvider({
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("focus", poll);
     };
-  }, [poll]);
+  }, [poll, live]);
 
   const clearConv = useCallback((id: string) => {
     clearedAt.current[id] = Date.now();

@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 
 import { Icon } from "@/components/icons";
 import { SupportChat } from "@/components/support-chat";
+import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 
 export const OPEN_SUPPORT_EVENT = "tayyorr:open-support";
 
@@ -74,11 +75,16 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
     setUnread(n);
   }, [loggedIn, router]);
 
+  // real-time: yangi javob yoki hamyon o'zgarsa — darhol; ulangan bo'lsa tez-tez so'rash shart emas
+  const live = useRealtime((e) => {
+    if (!open && (e.name === "chat" || e.name === "wallet")) void poll();
+  });
+
   useEffect(() => {
     if (open) return;
     poll();
     // yorliq yashirin bo'lsa ham tekshiramiz (ovoz va bildirishnoma uchun) — tayyorr.uz dagidek
-    const id = setInterval(poll, 5000);
+    const id = setInterval(poll, live ? SAFETY_POLL_MS : 5000);
     const onVisible = () => document.visibilityState === "visible" && poll();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
@@ -87,7 +93,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onVisible);
     };
-  }, [open, poll]);
+  }, [open, poll, live]);
 
   // bildirishnoma 7 soniyadan keyin yo'qoladi
   useEffect(() => {

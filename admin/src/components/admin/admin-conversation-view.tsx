@@ -10,6 +10,7 @@ import { MessageSourceBadge } from "@/components/message-source-badge";
 import type { MessageSource } from "@/lib/message-source";
 import { Icon } from "@/components/icons";
 import { flashMessage } from "@/lib/flash-message";
+import { useRealtime } from "@/lib/use-realtime";
 
 interface Msg {
   id: string;
@@ -75,6 +76,12 @@ export function AdminConversationView({
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
+
+  // real-time (Ably): shu suhbatda o'zgarish bo'lsa — sahifa ma'lumoti yangilanadi
+  // (pastdagi SSE faqat bitta server nusxasida ishlaydi, Vercel'da ishonchli emas)
+  useRealtime((e) => {
+    if (e.name === "chat" && (!e.data.c || e.data.c === conversationId)) router.refresh();
+  });
 
   // jonli yangilanish — huddi oddiy foydalanuvchi chatidek
   useEffect(() => {

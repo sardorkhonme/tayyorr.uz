@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Icon } from "@/components/icons";
 import { Linkify } from "@/components/linkify";
+import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 
 type Msg = { id: string; mine: boolean; body: string; createdAt: string; file?: ChatFile | null; fileAt?: number };
 
@@ -95,12 +96,17 @@ export function SupportChat({
     if (res?.ok && data) setMsgs((prev) => keepFileUrls(prev, data.messages ?? []));
   }, [loggedIn]);
 
-  // ochiq chat: 3 soniyada + yorliqqa qaytganda darhol (tayyorr.uz chati kabi)
+  // real-time: yangi javob kelsa darhol
+  const live = useRealtime((e) => {
+    if (e.name === "chat") void load();
+  });
+
+  // ochiq chat: 3 soniyada (real-time ulangan bo'lsa — faqat ehtiyot uchun) + yorliqqa qaytganda darhol
   useEffect(() => {
     load();
     const id = setInterval(() => {
       if (document.visibilityState === "visible") load();
-    }, 3000);
+    }, live ? SAFETY_POLL_MS : 3000);
     const onVisible = () => document.visibilityState === "visible" && load();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
@@ -109,7 +115,7 @@ export function SupportChat({
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onVisible);
     };
-  }, [load]);
+  }, [load, live]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
