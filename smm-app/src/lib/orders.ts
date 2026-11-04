@@ -10,6 +10,7 @@ import {
   providerName,
   type ProviderStatus,
 } from "@/lib/provider";
+import { explainProviderError } from "@/lib/provider-errors";
 import { sendSupportNotice } from "@/lib/support";
 import { adminUserUrl, notifyAdmins, userLabel } from "@/lib/telegram";
 
@@ -118,9 +119,10 @@ export async function placeOrder(userId: string, serviceId: string, link: string
     return updated;
   } catch (e) {
     if (e instanceof ProviderError) {
-      // provayder aniq rad etdi — pul to'liq qaytadi
-      await finishOrder(order.id, "FAILED", charge, { error: e.message.slice(0, 300) });
-      throw new OrderError(`Buyurtma qabul qilinmadi: ${e.message}. Pul hamyonga qaytarildi.`, 502);
+      // provayder aniq rad etdi — pul to'liq qaytadi; xato o'zbekchaga o'giriladi
+      const why = explainProviderError(e.message);
+      await finishOrder(order.id, "FAILED", charge, { error: why.admin.slice(0, 300) });
+      throw new OrderError(`${why.user} Pul hamyonga qaytarildi.`, 502);
     }
     // tarmoq/timeout — provayderda yaratilgan bo'lishi mumkin, PENDING qoladi (admin tekshiradi)
     await db.smmOrder
