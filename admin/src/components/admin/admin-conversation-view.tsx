@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
@@ -73,8 +73,19 @@ export function AdminConversationView({
 
   // parent qayta render bo'lsa (masalan router.refresh() dan keyin) — bazadagi
   // eng so'nggi holat bilan sinxronlaymiz
+  // fayl havolasi har yangilanishda yangi (vaqtinchalik imzo) — 45 daqiqagacha eskisini ishlatamiz,
+  // aks holda audio/video boshidan boshlanadi, rasm qayta yuklanadi
+  const fileAt = useRef(Date.now());
   useEffect(() => {
-    setMessages(initialMessages);
+    const fresh = Date.now() - fileAt.current > 45 * 60_000;
+    if (fresh) fileAt.current = Date.now();
+    setMessages((prev) => {
+      const old = new Map(prev.map((m) => [m.id, m]));
+      return initialMessages.map((m) => {
+        const o = old.get(m.id);
+        return !fresh && o?.file && m.file && o.file.name === m.file.name ? { ...m, file: o.file } : m;
+      });
+    });
   }, [initialMessages]);
 
   // real-time (Ably): shu suhbatda o'zgarish bo'lsa — sahifa ma'lumoti yangilanadi

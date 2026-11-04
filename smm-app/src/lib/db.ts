@@ -48,7 +48,7 @@ function createClient() {
       message: {
         async $allOperations({ operation, args, query }) {
           const r = await query(args);
-          if (/^(create|update|upsert|delete)/.test(operation)) {
+          if (/^(create|update|upsert|delete)/.test(operation) && (r as { count?: number })?.count !== 0) {
             const a = args as { where?: Row; data?: Row };
             const conv =
               str((r as Row)?.conversationId) ?? str(a.where?.conversationId) ?? str(a.data?.conversationId);

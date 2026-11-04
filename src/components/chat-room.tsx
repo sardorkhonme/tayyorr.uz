@@ -288,6 +288,23 @@ export function ChatRoom({
     initialMessages.reduce((m, x) => Math.max(m, x.updatedAt || x.createdAt), 0),
   );
 
+  // Fayl havolasi har so'rovda yangi (vaqtinchalik imzo). Xabar qayta kelganda (o'qildi, tahrir, real-time)
+  // havola o'zgarsa — audio/video boshidan boshlanadi, rasm qayta yuklanadi. 45 daqiqagacha eskisini ishlatamiz.
+  const fileCache = useRef<Map<string, { file: ChatFile; at: number }> | null>(null);
+  if (!fileCache.current) {
+    // sahifa ochilgandagi xabarlar havolasi — boshlang'ich nuqta
+    fileCache.current = new Map(
+      initialMessages.filter((m) => m.file?.url).map((m) => [m.id, { file: m.file!, at: Date.now() }]),
+    );
+  }
+  const stableFile = useCallback((id: string, file: ChatFile | null | undefined) => {
+    if (!file?.url || file.url.startsWith("blob:")) return file;
+    const c = fileCache.current!.get(id);
+    if (c && c.file.name === file.name && c.file.size === file.size && Date.now() - c.at < 45 * 60_000) return c.file;
+    fileCache.current!.set(id, { file, at: Date.now() });
+    return file;
+  }, []);
+
   const merge = useCallback((incoming: Msg[]) => {
     if (!incoming.length) return;
     setMessages((prev) => {
@@ -296,11 +313,11 @@ export function ChatRoom({
         const t = m.updatedAt || m.createdAt;
         if (t > sinceRef.current) sinceRef.current = t;
         if (m.deleted) map.delete(m.id); // foydalanuvchida yo'qoladi
-        else map.set(m.id, { ...map.get(m.id), ...m });
+        else map.set(m.id, { ...map.get(m.id), ...m, file: stableFile(m.id, m.file) });
       }
       return [...map.values()].sort((a, b) => a.createdAt - b.createdAt);
     });
-  }, []);
+  }, [stableFile]);
 
   const applyDelete = useCallback((id: string, updatedAt: number) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
@@ -689,11 +706,11 @@ export function ChatRoom({
           .map((m) => {
             if (m.id === tmpId) {
               replaced = true;
-              return { ...real, key: tmpId };
+              return { ...real, file: stableFile(real.id, real.file), key: tmpId };
             }
             return m;
           });
-        if (!replaced) next.push({ ...real, key: tmpId });
+        if (!replaced) next.push({ ...real, file: stableFile(real.id, real.file), key: tmpId });
         return next.sort((a, b) => a.createdAt - b.createdAt);
       });
     } catch (e2) {
