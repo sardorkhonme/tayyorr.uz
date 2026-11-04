@@ -24,6 +24,31 @@ async function swap(key: string, prev: string | null, next: string | null) {
   return (await db.appSetting.updateMany({ where: { key, value: prev }, data: { value: next } })).count === 1;
 }
 
+/** Oxirgi tekshiruv vaqti — tez-tez chaqiriladigan joylardan (poll) tekshiruvni siyraklashtirish uchun. */
+const CHECKED_KEY = "smmProviderBalanceCheckedAt";
+const CHECK_EVERY_MS = 60_000;
+
+/**
+ * Daqiqada ko'pi bilan bir marta `checkProviderBalance` — support xabarlari polli va sahifalar
+ * shu orqali chaqiradi. Navbat shartli yozuv bilan olinadi, parallel so'rovlarda takrorlanmaydi.
+ */
+export async function maybeCheckProviderBalance() {
+  const now = new Date();
+  const claimed = await db.appSetting.updateMany({
+    where: { key: CHECKED_KEY, updatedAt: { lt: new Date(now.getTime() - CHECK_EVERY_MS) } },
+    data: { value: now.toISOString() },
+  });
+  if (claimed.count !== 1) {
+    // birinchi marta — yozuv yo'q bo'lsa yaratadi (bor bo'lsa hali vaqti kelmagan)
+    const created = await db.appSetting.createMany({
+      data: [{ key: CHECKED_KEY, value: now.toISOString() }],
+      skipDuplicates: true,
+    });
+    if (created.count !== 1) return null;
+  }
+  return checkProviderBalance();
+}
+
 /**
  * Provayder (SMM panel) balansini tekshiradi:
  * - har o'zgarishda (to'ldirildi / yechildi) "SMM tizim balansi" topigiga xabar;
