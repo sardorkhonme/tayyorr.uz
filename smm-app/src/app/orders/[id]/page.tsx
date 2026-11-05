@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { currentUser, loginUrl } from "@/lib/session";
 import { Icon, type IconName } from "@/components/icons";
 import { OrderAutoRefresh } from "@/components/order-auto-refresh";
+import { OrderRefreshButton } from "@/components/order-refresh-button";
 import { PlatformIcon } from "@/components/platform-icon";
 import { SupportLink } from "@/components/support-link";
 import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
@@ -165,8 +166,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 Hamyonga qaytarildi: {som(o.refundAmount)}
               </p>
             ) : null}
-            {o.checkedAt && active && (
-              <p className="mt-3 text-xs text-zinc-400">Oxirgi tekşiruv: {dateFmt.format(o.checkedAt)} · sahifa öz-özidan yangilanadi</p>
+            {active && (
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:justify-start">
+                <OrderRefreshButton orderId={o.id} />
+                {o.checkedAt && <p className="text-xs text-zinc-400">Oxirgi tekşiruv: {dateFmt.format(o.checkedAt)}</p>}
+              </div>
             )}
           </div>
         </div>

@@ -235,14 +235,18 @@ function toInt(v: string | number | undefined) {
   return Number.isFinite(n) ? Math.round(n) : null;
 }
 
-/** Faol buyurtmalar holatini provayderdan yangilaydi (ixtiyoriy: faqat bitta foydalanuvchi). */
-export async function syncOrders(userId?: string) {
+/**
+ * Faol buyurtmalar holatini provayderdan yangilaydi (ixtiyoriy: faqat bitta foydalanuvchi / buyurtma).
+ * `minAgeMs` — shundan yaqinda tekshirilganlar qayta so'ralmaydi (odatda 1 daqiqa; "Yangilash" tugmasi — 10 soniya).
+ */
+export async function syncOrders(userId?: string, opts: { orderId?: string; minAgeMs?: number } = {}) {
   const orders = await db.smmOrder.findMany({
     where: {
       ...(userId ? { userId } : {}),
+      ...(opts.orderId ? { id: opts.orderId } : {}),
       status: { in: ACTIVE_STATUSES },
       providerOrderId: { not: null },
-      OR: [{ checkedAt: null }, { checkedAt: { lt: new Date(Date.now() - 60_000) } }],
+      OR: [{ checkedAt: null }, { checkedAt: { lt: new Date(Date.now() - (opts.minAgeMs ?? 60_000)) } }],
     },
     orderBy: { checkedAt: { sort: "asc", nulls: "first" } },
     take: 100,

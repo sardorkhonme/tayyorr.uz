@@ -39,9 +39,18 @@ export type IconName =
   | "play"
   | "pause"
   | "file"
-  | "tag";
+  | "tag"
+  | "refresh";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  refresh: (
+    <>
+      <path d="M20 11.5A8 8 0 0 0 5.6 7.2L4 9" />
+      <path d="M4 4.5V9h4.5" />
+      <path d="M4 12.5a8 8 0 0 0 14.4 4.3L20 15" />
+      <path d="M20 19.5V15h-4.5" />
+    </>
+  ),
   tag: (
     <>
       <path d="M3.5 12.1V4.9A1.4 1.4 0 0 1 4.9 3.5h7.2a1.4 1.4 0 0 1 1 .4l7 7a1.4 1.4 0 0 1 0 2l-7.2 7.2a1.4 1.4 0 0 1-2 0l-7-7a1.4 1.4 0 0 1-.4-1z" />
