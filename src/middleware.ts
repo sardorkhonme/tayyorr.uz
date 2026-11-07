@@ -4,6 +4,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 
 import { authConfig } from "@/auth.config";
 import { ADMIN_URL, LANDING_URL, PLUS_URL } from "@/lib/site";
+import { maintenanceGate } from "@/lib/maintenance";
 import { SSO_COOKIE, safeNext, ssoEnabled, verifySso } from "@/lib/sso";
 
 const { auth } = NextAuth(authConfig);
@@ -15,6 +16,10 @@ const authMiddleware = auth as unknown as (req: NextRequest, ev: NextFetchEvent)
  */
 export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const { pathname, search, origin } = req.nextUrl;
+
+  // texnik ishlar rejimi — ruxsat ro'yxatidagilardan boshqasiga sayt yopiq
+  const gate = await maintenanceGate(req, await verifySso(req.cookies.get(SSO_COOKIE)?.value), "app");
+  if (gate) return gate;
 
   if (!pathname.startsWith("/api/")) {
     // bosh sahifa — darhol kabinet

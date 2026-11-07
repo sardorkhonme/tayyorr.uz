@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
 import "./globals.css";
+import { MaintenanceGuard } from "@/components/maintenance-guard";
 import { PlatformTransition } from "@/components/platform-transition";
 import { SITE_URL } from "@/lib/links";
 
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {children}
         <PlatformTransition theme="dark" />
+        <MaintenanceGuard />
       </body>
     </html>
   );

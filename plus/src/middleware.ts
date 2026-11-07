@@ -1,6 +1,7 @@
 import { getToken } from "next-auth/jwt";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { maintenanceGate } from "@/lib/maintenance";
 import { SSO_COOKIE, safeNext, signSso, ssoClearOptions, ssoCookieOptions, ssoEnabled, verifySso } from "@/lib/sso";
 
 /** Kirgach qaytiladigan manzil (masalan app.tayyorr.uz) — 10 daqiqa saqlanadi. */
@@ -18,6 +19,12 @@ export async function middleware(req: NextRequest) {
 
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie: secure });
   const uid = typeof token?.sub === "string" ? token.sub : null;
+
+  // texnik ishlar rejimi — kirish sahifasi ochiq (ruxsat ro'yxatidagi odam kira olsin), qolgani yopiq
+  const gate = await maintenanceGate(req, uid, "plus", [/^\/(login|logout|app-login)(\/|$)/]);
+  if (gate) return gate;
+  // API — faqat rejim tekshiruvi uchun; SSO/qaytish mantiqi avvalgidek faqat sahifalarda
+  if (pathname.startsWith("/api/")) return NextResponse.next();
 
   let res = NextResponse.next();
 
@@ -54,5 +61,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon|.*\\.(?:png|jpg|jpeg|svg|webp|ico|txt|xml|json|js|wav)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon|.*\\.(?:png|jpg|jpeg|svg|webp|ico|txt|xml|json|js|wav)$).*)"],
 };

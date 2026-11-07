@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Statistika chartlari — kutubxonasiz SVG. Ranglar globals.css dagi .viz o'zgaruvchilaridan
@@ -393,15 +394,110 @@ export function Heatmap({ grid }: { grid: number[][] }) {
   );
 }
 
+/** Burchakdagi "!" — bosilganda statistika haqida batafsil izoh (tashqariga bosilsa yoki Esc — yopiladi). */
+export function InfoTip({ text, className = "" }: { text: string | string[]; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top: number; width: number } | null>(null);
+  const ref = useRef<HTMLSpanElement>(null);
+  const btn = useRef<HTMLButtonElement>(null);
+  const pop = useRef<HTMLSpanElement>(null);
+
+  // oyna ekrandan chiqib ketmasin: tugma ostida, chap/o'ng chegaraga qisiladi; pastda joy bo'lmasa — tepada
+  useEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const r = btn.current?.getBoundingClientRect();
+      if (!r) return;
+      const vw = document.documentElement.clientWidth;
+      const width = Math.min(320, vw - 24);
+      const left = Math.min(Math.max(r.right - width, 12), vw - width - 12);
+      const h = pop.current?.offsetHeight ?? 0;
+      const below = r.bottom + 8;
+      const top = below + h > window.innerHeight - 8 && r.top - 8 - h > 8 ? r.top - 8 - h : below;
+      setPos({ left, top, width });
+    };
+    place();
+    requestAnimationFrame(place);
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    return () => {
+      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", place);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!ref.current?.contains(t) && !pop.current?.contains(t)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  const parts = Array.isArray(text) ? text : [text];
+  return (
+    <span ref={ref} className={`absolute right-3 top-3 z-20 ${className}`}>
+      <button
+        type="button"
+        ref={btn}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Batafsil maʼlumot"
+        aria-expanded={open}
+        className="grid h-6 w-6 place-items-center rounded-full text-[13px] font-bold leading-none transition hover:scale-110"
+        style={{
+          background: open ? "var(--viz-1)" : "var(--viz-grid)",
+          color: open ? "#fff" : "var(--viz-muted)",
+          border: "1px solid var(--viz-grid)",
+        }}
+      >
+        !
+      </button>
+      {open &&
+        createPortal(
+        <span
+          ref={pop}
+          role="tooltip"
+          className="viz fixed z-[60] block space-y-2 rounded-xl p-3.5 text-left text-[13px] font-normal leading-relaxed shadow-2xl"
+          style={{
+            left: pos?.left ?? -9999,
+            top: pos?.top ?? 0,
+            width: pos?.width ?? 320,
+            background: "var(--viz-tip)",
+            color: "var(--viz-text)",
+            border: "1px solid var(--viz-grid)",
+          }}
+        >
+          {parts.map((t, i) => (
+            <span key={i} className="block">
+              {t}
+            </span>
+          ))}
+        </span>,
+          document.body,
+        )}
+    </span>
+  );
+}
+
 /** KPI plitkasi: qiymat, oldingi davrga nisbatan o'zgarish va kichik trend chizig'i. */
-export function Kpi({ label, cur, prev, f = "count", spark, hint }: { label: string; cur: number; prev: number; f?: Fmt; spark?: number[]; hint?: string }) {
+export function Kpi({ label, cur, prev, f = "count", spark, info }: { label: string; cur: number; prev: number; f?: Fmt; spark?: number[]; info: string[] }) {
   const diff = prev ? Math.round(((cur - prev) / prev) * 100) : cur ? 100 : 0;
   const up = cur >= prev;
   const s = spark && spark.length > 1 ? spark : null;
   const sMax = s ? Math.max(...s, 1) : 1;
   return (
-    <div className="viz-card flex flex-col gap-1 rounded-2xl p-4" title={hint}>
-      <span className="text-xs" style={{ color: "var(--viz-muted)" }}>
+    <div className="viz-card relative flex flex-col gap-1 rounded-2xl p-4">
+      <InfoTip
+        className="!right-2.5 !top-2.5"
+        text={[...info, "▲/▼ foiz — xuddi şunça uzunlikdagi oldingi davrga nisbatan (masalan, 30 kun tanlansa — undan oldingi 30 kun). Kiçik çiziq — şu davr içidagi kunlik (1 yilda oylik) özgariş."]}
+      />
+      <span className="pr-7 text-xs" style={{ color: "var(--viz-muted)" }}>
         {label}
       </span>
       <span className="text-2xl font-semibold tabular-nums" style={{ color: "var(--viz-text)" }}>
