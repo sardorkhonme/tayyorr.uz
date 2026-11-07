@@ -8,6 +8,7 @@ import { formatSom as som } from "@/lib/wallet";
 import { getSmmSettings } from "@/lib/smm-settings";
 import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
 import { Icon, type IconName } from "@/components/icons";
+import { SmmOrderRefresh } from "@/components/admin/smm-order-refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -150,7 +151,11 @@ export default async function AdminSmmOrder({ params }: { params: Promise<{ id: 
               #{o.id.slice(-8).toUpperCase()} · {shortDateTime(o.createdAt)}
             </p>
           </div>
-          <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+          <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            {/* faol buyurtma — provayderdan hozir so'rash; yakunlangani o'zgarmaydi */}
+            {["PROCESSING", "IN_PROGRESS"].includes(o.status) && o.providerOrderId && <SmmOrderRefresh orderId={o.id} />}
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+          </span>
         </div>
         <div className="mt-5 flex items-center gap-4">
           <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/10">

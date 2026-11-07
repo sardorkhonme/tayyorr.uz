@@ -6,6 +6,7 @@ import { shortDateTime } from "@/lib/date";
 import { getSmmSettings, refreshSmmUsdRate } from "@/lib/smm-settings";
 import { SmmProviderBalance } from "@/components/admin/smm-provider-balance";
 import { SmmSettingsForm } from "@/components/admin/smm-settings-form";
+import { SmmOrderRefresh } from "@/components/admin/smm-order-refresh";
 import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
@@ -137,7 +138,10 @@ export default async function AdminSmm() {
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-semibold text-white">Oxirgi buyurtmalar</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-semibold text-white">Oxirgi buyurtmalar</h2>
+          <SmmOrderRefresh label="Faollarini yangilaş" />
+        </div>
         <p className="-mt-2 text-xs text-zinc-500">Batafsil ma'lumot uçun buyurtmani bosing.</p>
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full min-w-[760px] text-sm">
