@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { chargeFor, num } from "@/lib/format";
-import { splitServiceName } from "@/lib/kinds";
+import { kindOf, splitServiceName } from "@/lib/kinds";
+import { normalizeLink } from "@/lib/links";
 import { getPricing, rateFor } from "@/lib/pricing";
 import { isHidden } from "@/lib/smm-adjust";
 import {
@@ -40,9 +41,13 @@ export class OrderError extends Error {
 }
 
 /** Hamyondan atomik yechadi, buyurtma yozadi, provayderga yuboradi. */
-export async function placeOrder(userId: string, serviceId: string, link: string, quantity: number) {
+export async function placeOrder(userId: string, serviceId: string, rawLink: string, quantity: number) {
   const service = await db.smmService.findUnique({ where: { id: serviceId } });
   if (!service || !service.active) throw new OrderError("Xizmat topilmadi", 404);
+  // "@username" → to'liq havola (provayder "@..." ni tushunmaydi)
+  const norm = normalizeLink(rawLink, service.platform, kindOf(service.category, service.name), service.name);
+  if (!norm.ok) throw new OrderError(norm.error);
+  const link = norm.url;
   if (quantity < service.min || quantity > service.max) {
     throw new OrderError(`Miqdor ${service.min} – ${service.max} oraliğida bölsin`);
   }

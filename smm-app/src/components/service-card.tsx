@@ -1,5 +1,6 @@
 import { num, som } from "@/lib/format";
-import { guaranteeLabel, guaranteeOf, isGuaranteeTag } from "@/lib/guarantee";
+import { guaranteeLabel, guaranteeOf, isGuaranteeTag, verdictOf } from "@/lib/guarantee";
+import { kindOf } from "@/lib/kinds";
 
 export type BoardService = {
   id: string;
@@ -45,6 +46,21 @@ export function GuaranteeBadge({ name, refill, className = "" }: { name: string;
   );
 }
 
+/** "Tavsiya etiladi / etilmaydi" — qo'llanmadagi qoidalar bo'yicha (lib/guarantee.ts → verdictOf). */
+export function VerdictBadge({ service: s, className = "" }: { service: BoardService; className?: string }) {
+  const v = verdictOf(s.name, s.refill, kindOf(s.category, s.name));
+  return (
+    <span
+      title={v.reason}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold text-white shadow-sm ${
+        v.ok ? "bg-emerald-500" : "bg-rose-500"
+      } ${className}`}
+    >
+      {v.ok ? "👍 Tavsiya etiladi" : "👎 Tavsiya etilmaydi"}
+    </span>
+  );
+}
+
 /** Xizmat kartasi — bosh sahifada ham, chegirmalar sahifasida ham. */
 export function ServiceCard({
   service: s,
@@ -78,6 +94,7 @@ export function ServiceCard({
         {title}
       </span>
       <span className="flex flex-wrap gap-1.5 text-xs">
+        <VerdictBadge service={s} />
         {tags.filter((t) => !isGuaranteeTag(t)).slice(0, 4).map((t) => (
           <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-zinc-600">
             {t}

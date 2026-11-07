@@ -7,8 +7,9 @@ import type { BoardService } from "@/components/services-board";
 import { Icon } from "@/components/icons";
 import { TopupButton } from "@/components/topup-button";
 import { chargeFor, num, som } from "@/lib/format";
-import { GuaranteeBadge } from "@/components/service-card";
-import { guaranteeOf, isGuaranteeTag } from "@/lib/guarantee";
+import { GuaranteeBadge, VerdictBadge } from "@/components/service-card";
+import { guaranteeOf, isGuaranteeTag, verdictOf } from "@/lib/guarantee";
+import { normalizeLink } from "@/lib/links";
 import { kindOf, LINK_HINTS, splitServiceName } from "@/lib/kinds";
 
 export function OrderDialog({
@@ -41,8 +42,11 @@ export function OrderDialog({
     .sort((a, b) => a - b)
     .slice(0, 5);
 
-  const unsafeFollowers =
-    kindOf(service.category, service.name) === "followers" && guaranteeOf(service.name, service.refill).kind === "none";
+  const kind = kindOf(service.category, service.name);
+  const verdict = verdictOf(service.name, service.refill, kind);
+  const unsafeFollowers = kind === "followers" && guaranteeOf(service.name, service.refill).kind === "none";
+  // "@username" → provayderga ketadigan to'liq havola
+  const linkRes = link.trim() ? normalizeLink(link, service.platform, kind, service.name) : null;
 
   const qty = Number(quantity) || 0;
   const qtyOk = qty >= service.min && qty <= service.max;
@@ -56,7 +60,7 @@ export function OrderDialog({
     const res = await fetch("/api/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ serviceId: service.id, link, quantity: qty }),
+      body: JSON.stringify({ serviceId: service.id, link: linkRes?.ok ? linkRes.url : link, quantity: qty }),
     }).catch(() => null);
     const data = await res?.json().catch(() => null);
     setBusy(false);
@@ -96,6 +100,10 @@ export function OrderDialog({
                 ))}
               <GuaranteeBadge name={service.name} refill={service.refill} className="!py-0.5 text-xs" />
             </div>
+            <p className={`mt-2.5 flex flex-wrap items-center gap-2 text-sm ${verdict.ok ? "text-emerald-700" : "text-rose-600"}`}>
+              <VerdictBadge service={service} className="!py-0.5 text-xs" />
+              {verdict.reason}
+            </p>
           </div>
           <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopiş">
             <Icon name="close" />
@@ -157,6 +165,14 @@ export function OrderDialog({
                 required
                 autoFocus
               />
+              {linkRes?.ok && linkRes.url !== link.trim() && (
+                <p className="mt-2 break-all text-xs text-emerald-700">
+                  Yuboriladi: <b>{linkRes.url}</b>
+                </p>
+              )}
+              {linkRes && !linkRes.ok && link.trim().length > 2 && (
+                <p className="mt-2 text-sm text-amber-600">{linkRes.error}</p>
+              )}
             </div>
             <div>
               <label className="label" htmlFor="qty">
@@ -219,7 +235,7 @@ export function OrderDialog({
             )}
             {error && <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-600">{error}</p>}
 
-            <button className="btn-primary w-full !py-4 !text-base" disabled={busy || !qtyOk || !enough || !link.trim()}>
+            <button className="btn-primary w-full !py-4 !text-base" disabled={busy || !qtyOk || !enough || !linkRes?.ok}>
               {busy ? "Yuborilmoqda…" : "Buyurtma beriş"}
             </button>
             <p className="text-center text-xs text-zinc-500">

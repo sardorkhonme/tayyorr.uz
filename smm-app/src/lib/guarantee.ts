@@ -34,3 +34,21 @@ export function guaranteeLabel(g: Guarantee) {
 
 /** Kafolat yorlig'i alohida ko'rsatiladi — nomdagi inglizcha takrori teglardan olib tashlanadi. */
 export const isGuaranteeTag = (t: string) => /refill|guarantee/i.test(t);
+
+/**
+ * "Tavsiya etiladi / etilmaydi" — qo'llanmadagi qoidalar bo'yicha:
+ * bot, katta kamayish (Drop 30%+), faqat bir davlat havolasi, kafolatsiz obunachi — tavsiya etilmaydi.
+ */
+export function verdictOf(name: string, refill: boolean, kind: string): { ok: boolean; reason: string } {
+  if (/\bbots?\b/i.test(name)) return { ok: false, reason: "Bot akkauntlar — tez tuşib ketadi" };
+  const drop = /drop\s*:?\s*~?\s*%?\s*(\d+)/i.exec(name);
+  if (drop && Number(drop[1]) >= 30) return { ok: false, reason: `Taxminan ${drop[1]}% va undan köpi tuşib ketadi` };
+  if (/only\b[^|\]]*\blink/i.test(name)) return { ok: false, reason: "Faqat bitta davlat havolasi uçun işlaydi" };
+  const g = guaranteeOf(name, refill);
+  if (kind === "followers") {
+    return g.kind === "none"
+      ? { ok: false, reason: "Kafolatsiz — obunaçilar kamaysa qaytmaydi" }
+      : { ok: true, reason: "Kafolatli — kamaysa qayta töldiriladi" };
+  }
+  return { ok: true, reason: g.kind === "none" ? "Bu tur uçun kafolat şart emas" : "Kafolatli" };
+}

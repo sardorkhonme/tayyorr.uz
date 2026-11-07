@@ -9,12 +9,8 @@ import { providerConfigured } from "@/lib/provider";
 
 const schema = z.object({
   serviceId: z.string().min(1),
-  link: z
-    .string()
-    .trim()
-    .min(3, "Havolani kiriting")
-    .max(500)
-    .refine((v) => /^(https?:\/\/|@)\S+$/i.test(v), "Havola https:// yoki @ bilan boşlansin"),
+  // to'liq tekshiruv va "@username" → havola: placeOrder (lib/links.ts)
+  link: z.string().trim().min(2, "Havolani kiriting").max(500),
   quantity: z.coerce.number().int().positive("Miqdorni kiriting"),
 });
 
