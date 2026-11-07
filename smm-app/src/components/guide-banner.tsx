@@ -65,8 +65,7 @@ export function GuideBanner() {
         <div className="min-w-0 flex-1">
           <p className="font-display text-lg font-bold text-zinc-900 sm:text-xl">Qöllanmani öqimasdan buyurtma bermang!</p>
           <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-            Xizmat nomidagi <b>No Refill</b>, <b>Refill: 30 Days</b>, <b>Non-Drop</b>, <b>Instant Start</b> kabi yozuvlar nimani
-            anglatişini va qaysi xizmatni tanlaş kerakligini bilib oling — şunda pulingiz behuda ketmaydi.
+            1 daqiqada öqiladi — qaysi xizmat pulingizni behuda ketkazmasligini bilib oling.
           </p>
         </div>
         <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">

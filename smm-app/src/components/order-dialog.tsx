@@ -109,7 +109,7 @@ export function OrderDialog({
             <p>
               Bu xizmatda <b>kafolat yöq</b>: Instagram soxta akkauntlarni öçirsa, obunaçilar kamayadi va qayta töldirilmaydi.
               Uzoq muddat uçun <b>♻️ kafolatli</b> xizmatni tanlang.{" "}
-              <Link href="/qollanma#kafolat" className="font-semibold underline">
+              <Link href="/qollanma" className="font-semibold underline">
                 Batafsil
               </Link>
             </p>
