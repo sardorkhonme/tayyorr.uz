@@ -211,6 +211,32 @@ model ActivityLog {
 }
 
 /**
+ * Doimiy iz (audit log) — admin "Loglar" paneli. Har sayt (app, plus, smm, admin) middleware'i
+ * yozadi: sahifa ochilishi va har bir amal (POST/PUT/PATCH/DELETE). Forma ma'lumotlari / parollar
+ * yozilmaydi. User'ga bog'lanmagan (FK yo'q) — hisob o'chirilsa ham iz qoladi.
+ */
+model AuditLog {
+  id        String   @id
+  actor     String // "USER" | "ADMIN" | "GUEST"
+  userId    String?
+  site      String // "app" | "plus" | "smm" | "admin"
+  kind      String // "PAGE" | "ACTION"
+  method    String
+  path      String
+  summary   String
+  ip        String?
+  userAgent String?
+  country   String?
+  city      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([actor, createdAt])
+  @@index([site, createdAt])
+}
+
+/**
  * Foydalanuvchi saytga (allaqachon tizimga kirgan holda) tashrif buyurgani —
  * login emas, oddiy ko'rib chiqish. /api/me/visit orqali yoziladi — klient
  * (VisitPing) har yangi brauzer sessiyasida (tab ochilganda) bir marta

@@ -1,5 +1,7 @@
 import { getToken } from "next-auth/jwt";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
+
+import { audit } from "@/lib/audit";
 
 import { maintenanceGate } from "@/lib/maintenance";
 import { SSO_COOKIE, safeNext, signSso, ssoClearOptions, ssoCookieOptions, ssoEnabled, verifySso } from "@/lib/sso";
@@ -12,13 +14,16 @@ const NEXT_COOKIE = "tyr_next";
  * domeniga SSO belgisi qo'yiladi (boshqa subdomenlar shu orqali avtomatik kiradi),
  * chiqqanda esa olib tashlanadi.
  */
-export async function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const { pathname, searchParams, protocol } = req.nextUrl;
   const secure = protocol === "https:";
   const host = req.headers.get("host");
 
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie: secure });
   const uid = typeof token?.sub === "string" ? token.sub : null;
+
+  // doimiy iz (admin "Loglar")
+  audit(req, (p) => ev.waitUntil(p), "plus", uid ? "USER" : "GUEST", uid);
 
   // texnik ishlar rejimi — kirish sahifasi ochiq (ruxsat ro'yxatidagi odam kira olsin), qolgani yopiq
   const gate = await maintenanceGate(req, uid, "plus", [/^\/(login|logout|app-login)(\/|$)/]);

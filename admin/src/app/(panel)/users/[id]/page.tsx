@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { db } from "@/lib/db";
@@ -110,7 +111,13 @@ export default async function AdminUserOverview({
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-      <h2 className="mb-3 font-semibold text-white">Hisob maʼlumotlari</h2>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="font-semibold text-white">Hisob maʼlumotlari</h2>
+        <Link href={`/logs?u=${user.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-white/10">
+          <Icon name="clock" className="h-3.5 w-3.5" />
+          Barça izlari
+        </Link>
+      </div>
       <dl className="divide-y divide-white/5 text-sm">
         {info.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-4 py-2">

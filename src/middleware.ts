@@ -4,11 +4,31 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 
 import { authConfig } from "@/auth.config";
 import { ADMIN_URL, LANDING_URL, PLUS_URL } from "@/lib/site";
+import { audit } from "@/lib/audit";
 import { maintenanceGate } from "@/lib/maintenance";
 import { SSO_COOKIE, safeNext, ssoEnabled, verifySso } from "@/lib/sso";
 
 const { auth } = NextAuth(authConfig);
 const authMiddleware = auth as unknown as (req: NextRequest, ev: NextFetchEvent) => Promise<Response | undefined>;
+
+/** Mobil ilova Bearer JWT (HS256, MOBILE_JWT_SECRET) — imzosi to'g'ri bo'lsa userId (lib/mobile-auth.ts bilan bir xil). */
+async function mobileUid(req: NextRequest): Promise<string | null> {
+  const h = req.headers.get("authorization") ?? "";
+  const secret = process.env.MOBILE_JWT_SECRET;
+  if (!h.startsWith("Bearer ") || !secret) return null;
+  const [head, body, sig] = h.slice(7).split(".");
+  if (!head || !body || !sig) return null;
+  try {
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+    const raw = Uint8Array.from(atob(sig.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+    if (!(await crypto.subtle.verify("HMAC", key, raw, new TextEncoder().encode(`${head}.${body}`)))) return null;
+    const p = JSON.parse(atob(body.replace(/-/g, "+").replace(/_/g, "/"))) as { sub?: unknown; exp?: number };
+    if (typeof p.exp === "number" && p.exp * 1000 < Date.now()) return null;
+    return typeof p.sub === "string" ? p.sub : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * app.tayyorr.uz — kabinet (ilmiy ishlar). Landing endi alohida loyiha (landing/),
@@ -17,8 +37,13 @@ const authMiddleware = auth as unknown as (req: NextRequest, ev: NextFetchEvent)
 export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const { pathname, search, origin } = req.nextUrl;
 
+  const ssoUid = await verifySso(req.cookies.get(SSO_COOKIE)?.value);
+  // doimiy iz (admin "Loglar"): sayt — SSO, mobil ilova — imzolangan Bearer token
+  const who = ssoUid ?? (await mobileUid(req));
+  audit(req, (p) => ev.waitUntil(p), "app", who ? "USER" : "GUEST", who);
+
   // texnik ishlar rejimi — ruxsat ro'yxatidagilardan boshqasiga sayt yopiq
-  const gate = await maintenanceGate(req, await verifySso(req.cookies.get(SSO_COOKIE)?.value), "app");
+  const gate = await maintenanceGate(req, ssoUid, "app");
   if (gate) return gate;
 
   if (!pathname.startsWith("/api/")) {
