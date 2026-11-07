@@ -1,8 +1,10 @@
 import { neon } from "@neondatabase/serverless";
 
 /**
- * Doimiy iz (AuditLog) — admin "Loglar" paneli uchun. Middleware har bir sahifa ochilishi va
- * amalni (POST/PUT/PATCH/DELETE) javob qaytgandan keyin fonda (waitUntil) yozadi — sayt sekinlashmaydi.
+ * Doimiy iz (AuditLog) — admin "Loglar" paneli uchun.
+ * - brauzer (components/activity-tracker.tsx): har bir ekran ochilishi (sahifadan sahifaga o'tish ham)
+ *   va har bir bosish (tugma, havola, tab ...) → /api/audit → clientEvents();
+ * - middleware: amallar (POST/PUT/PATCH/DELETE, mobil ilova ham) — javobdan keyin fonda (waitUntil).
  * Forma ma'lumotlari, parollar va so'rov parametrlari (?…) yozilmaydi — faqat kim, qayerda, nima qildi.
  * Yozib bo'lmasa (baza javob bermasa) — jim o'tib ketadi, sayt ishlayveradi.
  *
@@ -123,13 +125,14 @@ const ACTIONS: [RegExp, RegExp, string][] = [
   [/./, /^\/api\/mobile/, "Mobil ilovada amal bajardi"],
 ];
 
-function pageLabel(site: Site, path: string) {
+export function pageLabel(site: Site, path: string) {
   return PAGES[site].find(([re]) => re.test(path))?.[1] ?? path;
 }
 
 function describe(site: Site, method: string, path: string, serverAction: boolean): { kind: "PAGE" | "ACTION"; summary: string } | null {
   if (method === "GET" && path === "/logout") return { kind: "ACTION", summary: "Hisobdan çiqdi" };
-  if (method === "GET") return path.startsWith("/api/") ? null : { kind: "PAGE", summary: `Sahifani oçdi: ${pageLabel(site, path)}` };
+  // sahifa ochilishini brauzerdagi kuzatuvchi yozadi (ichki o'tishlar ham) — bu yerda takrorlanmaydi
+  if (method === "GET") return null;
   const hit = ACTIONS.find(([m, re]) => m.test(method) && re.test(path));
   if (hit) return { kind: "ACTION", summary: hit[2] };
   if (serverAction) return { kind: "ACTION", summary: `Forma yubordi: ${pageLabel(site, path)}` };
@@ -144,18 +147,13 @@ export function audit(req: Request, waitUntil: (p: Promise<unknown>) => void, si
     const method = req.method.toUpperCase();
     const h = req.headers;
     if (method === "HEAD" || method === "OPTIONS") return;
-    if (path.startsWith("/_next/") || /\.[a-z0-9]{2,5}$/i.test(path)) return;
+    if (path.startsWith("/_next/") || /\.[a-z0-9]{2,5}$/i.test(path) || path === "/api/audit") return;
     // oldindan yuklash (prefetch) — odam bosmagan
     if (h.get("next-router-prefetch") || /prefetch/i.test(`${h.get("purpose") ?? ""} ${h.get("sec-purpose") ?? ""}`)) return;
     const ua = h.get("user-agent") ?? "";
     if (BOT.test(ua)) return;
     // foydalanuvchisiz API so'rovlari — tashqi xizmatlar (to'lov, cron, Telegram), odam izi emas
     if (path.startsWith("/api/") && actor === "GUEST" && !/^\/api\/(admin\/login|mobile\/auth)/.test(path)) return;
-    if (method === "GET" && !path.startsWith("/api/")) {
-      // faqat haqiqiy sahifa ochilishi: to'liq yuklash yoki ichki o'tish (RSC)
-      const accept = h.get("accept") ?? "";
-      if (!accept.includes("text/html") && !h.get("rsc")) return;
-    }
     const d = describe(site, method, path, !!h.get("next-action"));
     if (!d) return;
 
@@ -187,4 +185,64 @@ export function audit(req: Request, waitUntil: (p: Promise<unknown>) => void, si
   } catch {
     // iz yozilmasa ham sayt ishlayveradi
   }
+}
+
+const clean = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
+
+/**
+ * /api/audit — brauzerdagi kuzatuvchi yuborgan izlar: { events: [{ t: "PAGE" | "CLICK", path, label?, href?, at? }] }.
+ * Bitta so'rovda ko'pi bilan 60 ta; vaqt — brauzerniki (±1 kun, aks holda server vaqti). Doim 204 qaytaradi.
+ */
+export async function clientEvents(req: Request, site: Site, actor: Actor, userId: string | null) {
+  const ok = new Response(null, { status: 204 });
+  const dbUrl = process.env.DATABASE_URL;
+  const h = req.headers;
+  const ua = h.get("user-agent") ?? "";
+  if (!dbUrl || BOT.test(ua)) return ok;
+  const body = (await req.json().catch(() => null)) as { events?: unknown } | null;
+  const list = (Array.isArray(body?.events) ? body.events.slice(0, 60) : []) as Record<string, unknown>[];
+  const city = h.get("x-vercel-ip-city");
+  const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || null;
+  const now = Date.now();
+  const rows: unknown[][] = [];
+  for (const e of list) {
+    const path = clean(e?.path, 300);
+    if (!path.startsWith("/")) continue;
+    let kind: string;
+    let summary: string;
+    if (e.t === "PAGE") {
+      kind = "PAGE";
+      summary = `Sahifani oçdi: ${pageLabel(site, path)}`;
+    } else if (e.t === "CLICK") {
+      kind = "CLICK";
+      const href = clean(e.href, 200);
+      summary = `Bosdi: «${clean(e.label, 80) || "nomsiz element"}»${href ? ` → ${href}` : ""}`;
+    } else continue;
+    const at = typeof e.at === "number" && Math.abs(e.at - now) < 86_400_000 ? new Date(e.at) : new Date(now);
+    rows.push([
+      crypto.randomUUID(),
+      actor,
+      userId,
+      site,
+      kind,
+      "GET",
+      path,
+      summary.slice(0, 300),
+      ip,
+      ua.slice(0, 400) || null,
+      h.get("x-vercel-ip-country"),
+      city ? decodeURIComponent(city) : null,
+      at,
+    ]);
+  }
+  if (!rows.length) return ok;
+  const COLS = 13;
+  const values = rows.map((_, i) => "(" + Array.from({ length: COLS }, (_, j) => "$" + (i * COLS + j + 1)).join(", ") + ")").join(", ");
+  await neon(dbUrl)
+    .query(
+      `INSERT INTO "AuditLog" (id, actor, "userId", site, kind, method, path, summary, ip, "userAgent", country, city, "createdAt") VALUES ${values}`,
+      rows.flat(),
+    )
+    .catch(() => {});
+  return ok;
 }

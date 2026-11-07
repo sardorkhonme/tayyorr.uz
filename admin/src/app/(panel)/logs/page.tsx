@@ -85,7 +85,7 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
     const where: Prisma.AuditLogWhereInput = {
       ...(sp.actor && ACTOR[sp.actor] ? { actor: sp.actor } : {}),
       ...(sp.site && SITE[sp.site] ? { site: sp.site } : {}),
-      ...(sp.kind === "PAGE" || sp.kind === "ACTION" ? { kind: sp.kind } : {}),
+      ...(sp.kind === "PAGE" || sp.kind === "ACTION" || sp.kind === "CLICK" ? { kind: sp.kind } : {}),
       ...(sp.u ? { userId: sp.u } : {}),
       ...(q ? { OR: [{ summary: { contains: q, mode: "insensitive" } }, { path: { contains: q, mode: "insensitive" } }, { ip: { contains: q } }] } : {}),
       ...(before ? { createdAt: { lt: before } } : {}),
@@ -235,8 +235,9 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
               Turi
               <select name="kind" defaultValue={sp.kind ?? ""} className="input rounded-lg border border-white/10 bg-[#14141b] px-3 py-2 text-sm text-white">
                 <option value="">Hammasi</option>
-                <option value="ACTION">Amallar</option>
-                <option value="PAGE">Sahifa oçiş</option>
+                <option value="ACTION">Amallar (saqlaş, yuboriş)</option>
+                <option value="CLICK">Bosişlar</option>
+                <option value="PAGE">Ekran oçiş</option>
               </select>
             </label>
           </>
@@ -271,10 +272,10 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
                   <span className="min-w-0">
                     <span className="flex flex-wrap items-center gap-1.5">
                       {tab === "iz" && <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${a.cls}`}>{SITE[r.site] ?? r.site}</span>}
-                      <span className={r.kind === "ACTION" ? "font-medium text-zinc-100" : "text-zinc-300"}>{r.summary}</span>
+                      <span className={r.kind === "ACTION" ? "font-medium text-zinc-100" : r.kind === "CLICK" ? "text-zinc-300" : "text-zinc-400"}>{r.summary}</span>
                     </span>
                     <span className="mt-0.5 block truncate font-mono text-[11px] text-zinc-600">
-                      {r.method && `${r.method} `}
+                      {r.kind === "ACTION" && r.method && `${r.method} `}
                       {r.path}
                     </span>
                   </span>

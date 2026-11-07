@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { ActivityTracker } from "@/components/activity-tracker";
 
 // shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
 const headingFont = localFont({
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-screen antialiased">
         <Providers>{children}</Providers>
+        <ActivityTracker />
       </body>
     </html>
   );

@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SmmHeader, type HeaderUser } from "@/components/smm-header";
 import { SupportWidget } from "@/components/support-widget";
 import { currentUser } from "@/lib/session";
+import { ActivityTracker } from "@/components/activity-tracker";
 
 // shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
 const headingFont = localFont({
@@ -46,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </main>
         <SupportWidget loggedIn={!!u} />
         <PlatformTransition />
+        <ActivityTracker />
       </body>
     </html>
   );
