@@ -1,4 +1,5 @@
 import { num, som } from "@/lib/format";
+import { guaranteeLabel, guaranteeOf, isGuaranteeTag } from "@/lib/guarantee";
 
 export type BoardService = {
   id: string;
@@ -24,6 +25,22 @@ export function DiscountBadge({ pct, className = "" }: { pct: number; className?
       className={`inline-flex items-center rounded-full bg-gradient-to-r from-rose-500 to-fuchsia-500 px-2.5 py-1 text-xs font-bold text-white shadow-md shadow-rose-500/30 ${className}`}
     >
       −{pct}%
+    </span>
+  );
+}
+
+/** Kafolat yorlig'i: yashil — kafolatli, sariq — kafolatsiz (qo'llanmada tushuntirilgan). */
+export function GuaranteeBadge({ name, refill, className = "" }: { name: string; refill: boolean; className?: string }) {
+  const g = guaranteeOf(name, refill);
+  const ok = g.kind !== "none";
+  return (
+    <span
+      title={ok ? "Kamaysa provayder qayta töldiradi" : "Kamaysa qayta töldirilmaydi"}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium ${
+        ok ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+      } ${className}`}
+    >
+      {ok ? "♻️" : "⚠️"} {guaranteeLabel(g)}
     </span>
   );
 }
@@ -61,7 +78,7 @@ export function ServiceCard({
         {title}
       </span>
       <span className="flex flex-wrap gap-1.5 text-xs">
-        {tags.slice(0, 4).map((t) => (
+        {tags.filter((t) => !isGuaranteeTag(t)).slice(0, 4).map((t) => (
           <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-zinc-600">
             {t}
           </span>
@@ -69,11 +86,7 @@ export function ServiceCard({
         <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-zinc-600">
           {num(s.min)} – {num(s.max)} ta
         </span>
-        {s.refill && (
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">
-            Kafolatli (kamaysa töldiriladi)
-          </span>
-        )}
+        <GuaranteeBadge name={s.name} refill={s.refill} />
       </span>
       <span className="mt-auto flex items-center justify-between gap-3 border-t border-zinc-100 pt-4">
         <span>

@@ -1,6 +1,7 @@
 import { after } from "next/server";
 
 import { currentUser } from "@/lib/session";
+import { GuideBanner } from "@/components/guide-banner";
 import { ServicesBoard } from "@/components/services-board";
 import { SaleBanner } from "@/components/sale-banner";
 import { db } from "@/lib/db";
@@ -52,6 +53,8 @@ export default async function SmmPage({
           <p className="mt-1 text-zinc-500">Obunaçilar, layklar va körişlar — bir neça daqiqada.</p>
         </div>
       </header>
+
+      <GuideBanner />
 
       {sale.length > 0 && <SaleBanner count={sale.length} max={maxSale} />}
 

@@ -1,4 +1,5 @@
 import { currentUser } from "@/lib/session";
+import { GuideBanner } from "@/components/guide-banner";
 import { loadCatalog } from "@/lib/catalog";
 import { DiscountsBoard } from "@/components/discounts-board";
 import { Icon } from "@/components/icons";
@@ -21,6 +22,8 @@ export default async function DiscountsPage() {
           <p className="mt-1 text-zinc-500">Arzonlaşgan xizmatlar — eng katta çegirmadan boşlab.</p>
         </div>
       </header>
+
+      <GuideBanner />
 
       <DiscountsBoard services={sale} loggedIn={!!user} balance={user?.balance ?? 0} />
     </div>

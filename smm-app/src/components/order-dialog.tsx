@@ -7,7 +7,9 @@ import type { BoardService } from "@/components/services-board";
 import { Icon } from "@/components/icons";
 import { TopupButton } from "@/components/topup-button";
 import { chargeFor, num, som } from "@/lib/format";
-import { LINK_HINTS, splitServiceName } from "@/lib/kinds";
+import { GuaranteeBadge } from "@/components/service-card";
+import { guaranteeOf, isGuaranteeTag } from "@/lib/guarantee";
+import { kindOf, LINK_HINTS, splitServiceName } from "@/lib/kinds";
 
 export function OrderDialog({
   service,
@@ -38,6 +40,9 @@ export function OrderDialog({
     .filter((v, i, a) => v >= service.min && v <= service.max && a.indexOf(v) === i)
     .sort((a, b) => a - b)
     .slice(0, 5);
+
+  const unsafeFollowers =
+    kindOf(service.category, service.name) === "followers" && guaranteeOf(service.name, service.refill).kind === "none";
 
   const qty = Number(quantity) || 0;
   const qtyOk = qty >= service.min && qty <= service.max;
@@ -81,17 +86,35 @@ export function OrderDialog({
               {splitServiceName(service.name).title}
             </h3>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {splitServiceName(service.name).tags.slice(0, 6).map((t) => (
-                <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs text-zinc-600">
-                  {t}
-                </span>
-              ))}
+              {splitServiceName(service.name)
+                .tags.filter((t) => !isGuaranteeTag(t))
+                .slice(0, 6)
+                .map((t) => (
+                  <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs text-zinc-600">
+                    {t}
+                  </span>
+                ))}
+              <GuaranteeBadge name={service.name} refill={service.refill} className="!py-0.5 text-xs" />
             </div>
           </div>
           <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopiş">
             <Icon name="close" />
           </button>
         </div>
+
+        {/* obunachi kafolatsiz bo'lsa — oldindan ogohlantiramiz */}
+        {!done && unsafeFollowers && (
+          <div className="mb-5 flex gap-2.5 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900 ring-1 ring-amber-100">
+            <span className="text-base leading-5">⚠️</span>
+            <p>
+              Bu xizmatda <b>kafolat yöq</b>: Instagram soxta akkauntlarni öçirsa, obunaçilar kamayadi va qayta töldirilmaydi.
+              Uzoq muddat uçun <b>♻️ kafolatli</b> xizmatni tanlang.{" "}
+              <Link href="/qollanma#kafolat" className="font-semibold underline">
+                Batafsil
+              </Link>
+            </p>
+          </div>
+        )}
 
         {service.description && (
           <p className="mb-5 max-h-28 overflow-y-auto whitespace-pre-line rounded-2xl bg-zinc-50 p-3.5 text-sm text-zinc-600">

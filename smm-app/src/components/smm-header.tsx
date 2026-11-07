@@ -15,6 +15,7 @@ const PLUS_URL = process.env.NEXT_PUBLIC_TAYYORR_PLUS_URL || "https://plus.tayyo
 const LINKS: { href: string; label: string; icon: IconName; auth?: boolean }[] = [
   { href: "/", label: "Xizmatlar", icon: "grid" },
   { href: "/chegirmalar", label: "Çegirmalar", icon: "tag" },
+  { href: "/qollanma", label: "Qöllanma", icon: "book" },
   { href: "/orders", label: "Buyurtmalarim", icon: "package", auth: true },
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
   { href: "/account", label: "Akkaunt", icon: "users", auth: true },

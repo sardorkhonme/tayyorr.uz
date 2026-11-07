@@ -40,9 +40,16 @@ export type IconName =
   | "pause"
   | "file"
   | "tag"
-  | "refresh";
+  | "refresh"
+  | "book";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  book: (
+    <>
+      <path d="M12 6.5C10.3 5 7.9 4.5 4.5 4.5v13c3.4 0 5.8.5 7.5 2 1.7-1.5 4.1-2 7.5-2v-13c-3.4 0-5.8.5-7.5 2z" />
+      <path d="M12 6.5v13" />
+    </>
+  ),
   refresh: (
     <>
       <path d="M20 11.5A8 8 0 0 0 5.6 7.2L4 9" />
