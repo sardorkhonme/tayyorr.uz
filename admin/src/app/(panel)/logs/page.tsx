@@ -6,6 +6,8 @@ import { requireAdmin } from "@/lib/admin";
 import { activityLabel } from "@/lib/activity-labels";
 import { describeDevice } from "@/lib/user-agent";
 import { Icon } from "@/components/icons";
+import { LogsAutoForm } from "@/components/admin/logs-auto-form";
+import { userSearchWhere } from "@/lib/admin-search";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Loglar" };
@@ -77,6 +79,11 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
     ? await db.user.findUnique({ where: { id: sp.u }, select: { id: true, name: true, firstName: true, lastName: true, login: true, avatarUrl: true, image: true } })
     : null;
 
+  // qidiruv odam ismi / logini / ID si bo'yicha ham — mos foydalanuvchilarning izlari
+  const qUserIds = q
+    ? (await db.user.findMany({ where: userSearchWhere(q), select: { id: true }, take: 200 })).map((u) => u.id)
+    : [];
+
   let tableMissing = false;
   let rows: { id: string; at: Date; actor: string; userId: string | null; site: string; kind: string; summary: string; path: string; method: string; ip: string | null; ua: string | null; place: string | null }[] = [];
   let stats = { total: 0, users: 0, admin: 0 };
@@ -87,7 +94,16 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
       ...(sp.site && SITE[sp.site] ? { site: sp.site } : {}),
       ...(sp.kind === "PAGE" || sp.kind === "ACTION" || sp.kind === "CLICK" ? { kind: sp.kind } : {}),
       ...(sp.u ? { userId: sp.u } : {}),
-      ...(q ? { OR: [{ summary: { contains: q, mode: "insensitive" } }, { path: { contains: q, mode: "insensitive" } }, { ip: { contains: q } }] } : {}),
+      ...(q
+        ? {
+            OR: [
+              { summary: { contains: q, mode: "insensitive" } },
+              { path: { contains: q, mode: "insensitive" } },
+              { ip: { contains: q } },
+              { userId: { in: [q, ...qUserIds] } },
+            ],
+          }
+        : {}),
       ...(before ? { createdAt: { lt: before } } : {}),
     };
     try {
@@ -119,7 +135,15 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
   } else {
     const where: Prisma.ActivityLogWhereInput = {
       ...(sp.u ? { userId: sp.u } : {}),
-      ...(q ? { OR: [{ summary: { contains: q, mode: "insensitive" } }, { action: { contains: q, mode: "insensitive" } }] } : {}),
+      ...(q
+        ? {
+            OR: [
+              { summary: { contains: q, mode: "insensitive" } },
+              { action: { contains: q, mode: "insensitive" } },
+              { userId: { in: [q, ...qUserIds] } },
+            ],
+          }
+        : {}),
       ...(before ? { createdAt: { lt: before } } : {}),
     };
     const list = await db.activityLog.findMany({ where, orderBy: { createdAt: "desc" }, take: PAGE });
@@ -154,7 +178,8 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
       <div>
         <h1 className="text-xl font-semibold text-white">Loglar</h1>
         <p className="mt-0.5 text-sm text-zinc-500">
-          Saytdagi har bir iz doimiy saqlanadi: kim, qaçon, qaysi saytda, nima qildi. Forma maʼlumotlari va parollar yozilmaydi. Vaqt — Toşkent.
+          Saytdagi har bir iz doimiy saqlanadi: kim, qaçon, qaysi saytda, nima qildi. Forma maʼlumotlari va parollar yozilmaydi. Şu Loglar
+          böliminda adminning özi qilgan işlar yozilmaydi. Vaqt — Toşkent.
         </p>
       </div>
 
@@ -197,7 +222,7 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
       )}
 
       {/* filtrlar */}
-      <form action="/logs" className="flex flex-wrap items-end gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+      <LogsAutoForm className="flex flex-wrap items-end gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition-opacity">
         {tab === "amal" && <input type="hidden" name="tab" value="amal" />}
         {sp.u && <input type="hidden" name="u" value={sp.u} />}
         <label className="flex min-w-[12rem] flex-1 flex-col gap-1 text-xs text-zinc-500">
@@ -205,7 +230,8 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
           <input
             name="q"
             defaultValue={q}
-            placeholder="amal, sahifa, IP…"
+            placeholder="ism, login, ID, amal, sahifa yoki IP…"
+            autoComplete="off"
             className="input rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-indigo-400/60"
           />
         </label>
@@ -242,13 +268,12 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
             </label>
           </>
         )}
-        <button className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-400">Körsatiş</button>
         {(q || sp.actor || sp.site || sp.kind) && (
           <Link href={href({ tab: sp.tab, u: sp.u }, {})} className="px-2 py-2 text-sm text-zinc-400 hover:text-white">
             Tozalaş
           </Link>
         )}
-      </form>
+      </LogsAutoForm>
 
       {tableMissing ? (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-200">

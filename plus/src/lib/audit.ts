@@ -208,6 +208,8 @@ export async function clientEvents(req: Request, site: Site, actor: Actor, userI
   for (const e of list) {
     const path = clean(e?.path, 300);
     if (!path.startsWith("/")) continue;
+    // admin "Loglar" bo'limida qilgan ishlari (ochish, filtrlash, bosish) va unga o'tish yozilmaydi
+    if (site === "admin" && (/^\/logs(\/|$)/.test(path) || /^\/logs(\/|$)/.test(clean(e.href, 200)))) continue;
     let kind: string;
     let summary: string;
     if (e.t === "PAGE") {
