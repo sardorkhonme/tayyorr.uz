@@ -5,7 +5,7 @@ import { RANGES, todayTashkent } from "@/lib/stats";
 import { ColumnChart, InfoTip } from "@/components/admin/stats/charts";
 import { fmtValue } from "@/components/admin/stats/format";
 import { Card } from "@/components/admin/stats/stats-view";
-import { FinanceSettingsForm, ProviderDeposits } from "@/components/admin/finance-settings";
+import { FinanceSettingsForm, OwnerWithdrawals, ProviderDeposits } from "@/components/admin/finance-settings";
 import { Icon } from "@/components/icons";
 
 /**
@@ -52,7 +52,7 @@ export async function FinanceView({ range }: { range: string }) {
       note:
         a.cash < 0
           ? "minus — smmcloud ga saytga tuşgandan köp pul tashlagansiz (öz hisobingizdan qöşgansiz)"
-          : "tuşgan pul − komissiyalar − kartalarga ötkazilgan − smmcloud ga tashlangan",
+          : `tuşgan pul − komissiyalar − kartalarga ötkazilgan − smmcloud ga tashlangan${a.withdrawn ? " − siz yeçib olgan" : ""}`,
       value: a.cash,
     },
     {
@@ -142,7 +142,8 @@ export async function FinanceView({ range }: { range: string }) {
               <Row key={w.label} label={w.label} note={w.note} value={w.value} />
             ))}
             <Row label="Şundan foydalanuvçilarniki" note="ularning hamyonidagi va yeçiş kutayotgan pul" value={owed} minus />
-            <Row label="Sizniki" value={a.own} strong />
+            <Row label="Sizniki" note="hali saytda turgan, istalgan payt yeçib oliş mumkin" value={a.own} strong />
+            {a.withdrawn > 0 && <Row label="Siz yeçib olgansiz (barça vaqt)" note="bank hisobidan özingiz uçun" value={a.withdrawn} />}
           </div>
           {(f.deposits.length === 0 || a.own < 0) && (
             <p className="mt-3 flex gap-2 rounded-lg px-3 py-2.5 text-xs leading-relaxed" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
@@ -172,6 +173,19 @@ export async function FinanceView({ range }: { range: string }) {
             { name: "Star sotuvi", slot: 3, values: f.series.map((r) => r.stars) },
           ]}
         />
+      </Card>
+
+      <Card
+        title="Bank hisobidan pul yeçiş"
+        icon="banknote"
+        sub={`Özingiz uçun yeçib olgan pul · şu davrda ${som(f.withdrawnInRange)}, sizniki hozir ${som(Math.max(a.own, 0))}`}
+        info={[
+          "Saytning bank hisobidan (merchant hisob) özingiz uçun pul yeçganingizda şu yerga yozing: sana va summa.",
+          "Yeçilgan pul «Kartangiz / bank hisobingizda» va «Sizniki» dan ayriladi — şunda sayt hisobida qança qolgani aniq körinadi. Foydaga taʼsir qilmaydi: bu xarajat emas, işlagan pulingizni olişingiz.",
+          "Foydalanuvçilarniki bölgan pulni yeçib olmang — ular uni istalgan payt sarflaşi yoki yeçişi mumkin.",
+        ]}
+      >
+        <OwnerWithdrawals items={f.withdrawals} today={todayTashkent()} available={a.own} />
       </Card>
 
       <Card

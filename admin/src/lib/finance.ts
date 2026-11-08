@@ -40,6 +40,25 @@ export async function saveDeposits(list: ProviderDeposit[]) {
   await db.appSetting.upsert({ where: { key: DEPOSITS_KEY }, create: { key: DEPOSITS_KEY, value }, update: { value } });
 }
 
+/** Sayt egasi bank hisobidan o'zi uchun yechib olgan pul (AppSetting "ownerWithdrawals"). */
+export type OwnerWithdrawal = { id: string; date: string; amount: number; note?: string };
+export const WITHDRAWALS_KEY = "ownerWithdrawals";
+
+export async function getWithdrawals(): Promise<OwnerWithdrawal[]> {
+  const row = await db.appSetting.findUnique({ where: { key: WITHDRAWALS_KEY } });
+  try {
+    const v = row ? (JSON.parse(row.value) as OwnerWithdrawal[]) : [];
+    return Array.isArray(v) ? v.filter((w) => w && typeof w.amount === "number" && typeof w.date === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveWithdrawals(list: OwnerWithdrawal[]) {
+  const value = JSON.stringify([...list].sort((a, b) => b.date.localeCompare(a.date)));
+  await db.appSetting.upsert({ where: { key: WITHDRAWALS_KEY }, create: { key: WITHDRAWALS_KEY, value }, update: { value } });
+}
+
 export async function getFinanceSettings(): Promise<FinanceSettings> {
   const row = await db.appSetting.findUnique({ where: { key: FINANCE_KEY } });
   try {
@@ -74,10 +93,11 @@ export async function loadFinance(rangeKey: string) {
   const fmt = Prisma.raw(unit === "month" ? `'YYYY-MM'` : `'YYYY-MM-DD'`);
   const k = (col: string, alias = "") => Prisma.sql`to_char(${local(alias ? `${alias}"."${col}` : col)}, ${fmt})`;
 
-  const [settings, smmSettings, deposits, providerRow] = await Promise.all([
+  const [settings, smmSettings, deposits, withdrawals, providerRow] = await Promise.all([
     getFinanceSettings(),
     getSmmSettings(),
     getDeposits(),
+    getWithdrawals(),
     db.appSetting.findUnique({ where: { key: "smmProviderLastBalance" } }),
   ]);
   const fx = smmSettings.usd?.rate ?? 0;
@@ -161,7 +181,8 @@ export async function loadFinance(rangeKey: string) {
   const allDepositPaid = deposits.reduce((a, d) => a + d.paid, 0);
   const allDepositFees = deposits.reduce((a, d) => a + depositFee(d), 0);
   // to'lov tizimlaridan tushgan real pul − ular olib qolgani − kartaga o'tkazilgani − provayderga tashlangani
-  const cash = allClick + allPayme - allFees - allPayoutSent - allDepositPaid;
+  const allWithdrawn = withdrawals.reduce((a, w) => a + w.amount, 0);
+  const cash = allClick + allPayme - allFees - allPayoutSent - allDepositPaid - allWithdrawn;
   // provayder hisobidagi qoldiq — sizning pulingiz (hali xizmatga sarflanmagan)
   const providerBalance = Number.isFinite(providerUsd) && fx ? Math.round(providerUsd * fx) : 0;
   const userBalances = Number(A.user_balances);
@@ -171,6 +192,9 @@ export async function loadFinance(rangeKey: string) {
     unit,
     settings,
     deposits,
+    withdrawals,
+    // shu davrda o'zingiz uchun yechib olgan pul
+    withdrawnInRange: withdrawals.filter((w) => w.date >= bs[0].key.slice(0, 10)).reduce((a, w) => a + w.amount, 0),
     smmMarkup: smmSettings.markupPercent,
     fx,
     labels: series.map((r) => r.label),
@@ -199,6 +223,7 @@ export async function loadFinance(rangeKey: string) {
       smmCost: allSmmCost,
       depositPaid: allDepositPaid,
       depositFees: allDepositFees,
+      withdrawn: allWithdrawn,
       providerUsd: Number.isFinite(providerUsd) ? providerUsd : null,
       providerBalance,
       cash,
