@@ -7,6 +7,7 @@ import { fmtValue } from "@/components/admin/stats/format";
 import { Card } from "@/components/admin/stats/stats-view";
 import { FinanceSettingsForm, OwnerWithdrawals, ProviderDeposits } from "@/components/admin/finance-settings";
 import { Icon } from "@/components/icons";
+import { FinanceLedger } from "@/components/admin/finance-ledger";
 
 /**
  * Moliya — oddiy tilda: 1) "Qancha pul ishladim?" (davr bo'yicha sof foyda va u qayerdan keldi),
@@ -39,7 +40,7 @@ function Row({ label, note, value, minus, strong }: { label: string; note?: stri
   );
 }
 
-export async function FinanceView({ range }: { range: string }) {
+export async function FinanceView({ range, kind = "all", limit = 100 }: { range: string; kind?: string; limit?: number }) {
   const f = await loadFinance(range);
   const t = f.total;
   const a = f.allTime;
@@ -249,6 +250,8 @@ export async function FinanceView({ range }: { range: string }) {
           </div>
         </div>
       </details>
+
+      <FinanceLedger range={f.range.key} kind={kind} limit={limit} />
     </div>
   );
 }

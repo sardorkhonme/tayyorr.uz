@@ -236,3 +236,99 @@ export async function loadFinance(rangeKey: string) {
 }
 
 export type Finance = Awaited<ReturnType<typeof loadFinance>>;
+
+/** Barcha hisob amallari jadvali uchun bitta qator. amount: + kirim, − chiqim (o'sha hisob nuqtai nazaridan). */
+export type LedgerRow = {
+  id: string;
+  at: Date;
+  kind: "wallet" | "smmcloud" | "withdraw";
+  type: string;
+  userId: string | null;
+  method: string | null;
+  amount: number;
+  status: string | null;
+  note: string | null;
+  href: string | null;
+};
+
+const TXN_LABEL: Record<string, string> = {
+  TOPUP: "Hamyon töldirildi",
+  SPEND: "Hamyondan tölov",
+  TRANSFER_IN: "Ötkazma — kirdi",
+  TRANSFER_OUT: "Ötkazma — çiqdi",
+  PAYOUT: "Kartaga yeçiş",
+  REFUND: "Qaytariş",
+  HOLD: "Eskrouga bloklandi",
+  RELEASE: "Iş haqi tuşdi",
+  COMMISSION: "Sayt komissiyasi",
+};
+const MINUS = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
+const TASHKENT = (d: string) => new Date(`${d}T12:00:00+05:00`);
+
+/** Davr ichidagi barcha pul harakatlari (eng yangisi tepada): hamyon amallari, smmcloud ga tashlash, o'zingiz yechgan. */
+export async function loadLedger(rangeKey: string, kind: string, limit: number) {
+  const range = RANGES.find((r) => r.key === rangeKey) ?? RANGES[1];
+  const from = buckets(range.days, range.days > 90 ? "month" : "day")[0].from;
+  const want = (k: LedgerRow["kind"]) => kind === "all" || kind === k;
+
+  const [txns, txnCount, deposits, withdrawals] = await Promise.all([
+    want("wallet")
+      ? db.walletTransaction.findMany({ where: { createdAt: { gte: from } }, orderBy: { createdAt: "desc" }, take: limit })
+      : Promise.resolve([]),
+    want("wallet") ? db.walletTransaction.count({ where: { createdAt: { gte: from } } }) : Promise.resolve(0),
+    want("smmcloud") ? getDeposits() : Promise.resolve([]),
+    want("withdraw") ? getWithdrawals() : Promise.resolve([]),
+  ]);
+
+  const rows: LedgerRow[] = [
+    ...txns.map((t) => ({
+      id: t.id,
+      at: t.createdAt,
+      kind: "wallet" as const,
+      type: TXN_LABEL[t.type] ?? t.type,
+      userId: t.userId,
+      method: t.method,
+      amount: MINUS.has(t.type) ? -t.amount : t.amount,
+      status: t.reversedAt ? "Bekor qilingan" : t.status === "SUCCESS" ? null : t.status === "PENDING" ? "Kutilmoqda" : "Xato",
+      note: t.note,
+      href: `/payments/${t.id}`,
+    })),
+    ...deposits
+      .filter((d) => TASHKENT(d.date) >= from)
+      .map((d) => ({
+        id: d.id,
+        at: TASHKENT(d.date),
+        kind: "smmcloud" as const,
+        type: "smmcloud ga tashlandi",
+        userId: null,
+        method: DEPOSIT_METHODS[d.method] ?? d.method,
+        amount: -d.paid,
+        status: null,
+        note: [`yölda ${d.feePct}% = ${Math.round((d.paid * d.feePct) / 100).toLocaleString("ru-RU")} söm`, d.note].filter(Boolean).join(" · "),
+        href: null,
+      })),
+    ...withdrawals
+      .filter((w) => TASHKENT(w.date) >= from)
+      .map((w) => ({
+        id: w.id,
+        at: TASHKENT(w.date),
+        kind: "withdraw" as const,
+        type: "Özingiz yeçib oldingiz",
+        userId: null,
+        method: "Bank hisobi",
+        amount: -w.amount,
+        status: null,
+        note: w.note ?? null,
+        href: null,
+      })),
+  ]
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, limit);
+
+  const ids = [...new Set(rows.map((r) => r.userId).filter((x): x is string => !!x))];
+  const users = ids.length
+    ? await db.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, firstName: true, lastName: true, login: true, isPlatform: true } })
+    : [];
+  const total = txnCount + deposits.filter((d) => TASHKENT(d.date) >= from).length + withdrawals.filter((w) => TASHKENT(w.date) >= from).length;
+  return { rows, users, total, more: total > rows.length };
+}
