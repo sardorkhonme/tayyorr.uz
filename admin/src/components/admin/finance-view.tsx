@@ -2,57 +2,37 @@ import Link from "next/link";
 
 import { loadFinance, PAYOUT_COMMISSION_PERCENT } from "@/lib/finance";
 import { RANGES, todayTashkent } from "@/lib/stats";
-import { ColumnChart, InfoTip, LineChart } from "@/components/admin/stats/charts";
+import { ColumnChart, InfoTip } from "@/components/admin/stats/charts";
 import { fmtValue } from "@/components/admin/stats/format";
 import { Card } from "@/components/admin/stats/stats-view";
 import { FinanceSettingsForm, ProviderDeposits } from "@/components/admin/finance-settings";
+import { Icon } from "@/components/icons";
 
+/**
+ * Moliya — oddiy tilda: 1) "Qancha pul ishladim?" (davr bo'yicha sof foyda va u qayerdan keldi),
+ * 2) "Pulim hozir qayerda?" (barcha vaqt). Batafsil hisob-kitob, pul tashlash va sozlamalar — pastda.
+ */
 const som = (v: number) => fmtValue(v, "som");
 
-function Tile({ label, value, tone, info, sub }: { label: string; value: number; tone?: "good" | "bad"; info: string[]; sub?: string }) {
+/** Oddiy qator: nom (+ izoh) va summa — kirim yashil, chiqim qizil. */
+function Row({ label, note, value, minus, strong }: { label: string; note?: string; value: number; minus?: boolean; strong?: boolean }) {
   return (
-    <div className="viz-card relative flex flex-col gap-1 rounded-2xl p-4">
-      <InfoTip className="!right-2.5 !top-2.5" text={info} />
-      <span className="pr-7 text-xs" style={{ color: "var(--viz-muted)" }}>
-        {label}
+    <div className={`flex items-baseline justify-between gap-3 py-2.5 ${strong ? "mt-1 border-t pt-3.5" : ""}`} style={strong ? { borderColor: "var(--viz-grid)" } : undefined}>
+      <span className="min-w-0">
+        <span className={`block ${strong ? "font-semibold" : ""}`} style={{ color: "var(--viz-text)" }}>
+          {label}
+        </span>
+        {note && (
+          <span className="block text-xs" style={{ color: "var(--viz-muted)" }}>
+            {note}
+          </span>
+        )}
       </span>
       <span
-        className="text-2xl font-semibold tabular-nums"
-        style={{ color: tone === "good" ? "var(--viz-good)" : tone === "bad" ? "var(--viz-bad)" : "var(--viz-text)" }}
+        className={`shrink-0 tabular-nums ${strong ? "text-xl font-semibold" : ""}`}
+        style={{ color: strong ? (value < 0 ? "var(--viz-bad)" : "var(--viz-good)") : minus ? "var(--viz-bad)" : "var(--viz-text)" }}
       >
-        {som(value)}
-      </span>
-      {sub && (
-        <span className="text-xs" style={{ color: "var(--viz-muted)" }}>
-          {sub}
-        </span>
-      )}
-    </div>
-  );
-}
-
-/** Hisob qatori: belgi (+ / − / =), nom, izoh va summa. */
-function Line({ sign, label, note, value, strong }: { sign: "+" | "−" | "="; label: string; note?: string; value: number; strong?: boolean }) {
-  const color = sign === "−" ? "var(--viz-bad)" : sign === "=" ? "var(--viz-text)" : "var(--viz-good)";
-  return (
-    <div className={`flex items-baseline justify-between gap-3 py-2 ${strong ? "border-t pt-3" : ""}`} style={strong ? { borderColor: "var(--viz-grid)" } : undefined}>
-      <span className="flex min-w-0 items-baseline gap-2">
-        <span className="w-3 shrink-0 text-center font-semibold" style={{ color }}>
-          {sign}
-        </span>
-        <span className="min-w-0">
-          <span className={`block ${strong ? "font-semibold" : ""}`} style={{ color: "var(--viz-text)" }}>
-            {label}
-          </span>
-          {note && (
-            <span className="block text-xs" style={{ color: "var(--viz-muted)" }}>
-              {note}
-            </span>
-          )}
-        </span>
-      </span>
-      <span className={`shrink-0 tabular-nums ${strong ? "text-lg font-semibold" : ""}`} style={{ color: sign === "=" ? (value < 0 ? "var(--viz-bad)" : "var(--viz-text)") : color }}>
-        {sign === "−" && value > 0 ? "−" : ""}
+        {minus && value > 0 ? "−" : ""}
         {som(value)}
       </span>
     </div>
@@ -63,17 +43,33 @@ export async function FinanceView({ range }: { range: string }) {
   const f = await loadFinance(range);
   const t = f.total;
   const a = f.allTime;
-  const per = f.unit === "month" ? "oylik" : "kunlik";
-  const income = t.stars + t.payoutFee + t.smmMargin;
+  const per = f.unit === "month" ? "oylar" : "kunlar";
+  const earned = t.stars + t.payoutFee + t.smmMargin;
+  const lost = t.fees + t.depositFees;
+  const where = [
+    {
+      label: "Kartangiz / bank hisobingizda",
+      note:
+        a.cash < 0
+          ? "minus — smmcloud ga saytga tuşgandan köp pul tashlagansiz (öz hisobingizdan qöşgansiz)"
+          : "tuşgan pul − komissiyalar − kartalarga ötkazilgan − smmcloud ga tashlangan",
+      value: a.cash,
+    },
+    {
+      label: "smmcloud hisobida",
+      note: a.providerUsd != null ? `$${a.providerUsd.toFixed(2)} — hali buyurtmalarga sarflanmagan` : "balans hali tekşirilmagan",
+      value: a.providerBalance,
+    },
+  ];
+  const total = a.cash + a.providerBalance;
+  const owed = a.userBalances + a.payoutPending;
 
   return (
     <div className="viz flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-white">Moliya</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">
-            Oxirgi {f.range.label}: saytga kirgan pul, tölov tizimlari olib qolgani, saytning daromadi va sof foyda
-          </p>
+          <p className="mt-0.5 text-sm text-zinc-500">Qança pul işladingiz va pulingiz hozir qayerda</p>
         </div>
         <nav className="viz-card inline-flex rounded-xl p-1 text-sm">
           {RANGES.map((x) => (
@@ -89,195 +85,156 @@ export async function FinanceView({ range }: { range: string }) {
         </nav>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Tile
-          label="Saytga kirgan pul"
-          value={t.inflow}
-          info={["Şu davrda foydalanuvçilar hamyoniga tuşgan barça pul: Click, Payme va admin qöl bilan qöşgan summalar.", "Bekor qilingan (qaytarib olingan) tölovlar kirmaydi."]}
-          sub={`Click ${som(t.click)}${t.payme ? ` · Payme ${som(t.payme)}` : ""}`}
-        />
-        <Tile
-          label="Komissiyalarga ketdi"
-          value={t.fees + t.depositFees}
-          tone="bad"
-          info={[
-            `Click har tölovdan ${f.settings.clickPct}% olib qoladi${f.settings.paymePct ? `, Payme — ${f.settings.paymePct}%` : ""}. Foydalanuvçi hamyoniga töliq summa tuşadi, şuning uçun bu sayt xarajati.`,
-            "Bunga provayderga (smmcloud) pul tashlaşda yölda olib qolingan foiz ham qöşilgan (kripto, karta va h.k.).",
-            "Foizlarni pastdagi «Sozlamalar»da özgartiriş mumkin.",
-          ]}
-          sub={`tölovlar ${som(t.fees)} · provayderga tashlaş ${som(t.depositFees)}`}
-        />
-        <Tile
-          label="Sayt daromadi"
-          value={income}
-          tone="good"
-          info={[
-            "Saytning özi işlab topgan pul (xarajatlar ayrilmasdan):",
-            `star sotuvi + kartaga yeçişdan olinadigan ${PAYOUT_COMMISSION_PERCENT}% + SMM ustamasi (mijoz tölagani − provayderga ketgani).`,
-          ]}
-        />
-        <Tile
-          label="Sof foyda"
-          value={t.profit}
-          tone={t.profit >= 0 ? "good" : "bad"}
-          info={[
-            "Sayt daromadi − tölov tizimlari olib qolgan pul − provayderga pul tashlaşda yölda olib qolingan pul.",
-            "Bu şu davrda saytga aniq qolgan pul (server, reklama kabi boşqa xarajatlar hisobga olinmagan).",
-          ]}
-        />
-      </div>
-
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card
-          title="Hisob-kitob"
-          icon="coins"
-          sub={`Oxirgi ${f.range.label}`}
-          info={[
-            "Şu davrdagi pul harakati qadamma-qadam: qayerdan keldi, kim qança olib qoldi va saytga qança qoldi.",
-            "SMM provayder xarajati — xizmatning hozirgi provayder narxi va joriy dollar kursi (CBU) böyiça, faqat yetkazilgan qism uçun (taxminiy).",
-          ]}
-        >
-          <div className="text-sm">
-            <p className="pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
-              Kirgan pul
-            </p>
-            <Line sign="+" label="Click orqali" value={t.click} />
-            {t.payme > 0 && <Line sign="+" label="Payme orqali" value={t.payme} />}
-            {t.manual > 0 && <Line sign="+" label="Admin qöşgan" note="qöl bilan / naqd" value={t.manual} />}
-            <Line sign="−" label="Tölov tizimlari olib qoldi" note={`Click ${f.settings.clickPct}%${f.settings.paymePct ? `, Payme ${f.settings.paymePct}%` : ""}`} value={t.fees} />
-
-            <p className="pb-1 pt-4 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
-              Sayt daromadi
-            </p>
-            <Line sign="+" label="Star sotuvi" value={t.stars} />
-            <Line sign="+" label={`Kartaga yeçiş komissiyasi (${PAYOUT_COMMISSION_PERCENT}%)`} note={`${som(t.payoutGross)} yeçildi, kartaga ${som(t.payoutSent)} ötkazildi`} value={t.payoutFee} />
-            <Line sign="+" label="SMM — mijozlar töladi" value={t.smmNet} />
-            <Line sign="−" label="SMM — provayderga ketdi" note={f.fx ? `1 $ = ${som(f.fx)}` : "dollar kursi yöq"} value={t.smmCost} />
-            <Line sign="−" label="Tölov tizimlari olib qoldi" value={t.fees} />
-            <Line sign="−" label="Provayderga tashlaşda olib qolindi" note={`${som(t.depositPaid)} tashlandi`} value={t.depositFees} />
-            <Line sign="=" label="Sof foyda" value={t.profit} strong />
-          </div>
-        </Card>
-
-        <Card
-          title="Hisob holati — barça vaqt"
-          icon="wallet"
-          sub="Saytda qança pul turişi kerak va uning qançasi sizniki"
-          info={[
-            "Saytga tölov tizimlari orqali tuşgan real pul, ulardan komissiya, kartaga ötkazilgan va SMM provayderiga (smmcloud) tashlangan pul ayrilsa — hisobingizda turişi kerak bölgan summa çiqadi.",
-            "Provayder hisobida hali sarflanmagan qoldiq ham sizning pulingiz — u qöşiladi.",
-            "Uning bir qismi foydalanuvçilarniki: ularning hamyonidagi pul va kutilayotgan yeçişlar. Qolgani — saytning özi işlab topgan puli.",
-            "Admin qöl bilan qöşgan pul real pul hisobiga kirmaydi, lekin foydalanuvçi hamyonida turadi — şuning uçun «saytniki» kamroq çiqişi mumkin.",
-          ]}
-        >
-          <div className="text-sm">
-            <Line sign="+" label="Tölov tizimlaridan tuşgan" value={a.realIn} />
-            <Line sign="−" label="Tölov tizimlari olib qoldi" value={a.fees} />
-            <Line sign="−" label="Kartalarga ötkazildi" value={a.payoutSent} />
-            <Line sign="−" label="Provayderga (smmcloud) tashlandi" note={`yölda olib qolingani: ${som(a.depositFees)}`} value={a.depositPaid} />
-            <Line sign="=" label="Hisobda turişi kerak" value={a.cash} strong />
-            <div className="h-3" />
-            <Line
-              sign="+"
-              label="Provayder hisobidagi qoldiq"
-              note={a.providerUsd != null ? `$${a.providerUsd.toFixed(2)} — hali xizmatga sarflanmagan` : "provayder balansi hali tekşirilmagan"}
-              value={a.providerBalance}
+        {/* 1. qancha ishladim */}
+        <section className="viz-card relative rounded-2xl p-5 sm:p-6">
+          <InfoTip
+            className="sm:!right-4 sm:!top-4"
+            text={[
+              "Sof foyda — saytning özi işlab topgan pul, komissiyalar ayrilgandan keyin. Foydalanuvçilarning hamyonga tashlagan puli bu yerga kirmaydi — u ularniki.",
+              `SMM: mijoz tölagan narx − smmcloud ga ketgan narx (taxminiy, hozirgi kurs böyiça). Kartaga yeçiş: har yeçişdan ${PAYOUT_COMMISSION_PERCENT}% sizda qoladi.`,
+              "Server, reklama kabi boşqa xarajatlar hisobga olinmagan.",
+            ]}
+          />
+          <p className="text-sm" style={{ color: "var(--viz-muted)" }}>
+            Oxirgi {f.range.label}da işlagan pulingiz
+          </p>
+          <p className="mt-1 text-4xl font-bold tabular-nums" style={{ color: t.profit < 0 ? "var(--viz-bad)" : "var(--viz-good)" }}>
+            {som(t.profit)}
+          </p>
+          <div className="mt-4 text-sm">
+            <Row label="SMM xizmatlardan foyda" note={`mijozlar ${som(t.smmNet)} töladi, smmcloud ga ≈${som(t.smmCost)} ketdi`} value={t.smmMargin} />
+            <Row label={`Kartaga yeçişdan ${PAYOUT_COMMISSION_PERCENT}%`} note={t.payoutGross ? `${som(t.payoutGross)} yeçildi` : undefined} value={t.payoutFee} />
+            {t.stars > 0 && <Row label="Star sotuvi" value={t.stars} />}
+            <Row
+              label="Komissiyalarga ketdi"
+              note={`Click ${f.settings.clickPct}%${t.depositFees ? ` · smmcloud ga tashlaşda ${som(t.depositFees)}` : ""}`}
+              value={lost}
+              minus
             />
-            <Line sign="−" label="Foydalanuvçilar hamyonida" note="ularniki — istalgan payt sarflaşi yoki yeçişi mumkin" value={a.userBalances} />
-            <Line sign="−" label="Kutilayotgan yeçişlar" value={a.payoutPending} />
-            <Line sign="=" label="Saytning öz puli" value={a.own} strong />
-            {f.deposits.length === 0 && (
-              <p className="mt-2 rounded-lg px-3 py-2 text-xs leading-relaxed" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
-                Provayderga tashlangan pul hali kiritilmagan — pastdagi «Provayderga pul tashlaş» böliminga yozing, şunda hisob aniq böladi.
-              </p>
-            )}
-            {a.own < 0 && (
-              <p className="mt-2 rounded-lg px-3 py-2 text-xs leading-relaxed" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
-                Manfiy: foydalanuvçilar hamyonidagi pulning bir qismi real tölovsiz tuşgan (admin qöşgan yoki sinov/demo tölovlar). Bu pul
-                sarflansa yoki yeçilsa, saytning öz hisobidan çiqadi.
-              </p>
-            )}
+            <Row label="Sof foyda" value={t.profit} strong />
           </div>
-        </Card>
-      </div>
+          {earned === 0 && lost === 0 && (
+            <p className="mt-2 text-xs" style={{ color: "var(--viz-muted)" }}>
+              Bu davrda daromad yöq.
+            </p>
+          )}
+        </section>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <Card
-          title="Daromad tarkibi"
-          icon="chart"
-          sub={`Saytning daromadi — ${per}`}
-          info={[
-            "Har ustun — şu kun (yoki oy) daromadi: kök — star sotuvi, töq sariq — kartaga yeçiş komissiyasi, yaşil — SMM ustamasi.",
-            "Ustun ustiga boring — aniq summalar çiqadi.",
-          ]}
-        >
-          <ColumnChart
-            labels={f.labels}
-            f="som"
-            series={[
-              { name: "Star sotuvi", slot: 1, values: f.series.map((r) => r.stars) },
-              { name: `Yeçiş ${PAYOUT_COMMISSION_PERCENT}%`, slot: 2, values: f.series.map((r) => r.payoutFee) },
-              { name: "SMM ustamasi", slot: 3, values: f.series.map((r) => Math.max(r.smmMargin, 0)) },
+        {/* 2. pulim qayerda */}
+        <section className="viz-card relative rounded-2xl p-5 sm:p-6">
+          <InfoTip
+            className="sm:!right-4 sm:!top-4"
+            text={[
+              "Saytga tuşgan barça real pulingiz hozir qayerda turgani (butun vaqt davomida).",
+              "Uning bir qismi foydalanuvçilarniki — ular hamyonidagi pulni istalgan payt sarflaşi yoki kartaga yeçişi mumkin. Qolgani — sizniki.",
+              "Aniq çiqişi uçun smmcloud ga tashlagan har bir pulingizni pastdagi «smmcloud ga pul tashlaş»ga kiriting.",
             ]}
           />
-        </Card>
-        <Card
-          title="Kirgan va çiqqan pul"
-          icon="coins"
-          sub={`Hamyonlarga tuşgan va kartalarga ötkazilgan pul — ${per}`}
-          info={["Kök — foydalanuvçilar hamyoniga tuşgan pul, töq sariq — kartalariga ötkazilgan pul (komissiya ayrilgan holda).", "Kök töq sariqdan yuqori bölsa — saytga pul köproq kiryapti."]}
-        >
-          <LineChart
-            labels={f.labels}
-            f="som"
-            series={[
-              { name: "Kirdi", slot: 1, values: f.series.map((r) => r.inflow) },
-              { name: "Kartaga çiqdi", slot: 2, values: f.series.map((r) => r.payoutSent) },
-            ]}
-          />
-        </Card>
+          <p className="text-sm" style={{ color: "var(--viz-muted)" }}>
+            Pulingiz hozir qayerda
+          </p>
+          <p className="mt-1 text-4xl font-bold tabular-nums" style={{ color: "var(--viz-text)" }}>
+            {som(total)}
+          </p>
+          <div className="mt-4 text-sm">
+            {where.map((w) => (
+              <Row key={w.label} label={w.label} note={w.note} value={w.value} />
+            ))}
+            <Row label="Şundan foydalanuvçilarniki" note="ularning hamyonidagi va yeçiş kutayotgan pul" value={owed} minus />
+            <Row label="Sizniki" value={a.own} strong />
+          </div>
+          {(f.deposits.length === 0 || a.own < 0) && (
+            <p className="mt-3 flex gap-2 rounded-lg px-3 py-2.5 text-xs leading-relaxed" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
+              <Icon name="alert" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>
+                {f.deposits.length === 0
+                  ? "smmcloud ga tashlagan pullaringiz hali kiritilmagan — şuning uçun bu hisob töliq emas. Pastda kiriting."
+                  : "Minus: foydalanuvçilar hamyonidagi pulning bir qismi real tölovsiz tuşgan (admin qöşgan yoki sinov tölovlari)."}
+              </span>
+            </p>
+          )}
+        </section>
       </div>
 
       <Card
-        title="Provayderga pul tashlaş"
+        title="Foyda — kunma-kun"
+        icon="chart"
+        sub={`Har ${per} böyiça işlagan pulingiz`}
+        info={["Har ustun — şu kun (yoki oy) saytning daromadi: kök — SMM foydasi, töq sariq — kartaga yeçiş foizi, yaşil — star sotuvi.", "Ustun ustiga boring — aniq summalar çiqadi."]}
+      >
+        <ColumnChart
+          labels={f.labels}
+          f="som"
+          series={[
+            { name: "SMM foydasi", slot: 1, values: f.series.map((r) => Math.max(r.smmMargin, 0)) },
+            { name: `Yeçiş ${PAYOUT_COMMISSION_PERCENT}%`, slot: 2, values: f.series.map((r) => r.payoutFee) },
+            { name: "Star sotuvi", slot: 3, values: f.series.map((r) => r.stars) },
+          ]}
+        />
+      </Card>
+
+      <Card
+        title="smmcloud ga pul tashlaş"
         icon="rocket"
-        sub={`smmcloud hisobini töldiriş · şu davrda ${som(t.depositPaid)}, yölda olib qolindi ${som(t.depositFees)}`}
+        sub="Har pul tashlaganingizda şu yerga yozing — hisob aniq böladi"
         info={[
-          "smmcloud (SMM provayder) hisobiga har pul tashlaganingizda şu yerga yozing: sana, qança söm töladingiz, qaysi yöl bilan (kripto, karta ...) va yölda neça foiz olib qolindi.",
-          "Olib qolingan pul — xarajat, sof foydadan ayriladi. Tashlangan pul esa «Hisob holati»da çiqim bölib hisoblanadi.",
-          "Har usulning odatiy foizi «Sozlamalar»da — usul tanlanganda özi qöyiladi, kerak bölsa özgartirasiz. Xato yozuvni savat belgisi bilan öçiring.",
+          "smmcloud hisobini töldirganingizda kiriting: sana, kartangizdan qança söm ketdi va yölda neça foiz olib qolindi (masalan kartadan Binance ga 2%).",
+          "Olib qolingan pul — xarajat, foydadan ayriladi. Xato yozuvni savat belgisi bilan öçiring.",
         ]}
       >
         <ProviderDeposits deposits={f.deposits} defaults={f.settings.deposit} today={todayTashkent()} />
       </Card>
 
-      <Card
-        title="Sozlamalar"
-        icon="pencil"
-        sub="Hisob şu foizlar böyiça qilinadi"
-        info={[
-          "Click va Payme har tölovdan qança foiz olib qolişini, provayderga pul tashlaşda esa har usul (kripto, karta ...) qança olib qolişini kiriting — Moliya darhol qayta hisoblanadi.",
-          `Kartaga yeçiş komissiyasi (${PAYOUT_COMMISSION_PERCENT}%) sayt kodida belgilangan, SMM ustamasi — «tayyorr+» böliminda özgartiriladi.`,
-        ]}
-      >
-        <div className="flex flex-col gap-4">
-          <FinanceSettingsForm clickPct={f.settings.clickPct} paymePct={f.settings.paymePct} deposit={f.settings.deposit} />
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs" style={{ color: "var(--viz-muted)" }}>
-            <span>
-              Kartaga yeçiş komissiyasi: <b style={{ color: "var(--viz-text)" }}>{PAYOUT_COMMISSION_PERCENT}%</b>
-            </span>
-            <span>
-              SMM ustamasi: <b style={{ color: "var(--viz-text)" }}>{f.smmMarkup}%</b>{" "}
+      {/* batafsil — xohlagan odam ochadi */}
+      <details className="viz-card group rounded-2xl">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-semibold" style={{ color: "var(--viz-text)" }}>
+          Batafsil hisob-kitob va sozlamalar
+          <span className="grid h-8 w-8 place-items-center rounded-full text-lg transition group-open:rotate-45" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
+            +
+          </span>
+        </summary>
+        <div className="grid gap-6 px-5 pb-5 lg:grid-cols-2">
+          <div className="text-sm">
+            <p className="pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
+              Oxirgi {f.range.label} — pul harakati
+            </p>
+            <Row label="Hamyonlarga tuşdi (Click)" value={t.click} />
+            {t.payme > 0 && <Row label="Hamyonlarga tuşdi (Payme)" value={t.payme} />}
+            {t.manual > 0 && <Row label="Admin qöl bilan qöşdi" value={t.manual} />}
+            <Row label={`Click olib qoldi (${f.settings.clickPct}%)`} value={t.fees} minus />
+            <Row label="Kartalarga ötkazildi" note={`${som(t.payoutGross)} yeçildi, ${PAYOUT_COMMISSION_PERCENT}% sizda qoldi`} value={t.payoutSent} minus />
+            <Row label="smmcloud ga tashlandi" note={`yölda olib qolindi ${som(t.depositFees)}`} value={t.depositPaid} minus />
+            <Row label="SMM — mijozlar töladi" value={t.smmNet} />
+            <Row label="SMM — smmcloud narxi" note={f.fx ? `taxminiy, 1 $ = ${som(f.fx)}` : "dollar kursi yöq"} value={t.smmCost} minus />
+          </div>
+          <div className="text-sm">
+            <p className="pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
+              Butun vaqt
+            </p>
+            <Row label="Click / Payme dan tuşgan" value={a.realIn} />
+            <Row label="Click / Payme olib qoldi" value={a.fees} minus />
+            <Row label="Kartalarga ötkazildi" value={a.payoutSent} minus />
+            <Row label="smmcloud ga tashlandi" note={`yölda olib qolindi ${som(a.depositFees)}`} value={a.depositPaid} minus />
+            <Row label="Foydalanuvçilar hamyonida" value={a.userBalances} />
+            <Row label="Yeçiş kutilmoqda" value={a.payoutPending} />
+          </div>
+          <div className="lg:col-span-2">
+            <p className="pb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
+              Sozlamalar — kim qança foiz olib qoladi
+            </p>
+            <FinanceSettingsForm clickPct={f.settings.clickPct} paymePct={f.settings.paymePct} deposit={f.settings.deposit} />
+            <p className="mt-3 text-xs" style={{ color: "var(--viz-muted)" }}>
+              Kartaga yeçiş foizi: <b style={{ color: "var(--viz-text)" }}>{PAYOUT_COMMISSION_PERCENT}%</b> · SMM ustamasi:{" "}
+              <b style={{ color: "var(--viz-text)" }}>{f.smmMarkup}%</b>{" "}
               <Link href="/smm" className="underline">
                 özgartiriş
-              </Link>
-            </span>
-            <span>
-              Dollar kursi: <b style={{ color: "var(--viz-text)" }}>{f.fx ? som(f.fx) : "—"}</b>
-            </span>
+              </Link>{" "}
+              · Dollar kursi: <b style={{ color: "var(--viz-text)" }}>{f.fx ? som(f.fx) : "—"}</b>
+            </p>
           </div>
         </div>
-      </Card>
+      </details>
     </div>
   );
 }
