@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { loadStats, RANGES } from "@/lib/stats";
+import { loadDay, loadStats, RANGES } from "@/lib/stats";
+import { DayPicker } from "@/components/admin/stats/day-picker";
 import { ColumnChart, HBars, Heatmap, InfoTip, Kpi, LineChart } from "@/components/admin/stats/charts";
 import { Icon, type IconName } from "@/components/icons";
 
@@ -40,7 +41,7 @@ const PLATFORM: Record<string, string> = {
 const METHOD: Record<string, string> = { CLICK: "Click", PAYME: "Payme", ADMIN: "Admin", DEMO: "Demo" };
 const ROLE: Record<string, string> = { ORDERER: "Buyurtmaçi", PREPARER: "Tayyorlovçi", NONE: "Tanlamagan" };
 
-function Card({ title, icon, sub, info, children, className = "" }: { title: string; icon: IconName; sub?: string; info: string[]; children: React.ReactNode; className?: string }) {
+export function Card({ title, icon, sub, info, children, className = "" }: { title: string; icon: IconName; sub?: string; info: string[]; children: React.ReactNode; className?: string }) {
   return (
     <section className={`viz-card relative min-w-0 rounded-2xl p-4 sm:p-5 ${className}`}>
       <InfoTip text={info} className="sm:!right-4 sm:!top-4" />
@@ -59,8 +60,8 @@ function Card({ title, icon, sub, info, children, className = "" }: { title: str
 }
 
 /** Statistika sahifasining mazmuni (admin tekshiruvi — page.tsx da). */
-export async function StatsView({ range }: { range: string }) {
-  const s = await loadStats(range);
+export async function StatsView({ range, day: dayParam }: { range: string; day?: string }) {
+  const [s, day] = await Promise.all([loadStats(range), loadDay(dayParam)]);
   const { labels, series: S, kpi } = s;
   const col = (pts: { values: number[] }[], i = 0) => pts.map((p) => p.values[i]);
   const per = s.unit === "month" ? "oylik" : "kunlik";
@@ -81,7 +82,7 @@ export async function StatsView({ range }: { range: string }) {
             return (
               <Link
                 key={x.key}
-                href={`/stats?r=${x.key}`}
+                href={`/stats?r=${x.key}${dayParam ? `&day=${dayParam}` : ""}`}
                 className="rounded-lg px-3 py-1.5 font-medium transition"
                 style={active ? { background: "var(--viz-1)", color: "#fff" } : { color: "var(--viz-muted)" }}
               >
@@ -144,6 +145,44 @@ export async function StatsView({ range }: { range: string }) {
           />
         </Card>
       </div>
+
+      {/* tanlangan kun — soatma-soat */}
+      <section id="kunlik" className="viz-card relative min-w-0 scroll-mt-24 rounded-2xl p-4 sm:p-5">
+        <InfoTip
+          className="sm:!right-4 sm:!top-4"
+          text={[
+            "Tanlangan kunning har bir soatida saytda nima bölgani (Toşkent vaqti): ekran oçiş, bosiş va amallar (saqlaş, yuboriş, buyurtma ...) ustma-ust körsatiladi.",
+            "Pastdagi çiziq — şu soatda saytda bölgan alohida odamlar soni (foydalanuvçilar va mehmonlar).",
+            "Kalendardan yoki ← → tugmalari bilan istalgan kunni tanlang. Batafsil izlar oldingi kunlar uçun ham saqlanadi (Loglar böliminda).",
+          ]}
+        />
+        <div className="flex flex-wrap items-start justify-between gap-3 pr-8">
+          <div>
+            <h2 className="flex items-center gap-2 font-semibold" style={{ color: "var(--viz-text)" }}>
+              <Icon name="clock" className="h-4 w-4 shrink-0" style={{ color: "var(--viz-1)" }} />
+              Kunlik faollik — soatma-soat
+            </h2>
+            <p className="mt-0.5 text-xs" style={{ color: "var(--viz-muted)" }}>
+              {day.total.toLocaleString("ru-RU")} ta harakat · {day.people} ta odam
+              {day.peak >= 0 && ` · eng faol soat: ${day.hours[day.peak].label}`}
+            </p>
+          </div>
+          <DayPicker day={day.day} today={day.today} />
+        </div>
+        <div className="mt-4">
+          <ColumnChart
+            labels={day.hours.map((x) => x.label)}
+            series={[
+              { name: "Ekran oçiş", slot: 1, values: day.hours.map((x) => x.page) },
+              { name: "Bosişlar", slot: 2, values: day.hours.map((x) => x.click) },
+              { name: "Amallar", slot: 3, values: day.hours.map((x) => x.action) },
+            ]}
+          />
+        </div>
+        <div className="mt-5">
+          <LineChart height={150} labels={day.hours.map((x) => x.label)} series={[{ name: "Alohida odamlar", slot: 1, values: day.hours.map((x) => x.people) }]} />
+        </div>
+      </section>
 
       {/* faollik vaqti */}
       <Card title="Qaysi vaqtda faol" info={["Har bir katak — hafta kuni va soat (Toşkent vaqti). Rang qança töq bölsa, şu vaqtda foydalanuvçilar şunça köp harakat qilgan: saytga kiriş, buyurtma, taklif, tölov va h.k.", "Katak ustiga boring — aniq son pastda çiqadi.", "Maslahat: ommaviy xabar, eʼlon yoki reklamani eng faol soatlarda yuboring."]} icon="clock" sub="Hafta kuni × soat (Toşkent vaqti) — tashriflar va foydalanuvçi amallari">

@@ -21,7 +21,7 @@ export type Bucket = { key: string; label: string; from: Date };
 export type Point = { key: string; values: number[] };
 
 /** Toshkent vaqtidagi kun/oy boshlari. key — "2026-11-07" yoki "2026-11". */
-function buckets(days: number, unit: "day" | "month"): Bucket[] {
+export function buckets(days: number, unit: "day" | "month"): Bucket[] {
   const nowLocal = new Date(Date.now() + TZ_OFFSET_MS);
   const out: Bucket[] = [];
   const MONTHS = ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"];
@@ -48,12 +48,12 @@ function buckets(days: number, unit: "day" | "month"): Bucket[] {
   return out;
 }
 
-const local = (col: string) => Prisma.raw(`(("${col}" AT TIME ZONE 'UTC') AT TIME ZONE '${TZ}')`);
+export const local = (col: string) => Prisma.raw(`(("${col}" AT TIME ZONE 'UTC') AT TIME ZONE '${TZ}')`);
 
-type Row = { k: string } & Record<string, unknown>;
+export type Row = { k: string } & Record<string, unknown>;
 
 /** Bucket bo'yicha guruhlangan qatorlarni to'liq (bo'shlari 0) seriyaga aylantiradi. */
-function fill(bs: Bucket[], rows: Row[], cols: string[]): Point[] {
+export function fill(bs: Bucket[], rows: Row[], cols: string[]): Point[] {
   const m = new Map(rows.map((r) => [r.k, r]));
   return bs.map((b) => ({ key: b.key, values: cols.map((c) => Number(m.get(b.key)?.[c] ?? 0)) }));
 }
@@ -194,3 +194,63 @@ export async function loadStats(rangeKey: string) {
 }
 
 export type Stats = Awaited<ReturnType<typeof loadStats>>;
+
+/** Toshkent bo'yicha bugungi sana "YYYY-MM-DD". */
+export function todayTashkent() {
+  return new Date(Date.now() + TZ_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Tanlangan kunning soatma-soat faolligi (Toshkent vaqti): ekran ochish, bosish, amallar
+ * (AuditLog + eski ActivityLog) va har soatda nechta alohida odam (foydalanuvchi yoki mehmon — IP bo'yicha).
+ */
+export async function loadDay(dayRaw: string | undefined) {
+  const today = todayTashkent();
+  const day = dayRaw && /^\d{4}-\d{2}-\d{2}$/.test(dayRaw) && dayRaw <= today ? dayRaw : today;
+  const [y, m, d] = day.split("-").map(Number);
+  const from = new Date(Date.UTC(y, m - 1, d) - TZ_OFFSET_MS);
+  const to = new Date(from.getTime() + 86400_000);
+  const h = (col: string) => Prisma.sql`EXTRACT(HOUR FROM ${local(col)})::int`;
+
+  const [audit, activity, visits] = await Promise.all([
+    db.$queryRaw<{ h: number; page: number; click: number; action: number; people: number; users: number }[]>`
+      SELECT ${h("createdAt")} AS h,
+        COUNT(*) FILTER (WHERE kind = 'PAGE')::int AS page,
+        COUNT(*) FILTER (WHERE kind = 'CLICK')::int AS click,
+        COUNT(*) FILTER (WHERE kind = 'ACTION')::int AS action,
+        COUNT(DISTINCT COALESCE("userId", CASE WHEN actor = 'ADMIN' THEN 'admin' END, ip))::int AS people,
+        COUNT(DISTINCT "userId")::int AS users
+      FROM "AuditLog" WHERE "createdAt" >= ${from} AND "createdAt" < ${to} GROUP BY 1`.catch(() => []),
+    db.$queryRaw<{ h: number; n: number }[]>`
+      SELECT ${h("createdAt")} AS h, COUNT(*)::int AS n FROM "ActivityLog" WHERE "createdAt" >= ${from} AND "createdAt" < ${to} GROUP BY 1`,
+    db.$queryRaw<{ h: number; n: number; u: number }[]>`
+      SELECT ${h("createdAt")} AS h, COUNT(*)::int AS n, COUNT(DISTINCT "userId")::int AS u FROM "SiteVisit" WHERE "createdAt" >= ${from} AND "createdAt" < ${to} GROUP BY 1`,
+  ]);
+
+  const hours = Array.from({ length: 24 }, (_, hr) => {
+    const a = audit.find((r) => r.h === hr);
+    const act = activity.find((r) => r.h === hr)?.n ?? 0;
+    const v = visits.find((r) => r.h === hr);
+    return {
+      label: `${String(hr).padStart(2, "0")}:00`,
+      page: a?.page ?? 0,
+      click: a?.click ?? 0,
+      // server amallari (AuditLog) yo'q eski kunlarda — ActivityLog dan
+      action: Math.max(a?.action ?? 0, act),
+      // AuditLog bo'lmagan eski kunlarda — tashriflardagi alohida foydalanuvchilar
+      people: Math.max(a?.people ?? 0, v?.u ?? 0),
+      visits: v?.n ?? 0,
+    };
+  });
+  const total = hours.reduce((s, x) => s + x.page + x.click + x.action, 0);
+  const peak = hours.reduce((best, x, i) => (x.page + x.click + x.action > best.v ? { i, v: x.page + x.click + x.action } : best), { i: -1, v: 0 });
+  const [people] = await Promise.all([
+    db.$queryRaw<{ n: number }[]>`
+      SELECT COUNT(DISTINCT p)::int AS n FROM (
+        SELECT COALESCE("userId", CASE WHEN actor = 'ADMIN' THEN 'admin' END, ip) AS p FROM "AuditLog" WHERE "createdAt" >= ${from} AND "createdAt" < ${to}
+        UNION SELECT "userId" FROM "SiteVisit" WHERE "createdAt" >= ${from} AND "createdAt" < ${to}
+      ) x WHERE p IS NOT NULL`.catch(() => [{ n: 0 }]),
+  ]);
+
+  return { day, today, hours, total, peak: peak.i, people: people[0]?.n ?? 0 };
+}

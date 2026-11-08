@@ -15,6 +15,7 @@ import { AdminBrand } from "@/components/admin/admin-brand";
 const BASE: NavLink[] = [
   { href: "/", label: "Boş", icon: "home" },
   { href: "/stats", label: "Statistika", icon: "chart" },
+  { href: "/finance", label: "Moliya", icon: "banknote" },
   { href: "/logs", label: "Loglar", icon: "clock" },
   { href: "/maintenance", label: "Texnik işlar", icon: "alert" },
   { href: "/orders", label: "Buyurtmalar", icon: "package" },

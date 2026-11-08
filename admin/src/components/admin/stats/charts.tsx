@@ -8,13 +8,11 @@ import { createPortal } from "react-dom";
  * (qorong'i/yorug' rejim uchun alohida tekshirilgan qiymatlar). Har chartda hover tooltip bor.
  */
 
-export type Fmt = "count" | "som";
+import { fmtValue, type Fmt } from "@/components/admin/stats/format";
+
+export { fmtValue, type Fmt };
 export type Series = { name: string; values: number[]; slot: 1 | 2 | 3 };
 
-const nf = new Intl.NumberFormat("ru-RU");
-export function fmtValue(v: number, f: Fmt) {
-  return f === "som" ? `${nf.format(Math.round(v))} söm` : nf.format(Math.round(v));
-}
 /** O'q yozuvlari uchun qisqa: 1,2 mln · 350 ming */
 function short(v: number) {
   const a = Math.abs(v);
