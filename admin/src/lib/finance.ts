@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { getSmmSettings } from "@/lib/smm-settings";
-import { buckets, fill, local, RANGES, type Row } from "@/lib/stats";
+import { bucketFmt, fill, local, type Period, type Row } from "@/lib/stats";
 
 /**
  * Moliya paneli: saytga kirgan va chiqqan pul, to'lov tizimlari olib qoladigan foiz,
@@ -85,12 +85,10 @@ const SMM_DELIVERED = Prisma.raw(`LEAST(GREATEST(CASE WHEN o.remains IS NOT NULL
   WHEN o.status = 'COMPLETED' THEN o.quantity ELSE 0 END, 0), o.quantity)`);
 const OK_TXN = Prisma.raw(`status = 'SUCCESS' AND "reversedAt" IS NULL`);
 
-export async function loadFinance(rangeKey: string) {
-  const range = RANGES.find((r) => r.key === rangeKey) ?? RANGES[1];
-  const unit = range.days > 90 ? "month" : "day";
-  const bs = buckets(range.days, unit);
-  const from = bs[0].from;
-  const fmt = Prisma.raw(unit === "month" ? `'YYYY-MM'` : `'YYYY-MM-DD'`);
+export async function loadFinance(period: Period) {
+  const { unit, from, to } = period;
+  const bs = period.buckets;
+  const fmt = bucketFmt(unit);
   const k = (col: string, alias = "") => Prisma.sql`to_char(${local(alias ? `${alias}"."${col}` : col)}, ${fmt})`;
 
   const [settings, smmSettings, deposits, withdrawals, providerRow] = await Promise.all([
@@ -102,7 +100,8 @@ export async function loadFinance(rangeKey: string) {
   ]);
   const fx = smmSettings.usd?.rate ?? 0;
   const providerUsd = providerRow ? Number(providerRow.value) : NaN;
-  const keyOf = (date: string) => (unit === "month" ? date.slice(0, 7) : date.slice(0, 10));
+  // qo'lda kiritilgan yozuvlarda faqat sana bor — 1 kunlik ko'rinishda kun o'rtasiga (12:00) qo'yiladi
+  const keyOf = (date: string) => (unit === "month" ? date.slice(0, 7) : unit === "hour" ? (date === period.fromDay ? "12" : "") : date.slice(0, 10));
 
   const [txns, payouts, smm, totals] = await Promise.all([
     db.$queryRaw<Row[]>`
@@ -111,16 +110,16 @@ export async function loadFinance(rangeKey: string) {
         COALESCE(SUM(amount) FILTER (WHERE type = 'TOPUP' AND method = 'PAYME'), 0)::bigint AS payme,
         COALESCE(SUM(amount) FILTER (WHERE type = 'TOPUP' AND method NOT IN ('CLICK', 'PAYME', 'DEMO')), 0)::bigint AS manual,
         COALESCE(SUM(amount) FILTER (WHERE type = 'COMMISSION'), 0)::bigint AS stars
-      FROM "WalletTransaction" WHERE ${OK_TXN} AND "createdAt" >= ${from} GROUP BY 1`,
+      FROM "WalletTransaction" WHERE ${OK_TXN} AND "createdAt" >= ${from} AND "createdAt" < ${to} GROUP BY 1`,
     db.$queryRaw<Row[]>`
       SELECT ${k("resolvedAt")} AS k, COALESCE(SUM(amount), 0)::bigint AS gross, COUNT(*)::int AS n
-      FROM "PayoutRequest" WHERE status = 'PAID' AND "resolvedAt" >= ${from} GROUP BY 1`,
+      FROM "PayoutRequest" WHERE status = 'PAID' AND "resolvedAt" >= ${from} AND "resolvedAt" < ${to} GROUP BY 1`,
     db.$queryRaw<Row[]>`
       SELECT ${k("createdAt", "o")} AS k,
         COALESCE(SUM(o.charge - COALESCE(o."refundAmount", 0)), 0)::bigint AS net,
         COALESCE(SUM(s."providerRate" * ${SMM_DELIVERED} / 1000.0), 0)::float AS usd
       FROM "SmmOrder" o JOIN "SmmService" s ON s.id = o."serviceId"
-      WHERE o.status <> 'FAILED' AND o."createdAt" >= ${from} GROUP BY 1`,
+      WHERE o.status <> 'FAILED' AND o."createdAt" >= ${from} AND o."createdAt" < ${to} GROUP BY 1`,
     // butun vaqt: qancha pul saytda turishi kerak
     db.$queryRaw<Record<string, number | bigint>[]>`
       SELECT
@@ -188,13 +187,13 @@ export async function loadFinance(rangeKey: string) {
   const userBalances = Number(A.user_balances);
 
   return {
-    range,
+    period,
     unit,
     settings,
     deposits,
     withdrawals,
     // shu davrda o'zingiz uchun yechib olgan pul
-    withdrawnInRange: withdrawals.filter((w) => w.date >= bs[0].key.slice(0, 10)).reduce((a, w) => a + w.amount, 0),
+    withdrawnInRange: withdrawals.filter((w) => w.date >= period.fromDay && w.date <= period.toDay).reduce((a, w) => a + w.amount, 0),
     smmMarkup: smmSettings.markupPercent,
     fx,
     labels: series.map((r) => r.label),
@@ -266,16 +265,16 @@ const MINUS = new Set(["SPEND", "TRANSFER_OUT", "PAYOUT", "HOLD"]);
 const TASHKENT = (d: string) => new Date(`${d}T12:00:00+05:00`);
 
 /** Davr ichidagi barcha pul harakatlari (eng yangisi tepada): hamyon amallari, smmcloud ga tashlash, o'zingiz yechgan. */
-export async function loadLedger(rangeKey: string, kind: string, limit: number) {
-  const range = RANGES.find((r) => r.key === rangeKey) ?? RANGES[1];
-  const from = buckets(range.days, range.days > 90 ? "month" : "day")[0].from;
+export async function loadLedger(period: Period, kind: string, limit: number) {
+  const { from, to } = period;
+  const inPeriod = (d: string) => d >= period.fromDay && d <= period.toDay;
   const want = (k: LedgerRow["kind"]) => kind === "all" || kind === k;
 
   const [txns, txnCount, deposits, withdrawals] = await Promise.all([
     want("wallet")
-      ? db.walletTransaction.findMany({ where: { createdAt: { gte: from } }, orderBy: { createdAt: "desc" }, take: limit })
+      ? db.walletTransaction.findMany({ where: { createdAt: { gte: from, lt: to } }, orderBy: { createdAt: "desc" }, take: limit })
       : Promise.resolve([]),
-    want("wallet") ? db.walletTransaction.count({ where: { createdAt: { gte: from } } }) : Promise.resolve(0),
+    want("wallet") ? db.walletTransaction.count({ where: { createdAt: { gte: from, lt: to } } }) : Promise.resolve(0),
     want("smmcloud") ? getDeposits() : Promise.resolve([]),
     want("withdraw") ? getWithdrawals() : Promise.resolve([]),
   ]);
@@ -294,7 +293,7 @@ export async function loadLedger(rangeKey: string, kind: string, limit: number) 
       href: `/payments/${t.id}`,
     })),
     ...deposits
-      .filter((d) => TASHKENT(d.date) >= from)
+      .filter((d) => inPeriod(d.date))
       .map((d) => ({
         id: d.id,
         at: TASHKENT(d.date),
@@ -308,7 +307,7 @@ export async function loadLedger(rangeKey: string, kind: string, limit: number) 
         href: null,
       })),
     ...withdrawals
-      .filter((w) => TASHKENT(w.date) >= from)
+      .filter((w) => inPeriod(w.date))
       .map((w) => ({
         id: w.id,
         at: TASHKENT(w.date),
@@ -329,6 +328,6 @@ export async function loadLedger(rangeKey: string, kind: string, limit: number) 
   const users = ids.length
     ? await db.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, firstName: true, lastName: true, login: true, isPlatform: true } })
     : [];
-  const total = txnCount + deposits.filter((d) => TASHKENT(d.date) >= from).length + withdrawals.filter((w) => TASHKENT(w.date) >= from).length;
+  const total = txnCount + deposits.filter((d) => inPeriod(d.date)).length + withdrawals.filter((w) => inPeriod(w.date)).length;
   return { rows, users, total, more: total > rows.length };
 }

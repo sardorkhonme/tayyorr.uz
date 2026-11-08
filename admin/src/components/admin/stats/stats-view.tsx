@@ -1,7 +1,6 @@
-import Link from "next/link";
-
-import { loadDay, loadStats, RANGES } from "@/lib/stats";
+import { loadDay, loadStats, todayTashkent, type Period } from "@/lib/stats";
 import { DayPicker } from "@/components/admin/stats/day-picker";
+import { PeriodPicker } from "@/components/admin/stats/period-picker";
 import { ColumnChart, HBars, Heatmap, InfoTip, Kpi, LineChart } from "@/components/admin/stats/charts";
 import { Icon, type IconName } from "@/components/icons";
 
@@ -60,37 +59,23 @@ export function Card({ title, icon, sub, info, children, className = "" }: { tit
 }
 
 /** Statistika sahifasining mazmuni (admin tekshiruvi — page.tsx da). */
-export async function StatsView({ range, day: dayParam }: { range: string; day?: string }) {
-  const [s, day] = await Promise.all([loadStats(range), loadDay(dayParam)]);
+export async function StatsView({ period, day: dayParam }: { period: Period; day?: string }) {
+  const [s, day] = await Promise.all([loadStats(period), loadDay(dayParam)]);
   const { labels, series: S, kpi } = s;
   const col = (pts: { values: number[] }[], i = 0) => pts.map((p) => p.values[i]);
-  const per = s.unit === "month" ? "oylik" : "kunlik";
+  const per = s.unit === "month" ? "oylik" : s.unit === "hour" ? "soatlik" : "kunlik";
 
   return (
     <div className="viz flex flex-col gap-5">
       {/* sarlavha + davr tanlash */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-white">Statistika</h1>
           <p className="mt-0.5 text-sm text-zinc-500">
-            Oxirgi {s.range.label} · Toşkent vaqti · KPI oldingi {s.range.label} bilan soliştirilgan
+            {period.label} · Toşkent vaqti · KPI oldingi xuddi şunça davr bilan soliştirilgan
           </p>
         </div>
-        <nav className="viz-card inline-flex rounded-xl p-1 text-sm">
-          {RANGES.map((x) => {
-            const active = x.key === s.range.key;
-            return (
-              <Link
-                key={x.key}
-                href={`/stats?r=${x.key}${dayParam ? `&day=${dayParam}` : ""}`}
-                className="rounded-lg px-3 py-1.5 font-medium transition"
-                style={active ? { background: "var(--viz-1)", color: "#fff" } : { color: "var(--viz-muted)" }}
-              >
-                {x.label}
-              </Link>
-            )
-          })}
-        </nav>
+        <PeriodPicker active={period.key} fromDay={period.fromDay} toDay={period.toDay} today={todayTashkent()} />
       </div>
 
       {/* KPI */}

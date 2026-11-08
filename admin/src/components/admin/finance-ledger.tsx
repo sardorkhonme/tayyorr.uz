@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { loadLedger } from "@/lib/finance";
+import type { Period } from "@/lib/stats";
 import { fmtValue } from "@/components/admin/stats/format";
 import { InfoTip } from "@/components/admin/stats/charts";
 import { Icon } from "@/components/icons";
@@ -16,12 +17,12 @@ const fmt = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", day: "
 const fmtDay = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", day: "2-digit", month: "2-digit", year: "2-digit" });
 
 /** Moliya pastidagi jadval: davr ichidagi barcha pul harakatlari, eng yangisi tepada. */
-export async function FinanceLedger({ range, kind, limit }: { range: string; kind: string; limit: number }) {
+export async function FinanceLedger({ period, kind, limit }: { period: Period; kind: string; limit: number }) {
   const k = KINDS.some((x) => x.key === kind) ? kind : "all";
-  const { rows, users, total, more } = await loadLedger(range, k, limit);
+  const { rows, users, total, more } = await loadLedger(period, k, limit);
   const userMap = new Map(users.map((u) => [u.id, u]));
   const href = (patch: { t?: string; lim?: number }) => {
-    const p = new URLSearchParams({ r: range });
+    const p = new URLSearchParams(period.query);
     const t = patch.t ?? k;
     if (t !== "all") p.set("t", t);
     const lim = patch.lim ?? 100;

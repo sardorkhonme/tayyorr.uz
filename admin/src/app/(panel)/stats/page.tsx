@@ -1,11 +1,12 @@
 import { requireAdmin } from "@/lib/admin";
+import { resolvePeriod } from "@/lib/stats";
 import { StatsView } from "@/components/admin/stats/stats-view";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Statistika" };
 
-export default async function StatsPage({ searchParams }: { searchParams: Promise<{ r?: string; day?: string }> }) {
+export default async function StatsPage({ searchParams }: { searchParams: Promise<{ r?: string; from?: string; to?: string; day?: string }> }) {
   await requireAdmin();
-  const { r, day } = await searchParams;
-  return <StatsView range={r ?? "30"} day={day} />;
+  const sp = await searchParams;
+  return <StatsView period={await resolvePeriod(sp)} day={sp.day} />;
 }

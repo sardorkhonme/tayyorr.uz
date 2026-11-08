@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { loadFinance, PAYOUT_COMMISSION_PERCENT } from "@/lib/finance";
-import { RANGES, todayTashkent } from "@/lib/stats";
+import { todayTashkent, type Period } from "@/lib/stats";
+import { PeriodPicker } from "@/components/admin/stats/period-picker";
 import { ColumnChart, InfoTip } from "@/components/admin/stats/charts";
 import { fmtValue } from "@/components/admin/stats/format";
 import { Card } from "@/components/admin/stats/stats-view";
@@ -40,8 +41,8 @@ function Row({ label, note, value, minus, strong }: { label: string; note?: stri
   );
 }
 
-export async function FinanceView({ range, kind = "all", limit = 100 }: { range: string; kind?: string; limit?: number }) {
-  const f = await loadFinance(range);
+export async function FinanceView({ period, kind = "all", limit = 100 }: { period: Period; kind?: string; limit?: number }) {
+  const f = await loadFinance(period);
   const t = f.total;
   const a = f.allTime;
   const per = f.unit === "month" ? "oylar" : "kunlar";
@@ -67,23 +68,12 @@ export async function FinanceView({ range, kind = "all", limit = 100 }: { range:
 
   return (
     <div className="viz flex flex-col gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-white">Moliya</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">Qança pul işladingiz va pulingiz hozir qayerda</p>
+          <p className="mt-0.5 text-sm text-zinc-500">Qança pul işladingiz va pulingiz hozir qayerda · {period.label}</p>
         </div>
-        <nav className="viz-card inline-flex rounded-xl p-1 text-sm">
-          {RANGES.map((x) => (
-            <Link
-              key={x.key}
-              href={`/finance?r=${x.key}`}
-              className="rounded-lg px-3 py-1.5 font-medium transition"
-              style={x.key === f.range.key ? { background: "var(--viz-1)", color: "#fff" } : { color: "var(--viz-muted)" }}
-            >
-              {x.label}
-            </Link>
-          ))}
-        </nav>
+        <PeriodPicker active={period.key} fromDay={period.fromDay} toDay={period.toDay} today={todayTashkent()} />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -98,7 +88,7 @@ export async function FinanceView({ range, kind = "all", limit = 100 }: { range:
             ]}
           />
           <p className="text-sm" style={{ color: "var(--viz-muted)" }}>
-            Oxirgi {f.range.label}da işlagan pulingiz
+            {period.label} — işlagan pulingiz
           </p>
           <p className="mt-1 text-4xl font-bold tabular-nums" style={{ color: t.profit < 0 ? "var(--viz-bad)" : "var(--viz-good)" }}>
             {som(t.profit)}
@@ -212,7 +202,7 @@ export async function FinanceView({ range, kind = "all", limit = 100 }: { range:
         <div className="grid gap-6 px-5 pb-5 lg:grid-cols-2">
           <div className="text-sm">
             <p className="pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
-              Oxirgi {f.range.label} — pul harakati
+              {period.label} — pul harakati
             </p>
             <Row label="Hamyonlarga tuşdi (Click)" value={t.click} />
             {t.payme > 0 && <Row label="Hamyonlarga tuşdi (Payme)" value={t.payme} />}
@@ -251,7 +241,7 @@ export async function FinanceView({ range, kind = "all", limit = 100 }: { range:
         </div>
       </details>
 
-      <FinanceLedger range={f.range.key} kind={kind} limit={limit} />
+      <FinanceLedger period={period} kind={kind} limit={limit} />
     </div>
   );
 }
