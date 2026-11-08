@@ -145,7 +145,7 @@ export async function loadFinance(period: Period) {
     const fees = pct(click, settings.clickPct) + pct(payme, settings.paymePct);
     const payoutFee = Math.ceil((payoutGross * PAYOUT_COMMISSION_PERCENT) / 100);
     const smmMargin = smmNet - smmCost;
-    // shu kun/oyda provayderga tashlangan pul va yo'lda olib qolingani
+    // shu kun/oyda provayderga taşlangan pul va yo'lda olib qolingani
     const deps = deposits.filter((d) => keyOf(d.date) === b.key);
     const depositPaid = deps.reduce((a, d) => a + d.paid, 0);
     const depositFees = deps.reduce((a, d) => a + depositFee(d), 0);
@@ -179,7 +179,7 @@ export async function loadFinance(period: Period) {
   const allSmmCost = Math.round(Number(A.smm_usd) * fx);
   const allDepositPaid = deposits.reduce((a, d) => a + d.paid, 0);
   const allDepositFees = deposits.reduce((a, d) => a + depositFee(d), 0);
-  // to'lov tizimlaridan tushgan real pul − ular olib qolgani − kartaga o'tkazilgani − provayderga tashlangani
+  // to'lov tizimlaridan tushgan real pul − ular olib qolgani − kartaga o'tkazilgani − provayderga taşlangani
   const allWithdrawn = withdrawals.reduce((a, w) => a + w.amount, 0);
   const cash = allClick + allPayme - allFees - allPayoutSent - allDepositPaid - allWithdrawn;
   // provayder hisobidagi qoldiq — sizning pulingiz (hali xizmatga sarflanmagan)
@@ -298,7 +298,7 @@ export async function loadLedger(period: Period, kind: string, limit: number) {
         id: d.id,
         at: TASHKENT(d.date),
         kind: "smmcloud" as const,
-        type: "smmcloud ga tashlandi",
+        type: "smmcloud ga taşlandi",
         userId: null,
         method: DEPOSIT_METHODS[d.method] ?? d.method,
         amount: -d.paid,

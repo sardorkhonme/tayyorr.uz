@@ -40,10 +40,10 @@ const PLATFORM: Record<string, string> = {
 const METHOD: Record<string, string> = { CLICK: "Click", PAYME: "Payme", ADMIN: "Admin", DEMO: "Demo" };
 const ROLE: Record<string, string> = { ORDERER: "Buyurtmaçi", PREPARER: "Tayyorlovçi", NONE: "Tanlamagan" };
 
-export function Card({ title, icon, sub, info, children, className = "" }: { title: string; icon: IconName; sub?: string; info: string[]; children: React.ReactNode; className?: string }) {
+export function Card({ title, icon, sub, info, extra, children, className = "" }: { title: string; icon: IconName; sub?: string; info: string[]; extra?: string; children: React.ReactNode; className?: string }) {
   return (
     <section className={`viz-card relative min-w-0 rounded-2xl p-4 sm:p-5 ${className}`}>
-      <InfoTip text={info} className="sm:!right-4 sm:!top-4" />
+      <InfoTip text={info} extra={extra} className="sm:!right-4 sm:!top-4" />
       <h2 className="flex items-center gap-2 pr-8 font-semibold" style={{ color: "var(--viz-text)" }}>
         <Icon name={icon} className="h-4 w-4 shrink-0" style={{ color: "var(--viz-1)" }} />
         {title}

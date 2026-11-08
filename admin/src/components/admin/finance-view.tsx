@@ -9,6 +9,8 @@ import { Card } from "@/components/admin/stats/stats-view";
 import { FinanceSettingsForm, OwnerWithdrawals, ProviderDeposits } from "@/components/admin/finance-settings";
 import { Icon } from "@/components/icons";
 import { FinanceLedger } from "@/components/admin/finance-ledger";
+import { FinanceAiPanel } from "@/components/admin/finance-ai";
+import { aiEnabled, getFinanceAi, type TipKey } from "@/lib/finance-ai";
 
 /**
  * Moliya — oddiy tilda: 1) "Qancha pul ishladim?" (davr bo'yicha sof foyda va u qayerdan keldi),
@@ -42,7 +44,8 @@ function Row({ label, note, value, minus, strong }: { label: string; note?: stri
 }
 
 export async function FinanceView({ period, kind = "all", limit = 100 }: { period: Period; kind?: string; limit?: number }) {
-  const f = await loadFinance(period);
+  const [f, ai] = await Promise.all([loadFinance(period), getFinanceAi(period.query)]);
+  const tip = (k: TipKey) => ai?.tips[k];
   const t = f.total;
   const a = f.allTime;
   const per = f.unit === "month" ? "oylar" : "kunlar";
@@ -53,8 +56,8 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
       label: "Kartangiz / bank hisobingizda",
       note:
         a.cash < 0
-          ? "minus — smmcloud ga saytga tuşgandan köp pul tashlagansiz (öz hisobingizdan qöşgansiz)"
-          : `tuşgan pul − komissiyalar − kartalarga ötkazilgan − smmcloud ga tashlangan${a.withdrawn ? " − siz yeçib olgan" : ""}`,
+          ? "minus — smmcloud ga saytga tuşgandan köp pul taşlagansiz (öz hisobingizdan qöşgansiz)"
+          : `tuşgan pul − komissiyalar − kartalarga ötkazilgan − smmcloud ga taşlangan${a.withdrawn ? " − siz yeçib olgan" : ""}`,
       value: a.cash,
     },
     {
@@ -80,9 +83,10 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
         {/* 1. qancha ishladim */}
         <section className="viz-card relative rounded-2xl p-5 sm:p-6">
           <InfoTip
+            extra={tip("profit")}
             className="sm:!right-4 sm:!top-4"
             text={[
-              "Sof foyda — saytning özi işlab topgan pul, komissiyalar ayrilgandan keyin. Foydalanuvçilarning hamyonga tashlagan puli bu yerga kirmaydi — u ularniki.",
+              "Sof foyda — saytning özi işlab topgan pul, komissiyalar ayrilgandan keyin. Foydalanuvçilarning hamyonga taşlagan puli bu yerga kirmaydi — u ularniki.",
               `SMM: mijoz tölagan narx − smmcloud ga ketgan narx (taxminiy, hozirgi kurs böyiça). Kartaga yeçiş: har yeçişdan ${PAYOUT_COMMISSION_PERCENT}% sizda qoladi.`,
               "Server, reklama kabi boşqa xarajatlar hisobga olinmagan.",
             ]}
@@ -99,7 +103,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
             {t.stars > 0 && <Row label="Star sotuvi" value={t.stars} />}
             <Row
               label="Komissiyalarga ketdi"
-              note={`Click ${f.settings.clickPct}%${t.depositFees ? ` · smmcloud ga tashlaşda ${som(t.depositFees)}` : ""}`}
+              note={`Click ${f.settings.clickPct}%${t.depositFees ? ` · smmcloud ga taşlaşda ${som(t.depositFees)}` : ""}`}
               value={lost}
               minus
             />
@@ -115,11 +119,12 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
         {/* 2. pulim qayerda */}
         <section className="viz-card relative rounded-2xl p-5 sm:p-6">
           <InfoTip
+            extra={tip("where")}
             className="sm:!right-4 sm:!top-4"
             text={[
               "Saytga tuşgan barça real pulingiz hozir qayerda turgani (butun vaqt davomida).",
               "Uning bir qismi foydalanuvçilarniki — ular hamyonidagi pulni istalgan payt sarflaşi yoki kartaga yeçişi mumkin. Qolgani — sizniki.",
-              "Aniq çiqişi uçun smmcloud ga tashlagan har bir pulingizni pastdagi «smmcloud ga pul tashlaş»ga kiriting.",
+              "Aniq çiqişi uçun smmcloud ga taşlagan har bir pulingizni pastdagi «smmcloud ga pul taşlaş»ga kiriting.",
             ]}
           />
           <p className="text-sm" style={{ color: "var(--viz-muted)" }}>
@@ -141,7 +146,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
               <Icon name="alert" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>
                 {f.deposits.length === 0
-                  ? "smmcloud ga tashlagan pullaringiz hali kiritilmagan — şuning uçun bu hisob töliq emas. Pastda kiriting."
+                  ? "smmcloud ga taşlagan pullaringiz hali kiritilmagan — şuning uçun bu hisob töliq emas. Pastda kiriting."
                   : "Minus: foydalanuvçilar hamyonidagi pulning bir qismi real tölovsiz tuşgan (admin qöşgan yoki sinov tölovlari)."}
               </span>
             </p>
@@ -151,6 +156,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
 
       <Card
         title="Foyda — kunma-kun"
+        extra={tip("chart")}
         icon="chart"
         sub={`Har ${per} böyiça işlagan pulingiz`}
         info={["Har ustun — şu kun (yoki oy) saytning daromadi: kök — SMM foydasi, töq sariq — kartaga yeçiş foizi, yaşil — star sotuvi.", "Ustun ustiga boring — aniq summalar çiqadi."]}
@@ -168,6 +174,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
 
       <Card
         title="Bank hisobidan pul yeçiş"
+        extra={tip("withdraw")}
         icon="banknote"
         sub={`Özingiz uçun yeçib olgan pul · şu davrda ${som(f.withdrawnInRange)}, sizniki hozir ${som(Math.max(a.own, 0))}`}
         info={[
@@ -180,9 +187,10 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
       </Card>
 
       <Card
-        title="smmcloud ga pul tashlaş"
+        title="smmcloud ga pul taşlaş"
+        extra={tip("deposits")}
         icon="rocket"
-        sub="Har pul tashlaganingizda şu yerga yozing — hisob aniq böladi"
+        sub="Har pul taşlaganingizda şu yerga yozing — hisob aniq böladi"
         info={[
           "smmcloud hisobini töldirganingizda kiriting: sana, kartangizdan qança söm ketdi va yölda neça foiz olib qolindi (masalan kartadan Binance ga 2%).",
           "Olib qolingan pul — xarajat, foydadan ayriladi. Xato yozuvni savat belgisi bilan öçiring.",
@@ -209,7 +217,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
             {t.manual > 0 && <Row label="Admin qöl bilan qöşdi" value={t.manual} />}
             <Row label={`Click olib qoldi (${f.settings.clickPct}%)`} value={t.fees} minus />
             <Row label="Kartalarga ötkazildi" note={`${som(t.payoutGross)} yeçildi, ${PAYOUT_COMMISSION_PERCENT}% sizda qoldi`} value={t.payoutSent} minus />
-            <Row label="smmcloud ga tashlandi" note={`yölda olib qolindi ${som(t.depositFees)}`} value={t.depositPaid} minus />
+            <Row label="smmcloud ga taşlandi" note={`yölda olib qolindi ${som(t.depositFees)}`} value={t.depositPaid} minus />
             <Row label="SMM — mijozlar töladi" value={t.smmNet} />
             <Row label="SMM — smmcloud narxi" note={f.fx ? `taxminiy, 1 $ = ${som(f.fx)}` : "dollar kursi yöq"} value={t.smmCost} minus />
           </div>
@@ -220,7 +228,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
             <Row label="Click / Payme dan tuşgan" value={a.realIn} />
             <Row label="Click / Payme olib qoldi" value={a.fees} minus />
             <Row label="Kartalarga ötkazildi" value={a.payoutSent} minus />
-            <Row label="smmcloud ga tashlandi" note={`yölda olib qolindi ${som(a.depositFees)}`} value={a.depositPaid} minus />
+            <Row label="smmcloud ga taşlandi" note={`yölda olib qolindi ${som(a.depositFees)}`} value={a.depositPaid} minus />
             <Row label="Foydalanuvçilar hamyonida" value={a.userBalances} />
             <Row label="Yeçiş kutilmoqda" value={a.payoutPending} />
           </div>
@@ -241,7 +249,19 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
         </div>
       </details>
 
-      <FinanceLedger period={period} kind={kind} limit={limit} />
+      <FinanceLedger period={period} kind={kind} limit={limit} aiTip={tip("ledger")} />
+
+      <Card
+        title="AI tuşuntirişi"
+        icon="sparkles"
+        sub={`${period.label} — oddiy tilda: nima böldi va nimaga eʼtibor beriş kerak`}
+        info={[
+          "Google Gemini AI şu davrdagi raqamlarni oddiy tilda tuşuntirib beradi va maslahat beradi. Har bir «!» içida ham qisqa AI izohi paydo böladi.",
+          "Faqat tugma bosilganda işlaydi va natija şu davr uçun saqlanadi. Raqamlar özgarsa — «Qayta tahlil qiliş»ni bosing.",
+        ]}
+      >
+        <FinanceAiPanel query={period.query} enabled={aiEnabled()} summary={ai?.summary ?? null} at={ai?.at ?? null} model={ai?.model ?? null} />
+      </Card>
     </div>
   );
 }

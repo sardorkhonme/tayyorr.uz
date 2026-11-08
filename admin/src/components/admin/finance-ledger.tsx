@@ -9,7 +9,7 @@ import { Icon } from "@/components/icons";
 const KINDS = [
   { key: "all", label: "Hammasi" },
   { key: "wallet", label: "Hamyon amallari" },
-  { key: "smmcloud", label: "smmcloud ga tashlaş" },
+  { key: "smmcloud", label: "smmcloud ga taşlaş" },
   { key: "withdraw", label: "Siz yeçib olgan" },
 ] as const;
 
@@ -17,7 +17,7 @@ const fmt = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", day: "
 const fmtDay = new Intl.DateTimeFormat("ru-RU", { timeZone: "Asia/Tashkent", day: "2-digit", month: "2-digit", year: "2-digit" });
 
 /** Moliya pastidagi jadval: davr ichidagi barcha pul harakatlari, eng yangisi tepada. */
-export async function FinanceLedger({ period, kind, limit }: { period: Period; kind: string; limit: number }) {
+export async function FinanceLedger({ period, kind, limit, aiTip }: { period: Period; kind: string; limit: number; aiTip?: string }) {
   const k = KINDS.some((x) => x.key === kind) ? kind : "all";
   const { rows, users, total, more } = await loadLedger(period, k, limit);
   const userMap = new Map(users.map((u) => [u.id, u]));
@@ -33,9 +33,10 @@ export async function FinanceLedger({ period, kind, limit }: { period: Period; k
   return (
     <section id="jadval" className="viz-card relative min-w-0 scroll-mt-24 rounded-2xl p-4 sm:p-5">
       <InfoTip
+        extra={aiTip}
         className="sm:!right-4 sm:!top-4"
         text={[
-          "Tanlangan davrdagi barça pul harakatlari, eng yangisi tepada: foydalanuvçilar hamyonidagi har bir amal, smmcloud ga tashlangan pul va siz yeçib olgan pul.",
+          "Tanlangan davrdagi barça pul harakatlari, eng yangisi tepada: foydalanuvçilar hamyonidagi har bir amal, smmcloud ga taşlangan pul va siz yeçib olgan pul.",
           "Summa: yaşil (+) — hisobga kirdi, qizil (−) — çiqdi. Hamyon amalini bosing — batafsil sahifasi oçiladi.",
           "«Bekor qilingan» amallar hisobga kirmaydi.",
         ]}

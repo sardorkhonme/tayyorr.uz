@@ -80,7 +80,7 @@ export function FinanceSettingsForm({ clickPct, paymePct, deposit }: { clickPct:
       </div>
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
-          Provayderga pul tashlaş (odatiy foiz)
+          Provayderga pul taşlaş (odatiy foiz)
         </p>
         <div className="flex flex-wrap gap-3">
           <PctField label={METHODS.crypto} value={v.crypto} onChange={set("crypto")} />
@@ -208,7 +208,7 @@ export function ProviderDeposits({ deposits, defaults, today }: { deposits: Depo
 
       {deposits.length === 0 ? (
         <p className="rounded-lg px-3 py-3 text-sm" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
-          Hali yozuv yöq. smmcloud ga har pul tashlaganingizda şu yerga kiriting — hisob aniq böladi.
+          Hali yozuv yöq. smmcloud ga har pul taşlaganingizda şu yerga kiriting — hisob aniq böladi.
         </p>
       ) : (
         <div className="divide-y" style={{ borderColor: "var(--viz-grid)" }}>

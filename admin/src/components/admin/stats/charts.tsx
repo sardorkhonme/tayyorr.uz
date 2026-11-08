@@ -393,7 +393,7 @@ export function Heatmap({ grid }: { grid: number[][] }) {
 }
 
 /** Burchakdagi "!" — bosilganda statistika haqida batafsil izoh (tashqariga bosilsa yoki Esc — yopiladi). */
-export function InfoTip({ text, className = "" }: { text: string | string[]; className?: string }) {
+export function InfoTip({ text, extra, className = "" }: { text: string | string[]; extra?: string; className?: string }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number; width: number } | null>(null);
   const ref = useRef<HTMLSpanElement>(null);
@@ -476,6 +476,14 @@ export function InfoTip({ text, className = "" }: { text: string | string[]; cla
               {t}
             </span>
           ))}
+          {extra && (
+            <span className="mt-1 block rounded-lg p-2.5" style={{ background: "var(--viz-grid)" }}>
+              <span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--viz-1)" }}>
+                ✨ AI izohi
+              </span>
+              {extra}
+            </span>
+          )}
         </span>,
           document.body,
         )}
