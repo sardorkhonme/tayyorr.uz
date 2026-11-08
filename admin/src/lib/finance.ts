@@ -8,20 +8,49 @@ import { buckets, fill, local, RANGES, type Row } from "@/lib/stats";
  * Moliya paneli: saytga kirgan va chiqqan pul, to'lov tizimlari olib qoladigan foiz,
  * saytning o'z daromadi (star sotuvi, kartaga yechish komissiyasi, SMM ustamasi) va sof foyda.
  *
- * Sozlama — AppSetting "finance": { clickPct, paymePct } (admin paneldan o'zgartiriladi).
+ * Sozlama — AppSetting "finance": { clickPct, paymePct, deposit: { crypto, card, other } } (admin paneldan).
+ * Provayderga (smmcloud) pul tashlashlar — AppSetting "smmProviderDeposits" (ro'yxat): sana, to'langan so'm,
+ * usul va olib qolingan foiz. Provayder hisobidagi qoldiq — "smmProviderLastBalance" (smm-app yozadi, USD).
  * Kartaga yechish komissiyasi — src/lib/payout-commission.ts (5%) bilan bir xil.
  */
 export const FINANCE_KEY = "finance";
 export const PAYOUT_COMMISSION_PERCENT = 5;
-export type FinanceSettings = { clickPct: number; paymePct: number };
-const DEFAULTS: FinanceSettings = { clickPct: 2.5, paymePct: 0 };
+export const DEPOSIT_METHODS = { crypto: "Kripto (USDT)", card: "Karta", other: "Boşqa" } as const;
+export type DepositMethod = keyof typeof DEPOSIT_METHODS;
+export type FinanceSettings = { clickPct: number; paymePct: number; deposit: Record<DepositMethod, number> };
+const DEFAULTS: FinanceSettings = { clickPct: 2.5, paymePct: 0, deposit: { crypto: 0, card: 0, other: 0 } };
+
+/** Provayderga pul tashlash: paid — siz to'lagan so'm, feePct — yo'lda olib qolingan foiz. */
+export type ProviderDeposit = { id: string; date: string; method: DepositMethod; paid: number; feePct: number; note?: string };
+export const DEPOSITS_KEY = "smmProviderDeposits";
+export const depositFee = (d: ProviderDeposit) => Math.round((d.paid * d.feePct) / 100);
+
+export async function getDeposits(): Promise<ProviderDeposit[]> {
+  const row = await db.appSetting.findUnique({ where: { key: DEPOSITS_KEY } });
+  try {
+    const v = row ? (JSON.parse(row.value) as ProviderDeposit[]) : [];
+    return Array.isArray(v) ? v.filter((d) => d && typeof d.paid === "number" && typeof d.date === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDeposits(list: ProviderDeposit[]) {
+  const value = JSON.stringify([...list].sort((a, b) => b.date.localeCompare(a.date)));
+  await db.appSetting.upsert({ where: { key: DEPOSITS_KEY }, create: { key: DEPOSITS_KEY, value }, update: { value } });
+}
 
 export async function getFinanceSettings(): Promise<FinanceSettings> {
   const row = await db.appSetting.findUnique({ where: { key: FINANCE_KEY } });
   try {
     const v = row ? (JSON.parse(row.value) as Partial<FinanceSettings>) : {};
     const n = (x: unknown, d: number) => (typeof x === "number" && Number.isFinite(x) && x >= 0 && x <= 50 ? x : d);
-    return { clickPct: n(v.clickPct, DEFAULTS.clickPct), paymePct: n(v.paymePct, DEFAULTS.paymePct) };
+    const dep = (v.deposit ?? {}) as Partial<Record<DepositMethod, number>>;
+    return {
+      clickPct: n(v.clickPct, DEFAULTS.clickPct),
+      paymePct: n(v.paymePct, DEFAULTS.paymePct),
+      deposit: { crypto: n(dep.crypto, 0), card: n(dep.card, 0), other: n(dep.other, 0) },
+    };
   } catch {
     return DEFAULTS;
   }
@@ -45,8 +74,15 @@ export async function loadFinance(rangeKey: string) {
   const fmt = Prisma.raw(unit === "month" ? `'YYYY-MM'` : `'YYYY-MM-DD'`);
   const k = (col: string, alias = "") => Prisma.sql`to_char(${local(alias ? `${alias}"."${col}` : col)}, ${fmt})`;
 
-  const [settings, smmSettings] = await Promise.all([getFinanceSettings(), getSmmSettings()]);
+  const [settings, smmSettings, deposits, providerRow] = await Promise.all([
+    getFinanceSettings(),
+    getSmmSettings(),
+    getDeposits(),
+    db.appSetting.findUnique({ where: { key: "smmProviderLastBalance" } }),
+  ]);
   const fx = smmSettings.usd?.rate ?? 0;
+  const providerUsd = providerRow ? Number(providerRow.value) : NaN;
+  const keyOf = (date: string) => (unit === "month" ? date.slice(0, 7) : date.slice(0, 10));
 
   const [txns, payouts, smm, totals] = await Promise.all([
     db.$queryRaw<Row[]>`
@@ -90,6 +126,10 @@ export async function loadFinance(rangeKey: string) {
     const fees = pct(click, settings.clickPct) + pct(payme, settings.paymePct);
     const payoutFee = Math.ceil((payoutGross * PAYOUT_COMMISSION_PERCENT) / 100);
     const smmMargin = smmNet - smmCost;
+    // shu kun/oyda provayderga tashlangan pul va yo'lda olib qolingani
+    const deps = deposits.filter((d) => keyOf(d.date) === b.key);
+    const depositPaid = deps.reduce((a, d) => a + d.paid, 0);
+    const depositFees = deps.reduce((a, d) => a + depositFee(d), 0);
     return {
       label: b.label,
       inflow: click + payme + manual,
@@ -104,7 +144,9 @@ export async function loadFinance(rangeKey: string) {
       smmNet,
       smmCost,
       smmMargin,
-      profit: stars + payoutFee + smmMargin - fees,
+      depositPaid,
+      depositFees,
+      profit: stars + payoutFee + smmMargin - fees - depositFees,
     };
   });
   const sum = (key: keyof (typeof series)[number]) => series.reduce((a, r) => a + (r[key] as number), 0);
@@ -116,14 +158,19 @@ export async function loadFinance(rangeKey: string) {
   const allFees = pct(allClick, settings.clickPct) + pct(allPayme, settings.paymePct);
   const allPayoutSent = allPayoutGross - Math.ceil((allPayoutGross * PAYOUT_COMMISSION_PERCENT) / 100);
   const allSmmCost = Math.round(Number(A.smm_usd) * fx);
-  // to'lov tizimlaridan tushgan real pul − ular olib qolgani − kartaga o'tkazilgani − provayderga to'langani
-  const cash = allClick + allPayme - allFees - allPayoutSent - allSmmCost;
+  const allDepositPaid = deposits.reduce((a, d) => a + d.paid, 0);
+  const allDepositFees = deposits.reduce((a, d) => a + depositFee(d), 0);
+  // to'lov tizimlaridan tushgan real pul − ular olib qolgani − kartaga o'tkazilgani − provayderga tashlangani
+  const cash = allClick + allPayme - allFees - allPayoutSent - allDepositPaid;
+  // provayder hisobidagi qoldiq — sizning pulingiz (hali xizmatga sarflanmagan)
+  const providerBalance = Number.isFinite(providerUsd) && fx ? Math.round(providerUsd * fx) : 0;
   const userBalances = Number(A.user_balances);
 
   return {
     range,
     unit,
     settings,
+    deposits,
     smmMarkup: smmSettings.markupPercent,
     fx,
     labels: series.map((r) => r.label),
@@ -141,6 +188,8 @@ export async function loadFinance(rangeKey: string) {
       smmNet: sum("smmNet"),
       smmCost: sum("smmCost"),
       smmMargin: sum("smmMargin"),
+      depositPaid: sum("depositPaid"),
+      depositFees: sum("depositFees"),
       profit: sum("profit"),
     },
     allTime: {
@@ -148,11 +197,15 @@ export async function loadFinance(rangeKey: string) {
       fees: allFees,
       payoutSent: allPayoutSent,
       smmCost: allSmmCost,
+      depositPaid: allDepositPaid,
+      depositFees: allDepositFees,
+      providerUsd: Number.isFinite(providerUsd) ? providerUsd : null,
+      providerBalance,
       cash,
       userBalances,
       payoutPending: Number(A.payout_pending),
       // foydalanuvchilar hamyonidagi va yechish kutilayotgan pul — ularniki (sayt qarzi)
-      own: cash - userBalances - Number(A.payout_pending),
+      own: cash + providerBalance - userBalances - Number(A.payout_pending),
     },
   };
 }

@@ -4,9 +4,14 @@ import { z } from "zod";
 import { adminApiGuard } from "@/lib/admin";
 import { saveFinanceSettings } from "@/lib/finance";
 
-const schema = z.object({ clickPct: z.number().min(0).max(50), paymePct: z.number().min(0).max(50) });
+const pct = z.number().min(0).max(50);
+const schema = z.object({
+  clickPct: pct,
+  paymePct: pct,
+  deposit: z.object({ crypto: pct, card: pct, other: pct }),
+});
 
-/** Moliya sozlamasi: to'lov tizimlari olib qoladigan foiz. */
+/** Moliya sozlamasi: to'lov tizimlari va provayderga pul tashlash usullari olib qoladigan foiz. */
 export async function POST(req: Request) {
   const denied = await adminApiGuard();
   if (denied) return denied;

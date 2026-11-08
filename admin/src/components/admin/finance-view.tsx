@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 import { loadFinance, PAYOUT_COMMISSION_PERCENT } from "@/lib/finance";
-import { RANGES } from "@/lib/stats";
+import { RANGES, todayTashkent } from "@/lib/stats";
 import { ColumnChart, InfoTip, LineChart } from "@/components/admin/stats/charts";
 import { fmtValue } from "@/components/admin/stats/format";
 import { Card } from "@/components/admin/stats/stats-view";
-import { FinanceSettingsForm } from "@/components/admin/finance-settings";
+import { FinanceSettingsForm, ProviderDeposits } from "@/components/admin/finance-settings";
 
 const som = (v: number) => fmtValue(v, "som");
 
@@ -97,13 +97,15 @@ export async function FinanceView({ range }: { range: string }) {
           sub={`Click ${som(t.click)}${t.payme ? ` · Payme ${som(t.payme)}` : ""}`}
         />
         <Tile
-          label="Tölov tizimlari olib qoldi"
-          value={t.fees}
+          label="Komissiyalarga ketdi"
+          value={t.fees + t.depositFees}
           tone="bad"
           info={[
             `Click har tölovdan ${f.settings.clickPct}% olib qoladi${f.settings.paymePct ? `, Payme — ${f.settings.paymePct}%` : ""}. Foydalanuvçi hamyoniga töliq summa tuşadi, şuning uçun bu sayt xarajati.`,
-            "Foizni pastdagi «Sozlamalar»da özgartiriş mumkin.",
+            "Bunga provayderga (smmcloud) pul tashlaşda yölda olib qolingan foiz ham qöşilgan (kripto, karta va h.k.).",
+            "Foizlarni pastdagi «Sozlamalar»da özgartiriş mumkin.",
           ]}
+          sub={`tölovlar ${som(t.fees)} · provayderga tashlaş ${som(t.depositFees)}`}
         />
         <Tile
           label="Sayt daromadi"
@@ -118,7 +120,10 @@ export async function FinanceView({ range }: { range: string }) {
           label="Sof foyda"
           value={t.profit}
           tone={t.profit >= 0 ? "good" : "bad"}
-          info={["Sayt daromadi − tölov tizimlari olib qolgan pul.", "Bu şu davrda saytga aniq qolgan pul (server, reklama kabi boşqa xarajatlar hisobga olinmagan)."]}
+          info={[
+            "Sayt daromadi − tölov tizimlari olib qolgan pul − provayderga pul tashlaşda yölda olib qolingan pul.",
+            "Bu şu davrda saytga aniq qolgan pul (server, reklama kabi boşqa xarajatlar hisobga olinmagan).",
+          ]}
         />
       </div>
 
@@ -149,6 +154,7 @@ export async function FinanceView({ range }: { range: string }) {
             <Line sign="+" label="SMM — mijozlar töladi" value={t.smmNet} />
             <Line sign="−" label="SMM — provayderga ketdi" note={f.fx ? `1 $ = ${som(f.fx)}` : "dollar kursi yöq"} value={t.smmCost} />
             <Line sign="−" label="Tölov tizimlari olib qoldi" value={t.fees} />
+            <Line sign="−" label="Provayderga tashlaşda olib qolindi" note={`${som(t.depositPaid)} tashlandi`} value={t.depositFees} />
             <Line sign="=" label="Sof foyda" value={t.profit} strong />
           </div>
         </Card>
@@ -158,7 +164,8 @@ export async function FinanceView({ range }: { range: string }) {
           icon="wallet"
           sub="Saytda qança pul turişi kerak va uning qançasi sizniki"
           info={[
-            "Saytga tölov tizimlari orqali tuşgan real pul, ulardan komissiya, kartaga ötkazilgan va SMM provayderiga tölangan pul ayrilsa — hisobingizda turişi kerak bölgan summa çiqadi.",
+            "Saytga tölov tizimlari orqali tuşgan real pul, ulardan komissiya, kartaga ötkazilgan va SMM provayderiga (smmcloud) tashlangan pul ayrilsa — hisobingizda turişi kerak bölgan summa çiqadi.",
+            "Provayder hisobida hali sarflanmagan qoldiq ham sizning pulingiz — u qöşiladi.",
             "Uning bir qismi foydalanuvçilarniki: ularning hamyonidagi pul va kutilayotgan yeçişlar. Qolgani — saytning özi işlab topgan puli.",
             "Admin qöl bilan qöşgan pul real pul hisobiga kirmaydi, lekin foydalanuvçi hamyonida turadi — şuning uçun «saytniki» kamroq çiqişi mumkin.",
           ]}
@@ -167,12 +174,23 @@ export async function FinanceView({ range }: { range: string }) {
             <Line sign="+" label="Tölov tizimlaridan tuşgan" value={a.realIn} />
             <Line sign="−" label="Tölov tizimlari olib qoldi" value={a.fees} />
             <Line sign="−" label="Kartalarga ötkazildi" value={a.payoutSent} />
-            <Line sign="−" label="SMM provayderiga ketdi" note="taxminiy" value={a.smmCost} />
+            <Line sign="−" label="Provayderga (smmcloud) tashlandi" note={`yölda olib qolingani: ${som(a.depositFees)}`} value={a.depositPaid} />
             <Line sign="=" label="Hisobda turişi kerak" value={a.cash} strong />
             <div className="h-3" />
+            <Line
+              sign="+"
+              label="Provayder hisobidagi qoldiq"
+              note={a.providerUsd != null ? `$${a.providerUsd.toFixed(2)} — hali xizmatga sarflanmagan` : "provayder balansi hali tekşirilmagan"}
+              value={a.providerBalance}
+            />
             <Line sign="−" label="Foydalanuvçilar hamyonida" note="ularniki — istalgan payt sarflaşi yoki yeçişi mumkin" value={a.userBalances} />
             <Line sign="−" label="Kutilayotgan yeçişlar" value={a.payoutPending} />
             <Line sign="=" label="Saytning öz puli" value={a.own} strong />
+            {f.deposits.length === 0 && (
+              <p className="mt-2 rounded-lg px-3 py-2 text-xs leading-relaxed" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
+                Provayderga tashlangan pul hali kiritilmagan — pastdagi «Provayderga pul tashlaş» böliminga yozing, şunda hisob aniq böladi.
+              </p>
+            )}
             {a.own < 0 && (
               <p className="mt-2 rounded-lg px-3 py-2 text-xs leading-relaxed" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
                 Manfiy: foydalanuvçilar hamyonidagi pulning bir qismi real tölovsiz tuşgan (admin qöşgan yoki sinov/demo tölovlar). Bu pul
@@ -221,16 +239,29 @@ export async function FinanceView({ range }: { range: string }) {
       </div>
 
       <Card
+        title="Provayderga pul tashlaş"
+        icon="rocket"
+        sub={`smmcloud hisobini töldiriş · şu davrda ${som(t.depositPaid)}, yölda olib qolindi ${som(t.depositFees)}`}
+        info={[
+          "smmcloud (SMM provayder) hisobiga har pul tashlaganingizda şu yerga yozing: sana, qança söm töladingiz, qaysi yöl bilan (kripto, karta ...) va yölda neça foiz olib qolindi.",
+          "Olib qolingan pul — xarajat, sof foydadan ayriladi. Tashlangan pul esa «Hisob holati»da çiqim bölib hisoblanadi.",
+          "Har usulning odatiy foizi «Sozlamalar»da — usul tanlanganda özi qöyiladi, kerak bölsa özgartirasiz. Xato yozuvni savat belgisi bilan öçiring.",
+        ]}
+      >
+        <ProviderDeposits deposits={f.deposits} defaults={f.settings.deposit} today={todayTashkent()} />
+      </Card>
+
+      <Card
         title="Sozlamalar"
         icon="pencil"
         sub="Hisob şu foizlar böyiça qilinadi"
         info={[
-          "Click va Payme har tölovdan qança foiz olib qolişini kiriting — Moliya darhol qayta hisoblanadi.",
+          "Click va Payme har tölovdan qança foiz olib qolişini, provayderga pul tashlaşda esa har usul (kripto, karta ...) qança olib qolişini kiriting — Moliya darhol qayta hisoblanadi.",
           `Kartaga yeçiş komissiyasi (${PAYOUT_COMMISSION_PERCENT}%) sayt kodida belgilangan, SMM ustamasi — «tayyorr+» böliminda özgartiriladi.`,
         ]}
       >
         <div className="flex flex-col gap-4">
-          <FinanceSettingsForm clickPct={f.settings.clickPct} paymePct={f.settings.paymePct} />
+          <FinanceSettingsForm clickPct={f.settings.clickPct} paymePct={f.settings.paymePct} deposit={f.settings.deposit} />
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs" style={{ color: "var(--viz-muted)" }}>
             <span>
               Kartaga yeçiş komissiyasi: <b style={{ color: "var(--viz-text)" }}>{PAYOUT_COMMISSION_PERCENT}%</b>
