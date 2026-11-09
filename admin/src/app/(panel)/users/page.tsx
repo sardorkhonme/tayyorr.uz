@@ -11,7 +11,6 @@ import {
   ChannelBrandIcon,
 } from "@/components/hear-about-us-select";
 import { Icon } from "@/components/icons";
-import { ImpersonateButton } from "@/components/admin/impersonate-button";
 
 export default async function AdminUsers({
   searchParams,
@@ -72,9 +71,6 @@ export default async function AdminUsers({
                       {u.name ?? "—"}{" "}
                       <span className="text-zinc-500">@{u.login ?? "—"}</span>
                     </Link>
-                    <span className="ml-2 inline-block align-middle">
-                      <ImpersonateButton userId={u.id} name={label} compact />
-                    </span>
                     {!u.telegramChatId && u.telegramBlockedAt && (
                       <span
                         className="ml-1.5 inline-flex align-[-2px] text-amber-400"

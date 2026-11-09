@@ -397,10 +397,7 @@ export function OrderActions(props: Props) {
       {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
         <div className="card flex flex-col gap-2">
           <h2 className="font-semibold">Navbat ({queue.length})</h2>
-          <p className="text-xs text-zinc-500">
-            Köproq star sarflagan yuqorida turadi. Boşqa iştirokçilarning
-            ismi qisman yaşiringan.
-          </p>
+          <p className="text-xs text-zinc-500">Köproq star sarflagan yuqorida turadi.</p>
           <ul className="flex flex-col gap-1.5">
             {queue.map((q) => (
               <li
