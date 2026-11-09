@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { Icon } from "@/components/icons";
+import { GuideVideoCard } from "@/components/guide-video-card";
 import { getStarPrice, getMinOfferStars } from "@/lib/stars";
 import { GUIDE_ROLES, ROLE_TITLE, getGuideVideos, guideSteps, type GuideRole } from "@/lib/guide";
 
@@ -216,21 +217,7 @@ export default async function GuidePage({
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {videos.map((v, i) => (
-              <figure
-                key={v.id}
-                className="blur-in overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
-              >
-                <video src={v.url} controls playsInline preload="metadata" className="aspect-video w-full bg-black object-contain" />
-                <figcaption className="flex items-center gap-2.5 p-3">
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-semibold"
-                    style={{ color: "#fff" }}
-                  >
-                    {i + 1}
-                  </span>
-                  <span className="line-clamp-2 text-sm font-medium text-white">{v.title}</span>
-                </figcaption>
-              </figure>
+              <GuideVideoCard key={v.id} video={v} index={i} />
             ))}
           </div>
         </section>

@@ -809,3 +809,41 @@ html.js-reveal .blur-in.reveal-in {
 ::view-transition-new(root) {
   z-index: 2;
 }
+
+/* ---- liquid glass (qo'llanma video tugmalari; landing bilan bir xil) (components/liquid-glass.tsx) ---- */
+.liquid-glass {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)), rgba(10, 10, 18, 0.32);
+  backdrop-filter: blur(14px) saturate(1.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 22px rgba(255, 255, 255, 0.05),
+    0 10px 40px rgba(0, 0, 0, 0.35);
+}
+/* Chromium: haqiqiy sinish — chetlarda orqa fon linzadek bukiladi */
+.liquid-glass[data-refract] {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), rgba(10, 10, 18, 0.42);
+  backdrop-filter: var(--lg-filter) blur(4px) saturate(1.8) brightness(0.95);
+}
+/* video tugmalari — har qanday kadrda (oq fon ham) yozuv o'qilsin */
+.liquid-glass.lg-pill,
+.liquid-glass.lg-pill[data-refract] {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04)), rgba(12, 12, 22, 0.38);
+  border-color: rgba(255, 255, 255, 0.32);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+.liquid-glass.lg-pill[data-refract] {
+  backdrop-filter: var(--lg-filter) blur(3px) saturate(1.8);
+}
+.liquid-glass::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.16), transparent 32%, transparent 68%, rgba(255, 255, 255, 0.08));
+  mix-blend-mode: screen;
+}
+
