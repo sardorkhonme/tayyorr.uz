@@ -9,8 +9,17 @@ import { deliverMessage } from "@/lib/chat-notify";
 /** 1 star narxi (so'm). */
 export const STAR_PRICE = 2_000;
 
-/** Buyurtmaga taklif (ariza) yuborish uchun majburiy minimal star. */
+/** Buyurtmaga taklif (ariza) yuborish uchun majburiy minimal star — standart qiymat. */
 export const MIN_OFFER_STARS = 2;
+/** Admin o'zgartiradigan qiymat (AppSetting) — admin/src/lib/stars-settings.ts bilan bir xil kalit. */
+export const MIN_OFFER_STARS_KEY = "minOfferStars";
+
+/** Ariza uchun hozirgi minimal star (admin panelda belgilanadi; bo'lmasa — 2). */
+export async function getMinOfferStars(): Promise<number> {
+  const row = await db.appSetting.findUnique({ where: { key: MIN_OFFER_STARS_KEY } }).catch(() => null);
+  const n = Number(row?.value);
+  return Number.isInteger(n) && n >= 1 && n <= 1000 ? n : MIN_OFFER_STARS;
+}
 
 /**
  * Foydalanuvchi so'm hamyonidan star sotib oladi — bu YAGONA joy, qayerda

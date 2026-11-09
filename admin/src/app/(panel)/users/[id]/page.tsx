@@ -7,6 +7,7 @@ import { shortDateTime, shortDate } from "@/lib/date";
 import { ageFrom, formatBirthday, googleBirthdayEnabled } from "@/lib/birthday";
 import { HEAR_ABOUT_US_LABELS } from "@/components/hear-about-us-select";
 import { Icon, StarIcon } from "@/components/icons";
+import { ImpersonateButton } from "@/components/admin/impersonate-button";
 
 export default async function AdminUserOverview({
   params,
@@ -113,10 +114,13 @@ export default async function AdminUserOverview({
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="font-semibold text-white">Hisob maʼlumotlari</h2>
+        <span className="flex flex-wrap items-center gap-2">
+        <ImpersonateButton userId={user.id} name={user.name ?? user.login ?? "foydalanuvçi"} />
         <Link href={`/logs?u=${user.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-zinc-200 transition hover:bg-white/10">
           <Icon name="clock" className="h-3.5 w-3.5" />
           Barça izlari
         </Link>
+        </span>
       </div>
       <dl className="divide-y divide-white/5 text-sm">
         {info.map(([k, v]) => (

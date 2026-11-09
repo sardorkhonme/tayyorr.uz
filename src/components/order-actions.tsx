@@ -77,9 +77,10 @@ interface Props {
   meId: string;
   orderDeadline: string | null;
   contracts: ContractView[];
+  /** ariza uchun minimal star — admin panelda belgilanadi */
+  minOfferStars: number;
 }
 
-const MIN_OFFER_STARS = 2;
 
 export function OrderActions(props: Props) {
   const router = useRouter();
@@ -98,6 +99,7 @@ export function OrderActions(props: Props) {
     meId,
     orderDeadline,
     contracts,
+    minOfferStars: MIN_OFFER_STARS,
   } = props;
 
   const [price, setPrice] = useState(myOffer?.price?.toString() ?? "");

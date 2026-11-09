@@ -18,6 +18,7 @@ import { softDeleteOrder } from "@/lib/order-delete";
 import { maskName } from "@/lib/mask-name";
 import { presenceText } from "@/lib/presence";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+import { getMinOfferStars } from "@/lib/stars";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -117,6 +118,8 @@ export async function GET(
   );
 
   return mobileJson({
+    // ariza uchun minimal star (admin panelda belgilanadi) — ilova shu qiymatni ko'rsatishi mumkin
+    minOfferStars: await getMinOfferStars(),
     order: {
       id: order.id,
       title: order.title,

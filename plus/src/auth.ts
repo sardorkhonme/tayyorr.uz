@@ -46,14 +46,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const ticket = typeof raw?.ticket === "string" ? raw.ticket : "";
         if (ticket.length < 20) return null;
         const row = await db.verificationToken.findUnique({ where: { token: ticket } });
-        if (!row || !row.identifier.startsWith("plus-app:")) return null;
+        // "plus-app:" — mobil ilova, "plus-admin:" — admin tekshirish uchun kirdi (admin/.../impersonate)
+        const fromAdmin = !!row?.identifier.startsWith("plus-admin:");
+        if (!row || (!row.identifier.startsWith("plus-app:") && !fromAdmin)) return null;
         // bir martalik: o'chirilmasa (boshqa so'rov ishlatgan bo'lsa) — rad
         const del = await db.verificationToken.deleteMany({ where: { token: ticket } });
         if (del.count !== 1 || row.expires < new Date()) return null;
-        const userId = row.identifier.slice("plus-app:".length);
+        const userId = row.identifier.slice(row.identifier.indexOf(":") + 1);
         const user = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
         if (!user) return null;
-        await logLogin(user.id, "mobil ilova");
+        await logLogin(user.id, fromAdmin ? "admin tekshiruvi (admin paneldan)" : "mobil ilova");
         return { id: user.id };
       },
     }),

@@ -7,17 +7,17 @@ import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { logToGroup, userLabel } from "@/lib/telegram-log";
-import { useStars, MIN_OFFER_STARS } from "@/lib/stars";
+import { getMinOfferStars, useStars } from "@/lib/stars";
 
 const schema = z.object({
   price: z.number().int().positive(),
   message: z.string().max(1000).optional(),
-  stars: z.number().int().min(MIN_OFFER_STARS).max(100_000).optional(),
+  stars: z.number().int().min(1).max(100_000).optional(),
 });
 
 /**
  * Taklif (ariza) yuborish. Birinchi marta yuborilganda kamida
- * MIN_OFFER_STARS star sarflanadi (navbatdagi boshlang'ich o'rinni
+ * admin belgilagan minimal star sarflanadi (navbatdagi boshlang'ich o'rinni
  * belgilaydi) — [[stars.ts]]. Tayyorlovchi xohlasa boshidanoq ko'proq
  * star ko'rsatib yuqoriroq o'rinni tanlashi mumkin. Narx/xabarni keyin
  * bepul yangilash mumkin; yuqoriga chiqish uchun esa alohida "boost"
@@ -58,9 +58,14 @@ export async function POST(
     where: { orderId_preparerId: { orderId: id, preparerId: session.user.id } },
   });
 
-  // birinchi marta yuborilyapti — star sarflanadi (kamida MIN_OFFER_STARS,
+  // birinchi marta yuborilyapti — star sarflanadi (kamida minimal,
   // xohlasa boshidanoq ko'proq ko'rsatib yuqoriroq o'rin tanlaydi)
-  const initialStars = Math.max(MIN_OFFER_STARS, parsed.data.stars ?? MIN_OFFER_STARS);
+  // minimal star — admin panelda belgilanadi
+  const minStars = await getMinOfferStars();
+  if (!existing && parsed.data.stars !== undefined && parsed.data.stars < minStars) {
+    return NextResponse.json({ error: `Ariza uçun kamida ${minStars} ⭐ kerak` }, { status: 400 });
+  }
+  const initialStars = Math.max(minStars, parsed.data.stars ?? minStars);
   if (!existing) {
     const spend = await useStars({ userId: session.user.id, stars: initialStars });
     if (!spend.ok) {

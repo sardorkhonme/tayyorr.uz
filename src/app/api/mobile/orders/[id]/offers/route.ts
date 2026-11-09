@@ -8,19 +8,19 @@ import { getRestriction, restrictionText } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser } from "@/lib/telegram-notify";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
-import { useStars, MIN_OFFER_STARS } from "@/lib/stars";
+import { getMinOfferStars, useStars } from "@/lib/stars";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
 const schema = z.object({
   price: z.number().int().positive(),
   message: z.string().max(1000).optional(),
-  stars: z.number().int().min(MIN_OFFER_STARS).max(100_000).optional(),
+  stars: z.number().int().min(1).max(100_000).optional(),
 });
 
 /**
  * Taklif yuborish — web bilan bir xil mantiq: birinchi marta yuborilganda
- * kamida MIN_OFFER_STARS star sarflanadi, tayyorlovchi xohlasa boshidanoq
+ * kamida admin belgilagan minimal star sarflanadi, tayyorlovchi xohlasa boshidanoq
  * ko'proq ko'rsatib yuqoriroq o'rinni tanlashi mumkin.
  */
 export async function POST(
@@ -56,7 +56,12 @@ export async function POST(
     where: { orderId_preparerId: { orderId: id, preparerId: auth.userId } },
   });
 
-  const initialStars = Math.max(MIN_OFFER_STARS, parsed.data.stars ?? MIN_OFFER_STARS);
+  // minimal star — admin panelda belgilanadi
+  const minStars = await getMinOfferStars();
+  if (!existing && parsed.data.stars !== undefined && parsed.data.stars < minStars) {
+    return mobileJson({ error: `Ariza uçun kamida ${minStars} ⭐ kerak` }, { status: 400 });
+  }
+  const initialStars = Math.max(minStars, parsed.data.stars ?? minStars);
   if (!existing) {
     const spend = await useStars({ userId: auth.userId, stars: initialStars });
     if (!spend.ok) {

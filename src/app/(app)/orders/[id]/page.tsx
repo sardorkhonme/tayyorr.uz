@@ -15,6 +15,7 @@ import { sweepContracts } from "@/lib/contract-flow";
 import { contractView } from "@/lib/contract-view";
 import { maskName } from "@/lib/mask-name";
 import { Icon } from "@/components/icons";
+import { getMinOfferStars } from "@/lib/stars";
 
 const TYPE_LABEL: Record<string, string> = {
   PRESENTATION: "Prezentatsiya",
@@ -245,6 +246,7 @@ export default async function OrderDetailPage({
         meId={me.id}
         orderDeadline={order.deadline?.toISOString() ?? null}
         contracts={order.contracts.map((c) => contractView(c, order))}
+        minOfferStars={await getMinOfferStars()}
         reviewed={!!order.review}
         myReview={
           order.review

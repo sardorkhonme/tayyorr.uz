@@ -7,6 +7,8 @@ import { shortDate } from "@/lib/date";
 import { cleanQuery, idPrefixWhere, userSearchWhere } from "@/lib/admin-search";
 import { LiveSearch } from "@/components/admin/live-search";
 import { Icon } from "@/components/icons";
+import { OfferStarsForm } from "@/components/admin/offer-stars-form";
+import { getMinOfferStars } from "@/lib/offer-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +67,7 @@ export default async function AdminOrders({
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold text-white">Buyurtmalar</h1>
+      <OfferStarsForm value={await getMinOfferStars()} />
       <LiveSearch placeholder="Sarlavha, buyurtmaçi yoki tayyorlovçi (ism, login, ID)" />
 
       {disputes.length > 0 && (
