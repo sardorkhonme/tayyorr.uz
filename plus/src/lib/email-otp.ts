@@ -60,7 +60,7 @@ export async function sendOtp(email: string): Promise<SendResult> {
   await db.emailOtp.upsert({ where: { email }, create: { email, ...data }, update: data });
 
   try {
-    await sendEmail({ to: email, ...otpEmail(code) });
+    await sendEmail({ to: email, ...otpEmail(code, email) });
   } catch (e) {
     console.error("[plus] otp email", e);
     // yuborilmagan kod hisobga kirmasin — qayta urinish mumkin bo'lsin

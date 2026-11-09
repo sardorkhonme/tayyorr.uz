@@ -9,13 +9,15 @@ import { AuthShell } from "../../auth-shell";
 export const metadata = { title: "Kodni kiritiş" };
 
 /** Ro'yxatdan o'tish (2-sahifa): emailga yuborilgan 4 xonali kod. */
-export default async function RegisterCodePage({ searchParams }: { searchParams: Promise<{ email?: string }> }) {
+export default async function RegisterCodePage({ searchParams }: { searchParams: Promise<{ email?: string; code?: string }> }) {
   if (await currentUser()) redirect("/");
-  const email = normalizeEmail((await searchParams).email ?? "");
+  const sp = await searchParams;
+  const email = normalizeEmail(sp.email ?? "");
+  const prefill = /^\d{4}$/.test(sp.code ?? "") ? sp.code! : "";
   if (!email) redirect("/register");
   return (
     <AuthShell mode="register">
-      <OtpForm email={email} />
+      <OtpForm email={email} prefill={prefill} />
     </AuthShell>
   );
 }

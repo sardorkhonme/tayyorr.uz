@@ -143,9 +143,10 @@ export function RegisterForm() {
 }
 
 /** Ro'yxatdan o'tish (2-sahifa): emailga kelgan 4 xonali kod. */
-export function OtpForm({ email }: { email: string }) {
+export function OtpForm({ email, prefill = "" }: { email: string; prefill?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(verifyOtpAction, {});
-  const [digits, setDigits] = useState(["", "", "", ""]);
+  // xatdagi "Kodni kiritish" tugmasidan kelgan — kod yozilgan, faqat "Tasdiqlash" bosiladi
+  const [digits, setDigits] = useState(prefill.length === 4 ? prefill.split("") : ["", "", "", ""]);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const [wait, setWait] = useState(60);
