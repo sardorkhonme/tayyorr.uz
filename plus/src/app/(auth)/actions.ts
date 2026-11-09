@@ -5,6 +5,7 @@ import { AuthError } from "next-auth";
 
 import { auth, signIn } from "@/auth";
 import { completeProfile, ProfileError, type ProfileInput } from "@/lib/profile";
+import { emailSchemaMsg, normalizeEmail, sendOtp } from "@/lib/email-otp";
 
 export type AuthState = { error?: string; values?: Record<string, string> };
 
@@ -44,6 +45,49 @@ export async function completeProfileAction(input: ProfileInput): Promise<AuthSt
     return { error: "Kutilmagan xatolik, qayta urinib köring" };
   }
   redirect("/?welcome=1");
+}
+
+/** 1-sahifa: email → 4 xonali kod yuboriladi → kod sahifasi. */
+export async function sendOtpAction(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const raw = String(form.get("email") ?? "");
+  const email = normalizeEmail(raw);
+  if (!email) return { values: { email: raw }, error: emailSchemaMsg };
+  const r = await sendOtp(email);
+  // 60 soniya o'tmagan bo'lsa ham kod sahifasiga o'tkazamiz — oldingi kod hali amal qiladi
+  if (!r.ok && !r.waitSec) return { values: { email: raw }, error: r.error };
+  redirect(`/register/code?email=${encodeURIComponent(email)}`);
+}
+
+/** Kod sahifasidagi "Qayta yuborish". */
+export async function resendOtpAction(rawEmail: string): Promise<{ ok: boolean; error?: string; waitSec?: number }> {
+  const email = normalizeEmail(rawEmail);
+  if (!email) return { ok: false, error: emailSchemaMsg };
+  const r = await sendOtp(email);
+  return r.ok ? { ok: true } : { ok: false, error: r.error, waitSec: r.waitSec };
+}
+
+/** 2-sahifa: kod to'g'ri bo'lsa — kiradi (yangi bo'lsa profil to'ldirishga o'tadi). */
+export async function verifyOtpAction(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const email = String(form.get("email") ?? "");
+  const code = String(form.get("code") ?? "").replace(/\D/g, "");
+  if (code.length !== 4) return { error: "4 xonali kodni kiriting" };
+  try {
+    await signIn("email-otp", { email, code, redirectTo: "/" });
+    return {};
+  } catch (e) {
+    if (e instanceof AuthError) {
+      const c = (e as AuthError & { code?: string }).code;
+      return {
+        error:
+          c === "expired"
+            ? "Kod muddati tugagan. Yangi kod sörang"
+            : c === "too_many"
+              ? "Urinişlar köp böldi. Yangi kod sörang"
+              : "Kod notöğri. Qayta tekşirib köring",
+      };
+    }
+    throw e; // muvaffaqiyatli kirishdagi redirect
+  }
 }
 
 export async function googleAction() {

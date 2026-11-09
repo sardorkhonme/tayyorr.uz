@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { TERMS_VERSION } from "@/lib/register";
+import { normalizeEmail, verifyOtp } from "@/lib/email-otp";
 
 /**
  * plus.tayyorr.uz — alohida sessiya, lekin foydalanuvchilar tayyorr.uz bazasidan
@@ -15,6 +16,15 @@ import { TERMS_VERSION } from "@/lib/register";
 
 class NoAccount extends CredentialsSignin {
   code = "no_account";
+}
+class OtpBad extends CredentialsSignin {
+  code = "bad_code";
+}
+class OtpExpired extends CredentialsSignin {
+  code = "expired";
+}
+class OtpTooMany extends CredentialsSignin {
+  code = "too_many";
 }
 
 const credentialsSchema = z.object({
@@ -56,6 +66,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
         if (!user) return null;
         await logLogin(user.id, fromAdmin ? "admin tekshiruvi (admin paneldan)" : "mobil ilova");
+        return { id: user.id };
+      },
+    }),
+    // email + 4 xonali kod: yangi email — hisob ochiladi (profil /onboarding da), bori — kiradi
+    Credentials({
+      id: "email-otp",
+      credentials: { email: { type: "text" }, code: { type: "text" } },
+      async authorize(raw) {
+        const email = normalizeEmail(typeof raw?.email === "string" ? raw.email : "");
+        const code = typeof raw?.code === "string" ? raw.code.replace(/\D/g, "") : "";
+        if (!email || code.length !== 4) throw new OtpBad();
+        const v = await verifyOtp(email, code);
+        if (!v.ok) throw v.reason === "expired" ? new OtpExpired() : v.reason === "too_many" ? new OtpTooMany() : new OtpBad();
+
+        let user = await db.user.findUnique({ where: { email }, select: { id: true, emailVerified: true } });
+        if (user) {
+          if (!user.emailVerified) await db.user.update({ where: { id: user.id }, data: { emailVerified: new Date() } });
+          await logLogin(user.id, "email kod");
+        } else {
+          user = await db.user
+            .create({
+              data: {
+                email,
+                emailVerified: new Date(),
+                signupMethod: "EMAIL",
+                termsAcceptedAt: new Date(),
+                termsVersion: TERMS_VERSION,
+              },
+              select: { id: true, emailVerified: true },
+            })
+            // parallel so'rovda allaqachon yaratilgan bo'lishi mumkin
+            .catch(() => db.user.findUnique({ where: { email }, select: { id: true, emailVerified: true } }));
+          if (!user) return null;
+        }
         return { id: user.id };
       },
     }),
@@ -105,6 +149,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             firstName,
             lastName,
             image: typeof profile.picture === "string" ? profile.picture : null,
+            signupMethod: "GOOGLE",
             termsAcceptedAt: new Date(),
             termsVersion: TERMS_VERSION,
           },

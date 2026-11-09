@@ -104,6 +104,8 @@ model User {
   lastName     String?
   login        String? @unique
   passwordHash String? // Google-only foydalanuvchida null
+  // qanday ro'yxatdan o'tgan: "GOOGLE" (sayt), "GOOGLE_MOBILE" (ilova), "EMAIL" (email + kod); eski hisoblarda null
+  signupMethod String?
   role         Role?
   about        String? // qo'shimcha ma'lumot
   avatarUrl    String? // glavniy rasm (R2 public)
@@ -265,6 +267,17 @@ model ReferralLink {
   users User[] // shu havola orqali ro'yxatdan o'tganlar
 
   @@index([createdAt])
+}
+
+/** Email orqali ro'yxatdan o'tish/kirish — bir martalik 4 xonali kod (plus/src/lib/email-otp.ts). */
+model EmailOtp {
+  email       String   @id
+  codeHash    String
+  attempts    Int      @default(0)
+  expiresAt   DateTime
+  sentAt      DateTime @default(now())
+  sendCount   Int      @default(1) // windowStart dan beri yuborilgan kodlar (soatlik cheklov)
+  windowStart DateTime @default(now())
 }
 
 model PayoutRequest {

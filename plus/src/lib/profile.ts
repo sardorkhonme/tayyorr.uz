@@ -108,7 +108,7 @@ export async function completeProfile(userId: string, input: ProfileInput) {
   const v = parse(input);
   const me = await db.user.findUnique({
     where: { id: userId },
-    select: { id: true, login: true, passwordHash: true, image: true, avatarUrl: true },
+    select: { id: true, login: true, passwordHash: true, image: true, avatarUrl: true, signupMethod: true },
   });
   if (!me) throw new ProfileError("Hisob topilmadi");
   if (me.login) return; // allaqachon to'ldirilgan
@@ -135,7 +135,7 @@ export async function completeProfile(userId: string, input: ProfileInput) {
     select: LOG_SELECT,
   });
   // parol ro'yxatdan o'tishda kiritilgan bo'lsa — email bilan ochilgan hisob
-  await logRegistration(user, me.passwordHash ? "email" : "Google");
+  await logRegistration(user, me.signupMethod === "EMAIL" ? "email kod" : me.passwordHash ? "email" : "Google");
   // tashrif / shaxsiy referal havolasi orqali kelgan bo'lsa — akkauntga bog'laymiz
   await applyReferralAttribution(userId);
 }

@@ -59,6 +59,16 @@ export default async function AdminUserOverview({
     ["Star balansi", <>{user.starBalance} <StarIcon className="h-3.5 w-3.5" /></>],
     ["Röyxatdan", shortDateTime(user.createdAt)],
     [
+      "Röyxatdan ötiş usuli",
+      user.signupMethod === "EMAIL"
+        ? "Email + tasdiqlaş kodi"
+        : user.signupMethod === "GOOGLE"
+          ? "Google (sayt)"
+          : user.signupMethod === "GOOGLE_MOBILE"
+            ? "Google (mobil ilova)"
+            : "Google (eski hisob — usul yozilmagan)",
+    ],
+    [
       "Oferta",
       user.termsAcceptedAt
         ? `qabul qilingan · ${shortDate(user.termsAcceptedAt)}${user.termsVersion ? ` (v${user.termsVersion})` : ""}`

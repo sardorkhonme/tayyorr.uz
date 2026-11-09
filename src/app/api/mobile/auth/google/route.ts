@@ -57,6 +57,7 @@ export async function POST(req: Request) {
         name: payload?.name ?? null,
         image: payload?.picture ?? null,
         emailVerified: payload?.email_verified ? new Date() : null,
+        signupMethod: "GOOGLE_MOBILE",
       },
       select: ME_SELECT,
     });

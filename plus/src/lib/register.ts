@@ -16,7 +16,7 @@ export async function logRegistration(
     hearAboutUs: string | null;
     hearAboutUsDetail: string | null;
   },
-  how: "email" | "Google",
+  how: "email" | "Google" | "email kod",
 ) {
   const full = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
   const source = HEAR_ABOUT_US.find((h) => h.value === user.hearAboutUs)?.label ?? user.hearAboutUs;
@@ -37,7 +37,7 @@ export async function logRegistration(
       `Login: @${user.login}`,
       full ? `Ism: ${full}` : "",
       user.email ? `Email: ${user.email}` : "",
-      `Usul: ${how === "Google" ? "Google" : "email + parol"}`,
+      `Usul: ${how === "Google" ? "Google" : how === "email kod" ? "email + tasdiqlaş kodi" : "email + parol"}`,
       "Rol: tanlanmagan (tayyorr.uz ga kirganda söraladi)",
       source ? `Qayerdan: ${source}${user.hearAboutUsDetail ? ` (${user.hearAboutUsDetail})` : ""}` : "",
       `Foydalanuvçi ID: ${user.id}`,

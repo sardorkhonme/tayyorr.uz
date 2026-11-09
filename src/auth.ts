@@ -69,6 +69,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  events: {
+    // yangi hisob (Google, sayt) — qanday ro'yxatdan o'tgani
+    async createUser({ user }) {
+      if (user.id) await db.user.update({ where: { id: user.id }, data: { signupMethod: "GOOGLE" } }).catch(() => {});
+    },
+  },
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account }) {
