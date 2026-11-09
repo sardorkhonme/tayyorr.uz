@@ -22,6 +22,22 @@ export function GuideVideoCard({ video, index }: { video: GuideVideoItem; index:
   const [ended, setEnded] = useState(false);
   const [startRect, setStartRect] = useState<Rect | null>(null);
   const [ratio, setRatio] = useState(16 / 9);
+  // video boshlanguncha (yoki o'rtada to'xtab yuklanayotganda) — aylana va foiz
+  const [loading, setLoading] = useState(false);
+  const [pct, setPct] = useState(0);
+
+  /** Ijro boshlanishi uchun ~4 soniya oldindan yuklanishi kerak — foiz shunga nisbatan. */
+  function updatePct(v: HTMLVideoElement) {
+    const d = v.duration;
+    if (!Number.isFinite(d) || d <= 0) return;
+    const t = v.currentTime;
+    let ahead = 0;
+    for (let i = 0; i < v.buffered.length; i++) {
+      if (v.buffered.start(i) <= t + 0.25 && v.buffered.end(i) >= t) ahead = v.buffered.end(i) - t;
+    }
+    const need = Math.min(4, d - t) || 1;
+    setPct((p) => Math.max(p, Math.min(99, Math.round((ahead / need) * 100))));
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -56,7 +72,10 @@ export function GuideVideoCard({ video, index }: { video: GuideVideoItem; index:
     if (r) setStartRect({ top: r.top, left: r.left, width: r.width, height: r.height });
     const amb = ambientRef.current;
     if (amb?.videoWidth && amb.videoHeight) setRatio(amb.videoWidth / amb.videoHeight);
+    amb?.pause(); // kartadagi video internetni bo'lib olmasin
     setEnded(false);
+    setLoading(true);
+    setPct(0);
     setOpen(true);
     setGrown(false);
     window.setTimeout(() => setGrown(true), 30);
@@ -65,6 +84,7 @@ export function GuideVideoCard({ video, index }: { video: GuideVideoItem; index:
   function close() {
     setGrown(false);
     modalRef.current?.pause();
+    ambientRef.current?.play().catch(() => {});
     window.setTimeout(() => {
       setOpen(false);
       setEnded(false);
@@ -134,13 +154,31 @@ export function GuideVideoCard({ video, index }: { video: GuideVideoItem; index:
                   className="h-full w-full bg-black object-contain"
                   src={video.url}
                   autoPlay
+                  controls
                   playsInline
+                  preload="auto"
+                  controlsList="nodownload"
                   onLoadedMetadata={(e) => {
                     const v = e.currentTarget;
                     if (v.videoWidth && v.videoHeight) setRatio(v.videoWidth / v.videoHeight);
+                    updatePct(v);
+                  }}
+                  onProgress={(e) => loading && updatePct(e.currentTarget)}
+                  onWaiting={() => {
+                    setPct(0);
+                    setLoading(true);
+                  }}
+                  onPlaying={() => {
+                    setPct(100);
+                    setLoading(false);
+                  }}
+                  onCanPlay={(e) => {
+                    // ba'zi brauzerlar autoPlay'ni o'tkazib yuboradi — qo'lda boshlaymiz
+                    if (e.currentTarget.paused && !ended) e.currentTarget.play().catch(() => setLoading(false));
                   }}
                   onEnded={() => setEnded(true)}
                 />
+                {loading && !ended && <LoadingRing pct={pct} />}
                 {ended && (
                   <button
                     type="button"
@@ -165,6 +203,47 @@ export function GuideVideoCard({ video, index }: { video: GuideVideoItem; index:
           document.body,
         )}
     </>
+  );
+}
+
+/** Video yuklanayotganda — markazda aylanuvchi halqa va foiz. */
+function LoadingRing({ pct }: { pct: number }) {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/35">
+      <div className="relative grid h-20 w-20 place-items-center" style={{ color: "#fff" }}>
+        <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
+          <circle cx="32" cy="32" r={r} fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.15)" strokeWidth="4" />
+          <circle
+            cx="32"
+            cy="32"
+            r={r}
+            fill="none"
+            stroke="url(#guide-ring)"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - Math.max(0.04, pct / 100))}
+            style={{ transition: "stroke-dashoffset 0.35s ease" }}
+          />
+          <defs>
+            <linearGradient id="guide-ring" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#818cf8" />
+              <stop offset="100%" stopColor="#c084fc" />
+            </linearGradient>
+          </defs>
+        </svg>
+        {/* foiz hali noma'lum bo'lsa ham "tirik" ko'rinsin — sekin aylanuvchi yoy */}
+        <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full animate-spin [animation-duration:1.6s]" aria-hidden>
+          <circle cx="32" cy="32" r="31" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="22 173" strokeLinecap="round" />
+        </svg>
+        <span className="relative text-base font-semibold tabular-nums">{pct}%</span>
+      </div>
+      <span className="absolute bottom-[calc(50%-4.25rem)] text-xs" style={{ color: "rgba(255,255,255,0.75)" }}>
+        Yuklanmoqda…
+      </span>
+    </div>
   );
 }
 
