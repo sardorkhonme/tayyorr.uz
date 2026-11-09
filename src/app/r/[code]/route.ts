@@ -53,12 +53,12 @@ export async function GET(
     return res;
   }
 
-  const referrer = await db.user
-    .findUnique({
-      where: { id: code },
-      select: { id: true },
-    })
-    .catch(() => null);
+  // 2026-09-15 gacha shaxsiy havola login bilan berilgan (/r/<login>) — u ham ishlasin
+  const referrer =
+    (await db.user.findUnique({ where: { id: code }, select: { id: true } }).catch(() => null)) ??
+    (await db.user
+      .findFirst({ where: { login: { equals: code, mode: "insensitive" } }, select: { id: true } })
+      .catch(() => null));
 
   if (referrer) {
     const res = NextResponse.redirect(home);
