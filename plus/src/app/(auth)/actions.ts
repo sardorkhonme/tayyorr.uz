@@ -6,8 +6,9 @@ import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 import { completeProfile, ProfileError, type ProfileInput } from "@/lib/profile";
 import { emailSchemaMsg, normalizeEmail, sendOtp } from "@/lib/email-otp";
+import { requestPasswordReset, resetPassword } from "@/lib/password-reset";
 
-export type AuthState = { error?: string; values?: Record<string, string> };
+export type AuthState = { error?: string; values?: Record<string, string>; sent?: boolean };
 
 export async function loginAction(_prev: AuthState, form: FormData): Promise<AuthState> {
   const identifier = String(form.get("identifier") ?? "");
@@ -88,6 +89,26 @@ export async function verifyOtpAction(_prev: AuthState, form: FormData): Promise
     }
     throw e; // muvaffaqiyatli kirishdagi redirect
   }
+}
+
+/** "Parolni unutdim": emailga yangi parol havolasi. Hisob bor-yo'qligi oshkor qilinmaydi. */
+export async function forgotAction(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const email = String(form.get("email") ?? "");
+  const r = await requestPasswordReset(email);
+  return r.ok ? { sent: true, values: { email } } : { error: r.error, values: { email } };
+}
+
+/** Yangi parol (2 marta) — saqlangach kirish sahifasiga qaytadi. */
+export async function resetAction(_prev: AuthState, form: FormData): Promise<AuthState> {
+  const token = String(form.get("token") ?? "");
+  const password = String(form.get("password") ?? "");
+  const confirm = String(form.get("confirm") ?? "");
+  if (password.length < 6) return { error: "Parol kamida 6 belgidan iborat bölsin" };
+  if (password.length > 100) return { error: "Parol juda uzun" };
+  if (password !== confirm) return { error: "Parollar bir xil emas" };
+  const r = await resetPassword(token, password);
+  if (!r.ok) return { error: r.error };
+  redirect("/login?reset=1");
 }
 
 export async function googleAction() {

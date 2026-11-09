@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 
-import { googleAction, loginAction, resendOtpAction, sendOtpAction, verifyOtpAction, type AuthState } from "./actions";
+import {
+  forgotAction,
+  googleAction,
+  loginAction,
+  resendOtpAction,
+  resetAction,
+  sendOtpAction,
+  verifyOtpAction,
+  type AuthState,
+} from "./actions";
 
 function GoogleButton({ label }: { label: string }) {
   return (
@@ -29,13 +38,13 @@ function Divider({ label = "yoki" }: { label?: string }) {
   );
 }
 
-function PasswordInput({ autoComplete }: { autoComplete: string }) {
+function PasswordInput({ autoComplete, id = "password", name = "password" }: { autoComplete: string; id?: string; name?: string }) {
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
       <input
-        id="password"
-        name="password"
+        id={id}
+        name={name}
         type={show ? "text" : "password"}
         className="input pr-20"
         autoComplete={autoComplete}
@@ -58,13 +67,14 @@ function ErrorBox({ text }: { text?: string }) {
   return <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{text}</p>;
 }
 
-export function LoginForm({ initialError }: { initialError?: string }) {
+export function LoginForm({ initialError, notice }: { initialError?: string; notice?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(loginAction, { error: initialError });
   return (
     <>
       <h1 className="font-display text-2xl font-bold text-zinc-900">Xuş kelibsiz!</h1>
       <p className="mb-6 mt-1.5 text-zinc-500">Bitta hisob — barça tayyorr xizmatlarida.</p>
 
+      {notice && <p className="mb-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p>}
       <form action={action} className="space-y-5">
         <div>
           <label className="label" htmlFor="identifier">Login yoki email</label>
@@ -78,7 +88,12 @@ export function LoginForm({ initialError }: { initialError?: string }) {
           />
         </div>
         <div>
-          <label className="label" htmlFor="password">Parol</label>
+          <div className="flex items-center justify-between">
+            <label className="label" htmlFor="password">Parol</label>
+            <Link href="/forgot" className="mb-1.5 text-sm font-medium text-indigo-600 hover:underline">
+              Parolni unutdingizmi?
+            </Link>
+          </div>
           <PasswordInput autoComplete="current-password" />
         </div>
         <ErrorBox text={state.error} />
@@ -254,6 +269,84 @@ export function OtpForm({ email, prefill = "" }: { email: string; prefill?: stri
           ← Emailni özgartiriş
         </Link>
       </div>
+    </>
+  );
+}
+
+/** "Parolni unutdim" — email so'raladi, unga yangi parol havolasi boradi. */
+export function ForgotForm() {
+  const [state, action, pending] = useActionState<AuthState, FormData>(forgotAction, {});
+  if (state.sent) {
+    return (
+      <>
+        <h1 className="font-display text-2xl font-bold text-zinc-900">Pochtangizni tekşiring</h1>
+        <p className="mb-6 mt-1.5 text-zinc-500">
+          Agar <b className="font-semibold text-zinc-800">{state.values?.email}</b> bilan hisob bölsa, unga parolni yangilaş
+          havolasi yuborildi. Havola 30 daqiqa amal qiladi.
+        </p>
+        <p className="text-sm text-zinc-400">Xat kelmadimi? «Spam» papkasini ham tekşiring.</p>
+        <Link href="/login" className="btn-primary mt-6 w-full !py-4 !text-base">
+          Kirişga qaytiş
+        </Link>
+      </>
+    );
+  }
+  return (
+    <>
+      <h1 className="font-display text-2xl font-bold text-zinc-900">Parolni unutdingizmi?</h1>
+      <p className="mb-6 mt-1.5 text-zinc-500">Emailingizni kiriting — unga yangi parol öylab topiş havolasini yuboramiz.</p>
+      <form action={action} className="space-y-5">
+        <div>
+          <label className="label" htmlFor="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            className="input"
+            autoComplete="email"
+            placeholder="siz@gmail.com"
+            defaultValue={state.values?.email}
+            required
+          />
+        </div>
+        <ErrorBox text={state.error} />
+        <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
+          {pending ? "Yuborilmoqda…" : "Havola yuboriş"}
+        </button>
+      </form>
+      <p className="mt-6 text-center text-[15px] text-zinc-500">
+        Parol esingizga tuşdimi?{" "}
+        <Link href="/login" className="font-semibold text-indigo-600 hover:underline">
+          Kiriş
+        </Link>
+      </p>
+    </>
+  );
+}
+
+/** Yangi parol — 2 marta kiritiladi, "Saqlash" dan keyin kirish sahifasiga qaytadi. */
+export function ResetForm({ token }: { token: string }) {
+  const [state, action, pending] = useActionState<AuthState, FormData>(resetAction, {});
+  return (
+    <>
+      <h1 className="font-display text-2xl font-bold text-zinc-900">Yangi parol</h1>
+      <p className="mb-6 mt-1.5 text-zinc-500">Yangi parol öylab toping va uni ikki marta kiriting.</p>
+      <form action={action} className="space-y-5">
+        <input type="hidden" name="token" value={token} />
+        <div>
+          <label className="label" htmlFor="password">Yangi parol</label>
+          <PasswordInput autoComplete="new-password" />
+        </div>
+        <div>
+          <label className="label" htmlFor="confirm">Yangi parolni takrorlang</label>
+          <PasswordInput autoComplete="new-password" id="confirm" name="confirm" />
+        </div>
+        <ErrorBox text={state.error} />
+        <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
+          {pending ? "Saqlanmoqda…" : "Saqlaş"}
+        </button>
+      </form>
     </>
   );
 }

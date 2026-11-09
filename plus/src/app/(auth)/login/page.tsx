@@ -7,13 +7,16 @@ import { AuthShell } from "../auth-shell";
 
 export const metadata = { title: "Kiriş" };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; reset?: string }> }) {
   // sessiya cookie'si qolgan, lekin hisob o'chirilgan bo'lsa — forma ochiladi
   if (await currentUser()) redirect("/");
-  const { error } = await searchParams;
+  const { error, reset } = await searchParams;
   return (
     <AuthShell mode="login">
-      <LoginForm initialError={error ? "Kirişda xatolik yuz berdi, qayta urinib köring" : undefined} />
+      <LoginForm
+        initialError={error ? "Kirişda xatolik yuz berdi, qayta urinib köring" : undefined}
+        notice={reset ? "Parol yangilandi. Endi yangi parol bilan kiring." : undefined}
+      />
     </AuthShell>
   );
 }
