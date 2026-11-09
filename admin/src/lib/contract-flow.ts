@@ -324,7 +324,8 @@ async function requestCancel(c: ContractFull, me: string, reason: string): Promi
     `⚠️ ${roleName(c, me)} buyurtmani bekor qilmoqçi.\nSabab: ${reason}\n\n` +
       `${roleName(c, me === c.ordererId ? c.preparerId : c.ordererId)}, rostdan ham bekor qilinsinmi? ` +
       `${shortDateTime(due)} gaça buyurtma sahifasida javob bering: rozi bölsangiz — ${som(c.amount)} buyurtmaçiga qaytariladi, ` +
-      `rozi bölmasangiz (sababi bilan) — admin hal qiladi. Javob bölmasa, rozi deb hisoblanadi.`,
+      `rozi bölmasangiz (sababi bilan) — javobingiz ${roleName(c, me).toLowerCase()}ga qaytadi va u şartnomani davom ettiriş ` +
+      `yoki masalani admin'ga yuboriş haqida qaror qiladi. Javob bölmasa, rozi deb hisoblanadi.`,
     me,
   );
   await logActivity(me, "CONTRACT_CANCEL_REQUEST", `Bekor qilişni söradi: «${c.order.title}» — ${reason}`, {
@@ -374,16 +375,27 @@ async function approveCancel(c: ContractFull, actorId: string | null): Promise<F
   return OK;
 }
 
+/**
+ * Ikkinchi tomon rozi bo'lmadi — masala darhol adminga emas, avval so'ragan tomonga qaytadi:
+ * u 3 ish kuni ichida shartnomani davom ettiradi yoki "qarorimni o'zgartirmayman" deb adminga yuboradi
+ * (INSIST_CANCEL). Javob bo'lmasa — shartnoma davom etadi (sweepContracts).
+ * Holat: cancelState PENDING + cancelRejectReason to'ldirilgan = so'ragan tomon qaror qilmoqda.
+ */
 async function rejectCancel(c: ContractFull, me: string, reason: string): Promise<FlowResult> {
+  const due = addBusinessDays(new Date(), 3);
   const upd = await db.contract.updateMany({
-    where: { id: c.id, status: "ACCEPTED", cancelState: "PENDING" },
-    data: { cancelState: "DISPUTED", cancelRejectReason: reason },
+    where: { id: c.id, status: "ACCEPTED", cancelState: "PENDING", cancelRejectReason: null },
+    data: { cancelRejectReason: reason, cancelDueAt: due },
   });
   if (upd.count !== 1) return STALE;
+  const requester = roleName(c, c.cancelRequestedById ?? "");
   await notice(
     c,
     `🚫 ${roleName(c, me)} bekor qilişga rozi bölmadi.\nSabab: ${reason}\n\n` +
-      `Masala administratorga yuborildi — u bekor qiliş, davom ettiriş yoki yakunlaş böyiça qaror qabul qiladi.`,
+      `${requester}, endi siz tanlang (${shortDateTime(due)} gaça, buyurtma sahifasida):\n` +
+      `• «Şartnomani davom ettiraman» — iş davom etadi;\n` +
+      `• «Qarorimni özgartirmayman» — masala administratorga yuboriladi.\n` +
+      `Tanlov bölmasa — şartnoma davom etadi.`,
     me,
   );
   await logActivity(me, "CONTRACT_CANCEL_RESPOND", `Bekor qilişga rozi bölmadi: «${c.order.title}» — ${reason}`, {
@@ -392,11 +404,37 @@ async function rejectCancel(c: ContractFull, me: string, reason: string): Promis
   });
   await logToGroup(
     "contracts",
+    "🚫 Bekor qilişga rozi bölinmadi — söragan tomon qaror qiladi",
+    groupLines(c, [`Söragan: ${requester}`, `Bekor qiliş sababi: ${c.cancelReason ?? "—"}`, `Rad etiş sababi: ${reason}`, `Qaror muddati: ${shortDateTime(due)}`]),
+    adminUrl(c.orderId),
+  );
+  return OK;
+}
+
+/** So'ragan tomon qarorini o'zgartirmadi — endi masalani admin hal qiladi. */
+async function insistCancel(c: ContractFull, me: string): Promise<FlowResult> {
+  const upd = await db.contract.updateMany({
+    where: { id: c.id, status: "ACCEPTED", cancelState: "PENDING", cancelRequestedById: me, cancelRejectReason: { not: null } },
+    data: { cancelState: "DISPUTED", cancelDueAt: null },
+  });
+  if (upd.count !== 1) return STALE;
+  await notice(
+    c,
+    `⚖️ ${roleName(c, me)} bekor qiliş qarorini özgartirmadi. Masala administratorga yuborildi — ` +
+      `u bekor qiliş, davom ettiriş yoki yakunlaş böyiça qaror qabul qiladi.`,
+    me,
+  );
+  await logActivity(me, "CONTRACT_CANCEL_REQUEST", `Bekor qiliş qarorida turib oldi — admin'ga: «${c.order.title}»`, {
+    orderId: c.orderId,
+    contractId: c.id,
+  });
+  await logToGroup(
+    "contracts",
     "⚖️ NIZO — admin qarori kerak",
     groupLines(c, [
-      `Söragan: ${roleName(c, c.cancelRequestedById ?? "")}`,
+      `Söragan: ${roleName(c, me)}`,
       `Bekor qiliş sababi: ${c.cancelReason ?? "—"}`,
-      `Rad etiş sababi: ${reason}`,
+      `Rad etiş sababi: ${c.cancelRejectReason ?? "—"}`,
     ]),
     adminUrl(c.orderId),
   );
@@ -404,12 +442,19 @@ async function rejectCancel(c: ContractFull, me: string, reason: string): Promis
 }
 
 async function withdrawCancel(c: ContractFull, me: string): Promise<FlowResult> {
+  const wasRejected = !!c.cancelRejectReason;
   const upd = await db.contract.updateMany({
     where: { id: c.id, status: "ACCEPTED", cancelState: "PENDING", cancelRequestedById: me },
-    data: { cancelState: null, cancelDueAt: null },
+    data: { cancelState: null, cancelDueAt: null, cancelRejectReason: null },
   });
   if (upd.count !== 1) return STALE;
-  await notice(c, "↩️ Bekor qiliş sörovi qaytarib olindi. Iş davom etadi.", me);
+  await notice(
+    c,
+    wasRejected
+      ? `🤝 ${roleName(c, me)} şartnomani davom ettirişni tanladi. Iş davom etadi.`
+      : "↩️ Bekor qiliş sörovi qaytarib olindi. Iş davom etadi.",
+    me,
+  );
   return OK;
 }
 
@@ -420,7 +465,8 @@ export type ContractAction =
   | { action: "REQUEST_CANCEL"; reason: string }
   | { action: "APPROVE_CANCEL" }
   | { action: "REJECT_CANCEL"; reason: string }
-  | { action: "WITHDRAW_CANCEL" };
+  | { action: "WITHDRAW_CANCEL" }
+  | { action: "INSIST_CANCEL" };
 
 export async function contractAction(contractId: string, me: string, input: ContractAction): Promise<FlowResult> {
   await sweepContracts({ contractId });
@@ -450,13 +496,19 @@ export async function contractAction(contractId: string, me: string, input: Cont
     case "APPROVE_CANCEL":
       if (c.cancelState !== "PENDING") return fail("Faol bekor qiliş sörovi yöq");
       if (c.cancelRequestedById === me) return fail("Öz sörovingizga javob bera olmaysiz");
+      if (c.cancelRejectReason) return fail("Javobingiz yuborilgan — endi bekor qilişni söragan tomon qaror qiladi");
       return approveCancel(c, me);
     case "REJECT_CANCEL":
       if (c.cancelState !== "PENDING") return fail("Faol bekor qiliş sörovi yöq");
       if (c.cancelRequestedById === me) return fail("Öz sörovingizga javob bera olmaysiz");
+      if (c.cancelRejectReason) return fail("Javobingiz yuborilgan — endi bekor qilişni söragan tomon qaror qiladi");
       return rejectCancel(c, me, input.reason);
     case "WITHDRAW_CANCEL":
       return withdrawCancel(c, me);
+    case "INSIST_CANCEL":
+      if (c.cancelState !== "PENDING" || !c.cancelRejectReason) return fail("Hozir bu amal mavjud emas");
+      if (c.cancelRequestedById !== me) return fail("Bu qarorni faqat bekor qilişni söragan tomon qabul qiladi");
+      return insistCancel(c, me);
     default:
       return fail("Notöğri amal");
   }
@@ -682,7 +734,19 @@ export async function sweepContracts(scope: { orderId?: string; contractId?: str
     });
     for (const c of rows) {
       if (c.cancelState === "PENDING") {
-        await approveCancel(c, null);
+        if (c.cancelRejectReason) {
+          // ikkinchi tomon rozi bo'lmagan, so'ragan tomon muddatida tanlamadi — shartnoma davom etadi
+          const upd = await db.contract.updateMany({
+            where: { id: c.id, cancelState: "PENDING", cancelRejectReason: { not: null }, cancelDueAt: { lte: now } },
+            data: { cancelState: null, cancelDueAt: null, cancelRejectReason: null },
+          });
+          if (upd.count === 1) {
+            await notice(c, "⏱ Bekor qiliş böyiça qaror bildirilmadi — şartnoma davom etadi.", null);
+            await logToGroup("contracts", "⏱ Qaror bildirilmadi — şartnoma davom etadi", groupLines(c), adminUrl(c.orderId));
+          }
+        } else {
+          await approveCancel(c, null);
+        }
         continue;
       }
       if (c.order.status === "IN_PROGRESS") {

@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
+import { supportNotice } from "@/lib/support-actions";
+import { withSource } from "@/lib/message-source";
 import { reverseWalletTopup } from "@/lib/wallet-reversal";
 import { logToGroup, siteUrl as logSiteUrl, userLabel } from "@/lib/telegram-log";
 import {
@@ -166,6 +168,12 @@ export async function POST(req: Request) {
     url: returnTo ?? (fromSmm ? SMM_SITE_URL : siteUrl("/wallet")),
     buttonLabel: "Tranzaksiyalarni köriş",
   });
+  // support chatiga ham (bot ulanmaganlar uchun) — hamyon umumiy, ikkala platformada ko'rinadi
+  await supportNotice(
+    wtx.userId,
+    withSource(`💳 Hisobingiz töldirildi: ${wtx.amount.toLocaleString("ru-RU")} söm Click orqali hamyoningizga tuşdi.`, "ikkalasi"),
+    { action: { url: "/wallet", label: "Hisobni köriş" } },
+  );
   await logToGroup(
     payTopic,
     `💳 Hisob töldirildi (Click${smmTag})`,

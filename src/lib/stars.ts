@@ -159,6 +159,7 @@ export async function refundOfferStars(orderId: string, reason: string) {
       senderId: supportId,
       body: text,
       system: false,
+      action: { url: "/wallet", label: "Hisobni köriş" },
     });
     await deliverMessage(msg);
 

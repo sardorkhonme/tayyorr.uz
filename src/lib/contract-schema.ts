@@ -11,6 +11,7 @@ export const contractActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("APPROVE_CANCEL") }),
   z.object({ action: z.literal("REJECT_CANCEL"), reason }),
   z.object({ action: z.literal("WITHDRAW_CANCEL") }),
+  z.object({ action: z.literal("INSIST_CANCEL") }),
 ]);
 
 export const revisionSchema = z.object({

@@ -115,6 +115,7 @@ export async function POST(
     senderId: supportId,
     body: withSource(body, "ikkalasi"), // pul haqida — ikkala platformada
     system: false, // support xabari — oddiy bubble
+    action: { url: "/wallet", label: "Hisobni köriş" },
   });
   await deliverMessage(msg);
 

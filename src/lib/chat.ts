@@ -74,6 +74,8 @@ export async function createMessage(opts: {
   orderId?: string | null;
   replyToId?: string | null;
   broadcastId?: string | null;
+  /** xabar ostidagi tugma: nisbiy yo'l (masalan "/wallet") va yozuvi */
+  action?: { url: string; label: string } | null;
   file?: {
     key: string;
     name: string;
@@ -101,6 +103,8 @@ export async function createMessage(opts: {
         orderId: opts.orderId ?? null,
         replyToId,
         broadcastId: opts.broadcastId ?? null,
+        actionUrl: opts.action?.url ?? null,
+        actionLabel: opts.action?.label ?? null,
         fileKey: opts.file?.key ?? null,
         fileName: opts.file?.name ?? null,
         fileType: opts.file?.type ?? null,

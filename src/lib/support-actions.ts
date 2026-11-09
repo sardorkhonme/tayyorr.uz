@@ -68,3 +68,30 @@ export async function sendWelcome(userId: string, firstName?: string | null) {
   });
   await deliverMessage(m2);
 }
+
+/**
+ * Bildirishnoma support chatiga — Telegram bot ulanmagan foydalanuvchi ham ko'rsin.
+ * orderId — tizim xabari, ostida "Buyurtmani ko'rish"; action — oddiy xabar, ostida tugma (masalan "/wallet").
+ * Xato bo'lsa jim o'tadi (asosiy amal — to'lov, taklif — buzilmasin).
+ */
+export async function supportNotice(
+  userId: string,
+  body: string,
+  opts: { orderId?: string; action?: { url: string; label: string } } = {},
+) {
+  try {
+    const supportId = await getSupportUserId();
+    const conv = await getOrCreateConversation(supportId, userId, null);
+    const msg = await createMessage({
+      conversationId: conv.id,
+      senderId: supportId,
+      body,
+      system: !!opts.orderId,
+      orderId: opts.orderId ?? null,
+      action: opts.action ?? null,
+    });
+    await deliverMessage(msg);
+  } catch (e) {
+    console.error("[supportNotice]", e);
+  }
+}

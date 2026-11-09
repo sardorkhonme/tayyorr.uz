@@ -33,6 +33,8 @@ export interface ClientMessage {
   system: boolean;
   /** tizim xabari tegishli buyurtma */
   orderId: string | null;
+  /** xabar ostidagi tugma (masalan "Hisobni ko'rish") */
+  action: { url: string; label: string } | null;
   createdAt: number;
   updatedAt: number;
   mine: boolean;
@@ -101,6 +103,7 @@ export async function toClientMessage(
     source,
     system: m.system,
     orderId: m.orderId,
+    action: m.actionUrl ? { url: m.actionUrl, label: m.actionLabel ?? "Köriş" } : null,
     createdAt: m.createdAt.getTime(),
     updatedAt: m.updatedAt.getTime(),
     mine: m.senderId === meId,
@@ -142,6 +145,7 @@ export async function toSerializedMessage(m: Message) {
     source,
     system: m.system,
     orderId: m.orderId,
+    action: m.actionUrl ? { url: m.actionUrl, label: m.actionLabel ?? "Köriş" } : null,
     createdAt: m.createdAt.toISOString(),
     updatedAt: m.updatedAt.toISOString(),
     edited: !!m.editedAt,

@@ -49,9 +49,11 @@ export function ContractPanel({
   const [localErr, setLocalErr] = useState<string | null>(null);
 
   const delivered = status === "DELIVERED";
-  const pending = c.cancelState === "PENDING";
+  // PENDING: ikkinchi tomon javob kutilmoqda; PENDING + cancelRejectReason: rozi bo'lmadi — so'ragan tomon qaror qiladi
+  const rejected = c.cancelState === "PENDING" && !!c.cancelRejectReason;
+  const pending = c.cancelState === "PENDING" && !rejected;
   const disputed = c.cancelState === "DISPUTED";
-  const iRequested = pending && c.cancelRequestedById === meId;
+  const iRequested = (pending || rejected) && c.cancelRequestedById === meId;
   const otherRequested = pending && !iRequested;
   const requester = c.cancelRequestedById
     ? c.cancelRequestedById === meId
@@ -176,6 +178,55 @@ export function ContractPanel({
         </div>
       )}
 
+      {/* rozi bo'linmadi — so'ragan tomon: davom ettiradi yoki adminga yuboradi */}
+      {rejected && (
+        <div className="rounded-xl border border-orange-400/30 bg-orange-500/10 p-3 text-sm">
+          <div className="flex items-center gap-1.5 font-medium text-orange-200">
+            <Icon name="x-circle" className="h-4 w-4 shrink-0" />
+            {iRequested ? (isOrderer ? "Tayyorlovçi" : "Buyurtmaçi") : "Siz"} bekor qilişga rozi bölma{iRequested ? "di" : "dingiz"}
+          </div>
+          <div className="mt-1 text-zinc-300">Bekor qiliş sababi: {c.cancelReason}</div>
+          <div className="mt-0.5 text-zinc-300">Rad etiş sababi: {c.cancelRejectReason}</div>
+          <div className="mt-1 text-xs text-zinc-400">
+            {iRequested ? (
+              <>
+                Endi siz tanlang{c.cancelDueAt ? <> — <b className="text-zinc-200">{shortDateTime(c.cancelDueAt)}</b> gaça</> : ""}: şartnomani davom ettiriş yoki
+                masalani administratorga yuboriş. Tanlamasangiz — şartnoma davom etadi.
+              </>
+            ) : (
+              <>
+                Javobingiz yuborildi. Endi {requester.toLowerCase()} qaror qiladi: şartnomani davom ettiradi yoki masalani
+                administratorga yuboradi{c.cancelDueAt ? ` (${shortDateTime(c.cancelDueAt)} gaça)` : ""}.
+              </>
+            )}
+          </div>
+          {iRequested && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                className="btn-primary"
+                disabled={busy}
+                onClick={() => call(`/api/contracts/${c.id}`, "POST", { action: "WITHDRAW_CANCEL" })}
+              >
+                <Icon name="check-circle" className="h-4 w-4" />
+                Şartnomani davom ettiraman
+              </button>
+              <button
+                className="btn-ghost text-red-300"
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm("Qaroringiz özgarmaydimi? Masala administratorga yuboriladi va u yakuniy qaror qabul qiladi.")) {
+                    call(`/api/contracts/${c.id}`, "POST", { action: "INSIST_CANCEL" });
+                  }
+                }}
+              >
+                <Icon name="scale" className="h-4 w-4" />
+                Qarorimni özgartirmayman
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {disputed && (
         <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-sm">
           <div className="flex items-center gap-1.5 font-medium text-red-200">
@@ -247,9 +298,9 @@ export function ContractPanel({
           </div>
           <p className="text-xs text-zinc-500">
             {form === "cancel"
-              ? "Ikkinçi tomonga yuboriladi. U 3 iş kuni içida rozi bölsa (yoki javob bermasa) — pul buyurtmaçiga qaytadi, rozi bölmasa — admin hal qiladi."
+              ? "Ikkinçi tomonga yuboriladi. U 3 iş kuni içida rozi bölsa (yoki javob bermasa) — pul buyurtmaçiga qaytadi. Rozi bölmasa — javobi sizga qaytadi: şartnomani davom ettirasiz yoki masalani admin'ga yuborasiz."
               : form === "reject"
-                ? "Sabab admin va ikkinçi tomonga körinadi. Masalani admin hal qiladi."
+                ? "Sabab bekor qilişni söragan tomonga yuboriladi. U şartnomani davom ettiriși yoki masalani admin'ga yuboriși mumkin."
                 : "Iş tayyorlovçiga qaytadi. Yangi muddatgaça qayta topşirilmasa — şartnoma bekor bölib pul sizga qaytadi."}
           </p>
           <textarea

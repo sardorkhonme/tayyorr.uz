@@ -571,6 +571,10 @@ model Message {
 
   broadcastId String? // ommaviy xabar bo'lsa — guruh id
 
+  // xabar ostidagi tugma (masalan hamyon xabari: "Hisobni ko'rish" -> /wallet) — nisbiy yo'l
+  actionUrl   String?
+  actionLabel String?
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
   readAt    DateTime?

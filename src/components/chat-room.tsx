@@ -47,6 +47,8 @@ interface Msg {
   system?: boolean;
   /** tizim xabari tegishli buyurtma */
   orderId?: string | null;
+  /** xabar ostidagi tugma (masalan hamyon xabari: "Hisobni ko'rish") */
+  action?: { url: string; label: string } | null;
   createdAt: number;
   updatedAt: number;
   mine: boolean;
@@ -373,6 +375,7 @@ export function ChatRoom({
               source: m.source,
               system: m.system,
               orderId: m.orderId ?? null,
+              action: m.action ?? null,
               createdAt: new Date(m.createdAt).getTime(),
               updatedAt: new Date(m.updatedAt).getTime(),
               mine: m.senderId === meId,
@@ -1026,6 +1029,17 @@ export function ChatRoom({
                         <div className="whitespace-pre-wrap break-words">
                           <Linkify text={m.body} mine={m.mine} />
                         </div>
+                      )}
+                      {m.action && !asSupport && (
+                        <Link
+                          href={m.action.url}
+                          className={`mt-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                            m.mine ? "bg-white/15 text-white hover:bg-white/25" : "bg-indigo-500/15 text-indigo-200 hover:bg-indigo-500/25"
+                          }`}
+                        >
+                          <Icon name="wallet" className="h-4 w-4" />
+                          {m.action.label} ›
+                        </Link>
                       )}
 
                       {hasReactions && (

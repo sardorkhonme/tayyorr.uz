@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
+import { supportNotice } from "@/lib/support-actions";
 import { logToGroup, userLabel } from "@/lib/telegram-log";
 import { getMinOfferStars, useStars } from "@/lib/stars";
 
@@ -111,6 +112,14 @@ export async function POST(
       url: siteUrl(`/orders/${id}`),
       buttonLabel: "Köngillilarni köriş",
     });
+    // support chatiga ham — bot ulanmagan buyurtmachi ham ko'radi (ostida "Buyurtmani ko'rish")
+    await supportNotice(
+      order.ordererId,
+      `🙋 Yangi köngilli topildi!\n«${order.title}» buyurtmangizga ${preparerName} taklif yubordi: ` +
+        `${parsed.data.price.toLocaleString("ru-RU")} söm` +
+        (parsed.data.message ? `\n\n«${parsed.data.message}»` : ""),
+      { orderId: id },
+    );
   }
 
   await logToGroup(

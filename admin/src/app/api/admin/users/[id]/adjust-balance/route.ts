@@ -89,6 +89,7 @@ export async function POST(
             "ikkalasi",
           ),
       system: false,
+      action: { url: "/wallet", label: "Hisobni köriş" },
     });
     await deliverMessage(msg);
   }

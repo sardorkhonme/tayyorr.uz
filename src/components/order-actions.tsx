@@ -23,10 +23,23 @@ export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
   WITHDRAWN: { label: "Qaytarib olingan", cls: "bg-zinc-500/15 text-zinc-400" },
 };
 
-function OfferBadge({ status }: { status: string }) {
+const OFFER_ICON: Record<string, "check-circle" | "x-circle" | "clock" | "reply"> = {
+  PENDING: "clock",
+  ACCEPTED: "check-circle",
+  REJECTED: "x-circle",
+  WITHDRAWN: "reply",
+};
+
+/** Taklif holati — yonidagi tugmalar (Chat, Shikoyat) bilan bir xil o'lchamda. */
+function OfferBadge({ status, inline = false }: { status: string; inline?: boolean }) {
   const s = OFFER_STATUS[status] ?? { label: status, cls: "bg-white/10 text-zinc-300" };
   return (
-    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${s.cls}`}>
+    <span
+      className={`inline-flex items-center font-semibold ${s.cls} ${
+        inline ? "gap-1 rounded-full px-2 py-0.5 align-middle text-xs" : "gap-2 rounded-xl px-[1.1rem] py-[0.6rem] text-sm"
+      }`}
+    >
+      <Icon name={OFFER_ICON[status] ?? "clock"} className={inline ? "h-3.5 w-3.5" : "h-4 w-4"} />
       {s.label}
     </span>
   );
@@ -356,7 +369,7 @@ export function OrderActions(props: Props) {
           {myOffer && (
             <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
               <p className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
-                Holat: <OfferBadge status={myOffer.status} /> · Jami sarflangan:{" "}
+                Holat: <OfferBadge status={myOffer.status} inline /> · Jami sarflangan:{" "}
                 <b className="inline-flex items-center gap-0.5 text-amber-300">
                   {myOffer.starsSpent} <StarIcon className="h-3 w-3" />
                 </b>
@@ -524,11 +537,7 @@ export function OrderActions(props: Props) {
                     </button>
                   </>
                 )}
-                {o.status !== "PENDING" && (
-                  <span className="self-center">
-                    <OfferBadge status={o.status} />
-                  </span>
-                )}
+                {o.status !== "PENDING" && <OfferBadge status={o.status} />}
               </div>
 
               {contractFor === o.preparerId && (

@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
+import { supportNotice } from "@/lib/support-actions";
+import { withSource } from "@/lib/message-source";
 
 type Reversible = {
   id: string;
@@ -50,4 +52,13 @@ export async function reverseWalletTopup(wtx: Reversible, reason: string) {
     url: siteUrl("/wallet"),
     buttonLabel: "Hamyonni köriş",
   });
+  await supportNotice(
+    wtx.userId,
+    withSource(
+      `⚠️ Click orqali tölangan ${wtx.amount.toLocaleString("ru-RU")} söm bekor qilindi va hisobingizdan ayirildi. ` +
+        `Pulingiz 24 iş soati içida kartangizga qaytariladi.`,
+      "ikkalasi",
+    ),
+    { action: { url: "/wallet", label: "Hisobni köriş" } },
+  );
 }
