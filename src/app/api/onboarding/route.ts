@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
   const userRecord = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true },
+    select: { id: true, referralLinkId: true, referredById: true },
   });
   if (!userRecord) {
     return NextResponse.json(
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   // tashrif havolasi orqali kelgan bo'lsa — akkauntga bog'laymiz
   const cookieStore = await cookies();
   const refCode = cookieStore.get("tyr_ref")?.value;
-  const refLink = refCode
+  const refLink = refCode && !userRecord.referralLinkId
     ? await db.referralLink.findUnique({
         where: { code: refCode.toUpperCase() },
         select: { id: true, name: true },
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
   const fromSmm = cookieStore.get("tyr_src")?.value === "smm";
   const uRefId = cookieStore.get("tyr_uref")?.value;
   const referrer =
-    uRefId && uRefId !== session.user.id
+    uRefId && uRefId !== session.user.id && !userRecord.referredById
       ? await db.user.findUnique({
           where: { id: uRefId },
           select: {

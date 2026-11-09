@@ -18,8 +18,22 @@ const REF_MAX_AGE = 60 * 60 * 24 * 30; // 30 kun
  * ro'yxatdan o'tsa (onboarding), shu cookie orqali qaysi havoladan/kimdan
  * kelgani aniqlanadi.
  */
+/**
+ * Cookie butun .tayyorr.uz uchun — ro'yxatdan o'tish tayyorr+ (plus.tayyorr.uz)
+ * da bo'ladi, u ham shu cookie'ni o'qishi kerak (plus/src/lib/referral-attribution.ts).
+ */
+function cookieOpts(req: Request) {
+  const host = new URL(req.url).hostname;
+  return {
+    maxAge: REF_MAX_AGE,
+    path: "/",
+    sameSite: "lax" as const,
+    ...(host === "tayyorr.uz" || host.endsWith(".tayyorr.uz") ? { domain: ".tayyorr.uz" } : {}),
+  };
+}
+
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
@@ -35,11 +49,7 @@ export async function GET(
       .catch(() => {});
 
     const res = NextResponse.redirect(home);
-    res.cookies.set(REF_COOKIE, link.code, {
-      maxAge: REF_MAX_AGE,
-      path: "/",
-      sameSite: "lax",
-    });
+    res.cookies.set(REF_COOKIE, link.code, cookieOpts(req));
     return res;
   }
 
@@ -52,11 +62,7 @@ export async function GET(
 
   if (referrer) {
     const res = NextResponse.redirect(home);
-    res.cookies.set(UREF_COOKIE, referrer.id, {
-      maxAge: REF_MAX_AGE,
-      path: "/",
-      sameSite: "lax",
-    });
+    res.cookies.set(UREF_COOKIE, referrer.id, cookieOpts(req));
     return res;
   }
 

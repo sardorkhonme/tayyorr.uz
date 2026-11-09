@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { putPublic, r2Configured } from "@/lib/r2";
 import { HEAR_ABOUT_US } from "@/lib/hear-about-us";
 import { logRegistration, TERMS_VERSION } from "@/lib/register";
+import { applyReferralAttribution } from "@/lib/referral-attribution";
 
 /**
  * tayyorr.uz dagi ro'yxatdan o'tish bilan bir xil maydonlar (rol bundan mustasno —
@@ -135,4 +136,6 @@ export async function completeProfile(userId: string, input: ProfileInput) {
   });
   // parol ro'yxatdan o'tishda kiritilgan bo'lsa — email bilan ochilgan hisob
   await logRegistration(user, me.passwordHash ? "email" : "Google");
+  // tashrif / shaxsiy referal havolasi orqali kelgan bo'lsa — akkauntga bog'laymiz
+  await applyReferralAttribution(userId);
 }
