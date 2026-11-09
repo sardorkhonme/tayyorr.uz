@@ -5,6 +5,7 @@ const BASE_NAV: NavLink[] = [
   { href: "/messages", label: "Xabarlar", tkey: "nav.messages", icon: "message" },
   { href: "/wallet", label: "Hamyon", tkey: "nav.wallet", icon: "wallet" },
   { href: "/profile", label: "Profil", tkey: "nav.profile", icon: "user" },
+  { href: "/guide", label: "Qöllanma", tkey: "nav.guide", icon: "help" },
 ];
 
 /** tayyorr+ (plus.tayyorr.uz) — menyuning eng pastida alohida kartochka (TayyorrPlusCard). */

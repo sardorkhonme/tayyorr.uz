@@ -36,9 +36,35 @@ export function ThemeToggle({
     );
   }, []);
 
-  function pick(m: Mode) {
+  /**
+   * Rejim almashishi — bosilgan tugmadan doira bo'lib yoyiladigan animatsiya
+   * (View Transitions API). Brauzer qo'llamasa yoki "kamroq harakat" yoqilgan
+   * bo'lsa — darhol almashadi.
+   */
+  function pick(m: Mode, e: React.MouseEvent<HTMLButtonElement>) {
+    if (m === mode) return;
     setMode(m);
-    apply(m);
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+    };
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!doc.startViewTransition || reduce) {
+      apply(m);
+      return;
+    }
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const t = doc.startViewTransition(() => apply(m));
+    t.ready
+      .then(() => {
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          { duration: 650, easing: "cubic-bezier(0.65, 0, 0.35, 1)", pseudoElement: "::view-transition-new(root)" },
+        );
+      })
+      .catch(() => {});
   }
 
   return (
@@ -51,7 +77,7 @@ export function ThemeToggle({
         <button
           key={m}
           type="button"
-          onClick={() => pick(m)}
+          onClick={(e) => pick(m, e)}
           aria-pressed={mode === m}
           className={`backdrop-blur-sm flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs transition ${
             mode === m

@@ -825,3 +825,13 @@ html.light .viz {
   background: var(--viz-surface);
   border: 1px solid var(--viz-grid);
 }
+
+/* yorug'/qorong'i almashishi — doira bo'lib yoyiladi (theme-toggle.tsx) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}

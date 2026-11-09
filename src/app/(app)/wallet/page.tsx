@@ -8,6 +8,7 @@ import { getT } from "@/lib/i18n-server";
 import { WalletTopUp } from "@/components/wallet-topup";
 import { WalletPayout } from "@/components/wallet-payout";
 import { WalletBuyStars } from "@/components/wallet-buy-stars";
+import { getStarPrice } from "@/lib/stars";
 import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
 import { WalletCode } from "@/components/wallet-code";
@@ -123,7 +124,7 @@ export default async function WalletPage({
           /referral sahifasida (navbardan) — taklif qilinganlar ro'yxati
           bilan birga. */}
       {user?.role === "PREPARER" && (
-        <WalletBuyStars starBalance={user?.starBalance ?? 0} />
+        <WalletBuyStars starBalance={user?.starBalance ?? 0} starPrice={await getStarPrice()} />
       )}
 
       <WalletTopUp />

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
-import { buyStars, STAR_PRICE } from "@/lib/stars";
+import { buyStars } from "@/lib/stars";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     "⭐ Star sotib olindi (mobil)",
     [
       `Foydalanuvçi: ${userLabel(user)}`,
-      `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} söm)`,
+      `Sotib olindi: ${parsed.data.stars} ⭐ (${result.amount.toLocaleString("ru-RU")} söm)`,
       `Yangi star balansi: ${result.newStars} ⭐`,
     ],
     siteUrl(`/sardorxon/admin/users/${auth.userId}`),

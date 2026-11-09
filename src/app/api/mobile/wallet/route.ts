@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { ensureWalletCode } from "@/lib/wallet";
+import { getStarPrice } from "@/lib/stars";
 import { expireStaleClickTopups, HIDE_UNFINISHED_TOPUPS } from "@/lib/wallet-pending";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
   if (auth instanceof NextResponse) return auth;
 
   await expireStaleClickTopups(auth.userId);
-  const [user, walletCode, txns, payouts] = await Promise.all([
+  const [user, walletCode, txns, payouts, starPrice] = await Promise.all([
     db.user.findUnique({
       where: { id: auth.userId },
       select: { balance: true, starBalance: true },
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    getStarPrice(),
   ]);
 
   if (!user) return mobileJson({ error: "Topilmadi" }, { status: 404 });
@@ -38,6 +40,7 @@ export async function GET(req: Request) {
   return mobileJson({
     balance: user.balance,
     starBalance: user.starBalance,
+    starPrice, // 1 star narxi (so'm) — admin belgilaydi
     walletCode,
     transactions: txns.map((t) => ({
       id: t.id,

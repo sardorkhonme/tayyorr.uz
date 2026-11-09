@@ -4,10 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { StarIcon } from "@/components/icons";
 
-const STAR_PRICE = 2_000;
 const QUICK = [5, 10, 25, 50];
 
-export function WalletBuyStars({ starBalance }: { starBalance: number }) {
+export function WalletBuyStars({
+  starBalance,
+  starPrice: STAR_PRICE,
+}: {
+  starBalance: number;
+  /** 1 star narxi (so'm) — admin belgilaydi */
+  starPrice: number;
+}) {
   const router = useRouter();
   const [stars, setStars] = useState("");
   const [busy, setBusy] = useState(false);

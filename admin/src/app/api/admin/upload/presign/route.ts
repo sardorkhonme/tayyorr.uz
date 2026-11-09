@@ -20,6 +20,7 @@ const schema = z.object({
       "LANDING_VIDEO",
       "HERO_VIDEO",
       "LANDING_PHONE_SLIDE",
+      "GUIDE_VIDEO",
     ])
     .default("CHAT"),
   conversationId: z.string().optional(),
@@ -82,11 +83,11 @@ export async function POST(req: Request) {
     });
   }
 
-  if (kind === "LANDING_VIDEO" || kind === "HERO_VIDEO") {
+  if (kind === "LANDING_VIDEO" || kind === "HERO_VIDEO" || kind === "GUIDE_VIDEO") {
     if (!VIDEO_TYPES.includes(contentType)) {
       return NextResponse.json({ error: "Faqat video fayl yuklang" }, { status: 400 });
     }
-    const prefix = kind === "HERO_VIDEO" ? "hero" : "landing/videos";
+    const prefix = kind === "HERO_VIDEO" ? "hero" : kind === "GUIDE_VIDEO" ? "guide" : "landing/videos";
     const key = buildKey(prefix, filename);
     const uploadUrl = await presignPut({
       bucket: PUBLIC_BUCKET,

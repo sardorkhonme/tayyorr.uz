@@ -6,8 +6,16 @@ import { getSupportUserId } from "@/lib/support";
 import { createMessage, getOrCreateConversation } from "@/lib/chat";
 import { deliverMessage } from "@/lib/chat-notify";
 
-/** 1 star narxi (so'm). */
+/** 1 star narxi (so'm) — standart qiymat; admin panelda o'zgartiriladi (AppSetting "starPrice"). */
 export const STAR_PRICE = 2_000;
+export const STAR_PRICE_KEY = "starPrice";
+
+/** Hozirgi 1 star narxi (so'm): admin belgilagan, bo'lmasa — 2 000. */
+export async function getStarPrice(): Promise<number> {
+  const row = await db.appSetting.findUnique({ where: { key: STAR_PRICE_KEY } }).catch(() => null);
+  const n = Number(row?.value);
+  return Number.isInteger(n) && n >= 100 && n <= 1_000_000 ? n : STAR_PRICE;
+}
 
 /** Buyurtmaga taklif (ariza) yuborish uchun majburiy minimal star — standart qiymat. */
 export const MIN_OFFER_STARS = 2;
@@ -30,11 +38,11 @@ export async function getMinOfferStars(): Promise<number> {
 export async function buyStars(opts: {
   userId: string;
   stars: number;
-}): Promise<{ ok: true; newSom: number; newStars: number } | { ok: false; error: string }> {
+}): Promise<{ ok: true; newSom: number; newStars: number; amount: number } | { ok: false; error: string }> {
   if (opts.stars <= 0 || !Number.isInteger(opts.stars)) {
     return { ok: false, error: "Star soni notöğri" };
   }
-  const amount = opts.stars * STAR_PRICE;
+  const amount = opts.stars * (await getStarPrice());
 
   const user = await db.user.findUnique({
     where: { id: opts.userId },
@@ -81,7 +89,7 @@ export async function buyStars(opts: {
     return u;
   });
 
-  return { ok: true, newSom: updated.balance, newStars: updated.starBalance };
+  return { ok: true, newSom: updated.balance, newStars: updated.starBalance, amount };
 }
 
 /**

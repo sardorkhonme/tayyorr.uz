@@ -92,6 +92,8 @@ const ACTIONS: [RegExp, RegExp, string][] = [
   [/./, /^\/api\/admin\/smm-adjust/, "SMM narx / çegirmani özgartirdi"],
   [/./, /^\/api\/admin\/users\/[^/]+\/impersonate/, "Foydalanuvçi akkauntiga kirdi (tekşiriş)"],
   [/./, /^\/api\/admin\/settings\/offer-stars/, "Ariza uçun minimal starni özgartirdi"],
+  [/./, /^\/api\/admin\/settings\/star-price/, "1 star narxini özgartirdi"],
+  [/./, /^\/api\/admin\/settings\/guide-video/, "Qöllanma videosini özgartirdi"],
   [/./, /^\/api\/admin\/finance/, "Moliya sozlamasi / yozuvini özgartirdi"],
   [/./, /^\/api\/admin\/users/, "Foydalanuvçi ustida amal bajardi"],
   [/./, /^\/api\/admin\/payouts/, "Yeçib oliş sörovi böyiça qaror qildi"],

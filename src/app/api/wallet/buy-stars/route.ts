@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { buyStars, STAR_PRICE } from "@/lib/stars";
+import { buyStars } from "@/lib/stars";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 const schema = z.object({ stars: z.number().int().positive().max(10_000) });
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     [
       `Foydalanuvçi: ${userLabel(user)}`,
       user?.email ? `Email: ${user.email}` : "",
-      `Sotib olindi: ${parsed.data.stars} ⭐ (${(parsed.data.stars * STAR_PRICE).toLocaleString("ru-RU")} söm)`,
+      `Sotib olindi: ${parsed.data.stars} ⭐ (${result.amount.toLocaleString("ru-RU")} söm)`,
       `Yangi star balansi: ${result.newStars} ⭐`,
       `Yangi söm balansi: ${result.newSom.toLocaleString("ru-RU")} söm`,
       `Foydalanuvçi ID: ${session.user.id}`,
