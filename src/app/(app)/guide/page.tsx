@@ -214,23 +214,21 @@ export default async function GuidePage({
             <h2 className="text-lg font-semibold text-white">Video qöllanmalar</h2>
             <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs font-semibold text-indigo-300">{videos.length}</span>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {videos.map((v, i) => (
               <figure
                 key={v.id}
-                className={`blur-in overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] ${
-                  videos.length % 2 === 1 && i === 0 ? "md:col-span-2" : ""
-                }`}
+                className="blur-in overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
               >
                 <video src={v.url} controls playsInline preload="metadata" className="aspect-video w-full bg-black object-contain" />
-                <figcaption className="flex items-center gap-3 p-4">
+                <figcaption className="flex items-center gap-2.5 p-3">
                   <span
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-semibold"
                     style={{ color: "#fff" }}
                   >
                     {i + 1}
                   </span>
-                  <span className="font-medium text-white">{v.title}</span>
+                  <span className="line-clamp-2 text-sm font-medium text-white">{v.title}</span>
                 </figcaption>
               </figure>
             ))}
