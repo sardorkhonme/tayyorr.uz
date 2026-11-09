@@ -19,17 +19,28 @@ const REF_MAX_AGE = 60 * 60 * 24 * 30; // 30 kun
  * kelgani aniqlanadi.
  */
 /**
- * Cookie butun .tayyorr.uz uchun — ro'yxatdan o'tish tayyorr+ (plus.tayyorr.uz)
- * da bo'ladi, u ham shu cookie'ni o'qishi kerak (plus/src/lib/referral-attribution.ts).
+ * Oxirgi ochilgan havola hisoblanadi: yangi cookie qo'yiladi, ikkinchi turdagi
+ * eski cookie o'chiriladi — aks holda avval ochilgan shaxsiy referal 30 kun
+ * saqlanib, keyingi tashrif havolasi bilan birga yozilib qolardi.
+ * Cookie butun .tayyorr.uz uchun (ro'yxatdan o'tish plus.tayyorr.uz da);
+ * domen bo'linishidan oldingi faqat shu host'ga yozilgan eski cookie ham o'chiriladi.
+ * Set-Cookie qo'lda — bir nomni ikki xil domen bilan o'chirish uchun.
  */
-function cookieOpts(req: Request) {
+function withRefCookie(req: Request, res: NextResponse, keep: { name: string; value: string }) {
   const host = new URL(req.url).hostname;
-  return {
-    maxAge: REF_MAX_AGE,
-    path: "/",
-    sameSite: "lax" as const,
-    ...(host === "tayyorr.uz" || host.endsWith(".tayyorr.uz") ? { domain: ".tayyorr.uz" } : {}),
-  };
+  const shared = host === "tayyorr.uz" || host.endsWith(".tayyorr.uz");
+  const base = "Path=/; SameSite=Lax; Secure";
+  const dom = shared ? "; Domain=.tayyorr.uz" : "";
+  for (const name of [REF_COOKIE, UREF_COOKIE]) {
+    // eski host-only nusxa (domen bo'linishidan oldin)
+    if (shared) res.headers.append("Set-Cookie", `${name}=; Max-Age=0; ${base}`);
+    if (name !== keep.name) res.headers.append("Set-Cookie", `${name}=; Max-Age=0; ${base}${dom}`);
+  }
+  res.headers.append(
+    "Set-Cookie",
+    `${keep.name}=${encodeURIComponent(keep.value)}; Max-Age=${REF_MAX_AGE}; ${base}${dom}`,
+  );
+  return res;
 }
 
 export async function GET(
@@ -47,10 +58,7 @@ export async function GET(
     await db.referralLink
       .update({ where: { id: link.id }, data: { visits: { increment: 1 } } })
       .catch(() => {});
-
-    const res = NextResponse.redirect(home);
-    res.cookies.set(REF_COOKIE, link.code, cookieOpts(req));
-    return res;
+    return withRefCookie(req, NextResponse.redirect(home), { name: REF_COOKIE, value: link.code });
   }
 
   // 2026-09-15 gacha shaxsiy havola login bilan berilgan (/r/<login>) — u ham ishlasin
@@ -61,9 +69,7 @@ export async function GET(
       .catch(() => null));
 
   if (referrer) {
-    const res = NextResponse.redirect(home);
-    res.cookies.set(UREF_COOKIE, referrer.id, cookieOpts(req));
-    return res;
+    return withRefCookie(req, NextResponse.redirect(home), { name: UREF_COOKIE, value: referrer.id });
   }
 
   return NextResponse.redirect(home);
