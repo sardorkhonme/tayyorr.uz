@@ -3,22 +3,35 @@ import type { IconName } from "@/components/icons";
 
 /**
  * "Qo'llanma" bo'limi — har bir rol uchun ketma-ket qadamlar va admin
- * yuklaydigan video. Video manzili AppSetting'da: "guideVideo:ORDERER" /
- * "guideVideo:PREPARER" (admin/src/lib/guide-settings.ts bilan bir xil kalit).
+ * yuklaydigan videolar (sarlavha bilan, bir nechta). Ro'yxat AppSetting'da
+ * JSON massiv: "guideVideo:ORDERER" / "guideVideo:PREPARER"
+ * (admin/src/lib/guide-settings.ts bilan bir xil kalit va format).
  */
 export type GuideRole = "ORDERER" | "PREPARER";
 export const GUIDE_ROLES: GuideRole[] = ["ORDERER", "PREPARER"];
 export const guideVideoKey = (role: GuideRole) => `guideVideo:${role}`;
 
-export async function getGuideVideo(role: GuideRole): Promise<string | null> {
-  const row = await db.appSetting.findUnique({ where: { key: guideVideoKey(role) } }).catch(() => null);
-  if (!row) return null;
+export interface GuideVideo {
+  id: string;
+  title: string;
+  url: string;
+}
+
+/** Eski format (bitta obyekt) ham o'qiladi — birinchi video bo'lib chiqadi. */
+export function parseGuideVideos(value: string | null | undefined): (GuideVideo & { key?: string | null })[] {
+  if (!value) return [];
   try {
-    const v = JSON.parse(row.value) as { url?: string };
-    return v.url || null;
+    const v = JSON.parse(value);
+    const arr = Array.isArray(v) ? v : v && typeof v === "object" ? [{ id: "legacy", title: "Video qöllanma", ...v }] : [];
+    return arr.filter((x) => x && typeof x.url === "string" && x.url);
   } catch {
-    return null;
+    return [];
   }
+}
+
+export async function getGuideVideos(role: GuideRole): Promise<GuideVideo[]> {
+  const row = await db.appSetting.findUnique({ where: { key: guideVideoKey(role) } }).catch(() => null);
+  return parseGuideVideos(row?.value).map(({ id, title, url }) => ({ id, title, url }));
 }
 
 export interface GuideStep {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { Icon } from "@/components/icons";
 import { getStarPrice, getMinOfferStars } from "@/lib/stars";
-import { GUIDE_ROLES, ROLE_TITLE, getGuideVideo, guideSteps, type GuideRole } from "@/lib/guide";
+import { GUIDE_ROLES, ROLE_TITLE, getGuideVideos, guideSteps, type GuideRole } from "@/lib/guide";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +24,8 @@ export default async function GuidePage({
   const asked = (await searchParams).role;
   const role: GuideRole = asked === "PREPARER" || asked === "ORDERER" ? asked : myRole;
 
-  const [video, starPrice, minOfferStars] = await Promise.all([
-    getGuideVideo(role),
+  const [videos, starPrice, minOfferStars] = await Promise.all([
+    getGuideVideos(role),
     getStarPrice(),
     getMinOfferStars(),
   ]);
@@ -96,33 +96,43 @@ export default async function GuidePage({
             <span className="inline-flex items-center gap-1.5">
               <Icon name="clock" className="h-3.5 w-3.5 text-indigo-300" />~{minutes} daqiqa öqiş
             </span>
-            {video && (
+            {videos.length > 0 && (
               <span className="inline-flex items-center gap-1.5">
                 <Icon name="play" className="h-3.5 w-3.5 text-violet-300" />
-                Video qöllanma bor
+                {videos.length} ta video
               </span>
             )}
           </div>
         </div>
       </section>
 
-      {/* ——— video ——— */}
-      {video ? (
-        <section className="blur-in rounded-3xl bg-gradient-to-br from-indigo-500/50 via-violet-500/25 to-white/5 p-px shadow-2xl shadow-indigo-500/10">
-          <div className="overflow-hidden rounded-[calc(1.5rem-1px)] bg-black">
-            <video src={video} controls playsInline preload="metadata" className="max-h-[70vh] w-full bg-black" />
-          </div>
-        </section>
-      ) : (
-        <section className="blur-in flex items-center gap-4 rounded-3xl border border-dashed border-white/15 bg-white/[0.02] p-5">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/25 to-violet-500/20 text-indigo-300">
-            <Icon name="play" className="h-5 w-5" />
+      {/* ——— videolarga olib boruvchi banner (videolar sahifaning eng ostida) ——— */}
+      {videos.length > 0 && (
+        <a
+          href="#videos"
+          className="blur-in group flex items-center gap-4 rounded-3xl bg-gradient-to-br from-indigo-500/50 via-violet-500/25 to-white/5 p-px shadow-xl shadow-indigo-500/10"
+        >
+          <span className="flex w-full items-center gap-4 rounded-[calc(1.5rem-1px)] bg-white/[0.03] p-4 backdrop-blur-sm sm:p-5">
+            <span
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30 transition group-hover:scale-105"
+              style={{ color: "#fff" }}
+            >
+              <span className="absolute inset-0 animate-ping rounded-2xl bg-indigo-500/30 [animation-duration:2.4s]" />
+              <Icon name="play" className="relative h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold text-white">Körib örganişni afzal körasizmi?</span>
+              <span className="mt-0.5 block text-sm text-zinc-400">
+                {videos.length} ta video qöllanma tayyor — hammasi sahifaning pastida.
+              </span>
+            </span>
+            <span className="btn-primary hidden shrink-0 sm:inline-flex">
+              Videolarni köriş
+              <span aria-hidden className="transition group-hover:translate-y-0.5">↓</span>
+            </span>
+            <span aria-hidden className="text-lg text-indigo-300 sm:hidden">↓</span>
           </span>
-          <div>
-            <p className="font-medium text-white">Video qöllanma tez orada</p>
-            <p className="mt-0.5 text-sm text-zinc-500">Hozirça quyidagi qadamlarni ketma-ket bajaring — hammasi şu yerda.</p>
-          </div>
-        </section>
+        </a>
       )}
 
       {/* ——— qadamlar (vertikal yo'l) ——— */}
@@ -196,6 +206,37 @@ export default async function GuidePage({
           </Link>
         </div>
       </section>
+
+      {/* ——— video qo'llanmalar (eng ostida) ——— */}
+      {videos.length > 0 && (
+        <section id="videos" className="scroll-mt-24">
+          <div className="mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-white">Video qöllanmalar</h2>
+            <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs font-semibold text-indigo-300">{videos.length}</span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {videos.map((v, i) => (
+              <figure
+                key={v.id}
+                className={`blur-in overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] ${
+                  videos.length % 2 === 1 && i === 0 ? "md:col-span-2" : ""
+                }`}
+              >
+                <video src={v.url} controls playsInline preload="metadata" className="aspect-video w-full bg-black object-contain" />
+                <figcaption className="flex items-center gap-3 p-4">
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-semibold"
+                    style={{ color: "#fff" }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="font-medium text-white">{v.title}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

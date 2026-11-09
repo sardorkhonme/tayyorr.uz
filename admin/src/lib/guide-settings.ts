@@ -8,30 +8,37 @@ export type GuideRole = "ORDERER" | "PREPARER";
 export const GUIDE_ROLES: GuideRole[] = ["ORDERER", "PREPARER"];
 export const guideVideoKey = (role: GuideRole) => `guideVideo:${role}`;
 
-export type GuideVideo = { url: string; key: string | null; at: string };
+export type GuideVideo = { id: string; title: string; url: string; key: string | null; at: string };
 
-export async function getGuideVideos(): Promise<Record<GuideRole, GuideVideo | null>> {
-  const rows = await db.appSetting.findMany({ where: { key: { in: GUIDE_ROLES.map(guideVideoKey) } } });
-  const out: Record<GuideRole, GuideVideo | null> = { ORDERER: null, PREPARER: null };
-  for (const r of GUIDE_ROLES) {
-    const row = rows.find((x) => x.key === guideVideoKey(r));
-    if (!row) continue;
-    try {
-      out[r] = JSON.parse(row.value) as GuideVideo;
-    } catch {
-      out[r] = null;
-    }
+/** Eski format (bitta obyekt) ham o'qiladi — birinchi video bo'lib chiqadi. */
+function parse(value: string | undefined): GuideVideo[] {
+  if (!value) return [];
+  try {
+    const v = JSON.parse(value);
+    const arr = Array.isArray(v) ? v : v && typeof v === "object" ? [{ id: "legacy", title: "Video qöllanma", ...v }] : [];
+    return arr.filter((x) => x && typeof x.url === "string" && x.url);
+  } catch {
+    return [];
   }
-  return out;
 }
 
-export async function setGuideVideo(role: GuideRole, v: { url: string; key: string | null } | null) {
+export async function getGuideVideos(role: GuideRole): Promise<GuideVideo[]> {
+  const row = await db.appSetting.findUnique({ where: { key: guideVideoKey(role) } });
+  return parse(row?.value);
+}
+
+export async function getAllGuideVideos(): Promise<Record<GuideRole, GuideVideo[]>> {
+  const [o, p] = await Promise.all([getGuideVideos("ORDERER"), getGuideVideos("PREPARER")]);
+  return { ORDERER: o, PREPARER: p };
+}
+
+export async function saveGuideVideos(role: GuideRole, list: GuideVideo[]) {
   const key = guideVideoKey(role);
-  if (!v) {
+  if (list.length === 0) {
     await db.appSetting.deleteMany({ where: { key } });
     return;
   }
-  const value = JSON.stringify({ ...v, at: new Date().toISOString() });
+  const value = JSON.stringify(list);
   await db.appSetting.upsert({ where: { key }, create: { key, value }, update: { value } });
 }
 
