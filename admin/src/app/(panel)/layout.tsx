@@ -48,7 +48,7 @@ export default async function AdminPanelLayout({
   await requireAdmin();
 
   const supportId = await getSupportUserId();
-  const [unreadMsgs, openComplaints, pendingPayouts, maintenance] = await Promise.all([
+  const [unreadMsgs, openComplaints, pendingPayouts, maintenance, disputes] = await Promise.all([
     db.conversation.count({
       where: {
         OR: [{ userAId: supportId }, { userBId: supportId }],
@@ -60,9 +60,18 @@ export default async function AdminPanelLayout({
     db.complaint.count({ where: { status: { in: ["OPEN", "REVIEWING"] } } }),
     db.payoutRequest.count({ where: { status: "PENDING" } }),
     getMaintenance(),
+    // admin qarorini kutayotgan şartnoma nizolari (Buyurtmalar sahifasi tepasida)
+    db.contract.count({
+      where: {
+        status: "ACCEPTED",
+        cancelState: "DISPUTED",
+        order: { status: { in: ["IN_PROGRESS", "DELIVERED"] } },
+      },
+    }),
   ]);
 
   const badge: Record<string, number> = {
+    "/orders": disputes,
     "/messages": unreadMsgs,
     "/complaints": openComplaints,
     "/payouts": pendingPayouts,

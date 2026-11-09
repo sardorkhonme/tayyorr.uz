@@ -36,7 +36,7 @@ function OfferBadge({ status, inline = false }: { status: string; inline?: boole
   return (
     <span
       className={`inline-flex items-center font-semibold ${s.cls} ${
-        inline ? "gap-1 rounded-full px-2 py-0.5 align-middle text-xs" : "gap-2 rounded-xl px-[1.1rem] py-[0.6rem] text-sm"
+        inline ? "gap-1 rounded-full px-2 py-0.5 align-middle text-xs" : "gap-2 self-stretch rounded-xl border border-current/20 px-[1.1rem] py-[0.6rem] text-sm leading-[1.2]"
       }`}
     >
       <Icon name={OFFER_ICON[status] ?? "clock"} className={inline ? "h-3.5 w-3.5" : "h-4 w-4"} />
