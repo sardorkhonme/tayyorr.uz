@@ -5,7 +5,7 @@ import { AuthError } from "next-auth";
 
 import { auth, signIn } from "@/auth";
 import { completeProfile, ProfileError, type ProfileInput } from "@/lib/profile";
-import { emailSchemaMsg, normalizeEmail, sendOtp } from "@/lib/email-otp";
+import { emailHasAccount, emailSchemaMsg, normalizeEmail, sendOtp } from "@/lib/email-otp";
 import { requestPasswordReset, resetPassword } from "@/lib/password-reset";
 
 export type AuthState = { error?: string; values?: Record<string, string>; sent?: boolean };
@@ -53,6 +53,10 @@ export async function sendOtpAction(_prev: AuthState, form: FormData): Promise<A
   const raw = String(form.get("email") ?? "");
   const email = normalizeEmail(raw);
   if (!email) return { values: { email: raw }, error: emailSchemaMsg };
+  // ro'yxatdan to'liq o'tgan hisob — kod yubormaymiz, kirishga yo'naltiramiz
+  if (await emailHasAccount(email)) {
+    return { values: { email: raw, exists: "1" }, error: "Bu email bilan hisob allaqaçon mavjud. Kiriş sahifasidan kiring." };
+  }
   const r = await sendOtp(email);
   // 60 soniya o'tmagan bo'lsa ham kod sahifasiga o'tkazamiz — oldingi kod hali amal qiladi
   if (!r.ok && !r.waitSec) return { values: { email: raw }, error: r.error };

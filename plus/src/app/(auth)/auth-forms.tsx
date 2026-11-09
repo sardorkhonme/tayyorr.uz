@@ -88,13 +88,13 @@ export function LoginForm({ initialError, notice }: { initialError?: string; not
           />
         </div>
         <div>
-          <div className="flex items-center justify-between">
-            <label className="label" htmlFor="password">Parol</label>
-            <Link href="/forgot" className="mb-1.5 text-sm font-medium text-indigo-600 hover:underline">
+          <label className="label" htmlFor="password">Parol</label>
+          <PasswordInput autoComplete="current-password" />
+          <div className="mt-2 text-right">
+            <Link href="/forgot" className="text-sm font-medium text-indigo-600 hover:underline">
               Parolni unutdingizmi?
             </Link>
           </div>
-          <PasswordInput autoComplete="current-password" />
         </div>
         <ErrorBox text={state.error} />
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
@@ -139,6 +139,13 @@ export function RegisterForm() {
           />
         </div>
         <ErrorBox text={state.error} />
+        {state.values?.exists && (
+          <p className="-mt-2 text-sm text-zinc-500">
+            <Link href="/login" className="font-semibold text-indigo-600 hover:underline">Kiriş</Link>
+            {" · "}
+            <Link href="/forgot" className="font-semibold text-indigo-600 hover:underline">Parolni unutdingizmi?</Link>
+          </p>
+        )}
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
           {pending ? "Yuborilmoqda…" : "Kod yuboriş"}
         </button>

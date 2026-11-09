@@ -22,6 +22,12 @@ export function normalizeEmail(raw: string): string | null {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e) && e.length <= 200 ? e : null;
 }
 
+/** Ro'yxatdan to'liq o'tgan (login bor) hisob — yarim qolgan (profil to'ldirilmagan) hisob davom etaveradi. */
+export async function emailHasAccount(email: string) {
+  const u = await db.user.findUnique({ where: { email }, select: { login: true } });
+  return !!u?.login;
+}
+
 function hash(email: string, code: string) {
   return createHash("sha256")
     .update(`${process.env.AUTH_SECRET ?? ""}:${email}:${code}`)
