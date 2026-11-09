@@ -72,10 +72,16 @@ html.light .menu-panel {
   color: #1b1b1f;
 }
 /* yorug' rejim: modal / popup orqa foni — fon o'qishga xalaqit bermasin */
-html.light .fixed.inset-0[class*="bg-black/"] {
+html.light .fixed.inset-0[class*="bg-black/"]:not(.menu-backdrop) {
   background-color: rgba(228, 228, 233, 0.66) !important;
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
   backdrop-filter: blur(14px) saturate(1.05);
+}
+/* yorug' rejim: menyu ochilganda orqa sahifa va header ko'rinib tursin — faqat yengil xiralik, blur yo'q */
+html.light .menu-backdrop {
+  background-color: rgba(24, 24, 27, 0.14) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 /* rasm ko'ruvchi (lightbox) qorong'i qoladi */
 html.light .fixed.inset-0[class*="bg-black/9"] {
