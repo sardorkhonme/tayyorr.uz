@@ -7,6 +7,12 @@ import { GUIDE_ROLES, ROLE_TITLE, getGuideVideo, guideSteps, type GuideRole } fr
 
 export const dynamic = "force-dynamic";
 
+const ROLE_ICON = { ORDERER: "package", PREPARER: "sparkles" } as const;
+const ROLE_LEAD: Record<GuideRole, string> = {
+  ORDERER: "Buyurtma beriş, köngilli tanlaş, şartnoma tuziş va işni qabul qiliş — boşidan oxirigaça.",
+  PREPARER: "Star oliş, ariza yuboriş, şartnoma böyiça işlaş va pulni kartaga yeçib oliş — boşidan oxirigaça.",
+};
+
 /** Qo'llanma: foydalanuvchi o'z roli bo'yicha qila oladigan ishlar ketma-ketligi + video. */
 export default async function GuidePage({
   searchParams,
@@ -24,83 +30,172 @@ export default async function GuidePage({
     getMinOfferStars(),
   ]);
   const steps = guideSteps(role, { starPrice, minOfferStars });
+  const minutes = Math.max(2, Math.round(steps.reduce((n, s) => n + s.points.join(" ").split(" ").length, 0) / 160));
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="text-xl font-semibold text-white">Qöllanma</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          Tayyorr'da nimalar qila olişingiz va qaysi ketma-ketlikda — qadamma-qadam.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6">
+      {/* ——— hero ——— */}
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-7">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full opacity-40 blur-3xl"
+          style={{ background: "radial-gradient(circle, #6366f1, transparent 70%)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full opacity-30 blur-3xl"
+          style={{ background: "radial-gradient(circle, #a855f7, transparent 70%)" }}
+        />
 
-      {/* rol tanlash — o'z rolingiz standart, ikkinchisini ham ko'rish mumkin */}
-      <div className="flex flex-wrap gap-1.5">
-        {GUIDE_ROLES.map((r) => (
-          <Link
-            key={r}
-            href={r === myRole ? "/guide" : `/guide?role=${r}`}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium backdrop-blur-sm transition ${
-              r === role
-                ? "bg-indigo-500 text-white"
-                : "bg-white/[0.05] text-zinc-400 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            {ROLE_TITLE[r]}
-            {r === myRole && <span className="ml-1 opacity-70">· siz</span>}
-          </Link>
-        ))}
-      </div>
+        <div className="relative">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
+            <Icon name="help" className="h-3.5 w-3.5" />
+            Qöllanma
+          </span>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            Tayyorr'dan qanday foydalaniladi
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">{ROLE_LEAD[role]}</p>
 
+          {/* rol tanlash */}
+          <div className="mt-5 inline-flex w-full gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1 sm:w-auto">
+            {GUIDE_ROLES.map((r) => {
+              const on = r === role;
+              return (
+                <Link
+                  key={r}
+                  href={r === myRole ? "/guide" : `/guide?role=${r}`}
+                  scroll={false}
+                  aria-current={on ? "page" : undefined}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition sm:flex-none ${
+                    on
+                      ? "bg-indigo-500 shadow-lg shadow-indigo-500/25"
+                      : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"
+                  }`}
+                  style={on ? { color: "#fff" } : undefined}
+                >
+                  <Icon name={ROLE_ICON[r]} className="h-4 w-4" />
+                  {ROLE_TITLE[r]}
+                  {r === myRole && (
+                    <span
+                      className={`rounded-full px-1.5 py-px text-[10px] font-semibold ${on ? "bg-white/20" : "bg-white/[0.08]"}`}
+                    >
+                      siz
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-500">
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="check-circle" className="h-3.5 w-3.5 text-emerald-400" />
+              {steps.length} ta qadam
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name="clock" className="h-3.5 w-3.5 text-indigo-300" />~{minutes} daqiqa öqiş
+            </span>
+            {video && (
+              <span className="inline-flex items-center gap-1.5">
+                <Icon name="play" className="h-3.5 w-3.5 text-violet-300" />
+                Video qöllanma bor
+              </span>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ——— video ——— */}
       {video ? (
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-          <video src={video} controls playsInline preload="metadata" className="max-h-[70vh] w-full bg-black" />
-        </div>
+        <section className="blur-in rounded-3xl bg-gradient-to-br from-indigo-500/50 via-violet-500/25 to-white/5 p-px shadow-2xl shadow-indigo-500/10">
+          <div className="overflow-hidden rounded-[calc(1.5rem-1px)] bg-black">
+            <video src={video} controls playsInline preload="metadata" className="max-h-[70vh] w-full bg-black" />
+          </div>
+        </section>
       ) : (
-        <div className="card flex items-center gap-3 text-sm text-zinc-500">
-          <Icon name="film" className="h-5 w-5 shrink-0" />
-          Video qöllanma tez orada qöşiladi. Hozirça quyidagi qadamlarni öqing.
-        </div>
+        <section className="blur-in flex items-center gap-4 rounded-3xl border border-dashed border-white/15 bg-white/[0.02] p-5">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/25 to-violet-500/20 text-indigo-300">
+            <Icon name="play" className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="font-medium text-white">Video qöllanma tez orada</p>
+            <p className="mt-0.5 text-sm text-zinc-500">Hozirça quyidagi qadamlarni ketma-ket bajaring — hammasi şu yerda.</p>
+          </div>
+        </section>
       )}
 
-      <ol className="flex flex-col gap-3">
-        {steps.map((s, i) => (
-          <li key={s.title} className="card flex gap-4">
-            <div className="flex shrink-0 flex-col items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300">
-                <Icon name={s.icon} className="h-4.5 w-4.5" />
-              </span>
-              <span className="text-xs font-semibold text-zinc-600">{i + 1}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="font-semibold text-white">{s.title}</h2>
-              <ul className="mt-1.5 flex flex-col gap-1 text-sm text-zinc-300">
-                {s.points.map((p) => (
-                  <li key={p} className="flex gap-2">
-                    <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-zinc-500" />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-              {s.link && role === myRole && (
-                <Link
-                  href={s.link.href}
-                  className="mt-2.5 inline-flex items-center gap-1 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
-                >
-                  {s.link.label} ›
-                </Link>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
+      {/* ——— qadamlar (vertikal yo'l) ——— */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-white">Qadamma-qadam</h2>
+        <ol className="relative">
+          {steps.map((s, i) => {
+            const last = i === steps.length - 1;
+            return (
+              <li key={s.title} className="blur-in relative flex gap-4 pb-4 last:pb-0 sm:gap-5">
+                {/* raqam + ulovchi chiziq */}
+                <div className="relative flex w-10 shrink-0 justify-center">
+                  {!last && (
+                    <span
+                      aria-hidden
+                      className="absolute left-1/2 top-11 -bottom-1 w-px -translate-x-1/2 bg-gradient-to-b from-indigo-400/50 to-white/5"
+                    />
+                  )}
+                  <span
+                    className="relative z-[1] flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-semibold shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-500/10"
+                    style={{ color: "#fff" }}
+                  >
+                    {i + 1}
+                  </span>
+                </div>
 
-      <p className="text-center text-sm text-zinc-500">
-        Savolingiz qoldimi?{" "}
-        <Link href="/messages" className="text-indigo-300 hover:text-indigo-200">
-          Support çatiga yozing
-        </Link>
-      </p>
+                <div className="group min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-indigo-400/30 hover:bg-white/[0.05] sm:p-5">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300 transition group-hover:scale-105">
+                      <Icon name={s.icon} className="h-[18px] w-[18px]" />
+                    </span>
+                    <h3 className="font-semibold text-white">{s.title}</h3>
+                  </div>
+                  <ul className="mt-3 flex flex-col gap-2 text-sm leading-relaxed text-zinc-300">
+                    {s.points.map((p) => (
+                      <li key={p} className="flex gap-2.5">
+                        <Icon name="check" className="mt-[3px] h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {s.link && role === myRole && (
+                    <Link
+                      href={s.link.href}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/25 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium text-indigo-300 transition hover:bg-indigo-500/20"
+                    >
+                      {s.link.label}
+                      <span aria-hidden>→</span>
+                    </Link>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      {/* ——— yordam ——— */}
+      <section className="blur-in relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500/15 via-violet-500/10 to-transparent p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-300">
+            <Icon name="headset" className="h-6 w-6" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-white">Savolingiz qoldimi?</p>
+            <p className="mt-0.5 text-sm text-zinc-400">Support jamoasi çatda javob beradi — istalgan savol böyiça yozing.</p>
+          </div>
+          <Link href="/messages" className="btn-primary shrink-0">
+            <Icon name="message" className="h-4 w-4" />
+            Support çatiga yoziş
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
