@@ -49,6 +49,26 @@ class FamilyRepository {
     return FamilyMessage.fromJson(Map<String, dynamic>.from(r['message'] as Map));
   }
 
+  /// Reaksiya: o'sha emojini qayta bossa yoki null — olib tashlanadi.
+  Future<FamilyMessage> react(String id, String? emoji) async {
+    final r = await _api.post('/mobile/family/$id/react', data: {'emoji': emoji});
+    return FamilyMessage.fromJson(Map<String, dynamic>.from(r['message'] as Map));
+  }
+
+  /// Kim reaksiya bosgan va kim ko'rgan.
+  Future<({List<FamilyPerson> reactions, List<FamilyPerson> seen, int seenCount})> people(String id) async {
+    final r = await _api.get('/mobile/family/$id/people');
+    List<FamilyPerson> list(Object? v) =>
+        (v as List? ?? const []).whereType<Map>().map((m) => FamilyPerson.fromJson(Map<String, dynamic>.from(m))).toList();
+    return (reactions: list(r['reactions']), seen: list(r['seen']), seenCount: (r['seenCount'] as num?)?.toInt() ?? 0);
+  }
+
+  /// A'zolar va hozir onlayn (yengil so'rov).
+  Future<({int? members, int? online})> online() async {
+    final r = await _api.get('/mobile/family/online');
+    return (members: (r['members'] as num?)?.toInt(), online: (r['online'] as num?)?.toInt());
+  }
+
   Future<void> read(int atMs) => _api.post('/mobile/family/read', data: {'at': atMs});
 
   Future<List<FamilyAuthor>> mention(String q) async {
@@ -98,6 +118,9 @@ class FamilySummary {
 
   /// (o'qilmagan, belgilashlar)
   final value = ValueNotifier<({int unread, int mentions})>((unread: 0, mentions: 0));
+
+  /// Support profili (admin panelda o'zgartiriladi) — «Xabarlar» bo'limidagi qator uchun.
+  final support = ValueNotifier<({String name, String? image})?>(null);
   DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// [force] bo'lmasa — 20 soniyada bir martadan ko'p so'ramaydi.
@@ -107,6 +130,8 @@ class FamilySummary {
     try {
       final r = await ApiClient.instance.get('/mobile/family/summary');
       value.value = (unread: (r['unread'] as num?)?.toInt() ?? 0, mentions: (r['mentions'] as num?)?.toInt() ?? 0);
+      final sp = r['support'];
+      if (sp is Map) support.value = (name: '${sp['name'] ?? 'Tayyorr Support'}', image: sp['image'] as String?);
     } catch (_) {
       /* jim — karta raqamsiz ham ishlaydi */
     }

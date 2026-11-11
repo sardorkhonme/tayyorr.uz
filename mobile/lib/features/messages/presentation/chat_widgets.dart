@@ -230,3 +230,90 @@ class _RoundFab extends StatelessWidget {
     );
   }
 }
+
+/// Telegramdagidek: xabarni chapga surib javob berish. Pufakcha chapga siljiydi, o'ngda «javob»
+/// belgisi paydo bo'ladi; chegaradan o'tganda titraydi, qo'yib yuborilganda — [onReply].
+class SwipeToReply extends StatefulWidget {
+  const SwipeToReply({super.key, required this.child, required this.onReply, this.enabled = true});
+  final Widget child;
+  final VoidCallback onReply;
+  final bool enabled;
+
+  @override
+  State<SwipeToReply> createState() => _SwipeToReplyState();
+}
+
+class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderStateMixin {
+  static const _threshold = 64.0;
+  static const _max = 96.0;
+  late final AnimationController _back = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
+  double _dx = 0;
+  double _from = 0;
+  bool _armed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _back.addListener(() => setState(() => _dx = _from * (1 - Curves.easeOutCubic.transform(_back.value))));
+  }
+
+  @override
+  void dispose() {
+    _back.dispose();
+    super.dispose();
+  }
+
+  void _update(DragUpdateDetails d) {
+    if (_back.isAnimating) _back.stop();
+    // faqat chapga; chegaradan keyin qarshilik
+    var next = (_dx + d.delta.dx).clamp(-_max * 1.4, 0.0);
+    if (next < -_max) next = -_max - (-next - _max) * 0.35;
+    final armed = -next >= _threshold;
+    if (armed && !_armed) HapticFeedback.lightImpact();
+    setState(() {
+      _dx = next;
+      _armed = armed;
+    });
+  }
+
+  void _end([DragEndDetails? _]) {
+    if (_armed) widget.onReply();
+    _armed = false;
+    _from = _dx;
+    _back.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+    final p = (-_dx / _threshold).clamp(0.0, 1.0);
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragUpdate: _update,
+      onHorizontalDragEnd: _end,
+      onHorizontalDragCancel: _end,
+      child: Stack(alignment: Alignment.centerRight, clipBehavior: Clip.none, children: [
+        Positioned(
+          right: 6,
+          child: Opacity(
+            opacity: p,
+            child: Transform.scale(
+              scale: 0.6 + 0.4 * p,
+              child: Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _armed ? const Color(0xFF6366F1) : WebC.fill10,
+                ),
+                child: TIcon(TI.reply_rounded, size: 18, color: _armed ? Colors.white : WebC.zinc300),
+              ),
+            ),
+          ),
+        ),
+        Transform.translate(offset: Offset(_dx, 0), child: widget.child),
+      ]),
+    );
+  }
+}

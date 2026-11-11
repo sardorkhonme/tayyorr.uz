@@ -43,6 +43,24 @@ class FamilyReply {
       );
 }
 
+/// Guruhdagi reaksiyalar (serverdagi FAMILY_EMOJIS bilan bir xil).
+const kFamilyEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🙏', '👏'];
+
+class FamilyReaction {
+  const FamilyReaction({required this.emoji, required this.count, required this.users});
+  final String emoji;
+  final int count;
+
+  /// Bosganlar id'lari (≤50) — «meniki»ni aniqlash uchun.
+  final List<String> users;
+
+  factory FamilyReaction.fromJson(Map<String, dynamic> j) => FamilyReaction(
+        emoji: '${j['emoji']}',
+        count: (j['count'] as num?)?.toInt() ?? 0,
+        users: (j['users'] as List? ?? const []).map((e) => '$e').toList(),
+      );
+}
+
 class FamilyMention {
   const FamilyMention(this.id, this.login);
   final String id;
@@ -65,6 +83,8 @@ class FamilyMessage {
     required this.sendAt,
     required this.updatedAt,
     required this.deleted,
+    this.reactions = const [],
+    this.seen = 0,
   });
 
   final String id;
@@ -85,6 +105,10 @@ class FamilyMessage {
   final DateTime sendAt;
   final int updatedAt;
   final bool deleted;
+  final List<FamilyReaction> reactions;
+
+  /// Nechta a'zo ko'rgan (muallifdan tashqari).
+  final int seen;
 
   int get sendAtMs => sendAt.millisecondsSinceEpoch;
 
@@ -100,10 +124,37 @@ class FamilyMessage {
   bool mentionsMe(String meId, bool isAdmin) =>
       mentions.any((m) => m.id == meId || (isAdmin && (m.id == 'brand' || m.id == 'support')));
 
-  FamilyMessage withMine(bool v) => FamilyMessage(
+  /// Mening reaksiyam (bo'lsa).
+  String? myReaction(String meId) {
+    for (final r in reactions) {
+      if (r.users.contains(meId)) return r.emoji;
+    }
+    return null;
+  }
+
+  /// Reaksiyani mahalliy (optimistik) almashtirish: bir xabarga bitta; o'shani qayta bossa — olib tashlanadi.
+  FamilyMessage toggledReaction(String meId, String emoji) {
+    final had = myReaction(meId);
+    final list = <FamilyReaction>[];
+    for (final r in reactions) {
+      final users = r.users.where((u) => u != meId).toList();
+      final count = r.users.contains(meId) ? r.count - 1 : r.count;
+      if (r.emoji == emoji && had != emoji) {
+        list.add(FamilyReaction(emoji: r.emoji, count: count + 1, users: [...users, meId]));
+      } else if (count > 0) {
+        list.add(FamilyReaction(emoji: r.emoji, count: count, users: users));
+      }
+    }
+    if (had != emoji && !list.any((r) => r.emoji == emoji)) {
+      list.add(FamilyReaction(emoji: emoji, count: 1, users: [meId]));
+    }
+    return copyWith(reactions: list);
+  }
+
+  FamilyMessage copyWith({bool? mine, List<FamilyReaction>? reactions}) => FamilyMessage(
         id: id,
         author: author,
-        mine: v,
+        mine: mine ?? this.mine,
         body: body,
         file: file,
         expiredFile: expiredFile,
@@ -115,7 +166,11 @@ class FamilyMessage {
         sendAt: sendAt,
         updatedAt: updatedAt,
         deleted: deleted,
+        reactions: reactions ?? this.reactions,
+        seen: seen,
       );
+
+  FamilyMessage withMine(bool v) => copyWith(mine: v);
 
   factory FamilyMessage.fromJson(Map<String, dynamic> j) {
     ChatFileModel? meta(Object? v, {bool withUrl = true}) {
@@ -147,8 +202,27 @@ class FamilyMessage {
       sendAt: DateTime.fromMillisecondsSinceEpoch((j['sendAt'] as num).toInt()),
       updatedAt: (j['updatedAt'] as num?)?.toInt() ?? 0,
       deleted: j['deleted'] as bool? ?? false,
+      reactions: (j['reactions'] as List? ?? const [])
+          .whereType<Map>()
+          .map((r) => FamilyReaction.fromJson(Map<String, dynamic>.from(r)))
+          .toList(),
+      seen: (j['seen'] as num?)?.toInt() ?? 0,
     );
   }
+}
+
+/// Xabar bo'yicha: kim reaksiya bosgan / kim ko'rgan.
+class FamilyPerson {
+  const FamilyPerson({required this.user, required this.at, this.emoji});
+  final FamilyAuthor user;
+  final DateTime at;
+  final String? emoji;
+
+  factory FamilyPerson.fromJson(Map<String, dynamic> j) => FamilyPerson(
+        user: FamilyAuthor.fromJson({'kind': 'user', ...Map<String, dynamic>.from(j['user'] as Map)}),
+        at: DateTime.fromMillisecondsSinceEpoch((j['at'] as num).toInt()),
+        emoji: j['emoji'] as String?,
+      );
 }
 
 /// Men: admin bo'lsam — qaysi nomlardan yoza olaman.

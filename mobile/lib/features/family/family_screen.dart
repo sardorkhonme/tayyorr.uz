@@ -30,6 +30,7 @@ import '../messages/presentation/chat_widgets.dart';
 import '../public_profile/presentation/public_profile_screen.dart';
 import 'family_entry.dart';
 import 'family_models.dart';
+import 'family_popup.dart';
 import 'family_repository.dart';
 
 /// «Tayyorr's Family» — faqat ilovadagi umumiy guruh.
@@ -91,8 +92,12 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   int _readSent = 0;
   Timer? _nextTimer;
   Timer? _visTimer;
+  Timer? _onlineTimer;
+  int? _members;
+  int? _online;
 
   final _keys = <String, GlobalKey>{};
+  final _bubbleKeys = <String, GlobalKey>{};
   String? _flashId;
   int _flashTick = 0;
   GlobalKey _keyFor(String id) => _keys.putIfAbsent(id, GlobalKey.new);
@@ -111,6 +116,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     _live.connected.addListener(_onConnected);
     _live.start();
     _load(initial: true);
+    _startOnline();
   }
 
   @override
@@ -123,6 +129,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     _readTimer?.cancel();
     _nextTimer?.cancel();
     _visTimer?.cancel();
+    _onlineTimer?.cancel();
     _suggestTimer?.cancel();
     _uploadToken?.cancel();
     _text.dispose();
@@ -135,10 +142,30 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   void didChangeAppLifecycleState(AppLifecycleState s) {
     if (s == AppLifecycleState.paused) {
       _live.stop();
+      _onlineTimer?.cancel();
     } else if (s == AppLifecycleState.resumed) {
       _live.start();
       _catchUp();
+      _startOnline(now: true);
     }
+  }
+
+  /// Ochiq va oldingi planda — har 60 soniyada a'zolar / onlayn soni.
+  void _startOnline({bool now = false}) {
+    _onlineTimer?.cancel();
+    _onlineTimer = Timer.periodic(const Duration(seconds: 60), (_) => _refreshOnline());
+    if (now) _refreshOnline();
+  }
+
+  Future<void> _refreshOnline() async {
+    try {
+      final r = await _repo.online();
+      if (!mounted) return;
+      setState(() {
+        _members = r.members ?? _members;
+        _online = r.online ?? _online;
+      });
+    } catch (_) {}
   }
 
   void _onConnected() {
@@ -165,6 +192,8 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       final msgs = list(r['messages']);
       setState(() {
         _me = me;
+        _members = (r['members'] as num?)?.toInt() ?? _members;
+        _online = (r['online'] as num?)?.toInt() ?? _online;
         _loading = false;
         _error = null;
         if (initial || _messages.isEmpty) {
@@ -469,7 +498,10 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     if (v == 'all') {
       await _send(notifyAll: true);
     } else if (v == 'schedule') {
-      final at = await pickDateTime(context, initial: DateTime.now().add(const Duration(hours: 1)));
+      // standart — 1 soatdan keyin, 5 daqiqagacha yaxlitlangan
+      final base = DateTime.now().add(const Duration(hours: 1));
+      final initial = DateTime(base.year, base.month, base.day, base.hour, ((base.minute + 4) ~/ 5) * 5);
+      final at = await pickDateTime(context, initial: initial);
       if (at == null || !mounted) return;
       if (at.isBefore(DateTime.now().add(const Duration(minutes: 1)))) {
         showToast(context, "Kelajakdagi vaqtni tanlang", kind: ToastKind.error);
@@ -588,71 +620,79 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: m.id, allowMessage: false)));
   }
 
-  void _menu(FamilyMessage m) {
-    final mine = _isMine(m);
-    HapticFeedback.selectionClick();
-    showAppSheet(
+  void _setReply(FamilyMessage m) {
+    if (m.deleted) return;
+    setState(() => _replyTo = m);
+    _focus.requestFocus();
+  }
+
+  /// Bitta bosish — zamonaviy popup: xira fon, xabar o'z joyida, tepada reaksiyalar, pastda amallar.
+  Future<void> _openPopup(FamilyMessage m) async {
+    if (m.deleted) return;
+    final idx = _messages.indexWhere((x) => x.id == m.id);
+    final box = _bubbleKeys[m.id]?.currentContext?.findRenderObject();
+    if (idx < 0 || box is! RenderBox || !box.attached) return;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    final cur = _messages[idx];
+    final mine = _isMine(cur);
+    final reactions = cur.reactions.fold<int>(0, (a, r) => a + r.count);
+    final v = await showFamilyPopup(
       context,
-      builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
-        AppSheetAction(
-          icon: TI.reply_rounded,
-          label: 'Javob beriş',
-          onTap: () {
-            Navigator.of(ctx).pop();
-            setState(() => _replyTo = m);
-            _focus.requestFocus();
-          },
-        ),
-        if (m.file != null)
-          AppSheetAction(
-            icon: TI.download_rounded,
-            label: m.file!.isImage || m.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
-            onTap: () {
-              Navigator.of(ctx).pop();
-              saveChatFile(context, m.file!, 'f-${m.id}');
-            },
-          ),
-        if (m.body.isNotEmpty)
-          AppSheetAction(
-            icon: TI.copy_rounded,
-            label: 'Nusxa oliş',
-            onTap: () {
-              Navigator.of(ctx).pop();
-              Clipboard.setData(ClipboardData(text: m.body));
-              showToast(context, 'Nusxalandi', kind: ToastKind.success);
-            },
-          ),
-        if (_isAdmin)
-          AppSheetAction(
-            icon: m.pinned ? TI.push_pin_outlined : TI.push_pin_rounded,
-            label: m.pinned ? 'Qadaşdan oliş' : 'Qadaş',
-            onTap: () {
-              Navigator.of(ctx).pop();
-              _togglePin(m);
-            },
-          ),
-        if (mine || _isAdmin)
-          AppSheetAction(
-            icon: TI.delete_outline_rounded,
-            label: 'Öçiriş',
-            danger: true,
-            onTap: () {
-              Navigator.of(ctx).pop();
-              _delete(m);
-            },
-          ),
-        if (!mine)
-          AppSheetAction(
-            icon: TI.flag_outlined,
-            label: 'Şikoyat qiliş',
-            danger: true,
-            onTap: () {
-              Navigator.of(ctx).pop();
-              _report(m);
-            },
-          ),
-      ]),
+      rect: rect,
+      preview: SizedBox(width: rect.width, child: _bubble(cur, mine, _flags(idx), previewOnly: true)),
+      alignRight: mine,
+      myReaction: _me == null ? null : cur.myReaction(_me!.id),
+      seen: cur.seen,
+      reactionsCount: reactions,
+      actions: [
+        const FamilyPopupAction('reply', TI.reply_rounded, 'Javob beriş'),
+        if (cur.body.isNotEmpty) const FamilyPopupAction('copy', TI.copy_rounded, 'Nusxa oliş'),
+        if (cur.file != null)
+          FamilyPopupAction('save', TI.download_rounded, cur.file!.isImage || cur.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş'),
+        if (_isAdmin) FamilyPopupAction('pin', cur.pinned ? TI.push_pin_outlined : TI.push_pin_rounded, cur.pinned ? 'Qadaşdan oliş' : 'Qadaş'),
+        if (mine || _isAdmin) const FamilyPopupAction('delete', TI.delete_outline_rounded, 'Öçiriş', danger: true),
+        if (!mine) const FamilyPopupAction('report', TI.flag_outlined, 'Şikoyat qiliş', danger: true),
+      ],
     );
+    if (v == null || !mounted) return;
+    if (v.startsWith('emoji:')) return _react(cur.id, v.substring(6));
+    switch (v) {
+      case 'people:seen':
+        showFamilyPeople(context, cur.id);
+      case 'people:reactions':
+        showFamilyPeople(context, cur.id, reactions: true);
+      case 'reply':
+        _setReply(cur);
+      case 'copy':
+        Clipboard.setData(ClipboardData(text: cur.body));
+        showToast(context, 'Nusxalandi', kind: ToastKind.success);
+      case 'save':
+        saveChatFile(context, cur.file!, 'f-${cur.id}');
+      case 'pin':
+        _togglePin(cur);
+      case 'delete':
+        _delete(cur);
+      case 'report':
+        _report(cur);
+    }
+  }
+
+  /// Reaksiya: darhol (optimistik) ko'rsatiladi, keyin server javobi bilan almashtiriladi.
+  Future<void> _react(String id, String emoji) async {
+    final me = _me;
+    final i = _messages.indexWhere((x) => x.id == id);
+    if (me == null || i < 0) return;
+    final before = _messages[i];
+    HapticFeedback.selectionClick();
+    setState(() => _upsert(before.toggledReaction(me.id, emoji)));
+    try {
+      final r = await _repo.react(id, emoji);
+      if (mounted) setState(() => _upsert(r.withMine(_isMine(before))));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _upsert(before));
+      showToast(context, e is ApiException ? e.message : "Reaksiya qöyib bölmadi", kind: ToastKind.error);
+    }
   }
 
   Future<void> _togglePin(FamilyMessage m) async {
@@ -835,7 +875,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       body: AuroraBackground(
         child: SafeArea(
           child: Column(children: [
-            _Header(onBack: () => Navigator.of(context).maybePop()),
+            _Header(onBack: () => Navigator.of(context).maybePop(), members: _members, online: _online),
             if (pinned != null)
               _PinnedBar(
                 message: pinned,
@@ -864,7 +904,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       TIcon(TI.schedule_rounded, size: 15, color: WebC.indigoSoft),
                       const SizedBox(width: 6),
-                      Text('Rejalaştirilgan: ${_scheduled.length}',
+                      Text('Rejalaştirilgan: ${_scheduled.length} · ${shortDateTime(_scheduled.first.sendAt)}',
                           style: TextStyle(color: WebC.indigoSoft, fontSize: 12.5, fontWeight: FontWeight.w700)),
                     ]),
                   ),
@@ -952,7 +992,6 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
         ),
       );
     }
-    final me = _me;
     final count = _messages.length + (_hasMore ? 1 : 0);
     return Stack(children: [
       ListView.builder(
@@ -968,30 +1007,18 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
           }
           final idx = _messages.length - 1 - i;
           final m = _messages[idx];
-          final prev = idx > 0 ? _messages[idx - 1] : null;
-          final next = idx < _messages.length - 1 ? _messages[idx + 1] : null;
           final mine = _isMine(m);
-          bool same(FamilyMessage? o) =>
-              o != null && o.author.kind == m.author.kind && o.author.id == m.author.id && o.sendAt.difference(m.sendAt).inMinutes.abs() < 10;
-          final newDay = prev == null || !_sameDay(prev.sendAt, m.sendAt);
+          final f = _flags(idx);
           return Column(
             key: _keyFor(m.id),
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (newDay) _DayChip(date: m.sendAt),
-              FlashHighlight(
-                flashKey: _flashId == m.id ? _flashTick : null,
-                child: _FamilyBubble(
-                  message: m,
-                  mine: mine,
-                  showName: !mine && (newDay || !same(prev)),
-                  showAvatar: !mine && !same(next),
-                  tight: same(next),
-                  mentioned: !mine && me != null && m.mentionsMe(me.id, me.isAdmin),
-                  onLongPress: () => _menu(m),
-                  onAuthorTap: () => _openProfile(m.author),
-                  onMentionTap: _openProfileByMention,
-                  onReplyTap: m.replyTo == null ? null : () => _jumpTo(m.replyTo!.id),
+              if (f.newDay) _DayChip(date: m.sendAt),
+              SwipeToReply(
+                onReply: () => _setReply(m),
+                child: FlashHighlight(
+                  flashKey: _flashId == m.id ? _flashTick : null,
+                  child: _bubble(m, mine, f, bubbleKey: _bubbleKeys.putIfAbsent(m.id, GlobalKey.new)),
                 ),
               ),
             ],
@@ -1006,6 +1033,40 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     ]);
   }
 
+  /// Ketma-ket xabarlar guruhlanishi: ism (birinchisida), avatar (oxirgisida), kun ajratgichi.
+  ({bool showName, bool showAvatar, bool tight, bool newDay}) _flags(int idx) {
+    final m = _messages[idx];
+    final prev = idx > 0 ? _messages[idx - 1] : null;
+    final next = idx < _messages.length - 1 ? _messages[idx + 1] : null;
+    final mine = _isMine(m);
+    bool same(FamilyMessage? o) =>
+        o != null && o.author.kind == m.author.kind && o.author.id == m.author.id && o.sendAt.difference(m.sendAt).inMinutes.abs() < 10;
+    final newDay = prev == null || !_sameDay(prev.sendAt, m.sendAt);
+    return (showName: !mine && (newDay || !same(prev)), showAvatar: !mine && !same(next), tight: same(next), newDay: newDay);
+  }
+
+  Widget _bubble(FamilyMessage m, bool mine, ({bool showName, bool showAvatar, bool tight, bool newDay}) f,
+      {GlobalKey? bubbleKey, bool previewOnly = false}) {
+    final me = _me;
+    return _FamilyBubble(
+      message: m,
+      mine: mine,
+      showName: f.showName,
+      showAvatar: f.showAvatar,
+      tight: f.tight,
+      mentioned: !mine && me != null && m.mentionsMe(me.id, me.isAdmin),
+      meId: me?.id,
+      bubbleKey: bubbleKey,
+      previewOnly: previewOnly,
+      onTap: () => _openPopup(m),
+      onAuthorTap: () => _openProfile(m.author),
+      onMentionTap: _openProfileByMention,
+      onReact: (e) => _react(m.id, e),
+      onReactLong: (e) => showFamilyPeople(context, m.id, reactions: true, emoji: e),
+      onReplyTap: m.replyTo == null ? null : () => _jumpTo(m.replyTo!.id),
+    );
+  }
+
   static bool _sameDay(DateTime a, DateTime b) {
     final x = a.toLocal(), y = b.toLocal();
     return x.year == y.year && x.month == y.month && x.day == y.day;
@@ -1015,8 +1076,10 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
 // ───────────────────────── vidjetlar ─────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onBack});
+  const _Header({required this.onBack, this.members, this.online});
   final VoidCallback onBack;
+  final int? members;
+  final int? online;
 
   @override
   Widget build(BuildContext context) {
@@ -1039,7 +1102,18 @@ class _Header extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Text(kFamilyName, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w700)),
             const SizedBox(height: 2),
-            Text('Umumiy guruh · barça aʼzolar', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+            if (members == null)
+              Text('Umumiy guruh · barça aʼzolar', style: TextStyle(color: WebC.zinc500, fontSize: 12))
+            else
+              Row(children: [
+                Text('$members aʼzo', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                if ((online ?? 0) > 0) ...[
+                  Text(' · ', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                  Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: WebC.emerald)),
+                  const SizedBox(width: 4),
+                  Text('$online onlayn', style: TextStyle(color: WebC.emerald, fontSize: 12, fontWeight: FontWeight.w600)),
+                ],
+              ]),
           ]),
         ),
       ]),
@@ -1130,10 +1204,15 @@ class _FamilyBubble extends StatelessWidget {
     required this.showAvatar,
     required this.tight,
     required this.mentioned,
-    required this.onLongPress,
+    required this.meId,
+    required this.onTap,
     required this.onAuthorTap,
     required this.onMentionTap,
+    required this.onReact,
+    required this.onReactLong,
     this.onReplyTap,
+    this.bubbleKey,
+    this.previewOnly = false,
   });
   final FamilyMessage message;
   final bool mine;
@@ -1141,10 +1220,21 @@ class _FamilyBubble extends StatelessWidget {
   final bool showAvatar;
   final bool tight;
   final bool mentioned;
-  final VoidCallback onLongPress;
+  final String? meId;
+
+  /// Bitta bosish — amallar popupi.
+  final VoidCallback onTap;
   final VoidCallback onAuthorTap;
   final void Function(FamilyMention) onMentionTap;
+  final void Function(String emoji) onReact;
+  final void Function(String emoji) onReactLong;
   final VoidCallback? onReplyTap;
+
+  /// Popupda xabarni o'z joyida ko'rsatish uchun — pufakchaning o'lchami/joyi.
+  final GlobalKey? bubbleKey;
+
+  /// Faqat pufakchaning o'zi (popup ichidagi nusxa).
+  final bool previewOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -1153,15 +1243,18 @@ class _FamilyBubble extends StatelessWidget {
     final textColor = mine ? Colors.white : WebC.zinc200;
     final timeColor = mine ? const Color(0xFFC7D2FE) : WebC.zinc500;
     final bubble = GestureDetector(
-      onLongPress: onLongPress,
+      key: bubbleKey,
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      onLongPress: onTap,
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
         decoration: BoxDecoration(
           color: mine
               ? const Color(0xFF4F39F6)
               : mentioned
-                  ? const Color(0xFFF59E0B).withValues(alpha: AppColors.isLight ? 0.10 : 0.09)
-                  : WebC.fill5,
+                  ? Color.alphaBlend(const Color(0xFFF59E0B).withValues(alpha: 0.10), AppColors.isLight ? Colors.white : const Color(0xFF15151D))
+                  : (previewOnly ? (AppColors.isLight ? Colors.white : const Color(0xFF1B1B25)) : WebC.fill5),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -1233,31 +1326,55 @@ class _FamilyBubble extends StatelessWidget {
             if (m.notifyAll) ...[TIcon(TI.campaign_rounded, size: 12, color: timeColor), const SizedBox(width: 4)],
             if (m.pinned) ...[TIcon(TI.push_pin_rounded, size: 12, color: timeColor), const SizedBox(width: 4)],
             Text(_hm(m.sendAt), style: TextStyle(color: timeColor, fontSize: 10)),
+            // meniki: ✓ — yuborildi, ✓✓ — kimdir ko'rdi
+            if (mine) ...[
+              const SizedBox(width: 3),
+              TIcon(
+                m.seen > 0 ? TI.done_all_rounded : TI.done_rounded,
+                size: 14,
+                color: m.seen > 0 ? const Color(0xFF7DD3FC) : timeColor,
+              ),
+            ],
           ]),
         ]),
       ),
     );
 
+    if (previewOnly) return bubble;
+
     return Padding(
       padding: EdgeInsets.only(top: showName ? 6 : 2, bottom: tight ? 0 : 2),
       child: LayoutBuilder(
-        builder: (context, c) => Row(
-          mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        builder: (context, c) => Column(
+          crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            if (!mine) ...[
-              SizedBox(
-                width: 34,
-                child: showAvatar
-                    ? UserAvatar(imageUrl: a.image, initial: a.initial, size: 34, onTap: a.isUser ? onAuthorTap : null)
-                    : null,
-              ),
-              const SizedBox(width: 8),
-            ],
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: c.maxWidth * (mine ? 0.82 : 0.8) - (mine ? 0 : 42)),
-              child: IntrinsicWidth(child: bubble),
+            Row(
+              mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (!mine) ...[
+                  SizedBox(
+                    width: 34,
+                    child: showAvatar
+                        ? UserAvatar(imageUrl: a.image, initial: a.initial, size: 34, onTap: a.isUser ? onAuthorTap : null)
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: c.maxWidth * (mine ? 0.82 : 0.8) - (mine ? 0 : 42)),
+                  child: IntrinsicWidth(child: bubble),
+                ),
+              ],
             ),
+            if (m.reactions.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 5, left: mine ? 0 : 42),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: c.maxWidth * 0.86),
+                  child: FamilyReactionChips(message: m, meId: meId, alignRight: mine, onTap: onReact, onLongPress: onReactLong),
+                ),
+              ),
           ],
         ),
       ),

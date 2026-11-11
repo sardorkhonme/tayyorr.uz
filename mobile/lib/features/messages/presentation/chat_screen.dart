@@ -315,7 +315,11 @@ class _ChatViewState extends State<_ChatView> {
                             final m = state.messages[state.messages.length - 1 - i];
                             return KeyedSubtree(
                               key: _keyFor(m.id),
-                              child: FlashHighlight(
+                              // chapga surib — javob berish (Telegramdagidek)
+                              child: SwipeToReply(
+                                enabled: !m.deleted && !m.system,
+                                onReply: () => context.read<ChatCubit>().setReplyTo(m),
+                                child: FlashHighlight(
                                 flashKey: _flashId == m.id ? _flashTick : null,
                                 child: _MessageBubble(
                                   message: m,
@@ -323,6 +327,7 @@ class _ChatViewState extends State<_ChatView> {
                                       state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
                                   onReplyTap: _jumpTo,
                                 ),
+                              ),
                               ),
                             );
                           },
