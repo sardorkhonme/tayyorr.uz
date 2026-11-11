@@ -22,18 +22,21 @@ class AppHeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
+    // tema o'zgarganda soya ham darhol yangilansin (scroll kutmasdan)
+    final light = Theme.of(context).brightness == Brightness.light;
     final root = ShellRootScope.of(context);
     if (root == ServiceKind.plus) {
-      return SliverPersistentHeader(pinned: true, delegate: _FadeDelegate(top));
+      return SliverPersistentHeader(pinned: true, delegate: _FadeDelegate(top, light));
     }
-    return SliverPersistentHeader(pinned: true, delegate: _HeaderDelegate(top));
+    return SliverPersistentHeader(pinned: true, delegate: _HeaderDelegate(top, light));
   }
 }
 
-/// Faqat soat/batareya qatori ostidagi soya (header yo'q joylar uchun).
+/// Header yo'q joylar uchun — faqat soat/batareya qatori ostidagi soya.
 class _FadeDelegate extends SliverPersistentHeaderDelegate {
-  _FadeDelegate(this.topInset);
+  _FadeDelegate(this.topInset, this.light);
   final double topInset;
+  final bool light;
 
   @override
   double get minExtent => topInset + 8;
@@ -44,9 +47,10 @@ class _FadeDelegate extends SliverPersistentHeaderDelegate {
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => _statusFade(topInset);
 
   @override
-  bool shouldRebuild(covariant _FadeDelegate old) => old.topInset != topInset;
+  bool shouldRebuild(covariant _FadeDelegate old) => old.topInset != topInset || old.light != light;
 }
 
+/// Soat/batareya qatori ostidagi soya — sahifa fonidan shaffofga (kontent soat ostida ko'rinmaydi).
 Widget _statusFade(double topInset) => IgnorePointer(
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -62,8 +66,9 @@ Widget _statusFade(double topInset) => IgnorePointer(
     );
 
 class _HeaderDelegate extends SliverPersistentHeaderDelegate {
-  _HeaderDelegate(this.topInset);
+  _HeaderDelegate(this.topInset, this.light);
   final double topInset;
+  final bool light;
 
   static const double barHeight = 56;
   double get _extent => topInset + 12 + barHeight + 4;
@@ -83,7 +88,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(covariant _HeaderDelegate old) => old.topInset != topInset;
+  bool shouldRebuild(covariant _HeaderDelegate old) => old.topInset != topInset || old.light != light;
 }
 
 /// Headerning o'zi (sliver'siz).
@@ -108,20 +113,17 @@ class WebHeaderBar extends StatelessWidget {
           ),
           child: Row(children: [
             if (atRoot)
-              // xizmatning asosiy bo'limida — tayyorr+ (bosh sahifa) ga qaytish
+              // xizmatning asosiy bo'limida — tayyorr+ (bosh sahifa) ga qaytish: orqaga belgisi + tayyorr+ logosi
               GestureDetector(
                 onTap: openHub,
                 child: Container(
                   height: 38,
-                  padding: const EdgeInsets.symmetric(horizontal: 9),
+                  padding: const EdgeInsets.only(left: 6, right: 8),
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: WebC.fill5, border: Border.all(color: WebC.border)),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Image.asset('assets/plus-mark.png', height: 20, filterQuality: FilterQuality.high),
-                    const SizedBox(width: 4),
-                    Text.rich(
-                      const TextSpan(text: 'tayyorr', children: [TextSpan(text: '+', style: TextStyle(color: Color(0xFFD946EF)))]),
-                      style: GoogleFonts.spaceGrotesk(color: WebC.zinc300, fontSize: 13, fontWeight: FontWeight.w700),
-                    ),
+                    TIcon(TI.arrow_back_ios_new_rounded, size: 16, color: WebC.zinc300),
+                    const SizedBox(width: 3),
+                    Image.asset('assets/plus-mark.png', height: 22, filterQuality: FilterQuality.high),
                   ]),
                 ),
               )

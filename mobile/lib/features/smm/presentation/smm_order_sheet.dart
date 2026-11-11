@@ -18,7 +18,15 @@ import 'smm_widgets.dart';
 
 /// Xizmatni tanlaganda — buyurtma oynasi (saytdagi OrderDialog).
 Future<void> showSmmOrderSheet(BuildContext context, SmmService s, SmmCatalog catalog, {VoidCallback? onOrdersTap}) {
-  return showAppSheet(context, builder: (ctx) => _OrderForm(s: s, catalog: catalog, onOrdersTap: onOrdersTap));
+  final p = catalog.platform(s.platform);
+  final k = catalog.kind(s.kind);
+  // tepada qotib turadi: platforma belgisi, "Platforma · tur" va X
+  return showAppSheet(
+    context,
+    leading: PlatformBadge(p, size: 40),
+    title: '${p.name} · ${k.label}',
+    builder: (ctx) => _OrderForm(s: s, catalog: catalog, onOrdersTap: onOrdersTap),
+  );
 }
 
 class _OrderForm extends StatefulWidget {
@@ -90,7 +98,6 @@ class _OrderFormState extends State<_OrderForm> {
     if (_done) return _success();
     final s = widget.s;
     final p = widget.catalog.platform(s.platform);
-    final k = widget.catalog.kind(s.kind);
     final balance = context.select<AuthBloc, int>((b) => b.state.user?.balance ?? 0);
     final charge = _qtyOk ? s.chargeFor(_q) : 0;
     final enough = balance >= charge;
@@ -98,16 +105,10 @@ class _OrderFormState extends State<_OrderForm> {
     final presets = {s.min, 100, 500, 1000, 5000, 10000}.where((n) => n >= s.min && n <= s.max).take(5).toList()..sort();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-      Row(children: [
-        PlatformBadge(p, size: 40),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text('${p.name} · ${k.label}', style: TextStyle(color: WebC.zinc500, fontSize: 13, fontWeight: FontWeight.w600)),
-        ),
-        if (s.discount > 0) DiscountBadge(s.discount, big: true),
+      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(child: Text(s.title, style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, height: 1.3))),
+        if (s.discount > 0) ...[const SizedBox(width: 8), DiscountBadge(s.discount, big: true)],
       ]),
-      const SizedBox(height: 10),
-      Text(s.title, style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, height: 1.3)),
       const SizedBox(height: 8),
       Wrap(spacing: 6, runSpacing: 6, children: [
         GuaranteeBadge(label: s.guaranteeLabel, ok: s.guaranteeOk),

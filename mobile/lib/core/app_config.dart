@@ -73,6 +73,20 @@ class AppConfig extends ChangeNotifier {
     }
   }
 
+  /// "Yangilanishlarni tekshirish" — yangi versiya bo'lsa oynani qayta ko'rsatish uchun.
+  int promptTick = 0;
+
+  /// Serverdan qayta so'raydi; yangi versiya bo'lsa — true (oyna "Keyinroq" bosilgan bo'lsa ham qayta chiqadi).
+  Future<bool> checkForUpdate() async {
+    await load();
+    if (hasUpdate || mustUpdate) {
+      promptTick++;
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
   /// ApiClient chaqiradi: server "bu versiya eskirgan" dedi.
   void markUpdateRequired() {
     if (_forced) return;

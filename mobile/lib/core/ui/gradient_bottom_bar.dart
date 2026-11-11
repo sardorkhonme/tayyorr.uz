@@ -164,10 +164,14 @@ Widget profileAvatar(String? image, String name, double size, bool selected) {
     decoration: BoxDecoration(
       shape: BoxShape.circle,
       gradient: (image ?? '').isEmpty ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]) : null,
+    ),
+    // chegara rasm ustida — rasm doirani to'liq qoplaydi (burchaklari ko'rinmaydi)
+    foregroundDecoration: BoxDecoration(
+      shape: BoxShape.circle,
       border: Border.all(color: selected ? Colors.white : Colors.white.withValues(alpha: 0.25), width: selected ? 2 : 1.2),
     ),
     child: (image ?? '').isEmpty
         ? Center(child: Text(initial, style: TextStyle(color: Colors.white, fontSize: size * 0.45, fontWeight: FontWeight.w800)))
-        : Image.network(image!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox()),
+        : ClipOval(child: SizedBox.expand(child: Image.network(image!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox()))),
   );
 }

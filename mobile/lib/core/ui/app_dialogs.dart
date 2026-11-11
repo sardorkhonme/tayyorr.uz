@@ -201,7 +201,16 @@ Future<T?> showAppDialog<T>(BuildContext context, {required WidgetBuilder builde
 }
 
 /// Pastdan chiqadigan panel: tutqich, sarlavha (ixtiyoriy), katta yuqori burchaklar.
-Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder, String? title, bool scrollable = true, bool closable = true}) {
+/// Pastdan chiqadigan panel. Tepasi (tutqich, [leading] ikonka, [title], X) — qotib turadi,
+/// faqat tarkib (builder) varaqlanadi.
+Future<T?> showAppSheet<T>(
+  BuildContext context, {
+  required WidgetBuilder builder,
+  String? title,
+  Widget? leading,
+  bool scrollable = true,
+  bool closable = true,
+}) {
   return showModalBottomSheet<T>(
     context: context,
     useRootNavigator: true,
@@ -209,41 +218,48 @@ Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder
     backgroundColor: Colors.transparent,
     barrierColor: _barrier,
     builder: (ctx) {
-      final body = Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 5,
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(color: AppColors.tint(0.2), borderRadius: BorderRadius.circular(9)),
-            ),
+      final head = Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Center(
+          child: Container(
+            width: 40,
+            height: 5,
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(color: AppColors.tint(0.2), borderRadius: BorderRadius.circular(9)),
           ),
-          if (title != null || closable) ...[
-            Row(children: [
-              Expanded(
-                child: title == null
-                    ? const SizedBox()
-                    : Text(title, style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-              ),
-              if (closable)
-                GestureDetector(
-                  onTap: () => Navigator.of(ctx).maybePop(),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.tint(0.08)),
-                    child: Center(child: TIcon(TI.close_rounded, size: 18, color: AppColors.textSecondary)),
-                  ),
+        ),
+        if (title != null || leading != null || closable) ...[
+          Row(children: [
+            if (leading != null) ...[leading, const SizedBox(width: 10)],
+            Expanded(
+              child: title == null
+                  ? const SizedBox()
+                  : Text(title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: leading != null ? AppColors.textSecondary : AppColors.textPrimary,
+                        fontSize: leading != null ? 14 : 18,
+                        fontWeight: leading != null ? FontWeight.w600 : FontWeight.w800,
+                        letterSpacing: -0.2,
+                      )),
+            ),
+            if (closable) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => Navigator.of(ctx).maybePop(),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.tint(0.08)),
+                  child: Center(child: TIcon(TI.close_rounded, size: 18, color: AppColors.textSecondary)),
                 ),
-            ]),
-            const SizedBox(height: 12),
-          ],
-          builder(ctx),
+              ),
+            ],
+          ]),
+          const SizedBox(height: 12),
         ],
-      );
+      ]);
+      final body = builder(ctx);
       return Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
         child: ConstrainedBox(
@@ -255,7 +271,10 @@ Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder
               borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
               border: Border(top: BorderSide(color: AppColors.tint(0.08))),
             ),
-            child: scrollable ? SingleChildScrollView(child: body) : body,
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              head,
+              scrollable ? Flexible(child: SingleChildScrollView(child: body)) : body,
+            ]),
           ),
         ),
       );

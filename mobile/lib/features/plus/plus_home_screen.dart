@@ -62,7 +62,7 @@ class _PlusHomeScreenState extends State<PlusHomeScreen> {
           slivers: [
             const AppHeaderSliver(),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(14, 18, 14, 36),
+              padding: EdgeInsets.fromLTRB(14, 18, 14, 36 + MediaQuery.paddingOf(context).bottom),
               sliver: SliverList.list(
                 children: [
                   Text(

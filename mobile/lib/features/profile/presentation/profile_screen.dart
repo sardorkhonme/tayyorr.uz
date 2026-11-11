@@ -1,3 +1,5 @@
+import '../../../core/ui/app_dialogs.dart';
+import '../../../core/app_config.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/app_info.dart';
 import 'dart:typed_data';
@@ -112,6 +114,9 @@ class ProfileScreen extends StatelessWidget {
               _ProfileForm(key: ValueKey('p-${user.id}')),
               const SizedBox(height: 16),
               _AccountForm(key: ValueKey('a-${user.id}'), initialLogin: user.login ?? ''),
+              const SizedBox(height: 8),
+              const SizedBox(height: 4),
+              const _UpdateCheck(),
               const SizedBox(height: 8),
               const Center(child: _VersionLabel()),
               const SizedBox(height: 32),
@@ -245,9 +250,9 @@ class _ProfileFormState extends State<_ProfileForm> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: WebC.fill5,
-                  border: Border.all(color: WebC.border),
-                ),
+                  ),
                 alignment: Alignment.center,
+                foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
                 child: _preview != null
                     ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
                     : (image ?? '').isNotEmpty
@@ -477,5 +482,53 @@ class _VersionLabel extends StatelessWidget {
     final v = AppInfo.short;
     if (v.isEmpty) return const SizedBox(height: 16);
     return Text('tayyorr.uz v$v', style: TextStyle(color: WebC.zinc600, fontSize: 12));
+  }
+}
+
+/// "Yangilanishlarni tekshirish" — yangi versiya bo'lsa yangilash oynasi chiqadi.
+class _UpdateCheck extends StatefulWidget {
+  const _UpdateCheck();
+
+  @override
+  State<_UpdateCheck> createState() => _UpdateCheckState();
+}
+
+class _UpdateCheckState extends State<_UpdateCheck> {
+  bool _busy = false;
+
+  Future<void> _check() async {
+    setState(() => _busy = true);
+    final has = await AppConfig.instance.checkForUpdate();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!has) showToast(context, "Sizda eng söngi versiya — v${AppInfo.short}", kind: ToastKind.success);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WebCard(
+      padding: const EdgeInsets.all(14),
+      onTap: _busy ? null : _check,
+      child: Row(children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
+          child: Center(
+            child: _busy
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)))
+                : const TIcon(TI.refresh_rounded, size: 20, color: Color(0xFF818CF8)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text("Yangilanişlarni tekşiriş", style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w600)),
+            Text("Hozirgi versiya: v${AppInfo.short}", style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
+          ]),
+        ),
+        TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
+      ]),
+    );
   }
 }

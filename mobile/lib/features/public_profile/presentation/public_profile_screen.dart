@@ -163,8 +163,8 @@ class _AvatarCircle extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: WebC.fill5,
-        border: Border.all(color: WebC.border),
-      ),
+        ),
+      foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
       child: child,
     );
   }

@@ -467,8 +467,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: WebC.fill5,
-                                        border: Border.all(color: WebC.border),
-                                      ),
+                                        ),
+                                      foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
                                       child: _preview != null
                                           ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
                                           : (image ?? '').isNotEmpty

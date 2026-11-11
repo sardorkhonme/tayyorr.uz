@@ -26,6 +26,7 @@ class UpdateOverlay extends StatefulWidget {
 
 class _UpdateOverlayState extends State<UpdateOverlay> {
   bool _softDismissed = false;
+  int _tick = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,10 @@ class _UpdateOverlayState extends State<UpdateOverlay> {
       listenable: AppConfig.instance,
       builder: (context, _) {
         final cfg = AppConfig.instance;
+        if (cfg.promptTick != _tick) {
+          _tick = cfg.promptTick;
+          _softDismissed = false;
+        }
         Widget? layer;
         if (cfg.mustUpdate) {
           layer = const _UpdateCard(forced: true);
