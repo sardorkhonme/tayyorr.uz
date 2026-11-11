@@ -14,7 +14,7 @@ import { FAMILY_CHANNEL, signal } from "@/lib/realtime";
  *  · admin (admin paneldan belgilangan akkaunt yoki support) o'z nomidan, «Tayyorr.uz» yoki «Tayyorr Support»
  *    nomidan yoza oladi; «Tayyorr.uz» nomidan yozilgani a'zolarga anonim ko'rinadi.
  */
-export const FAMILY_NAME = "Tayyorr's Family";
+export const FAMILY_NAME = "Tayyorr’s Family";
 export const FILE_TTL_MS = 5 * 24 * 3600 * 1000;
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz").replace(/\/+$/, "");
 

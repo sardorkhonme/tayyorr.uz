@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../app.dart';
+import '../../features/family/family_entry.dart';
 import '../../features/messages/data/message_model.dart';
 import '../../features/messages/presentation/chat_screen.dart';
 
@@ -169,8 +170,30 @@ class MessageNotifier {
     }
   }
 
+  /// «Tayyorr's Family» guruhidan (belgilash, javob, «hammaga bildirish», qadash) — ilova ochiq paytda.
+  Future<void> showFamily({required String messageId, required String title, required String body}) async {
+    if (kIsWeb) return;
+    await init();
+    if (!_ready) return;
+    try {
+      await _plugin.show(
+        id: ('family-$messageId').hashCode & 0x7fffffff,
+        title: title,
+        body: body,
+        notificationDetails: _details(body, scope: 'plus'),
+        payload: jsonEncode({'family': true}),
+      );
+    } catch (e) {
+      debugPrint('bildirişnoma körsatilmadi: $e');
+    }
+  }
+
   /// FCM bildirishnomasi bosilganda (data maydonlari bilan).
   void openFromData(Map<String, dynamic> data) {
+    if (data['type'] == 'family') {
+      openFamily();
+      return;
+    }
     final id = data['conversationId'] as String?;
     if (id == null) return;
     _openFromPayload(jsonEncode({
@@ -185,7 +208,7 @@ class MessageNotifier {
   }
 
   /// Xizmat: 'uz' (Tayyorr.uz), 'plus' (tayyorr+), 'smm' — bildirishnoma belgisi va qaysi bo'limda ochish.
-  static String _scope(Object? v) => v == 'plus' || v == 'smm' ? v as String : 'uz';
+  static String _scope(Object? v) => v == 'family' ? 'plus' : (v == 'plus' || v == 'smm' ? v as String : 'uz');
 
   NotificationDetails _details(String body, {String scope = 'uz'}) => NotificationDetails(
         android: AndroidNotificationDetails(
@@ -207,6 +230,10 @@ class MessageNotifier {
     if (payload == null) return;
     try {
       final d = jsonDecode(payload) as Map<String, dynamic>;
+      if (d['family'] == true) {
+        openFamily();
+        return;
+      }
       final id = d['id'] as String;
       if (activeConversationId == id) return;
       navigatorKey.currentState?.push(MaterialPageRoute(

@@ -24,6 +24,7 @@ import '../../../widgets/link_text.dart';
 import '../../../widgets/web_ui.dart';
 import 'chat_composer.dart';
 import 'chat_media.dart';
+import 'chat_widgets.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../public_profile/presentation/public_profile_screen.dart';
 import '../cubit/chat_cubit.dart';
@@ -304,7 +305,8 @@ class _ChatViewState extends State<_ChatView> {
                         // reverse — Telegramdagidek ro'yxat pastdan boshlanadi:
                         // rasm/video yuklanib balandlik o'zgarsa ham oxirgi
                         // xabar doim ko'rinib turadi.
-                        return ListView.builder(
+                        return Stack(children: [
+                          ListView.builder(
                           controller: _scrollController,
                           reverse: true,
                           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -313,7 +315,7 @@ class _ChatViewState extends State<_ChatView> {
                             final m = state.messages[state.messages.length - 1 - i];
                             return KeyedSubtree(
                               key: _keyFor(m.id),
-                              child: _FlashHighlight(
+                              child: FlashHighlight(
                                 flashKey: _flashId == m.id ? _flashTick : null,
                                 child: _MessageBubble(
                                   message: m,
@@ -324,7 +326,10 @@ class _ChatViewState extends State<_ChatView> {
                               ),
                             );
                           },
-                        );
+                        ),
+                          // yuqoriga chiqilganda — pastga tushish tugmasi
+                          Positioned(right: 14, bottom: 12, child: ChatScrollButtons(controller: _scrollController)),
+                        ]);
                       },
                     ),
                   ),
@@ -1117,60 +1122,6 @@ class _ReactionCountPill extends StatelessWidget {
           const SizedBox(width: 4),
           Text('$count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
         ],
-      ),
-    );
-  }
-}
-
-/// Telegramdagidek: o'tilgan xabar orqasida yumshoq indigo nur ikki marta
-/// "lip-lip" yonib, so'nadi. [flashKey] o'zgarganda animatsiya qayta boshlanadi.
-class _FlashHighlight extends StatefulWidget {
-  const _FlashHighlight({required this.flashKey, required this.child});
-  final int? flashKey;
-  final Widget child;
-
-  @override
-  State<_FlashHighlight> createState() => _FlashHighlightState();
-}
-
-class _FlashHighlightState extends State<_FlashHighlight> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
-  late final Animation<double> _a = TweenSequence<double>([
-    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)), weight: 14),
-    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.35), weight: 16),
-    TweenSequenceItem(tween: Tween(begin: 0.35, end: 1.0), weight: 14),
-    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 56),
-  ]).animate(_c);
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.flashKey != null) _c.forward(from: 0);
-  }
-
-  @override
-  void didUpdateWidget(covariant _FlashHighlight old) {
-    super.didUpdateWidget(old);
-    if (widget.flashKey != null && widget.flashKey != old.flashKey) _c.forward(from: 0);
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _a,
-      child: widget.child,
-      builder: (context, child) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.28 * _a.value),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: child,
       ),
     );
   }

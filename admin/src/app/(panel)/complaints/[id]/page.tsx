@@ -207,7 +207,7 @@ export default async function AdminComplaintDetail({
 
       {familyMsg && (
         <div className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-5">
-          <h2 className="mb-2 text-sm font-semibold text-amber-300">Şikoyat qilingan xabar — Tayyorr&apos;s Family</h2>
+          <h2 className="mb-2 text-sm font-semibold text-amber-300">Şikoyat qilingan xabar — Tayyorr’s Family</h2>
           <p className="text-xs text-zinc-500">
             {shortDateTime(familyMsg.sendAt)} · yozgan:{" "}
             {[familyMsg.sender.firstName, familyMsg.sender.lastName].filter(Boolean).join(" ") || familyMsg.sender.name || "—"}

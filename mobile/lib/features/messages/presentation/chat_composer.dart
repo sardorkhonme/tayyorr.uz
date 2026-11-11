@@ -110,7 +110,18 @@ class ChatComposer extends StatefulWidget {
     required this.onRecorded,
     required this.hasAttachment,
     required this.attachmentReady,
+    this.leading,
+    this.onSendLongPress,
+    this.focusNode,
   });
+
+  /// 📎 dan chapdagi qo'shimcha tugma (masalan guruhda «kim nomidan yozish»).
+  final Widget? leading;
+
+  /// Yuborish tugmasini bosib turish (masalan «Rejalashtirish», «Hammaga bildirish»).
+  final VoidCallback? onSendLongPress;
+
+  final FocusNode? focusNode;
 
   final TextEditingController controller;
   final VoidCallback onSend;
@@ -226,6 +237,7 @@ class _ChatComposerState extends State<ChatComposer> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                if (widget.leading != null && !_recording) ...[widget.leading!, const SizedBox(width: 8)],
                 GestureDetector(
                   onTap: _recording ? null : widget.onAttach,
                   child: Container(
@@ -253,6 +265,12 @@ class _ChatComposerState extends State<ChatComposer> {
                         opacity: enabled ? 1 : 0.5,
                         child: GestureDetector(
                           onTap: enabled ? widget.onSend : null,
+                          onLongPress: enabled && widget.onSendLongPress != null
+                              ? () {
+                                  HapticFeedback.mediumImpact();
+                                  widget.onSendLongPress!();
+                                }
+                              : null,
                           child: _roundButton(const TIcon(TI.rocket_launch_rounded, color: Colors.white, size: 18)),
                         ),
                       );
@@ -338,6 +356,7 @@ class _ChatComposerState extends State<ChatComposer> {
         ),
         child: TextField(
           controller: widget.controller,
+          focusNode: widget.focusNode,
           minLines: 1,
           maxLines: 5,
           textCapitalization: TextCapitalization.sentences,

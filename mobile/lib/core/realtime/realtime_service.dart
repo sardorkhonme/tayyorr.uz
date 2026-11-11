@@ -18,8 +18,18 @@ class RealtimeEvent {
 /// so'raydi. Ulangan bo'lsa tez-tez so'rash shart emas — faqat siyrak ehtiyot tekshiruvi qoladi.
 /// Ilova fonga o'tganda ulanish yopiladi (batareya va trafik), qaytganda qayta ulanadi.
 class RealtimeService {
-  RealtimeService._();
+  RealtimeService._({this.tokenQuery, this.onlyChannel});
   static final instance = RealtimeService._();
+
+  /// «Tayyorr's Family» oynasi uchun alohida, qisqa muddatli ulanish — faqat "family" kanali
+  /// (oyna yopilganda [stop] qilinadi; Ably faqat ochiq turganlarga yetkazadi).
+  factory RealtimeService.family() => RealtimeService._(tokenQuery: const {'family': '1'}, onlyChannel: 'family');
+
+  /// Token so'roviga qo'shimcha parametrlar.
+  final Map<String, dynamic>? tokenQuery;
+
+  /// Faqat shu kanalga ulanish (null — token bergan barcha kanallar).
+  final String? onlyChannel;
 
   static const _sseUrl = 'https://realtime.ably.io/sse';
 
@@ -82,7 +92,7 @@ class RealtimeService {
 
     Map<String, dynamic> t;
     try {
-      t = await ApiClient.instance.get('/mobile/realtime/token');
+      t = await ApiClient.instance.get('/mobile/realtime/token', query: tokenQuery);
     } catch (_) {
       if (gen != _gen) return;
       connected.value = false;
@@ -96,7 +106,7 @@ class RealtimeService {
       connected.value = false;
       return;
     }
-    final channels = (t['channels'] as List? ?? const []).join(',');
+    final channels = onlyChannel ?? (t['channels'] as List? ?? const []).join(',');
     final expires = (t['expires'] as num?)?.toInt() ?? DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch;
 
     final cancel = CancelToken();

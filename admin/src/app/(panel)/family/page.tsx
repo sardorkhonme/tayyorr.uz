@@ -58,7 +58,7 @@ export default async function AdminFamily({ searchParams }: { searchParams: Prom
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-white">Tayyorr&apos;s Family</h1>
+          <h1 className="text-xl font-semibold text-white">Tayyorr’s Family</h1>
           <p className="mt-1 text-sm text-zinc-500">
             Faqat mobil ilovadagi guruh. Bu yerda barça xabarlar saqlanadi — öçirilganlari ham, fayllar doimiy (ilovada fayl 5 kun oçiladi).
           </p>

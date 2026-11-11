@@ -5,6 +5,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 import '../network/api_client.dart';
+import '../../features/family/family_repository.dart';
+import '../../features/family/family_screen.dart';
 import 'message_notifier.dart';
 
 /// Firebase (FCM) push: ilova yopiq yoki fonda bo'lsa ham yangi xabar
@@ -82,6 +84,17 @@ class PushService {
   }
 
   void _onForeground(RemoteMessage m) {
+    // «Tayyorr's Family» — guruh oynasi ochiq bo'lsa ko'rsatmaymiz (xabar u yerda darhol paydo bo'ladi)
+    if (m.data['type'] == 'family') {
+      FamilySummary.instance.refresh(force: true);
+      if (FamilyScreen.isOpen) return;
+      MessageNotifier.instance.showFamily(
+        messageId: m.data['messageId'] as String? ?? '',
+        title: m.notification?.title ?? "Tayyorr\u2019s Family",
+        body: m.notification?.body ?? '',
+      );
+      return;
+    }
     final convId = m.data['conversationId'] as String?;
     if (convId == null) return;
     // ochiq turgan suhbatga kelgan bo'lsa — chat o'zi "tin" chaladi

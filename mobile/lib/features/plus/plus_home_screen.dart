@@ -10,6 +10,8 @@ import '../../core/ui/platform_icon.dart';
 import '../../widgets/app_header_sliver.dart';
 import '../../widgets/web_ui.dart';
 import '../auth/bloc/auth_bloc.dart';
+import '../family/family_entry.dart';
+import '../family/family_repository.dart';
 import '../home/section_cubit.dart';
 
 /// tayyorr+ bosh sahifasi — xizmatlar (Tayyorr.uz, Tayyorr SMM). Hamyon, yordam, qo'llanma, profil — pastki panelda.
@@ -21,18 +23,32 @@ class PlusHomeScreen extends StatefulWidget {
   State<PlusHomeScreen> createState() => _PlusHomeScreenState();
 }
 
-class _PlusHomeScreenState extends State<PlusHomeScreen> {
+class _PlusHomeScreenState extends State<PlusHomeScreen> with WidgetsBindingObserver {
   int? _smmServices;
   int _smmOrders = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // ilovaga qaytganda — «Tayyorr's Family» o'qilmaganlari
+    if (state == AppLifecycleState.resumed) FamilySummary.instance.refresh();
   }
 
   Future<void> _load() async {
     context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+    FamilySummary.instance.refresh(force: true);
     try {
       final r = await ApiClient.instance.get('/mobile/hub');
       if (!mounted) return;
@@ -103,6 +119,8 @@ class _PlusHomeScreenState extends State<PlusHomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  const FamilyHubCard(),
+                  const SizedBox(height: 14),
                   _UzCard(
                     roleLabel: user == null
                         ? null

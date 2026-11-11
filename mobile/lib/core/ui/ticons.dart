@@ -177,6 +177,12 @@ const _plusCircle = '<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8" f
 const _logout = '<path d="M14 4.5h3.5A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5H14M10 16.5 14.5 12 10 7.5M14.5 12H4.5" fill="none"/>';
 const _globe = '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.5 5.2 3.5 8.5s-1.1 6.2-3.5 8.5c-2.4-2.3-3.5-5.2-3.5-8.5s1.1-6.2 3.5-8.5z" fill="none"/>';
 
+const _at = '<circle cx="12" cy="12" r="3.6"/><path d="M15.6 12v1.3a2.6 2.6 0 0 0 5.2 0V12A8.8 8.8 0 1 0 17 19.2" fill="none"/>';
+const _megaphone =
+    '<path d="M4 10v4a1.2 1.2 0 0 0 1.2 1.2H7l8.5 4.3V4.5L7 8.8H5.2A1.2 1.2 0 0 0 4 10z"/><path d="M19 9.2a3.6 3.6 0 0 1 0 5.6M8.5 15.4l1 4.1" fill="none"/>';
+const _family =
+    '<circle cx="12" cy="8" r="3"/><circle cx="5.6" cy="10" r="2.2"/><circle cx="18.4" cy="10" r="2.2"/><path d="M7.4 19.5c.5-3 2.3-4.7 4.6-4.7s4.1 1.7 4.6 4.7z"/><path d="M2.5 18.5c.3-2 1.5-3.4 3.1-3.6M21.5 18.5c-.3-2-1.5-3.4-3.1-3.6" fill="none"/>';
+
 /// Ilovada ishlatiladigan nomlar — eski Material nomlari bilan bir xil (almashtirish oson bo'lishi uchun).
 class TI {
   TI._();
@@ -302,4 +308,9 @@ class TI {
   static const auto_awesome = TIData(_sparkles, duo: true);
   static const arrow_downward_rounded = TIData(_arrowDown);
   static const arrow_back_ios_new_rounded = TIData(_back);
+  static const alternate_email_rounded = TIData(_at);
+  static const campaign_rounded = TIData(_megaphone);
+  static const campaign = TIData(_megaphone, duo: true);
+  static const family = TIData(_family, duo: true);
+  static const push_pin_outlined = TIData(_pin);
 }

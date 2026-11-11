@@ -20,20 +20,24 @@ import '../data/public_profile_model.dart';
 import '../data/public_profile_repository.dart';
 
 class PublicProfileScreen extends StatelessWidget {
-  const PublicProfileScreen({super.key, required this.userId});
+  const PublicProfileScreen({super.key, required this.userId, this.allowMessage = true});
   final String userId;
+
+  /// false — «Xabar yozish» tugmasi yo'q (masalan «Tayyorr's Family» guruhidan ochilganda).
+  final bool allowMessage;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => PublicProfileCubit(PublicProfileRepository(), userId),
-      child: const _PublicProfileView(),
+      child: _PublicProfileView(allowMessage: allowMessage),
     );
   }
 }
 
 class _PublicProfileView extends StatelessWidget {
-  const _PublicProfileView();
+  const _PublicProfileView({this.allowMessage = true});
+  final bool allowMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +99,7 @@ class _PublicProfileView extends StatelessWidget {
           final isMe = context.read<AuthBloc>().state.user?.id == p.id;
           body = [
             _Head(p: p),
-            if (!isMe)
+            if (!isMe && allowMessage)
               WebButton(
                 label: 'Xabar yoziş',
                 variant: WebBtn.ghost,

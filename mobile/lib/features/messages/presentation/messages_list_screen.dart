@@ -1,4 +1,6 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
+import '../../family/family_entry.dart';
+import '../../family/family_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -27,7 +29,10 @@ class MessagesListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ConversationsCubit(MessagesRepository())..load(),
+      create: (_) {
+        FamilySummary.instance.refresh();
+        return ConversationsCubit(MessagesRepository())..load();
+      },
       child: const _MessagesListView(),
     );
   }
@@ -44,12 +49,16 @@ class _MessagesListView extends StatelessWidget {
         return WebPage(
           background: false,
           onRefresh: () async {
+            FamilySummary.instance.refresh(force: true);
             await context.read<ConversationsCubit>().load();
             UnreadCounter.instance.refresh();
           },
           children: [
             Text('Xabarlar', style: TextStyle(color: WebC.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
             const SizedBox(height: 20),
+            // «Tayyorr's Family» — umumiy guruh, doim tepada
+            const FamilyListRow(),
+            const SizedBox(height: 8),
             if (loading)
               for (var i = 0; i < 5; i++) ...[const _ConversationSkeleton(), const SizedBox(height: 8)]
             else if (state.conversations.isEmpty)
