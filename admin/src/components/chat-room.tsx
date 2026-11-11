@@ -940,7 +940,7 @@ export function ChatRoom({
                           : "border border-white/10 bg-white/5 text-zinc-100"
                       }`}
                     >
-                      <div className="whitespace-pre-wrap break-words px-3.5 py-2">
+                      <div className="whitespace-pre-wrap px-3.5 py-2 [overflow-wrap:anywhere]">
                         {m.body}
                         <div
                           className={`mt-0.5 text-right text-[10px] ${
@@ -992,7 +992,7 @@ export function ChatRoom({
                     {m.mine && MenuBtn}
 
                     <div
-                      className={`space-y-1 rounded-2xl px-3.5 py-2 text-sm ${
+                      className={`min-w-0 space-y-1 rounded-2xl px-3.5 py-2 text-sm [overflow-wrap:anywhere] ${
                         m.mine
                           ? "bg-indigo-600 text-white"
                           : "border border-white/10 bg-white/5 text-zinc-100"
