@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { publicUrl } from "@/lib/r2";
+import { apkUrl, getMobileUpdate } from "@/lib/mobile-update";
 
 /** "Ilovani yuklab olish" bosilganini qayd qiladi va APK fayliga yo'naltiradi. */
 export async function GET() {
@@ -21,5 +21,6 @@ export async function GET() {
     })
     .catch(() => {});
 
-  return NextResponse.redirect(publicUrl("app/tayyorr.apk"), 302);
+  // admin yuklagan eng yangi APK (sozlanmagan bo'lsa — app/tayyorr.apk)
+  return NextResponse.redirect(apkUrl(await getMobileUpdate()), 302);
 }

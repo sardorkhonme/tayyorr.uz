@@ -5,6 +5,9 @@ import { shortDateTime } from "@/lib/date";
 import { describeDevice } from "@/lib/user-agent";
 import { APP_VERSION, getCustomVersionLabel } from "@/lib/app-version";
 import { VersionLabelForm } from "@/components/admin/version-label-form";
+import { MobileUpdateForm } from "@/components/admin/mobile-update-form";
+import { getMobileUpdate, versionCode } from "@/lib/mobile-update";
+import { publicUrl } from "@/lib/r2";
 import {
   LandingPhoneSlideManager,
   type PhoneSlide,
@@ -23,13 +26,14 @@ export default async function AdminMobileApp({
   const { view } = await searchParams;
   const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
 
-  const [downloads, downloadsWeek, signups, signupsWeek, slideRows, versionLabel] = await Promise.all([
+  const [downloads, downloadsWeek, signups, signupsWeek, slideRows, versionLabel, update] = await Promise.all([
     db.appDownload.count(),
     db.appDownload.count({ where: { createdAt: { gte: weekAgo } } }),
     db.activityLog.count({ where: MOBILE_REGISTER }),
     db.activityLog.count({ where: { ...MOBILE_REGISTER, createdAt: { gte: weekAgo } } }),
     db.landingPhoneSlide.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
     getCustomVersionLabel(),
+    getMobileUpdate(),
   ]);
 
   const downloadRows =
@@ -74,6 +78,13 @@ export default async function AdminMobileApp({
           landingdagi telefon skrinşotlari. Raqamni bossangiz — röyxat oçiladi.
         </p>
       </div>
+
+      <MobileUpdateForm
+        latest={update.latest}
+        min={update.min}
+        notes={update.notes}
+        apkUrl={publicUrl(update.apkKey) + (update.latest ? `?v=${versionCode(update.latest)}` : "")}
+      />
 
       <VersionLabelForm initial={versionLabel} fallback={`v${APP_VERSION}`} />
 

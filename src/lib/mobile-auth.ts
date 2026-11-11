@@ -29,6 +29,9 @@ function verifyMobileToken(token: string): string | null {
   }
 }
 
+const KNOWN_TTL = 5 * 60 * 1000;
+const known = new Map<string, number>();
+
 /**
  * Mobil API route'lari uchun himoya: Authorization header'dan userId'ni
  * chiqaradi. Muvaffaqiyatsiz bo'lsa tayyor 401 javobini qaytaradi —
@@ -46,9 +49,16 @@ export async function requireMobileAuth(
   if (!userId) {
     return mobileJson({ error: "Sessiya eskirgan, qayta kiring" }, { status: 401 });
   }
-  const user = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
-  if (!user) {
-    return mobileJson({ error: "Hisob topilmadi" }, { status: 401 });
+  // hisob borligi — har so'rovda bazadan so'ramaslik uchun qisqa kesh (ilova har necha soniyada so'raydi)
+  const seen = known.get(userId);
+  if (!seen || Date.now() - seen > KNOWN_TTL) {
+    const user = await db.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!user) {
+      known.delete(userId);
+      return mobileJson({ error: "Hisob topilmadi" }, { status: 401 });
+    }
+    if (known.size > 5000) known.clear();
+    known.set(userId, Date.now());
   }
   return { userId };
 }

@@ -21,6 +21,7 @@ const schema = z.object({
       "HERO_VIDEO",
       "LANDING_PHONE_SLIDE",
       "GUIDE_VIDEO",
+      "APK",
     ])
     .default("CHAT"),
   conversationId: z.string().optional(),
@@ -56,6 +57,16 @@ export async function POST(req: Request) {
       bucket: "public",
       publicUrl: publicUrl(key),
     });
+  }
+
+  if (kind === "APK") {
+    if (!/\.apk$/i.test(filename)) {
+      return NextResponse.json({ error: "Faqat .apk fayl yuklang" }, { status: 400 });
+    }
+    // har yuklashda yangi kalit — telefonlarga keshdan eski fayl kelmaydi
+    const key = buildKey("app", filename.replace(/[^\w.\-]/g, "_"));
+    const uploadUrl = await presignPut({ bucket: PUBLIC_BUCKET, key, contentType, expiresIn: 1800 });
+    return NextResponse.json({ uploadUrl, key, bucket: "public", publicUrl: publicUrl(key) });
   }
 
   if (kind === "BROADCAST") {

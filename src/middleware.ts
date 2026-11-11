@@ -5,7 +5,9 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { authConfig } from "@/auth.config";
 import { ADMIN_URL, LANDING_URL, PLUS_URL } from "@/lib/site";
 import { audit } from "@/lib/audit";
-import { maintenanceGate } from "@/lib/maintenance";
+import { getMaintenance, maintenanceGate } from "@/lib/maintenance";
+import { corsHeaders } from "@/lib/mobile-cors";
+import { getMobileUpdate, requestBuild, UPDATE_REQUIRED_TEXT, versionCode } from "@/lib/mobile-update";
 import { SSO_COOKIE, safeNext, ssoEnabled, verifySso } from "@/lib/sso";
 
 const { auth } = NextAuth(authConfig);
@@ -36,6 +38,33 @@ async function mobileUid(req: NextRequest): Promise<string | null> {
  */
 export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const { pathname, search, origin } = req.nextUrl;
+
+  // ---- API: yengil yo'l. Tez-tez keladigan o'qish so'rovlari (polling, mobil ilova) uchun imzo
+  // tekshiruvi, audit va NextAuth sessiyasini ochish kerak emas — route'lar o'zi tekshiradi.
+  if (pathname.startsWith("/api/")) {
+    const method = req.method.toUpperCase();
+    // eski mobil ilova — admin belgilagan majburiy versiyadan past bo'lsa, bazaga tegmay qaytadi
+    if (pathname.startsWith("/api/mobile/") && method !== "OPTIONS" && pathname !== "/api/mobile/config") {
+      const min = versionCode((await getMobileUpdate()).min);
+      if (min && requestBuild(req) < min) {
+        return NextResponse.json(
+          { error: UPDATE_REQUIRED_TEXT, updateRequired: true },
+          { status: 426, headers: corsHeaders() },
+        );
+      }
+    }
+    const write = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+    // foydalanuvchini faqat kerak bo'lganda aniqlaymiz: amal (audit) yoki texnik ishlar rejimi
+    const needUid = write || (await getMaintenance()).on;
+    const apiSso = needUid ? await verifySso(req.cookies.get(SSO_COOKIE)?.value) : null;
+    if (write) {
+      const who = apiSso ?? (await mobileUid(req));
+      audit(req, (p) => ev.waitUntil(p), "app", who ? "USER" : "GUEST", who);
+    }
+    const apiGate = await maintenanceGate(req, apiSso, "app");
+    if (apiGate) return apiGate;
+    return NextResponse.next();
+  }
 
   const ssoUid = await verifySso(req.cookies.get(SSO_COOKIE)?.value);
   // doimiy iz (admin "Loglar"): sayt — SSO, mobil ilova — imzolangan Bearer token

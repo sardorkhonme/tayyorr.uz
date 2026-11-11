@@ -35,7 +35,7 @@ function flush(beacon = false) {
 function push(e: Omit<Ev, "at">) {
   queue.push({ ...e, at: Date.now() });
   if (queue.length > 200) queue = queue.slice(-200);
-  if (!timer) timer = setTimeout(() => flush(), 3000);
+  if (!timer) timer = setTimeout(() => flush(), 15000);
 }
 
 const squash = (s: string | null | undefined, n = 80) => (s ?? "").replace(/\s+/g, " ").trim().slice(0, n);

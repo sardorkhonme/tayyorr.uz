@@ -13,6 +13,7 @@ import { neon } from "@neondatabase/serverless";
 export type Site = "app" | "plus" | "smm" | "admin";
 export type Actor = "USER" | "ADMIN" | "GUEST";
 
+const NOISE = /^\/api\/(me\/(ping|unread)|realtime\/|chat\/[^/]+\/read$|mobile\/(messages\/[^/]+\/read$|push-token|realtime\/))/;
 const BOT = /bot|crawl|spider|slurp|preview|monitor|uptime|headless|lighthouse|curl|wget|python|axios|node-fetch|go-http/i;
 
 // sahifa nomlari (aniq yo'l yoki [id] li shablon)
@@ -155,6 +156,8 @@ export function audit(req: Request, waitUntil: (p: Promise<unknown>) => void, si
     if (h.get("next-router-prefetch") || /prefetch/i.test(`${h.get("purpose") ?? ""} ${h.get("sec-purpose") ?? ""}`)) return;
     const ua = h.get("user-agent") ?? "";
     if (BOT.test(ua)) return;
+    // fon so'rovlari (onlayn belgisi, o'qildi, push token, real-time) — odam amali emas, yozilmaydi
+    if (NOISE.test(path)) return;
     // foydalanuvchisiz API so'rovlari — tashqi xizmatlar (to'lov, cron, Telegram), odam izi emas
     if (path.startsWith("/api/") && actor === "GUEST" && !/^\/api\/(admin\/login|mobile\/auth)/.test(path)) return;
     const d = describe(site, method, path, !!h.get("next-action"));
