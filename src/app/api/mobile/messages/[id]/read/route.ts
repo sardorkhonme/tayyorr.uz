@@ -5,7 +5,7 @@ import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getConversationForUser } from "@/lib/chat";
 import { publishToConversation } from "@/lib/chat-bus";
-import { VISIBLE_ON_UZ } from "@/lib/message-source";
+import { scopeOf, visibleOn } from "@/lib/message-source";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -22,7 +22,7 @@ export async function POST(
   if (!conv) return mobileJson({ error: "Suhbat topilmadi" }, { status: 404 });
 
   const res = await db.message.updateMany({
-    where: { conversationId: id, senderId: { not: me }, readAt: null, ...VISIBLE_ON_UZ },
+    where: { conversationId: id, senderId: { not: me }, readAt: null, ...visibleOn(scopeOf(req.url)) },
     data: { readAt: new Date() },
   });
 

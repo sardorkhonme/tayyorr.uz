@@ -15,7 +15,7 @@ import { toClientMessages, toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
-import { VISIBLE_ON_UZ } from "@/lib/message-source";
+import { scopeOf, tagFor, visibleOn, withSource } from "@/lib/message-source";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -39,7 +39,7 @@ export async function GET(
     where: {
       conversationId: id,
       ...(since ? { updatedAt: { gt: new Date(Number(since)) } } : {}),
-      ...VISIBLE_ON_UZ,
+      ...visibleOn(scopeOf(req.url)),
     },
     // `since` bo'lmasa — eng yangi 300 ta (eskilari emas), keyin to'g'ri tartibda
     orderBy: { createdAt: since ? "asc" : "desc" },
@@ -140,7 +140,8 @@ export async function POST(
   const msg = await createMessage({
     conversationId: id,
     senderId: me,
-    body: parsed.data.body ?? "",
+    // tayyorr+ / SMM bo'limidan yozilgan xabar — o'sha platforma belgisi bilan (admin qayerdan yozilganini ko'radi)
+    body: scopeOf(req.url) === "uz" ? (parsed.data.body ?? "") : withSource(parsed.data.body ?? "", tagFor(scopeOf(req.url))),
     replyToId: parsed.data.replyToId ?? null,
     file: parsed.data.file ?? null,
   });

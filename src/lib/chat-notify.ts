@@ -66,7 +66,25 @@ export async function deliverMessage(m: Message) {
     ).catch(() => {});
   }
 
-  // mobil ilova (FCM) va brauzer (web-push) — xatosi xabar yuborishni to'xtatmasin
+  // mobil ilova (FCM) — ilovada barcha xizmatlar bor (tayyorr.uz, tayyorr+, SMM): har biriga push,
+  // `scope` bo'yicha ilova bildirishnoma belgisini va qaysi bo'limda ochishni tanlaydi
+  const scope = onUz ? "uz" : plusOnly ? "plus" : "smm";
+  if (!onUz)
+    await sendMobilePush(recipientId, {
+      title,
+      body: snippet(m),
+      conversationId: m.conversationId,
+      data: {
+        otherId: m.senderId,
+        name: title,
+        login: sender?.login ?? "",
+        image: sender?.avatarUrl ?? sender?.image ?? "",
+        support: sender?.isSupport ? "1" : "0",
+        scope,
+      },
+    }).catch(() => {});
+
+  // brauzer (web-push) va mobil — xatosi xabar yuborishni to'xtatmasin
   if (onUz) await Promise.allSettled([
     sendMobilePush(recipientId, {
       title,
@@ -79,6 +97,7 @@ export async function deliverMessage(m: Message) {
         login: sender?.login ?? "",
         image: sender?.avatarUrl ?? sender?.image ?? "",
         support: sender?.isSupport ? "1" : "0",
+        scope,
       },
     }),
     sendPushToUser(recipientId, {
