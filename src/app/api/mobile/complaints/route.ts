@@ -26,7 +26,13 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return mobileJson({ error: parsed.error.issues[0]?.message ?? "Şikoyat matni qisqa" }, { status: 400 });
   }
-  const { suspectId, orderId, messageId, body } = parsed.data;
+  const { orderId, messageId, body } = parsed.data;
+  let { suspectId } = parsed.data;
+  // «Tayyorr's Family» xabari (anonim bo'lishi mumkin) — gumondor haqiqiy yozuvchi
+  if (messageId && !suspectId) {
+    const fm = await db.familyMessage.findUnique({ where: { id: messageId }, select: { senderId: true } }).catch(() => null);
+    if (fm && fm.senderId !== me) suspectId = fm.senderId;
+  }
 
   if (suspectId && suspectId === me) {
     return mobileJson({ error: "Özingiz ustidan şikoyat yozib bölmaydi" }, { status: 400 });

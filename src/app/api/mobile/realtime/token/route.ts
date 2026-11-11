@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { corsHeaders, mobileJson } from "@/lib/mobile-cors";
-import { createRealtimeToken, realtimeEnabled, userChannel } from "@/lib/realtime";
+import { FAMILY_CHANNEL, createRealtimeToken, realtimeEnabled, userChannel } from "@/lib/realtime";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -14,7 +14,9 @@ export async function GET(req: Request) {
   if (!realtimeEnabled()) return new NextResponse(null, { status: 204, headers: corsHeaders() });
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const token = await createRealtimeToken(auth.userId, [userChannel(auth.userId)]);
+  // ?family=1 — «Tayyorr's Family» oynasi ochiq: guruh kanali ham (faqat ochiq turganda ulanadi)
+  const family = new URL(req.url).searchParams.get("family") === "1";
+  const token = await createRealtimeToken(auth.userId, family ? [userChannel(auth.userId), FAMILY_CHANNEL] : [userChannel(auth.userId)]);
   if (!token) return new NextResponse(null, { status: 204, headers: corsHeaders() });
   return mobileJson(token);
 }

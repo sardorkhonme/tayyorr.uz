@@ -28,6 +28,7 @@ const BASE: NavLink[] = [
   { href: "/users", label: "Foydalanuvçilar", icon: "users" },
   { href: "/sources", label: "Qayerdan eşitgan", icon: "chart" },
   { href: "/chats", label: "Suhbatlar", icon: "messages" },
+  { href: "/family", label: "Tayyorr's Family", icon: "users" },
   { href: "/referrals", label: "Taşriflar", icon: "link" },
   { href: "/landing", label: "Sayt kontenti", icon: "film" },
   { href: "/guide", label: "Qöllanma", icon: "help" },

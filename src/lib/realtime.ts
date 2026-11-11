@@ -18,7 +18,10 @@ export const userChannel = (userId: string) => `user-${userId}`;
 /** Admin panel — barcha suhbatlar signali */
 export const STAFF_CHANNEL = "staff";
 
-export type Signal = { name: "chat" | "wallet" | "order"; data?: Record<string, string> };
+export type Signal = { name: "chat" | "wallet" | "order" | "family"; data?: Record<string, string> };
+
+/** «Tayyorr's Family» guruhi — faqat guruh oynasi ochiqlar eshitadi; xabar mazmuni signal ichida (qayta so'ralmaydi). */
+export const FAMILY_CHANNEL = "family";
 
 const auth = () => `Basic ${Buffer.from(KEY).toString("base64")}`;
 

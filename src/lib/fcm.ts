@@ -69,3 +69,53 @@ export async function sendMobilePush(userId: string, p: MobilePush) {
     .filter((t): t is string => !!t);
   if (dead.length) await db.deviceToken.deleteMany({ where: { token: { in: dead } } });
 }
+
+/**
+ * «Tayyorr's Family» bildirishnomasi: belgilangan / javob olgan odamlarga yoki hammaga ("all").
+ * Ilova `type: family` ni ko'rib guruhni ochadi.
+ */
+export async function sendFamilyPush(
+  to: string[] | "all",
+  p: { title: string; body: string; messageId: string; kind: "mention" | "reply" | "all" | "pin" },
+  exceptUserId?: string,
+) {
+  const m = messaging();
+  if (!m) return;
+  if (Array.isArray(to) && !to.length) return;
+  const rows = await db.deviceToken.findMany({
+    where: {
+      ...(to === "all" ? {} : { userId: { in: to } }),
+      ...(exceptUserId ? { NOT: { userId: exceptUserId } } : {}),
+    },
+    select: { token: true },
+  });
+  const tokens = [...new Set(rows.map((r) => r.token))];
+  const dead: string[] = [];
+  for (let i = 0; i < tokens.length; i += 500) {
+    const batch = tokens.slice(i, i + 500);
+    const res = await m.sendEachForMulticast({
+      tokens: batch,
+      notification: { title: p.title, body: p.body },
+      data: { type: "family", messageId: p.messageId, kind: p.kind, scope: "family" },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "messages_tin_v1",
+          sound: "tin",
+          icon: "ic_stat_message",
+          color: "#6366F1",
+          tag: `family-${p.kind === "all" || p.kind === "pin" ? p.messageId : "mention"}`,
+          defaultVibrateTimings: true,
+        },
+      },
+    });
+    res.responses.forEach((r, j) => {
+      if (
+        !r.success &&
+        ["messaging/registration-token-not-registered", "messaging/invalid-registration-token"].includes(r.error?.code ?? "")
+      )
+        dead.push(batch[j]);
+    });
+  }
+  if (dead.length) await db.deviceToken.deleteMany({ where: { token: { in: dead } } });
+}

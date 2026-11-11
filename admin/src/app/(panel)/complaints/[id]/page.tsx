@@ -139,6 +139,22 @@ export default async function AdminComplaintDetail({
         },
       })
     : null;
+  // «Tayyorr's Family» guruhidagi xabar ustidan (ilovadan)
+  const familyMsg =
+    c.messageId && !reportedMsg
+      ? await db.familyMessage.findUnique({
+          where: { id: c.messageId },
+          select: {
+            id: true,
+            body: true,
+            fileName: true,
+            deletedAt: true,
+            sendAt: true,
+            as: true,
+            sender: { select: { login: true, name: true, firstName: true, lastName: true } },
+          },
+        })
+      : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -185,6 +201,31 @@ export default async function AdminComplaintDetail({
             className="mt-2 inline-block text-sm text-indigo-400 hover:underline"
           >
             Yozişmani köriş →
+          </Link>
+        </div>
+      )}
+
+      {familyMsg && (
+        <div className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-5">
+          <h2 className="mb-2 text-sm font-semibold text-amber-300">Şikoyat qilingan xabar — Tayyorr&apos;s Family</h2>
+          <p className="text-xs text-zinc-500">
+            {shortDateTime(familyMsg.sendAt)} · yozgan:{" "}
+            {[familyMsg.sender.firstName, familyMsg.sender.lastName].filter(Boolean).join(" ") || familyMsg.sender.name || "—"}
+            {familyMsg.sender.login ? ` @${familyMsg.sender.login}` : ""}
+            {familyMsg.as === "brand" ? " (Tayyorr.uz nomidan)" : familyMsg.as === "support" ? " (Support nomidan)" : ""}
+            {familyMsg.deletedAt && " · (keyinçalik öçirilgan)"}
+          </p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-100">
+            {familyMsg.fileName && (
+              <span className="mr-1 inline-flex items-center gap-1 text-zinc-300">
+                <Icon name="paperclip" className="h-3.5 w-3.5" />
+                {familyMsg.fileName}
+              </span>
+            )}
+            {familyMsg.body}
+          </p>
+          <Link href={`/family?before=${familyMsg.sendAt.getTime() + 1}#${familyMsg.id}`} className="mt-2 inline-block text-sm text-indigo-400 hover:underline">
+            Guruhda köriş →
           </Link>
         </div>
       )}

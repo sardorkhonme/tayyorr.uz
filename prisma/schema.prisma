@@ -133,6 +133,7 @@ model User {
 
   isSupport  Boolean   @default(false) // "tayyorr.uz support" tizim hisobi
   isPlatform Boolean   @default(false) // sayt komissiya hisobi
+  familyAdmin Boolean  @default(false) // «Tayyorr's Family» guruhi admini (admin paneldan belgilanadi)
   lastSeenAt DateTime? // oxirgi faollik (online holati)
   locale     String? // "uz" | "ru" | "en" — tanlangan til
   theme      String? // "light" | "dark"
@@ -184,6 +185,8 @@ model User {
   contractsGot       Contract[]          @relation("ContractsGot")
   pushSubscriptions  PushSubscription[]
   deviceTokens       DeviceToken[]
+  familyMessages     FamilyMessage[]     @relation("FamilyMessages")
+  familyMember       FamilyMember?
   payoutRequests     PayoutRequest[]
   reactions          MessageReaction[]
   activityLogs       ActivityLog[]
@@ -832,4 +835,53 @@ model SmmOrder {
 
   @@index([userId, createdAt])
   @@index([status, checkedAt])
+}
+
+// ---------------- «Tayyorr's Family» — faqat mobil ilovadagi umumiy guruh ----------------
+// Xabarlar doimiy saqlanadi (o'chirilgani ham — adminда ko'rinadi); fayllar ilovada 5 kun ochiladi.
+model FamilyMessage {
+  id       String @id @default(cuid())
+  // haqiqiy yozuvchi (admin «Tayyorr.uz» / «Tayyorr Support» nomidan yozsa ham — shu yerda o'zi)
+  senderId String
+  sender   User   @relation("FamilyMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  // kim nomidan ko'rinadi: self | brand (Tayyorr.uz) | support (Tayyorr Support)
+  as       String @default("self")
+  body     String @default("")
+
+  fileKey  String?
+  fileName String?
+  fileType String?
+  fileSize Int?
+
+  replyToId String?
+  replyTo   FamilyMessage?  @relation("FamilyReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   FamilyMessage[] @relation("FamilyReplies")
+
+  // belgilanganlar: foydalanuvchi id'lari, «brand» / «support» — adminlarga
+  mentions  String[] @default([])
+  notifyAll Boolean  @default(false)
+  pinnedAt  DateTime?
+
+  // ko'rinish vaqti — rejalashtirilgan bo'lsa kelajakda; dispatchedAt — realtime/push yuborilgan payt
+  sendAt       DateTime  @default(now())
+  scheduled    Boolean   @default(false)
+  dispatchedAt DateTime?
+
+  deletedAt   DateTime?
+  deletedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([sendAt])
+  @@index([updatedAt])
+  @@index([senderId, createdAt])
+  @@index([scheduled, dispatchedAt])
+}
+
+model FamilyMember {
+  userId     String   @id
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt DateTime @default(now())
+  joinedAt   DateTime @default(now())
 }
