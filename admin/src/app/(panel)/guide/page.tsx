@@ -1,12 +1,10 @@
 import { GuideVideoList } from "@/components/admin/guide-video-manager";
-import { StarPriceForm } from "@/components/admin/star-price-form";
 import { getAllGuideVideos } from "@/lib/guide-settings";
-import { getStarPrice } from "@/lib/stars";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminGuidePage() {
-  const [videos, starPrice] = await Promise.all([getAllGuideVideos(), getStarPrice()]);
+  const videos = await getAllGuideVideos();
   const app = process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz";
 
   return (
@@ -20,7 +18,6 @@ export default async function AdminGuidePage() {
           </a>
         </p>
       </div>
-      <StarPriceForm value={starPrice} />
       <div className="grid gap-4 xl:grid-cols-2">
         <GuideVideoList role="ORDERER" title="Buyurtma beruvçi uçun videolar" videos={videos.ORDERER.map(({ id, title, url }) => ({ id, title, url }))} />
         <GuideVideoList role="PREPARER" title="Tayyorlovçi uçun videolar" videos={videos.PREPARER.map(({ id, title, url }) => ({ id, title, url }))} />

@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin";
 import { resolvePeriod } from "@/lib/stats";
 import { FinanceView } from "@/components/admin/finance-view";
+import { MoneySettings } from "@/components/admin/money-settings";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Moliya" };
@@ -14,5 +15,10 @@ export default async function FinancePage({
   const sp = await searchParams;
   // jadval: ?t= turi, ?lim= nechta qator (100 tadan, ko'pi bilan 2000)
   const limit = Math.min(Math.max(Number(sp.lim) || 100, 100), 2000);
-  return <FinanceView period={await resolvePeriod(sp)} kind={sp.t ?? "all"} limit={limit} />;
+  return (
+    <div className="flex flex-col gap-10">
+      <FinanceView period={await resolvePeriod(sp)} kind={sp.t ?? "all"} limit={limit} />
+      <MoneySettings />
+    </div>
+  );
 }

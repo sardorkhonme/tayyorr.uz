@@ -6,7 +6,7 @@ import { PeriodPicker } from "@/components/admin/stats/period-picker";
 import { ColumnChart, InfoTip } from "@/components/admin/stats/charts";
 import { fmtValue } from "@/components/admin/stats/format";
 import { Card } from "@/components/admin/stats/stats-view";
-import { FinanceSettingsForm, OwnerWithdrawals, ProviderDeposits } from "@/components/admin/finance-settings";
+import { OwnerWithdrawals, ProviderDeposits } from "@/components/admin/finance-settings";
 import { Icon } from "@/components/icons";
 import { FinanceLedger } from "@/components/admin/finance-ledger";
 import { FinanceAiPanel } from "@/components/admin/finance-ai";
@@ -202,7 +202,7 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
       {/* batafsil — xohlagan odam ochadi */}
       <details className="viz-card group rounded-2xl">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-semibold" style={{ color: "var(--viz-text)" }}>
-          Batafsil hisob-kitob va sozlamalar
+          Batafsil hisob-kitob
           <span className="grid h-8 w-8 place-items-center rounded-full text-lg transition group-open:rotate-45" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
             +
           </span>
@@ -232,20 +232,9 @@ export async function FinanceView({ period, kind = "all", limit = 100 }: { perio
             <Row label="Foydalanuvçilar hamyonida" value={a.userBalances} />
             <Row label="Yeçiş kutilmoqda" value={a.payoutPending} />
           </div>
-          <div className="lg:col-span-2">
-            <p className="pb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--viz-muted)" }}>
-              Sozlamalar — kim qança foiz olib qoladi
-            </p>
-            <FinanceSettingsForm clickPct={f.settings.clickPct} paymePct={f.settings.paymePct} deposit={f.settings.deposit} />
-            <p className="mt-3 text-xs" style={{ color: "var(--viz-muted)" }}>
-              Kartaga yeçiş foizi: <b style={{ color: "var(--viz-text)" }}>{PAYOUT_COMMISSION_PERCENT}%</b> · SMM ustamasi:{" "}
-              <b style={{ color: "var(--viz-text)" }}>{f.smmMarkup}%</b>{" "}
-              <Link href="/smm" className="underline">
-                özgartiriş
-              </Link>{" "}
-              · Dollar kursi: <b style={{ color: "var(--viz-text)" }}>{f.fx ? som(f.fx) : "—"}</b>
-            </p>
-          </div>
+          <p className="text-xs lg:col-span-2" style={{ color: "var(--viz-muted)" }}>
+            Foizlar va narxlar — sahifa ostidagi «Pul sozlamalari» bölimida.
+          </p>
         </div>
       </details>
 

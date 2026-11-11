@@ -31,8 +31,12 @@ const TELEGRAM_WORKS_URL = "https://t.me/tayyorruz_works";
 export async function sendWelcome(userId: string, firstName?: string | null) {
   const supportId = await getSupportUserId();
   const conv = await getOrCreateConversation(supportId, userId, null);
-  const count = await db.message.count({ where: { conversationId: conv.id } });
-  if (count > 0) return; // allaqachon yozilgan
+  // allaqachon yuborilgan bo'lsa — qayta yo'q (çatda boshqa xabarlar — referal bonusi, tayyorr+ / SMM — bo'lishi mumkin)
+  const sent = await db.message.findFirst({
+    where: { conversationId: conv.id, senderId: supportId, body: { contains: "xuş kelibsiz 🎉" } },
+    select: { id: true },
+  });
+  if (sent) return;
 
   const me = await db.user.findUnique({
     where: { id: userId },

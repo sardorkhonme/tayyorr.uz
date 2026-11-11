@@ -3,7 +3,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 
 import { audit } from "@/lib/audit";
 
-import { maintenanceGate } from "@/lib/maintenance";
+import { getMaintenance, maintenanceGate } from "@/lib/maintenance";
 import { SSO_COOKIE, safeNext, signSso, ssoClearOptions, ssoCookieOptions, ssoEnabled, verifySso } from "@/lib/sso";
 
 /** Kirgach qaytiladigan manzil (masalan app.tayyorr.uz) — 10 daqiqa saqlanadi. */
@@ -18,6 +18,19 @@ export async function middleware(req: NextRequest, ev: NextFetchEvent) {
   const { pathname, searchParams, protocol } = req.nextUrl;
   const secure = protocol === "https:";
   const host = req.headers.get("host");
+
+  // API — yengil yo'l: tez-tez keladigan o'qish so'rovlari (support çati, balans) uchun sessiyani (JWE) ochmaymiz;
+  // foydalanuvchi faqat amal (audit) yoki texnik ishlar rejimida aniqlanadi. Route'lar o'zi tekshiradi.
+  if (pathname.startsWith("/api/")) {
+    const method = req.method.toUpperCase();
+    const write = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+    const need = write || (await getMaintenance()).on;
+    const t = need ? await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie: secure }) : null;
+    const apiUid = typeof t?.sub === "string" ? t.sub : null;
+    if (write) audit(req, (p) => ev.waitUntil(p), "plus", apiUid ? "USER" : "GUEST", apiUid);
+    const apiGate = await maintenanceGate(req, apiUid, "plus", [/^\/(login|logout|app-login)(\/|$)/]);
+    return apiGate ?? NextResponse.next();
+  }
 
   const token = await getToken({ req, secret: process.env.AUTH_SECRET, secureCookie: secure });
   const uid = typeof token?.sub === "string" ? token.sub : null;

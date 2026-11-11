@@ -24,7 +24,7 @@ export function AdminSidebar({ nav }: { nav: NavLink[] }) {
           const active =
             l.href === "/"
               ? pathname === l.href
-              : pathname === l.href || pathname.startsWith(l.href + "/");
+              : pathname === l.href || pathname.startsWith(l.href + "/") || (l.href === "/smm" && pathname.startsWith("/smm-services"));
           return (
             <Link
               key={l.href}

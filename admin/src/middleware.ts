@@ -39,7 +39,11 @@ export async function middleware(req: NextRequest, ev: NextFetchEvent) {
     if (m) return NextResponse.redirect(new URL(to(m) + req.nextUrl.search, req.url));
   }
   // doimiy iz (Loglar): adminning har bir sahifasi va amali
-  audit(req, (p) => ev.waitUntil(p), "admin", (await isAdminRequest(req)) ? "ADMIN" : "GUEST", null);
+  // admin cookie imzosini faqat yoziladigan so'rovda tekshiramiz (o'qishlar auditga yozilmaydi)
+  const m = req.method.toUpperCase();
+  if (m !== "GET" && m !== "HEAD" && m !== "OPTIONS") {
+    audit(req, (p) => ev.waitUntil(p), "admin", (await isAdminRequest(req)) ? "ADMIN" : "GUEST", null);
+  }
   return NextResponse.next();
 }
 

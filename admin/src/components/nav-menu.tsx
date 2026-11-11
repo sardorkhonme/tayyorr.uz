@@ -122,7 +122,7 @@ export function NavMenu({
               )}
               {links.map((l, i) => {
                 const active =
-                  pathname === l.href || pathname.startsWith(l.href + "/");
+                  pathname === l.href || pathname.startsWith(l.href + "/") || (l.href === "/smm" && pathname.startsWith("/smm-services"));
                 return (
                   <Link
                     key={l.href}

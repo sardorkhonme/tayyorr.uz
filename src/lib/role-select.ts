@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
+import { sendWelcome } from "@/lib/support-actions";
 
 export type Role = "ORDERER" | "PREPARER";
 
@@ -29,5 +30,7 @@ export async function chooseRole(userId: string, role: Role, via: "sayt" | "mobi
     [`Foydalanuvçi: ${userLabel(u)}`, u.email ? `Email: ${u.email}` : "", `Rol: ${label}`, `Qayerdan: ${via}`].filter(Boolean),
     siteUrl(`/sardorxon/admin/users/${userId}`),
   );
+  // rolga qarab xush kelibsiz xabari (tayyorlovchiga — buyurtmalar kanali, buyurtmachiga — yangiliklar kanali)
+  await sendWelcome(userId, u.firstName).catch(() => {});
   return { ok: true } as const;
 }

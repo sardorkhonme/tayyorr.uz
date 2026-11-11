@@ -5,7 +5,6 @@ import { requireAdmin } from "@/lib/admin";
 import { shortDateTime } from "@/lib/date";
 import { getSmmSettings, refreshSmmUsdRate } from "@/lib/smm-settings";
 import { SmmProviderBalance } from "@/components/admin/smm-provider-balance";
-import { SmmSettingsForm } from "@/components/admin/smm-settings-form";
 import { SmmOrderRefresh } from "@/components/admin/smm-order-refresh";
 import { Icon } from "@/components/icons";
 
@@ -86,8 +85,8 @@ export default async function AdminSmm() {
       <div>
         <h1 className="flex items-center gap-2 text-xl font-semibold text-white">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/plus-mark.png" alt="" className="h-7 w-7 object-contain" />
-          tayyorr+
+          <img src="/smm-mark.png" alt="" className="h-7 w-7 object-contain" />
+          Tayyorr SMM
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
           <a href={SMM_URL} target="_blank" rel="noreferrer" className="text-indigo-400 hover:underline">
@@ -120,11 +119,15 @@ export default async function AdminSmm() {
           </span>
           <span className="mt-2 text-xs text-zinc-600">Har 6 soatda avtomatik yangilanadi.</span>
         </div>
-        <SmmSettingsForm
-          markupPercent={settings.markupPercent}
-          markupIsDefault={settings.markupIsDefault}
-          fx={settings.usd?.rate ?? null}
-        />
+        <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+          <span className="text-sm text-zinc-400">Ustama</span>
+          <span className="text-3xl font-semibold text-white">{settings.markupPercent}%</span>
+          <span className="text-xs text-zinc-500">Narx va foizlar — «Moliya» bölimida.</span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link href="/finance" className="btn-ghost !px-3 !py-1.5 text-sm">Moliya ›</Link>
+            <Link href="/smm-services" className="btn-primary !px-3 !py-1.5 text-sm">Xizmatlar va çegirmalar ›</Link>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

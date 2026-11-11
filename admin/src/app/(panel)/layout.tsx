@@ -30,10 +30,9 @@ const BASE: NavLink[] = [
   { href: "/chats", label: "Suhbatlar", icon: "messages" },
   { href: "/referrals", label: "Taşriflar", icon: "link" },
   { href: "/landing", label: "Sayt kontenti", icon: "film" },
-  { href: "/guide", label: "Qöllanma va star narxi", icon: "help" },
+  { href: "/guide", label: "Qöllanma", icon: "help" },
   { href: "/app", label: "Mobil ilova", icon: "phone" },
-  { href: "/smm", label: "tayyorr+", icon: "rocket", image: "/plus-mark.png" },
-  { href: "/smm-services", label: "SMM xizmatlari", icon: "rocket", image: "/smm-mark.png" },
+  { href: "/smm", label: "Tayyorr SMM", icon: "rocket", image: "/smm-mark.png" },
 ];
 
 export const metadata: Metadata = {
