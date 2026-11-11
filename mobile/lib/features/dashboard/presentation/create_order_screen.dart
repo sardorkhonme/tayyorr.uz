@@ -43,11 +43,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
   Future<void> _submit() async {
     if (_title.text.trim().length < 5) {
-      setState(() => _error = "Sarlavha kamida 5 ta belgidan iborat bo'lsin");
+      setState(() => _error = "Sarlavha kamida 5 ta belgidan iborat bölsin");
       return;
     }
     if (_description.text.trim().length < 10) {
-      setState(() => _error = "Tavsif kamida 10 ta belgidan iborat bo'lsin");
+      setState(() => _error = "Tavsif kamida 10 ta belgidan iborat bölsin");
       return;
     }
     setState(() {
@@ -106,7 +106,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               ),
               const SizedBox(height: 12),
               const WebLabel('Tavsif'),
-              WebInput(controller: _description, hint: 'Mavzu, talablar, hajm, formatlash...', maxLines: 5, minLines: 5),
+              WebInput(controller: _description, hint: 'Mavzu, talablar, hajm, formatlaş...', maxLines: 5, minLines: 5),
               const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +131,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const WebLabel("Byudjet (so'm)"),
+                        const WebLabel("Byudjet (söm)"),
                         WebInput(controller: _budget, keyboardType: TextInputType.number),
                       ],
                     ),
@@ -143,7 +143,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
               ],
               const SizedBox(height: 12),
-              WebButton(label: _busy ? '...' : "Buyurtmani e'lon qilish", expand: true, onPressed: _busy ? null : _submit),
+              WebButton(label: _busy ? '...' : "Buyurtmani eʼlon qiliş", expand: true, onPressed: _busy ? null : _submit),
             ],
           ),
         ),

@@ -46,11 +46,11 @@ class UserModel {
   String get displayName {
     if (name != null && name!.trim().isNotEmpty) return name!;
     if (login != null) return '@$login';
-    return 'Foydalanuvchi';
+    return 'Foydalanuvçi';
   }
 
   String get roleLabel =>
-      isPreparer ? 'Tayyorlovchi' : 'Buyurtma beruvchi';
+      isPreparer ? 'Tayyorlovçi' : 'Buyurtma beruvçi';
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(

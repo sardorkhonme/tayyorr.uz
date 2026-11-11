@@ -30,7 +30,7 @@ class MessageNotifier {
   static const _channel = AndroidNotificationChannel(
     'messages_tin_v1',
     'Yangi xabarlar',
-    description: 'Chatdagi yangi xabarlar haqida bildirishnoma',
+    description: 'Çatdagi yangi xabarlar haqida bildirişnoma',
     importance: Importance.high,
     sound: RawResourceAndroidNotificationSound('tin'),
     playSound: true,
@@ -59,7 +59,7 @@ class MessageNotifier {
         });
       }
     } catch (e) {
-      debugPrint('bildirishnoma ishga tushmadi: $e');
+      debugPrint('bildirişnoma işga tuşmadi: $e');
     }
   }
 
@@ -110,7 +110,7 @@ class MessageNotifier {
         }),
       );
     } catch (e) {
-      debugPrint('bildirishnoma ko\'rsatilmadi: $e');
+      debugPrint('bildirişnoma körsatilmadi: $e');
     }
   }
 
@@ -150,7 +150,7 @@ class MessageNotifier {
         }),
       );
     } catch (e) {
-      debugPrint('bildirishnoma ko\'rsatilmadi: $e');
+      debugPrint('bildirişnoma körsatilmadi: $e');
     }
   }
 

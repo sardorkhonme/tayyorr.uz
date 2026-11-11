@@ -340,8 +340,10 @@ class WebInput extends StatelessWidget {
     this.mono = false,
     this.readOnly = false,
     this.onTap,
+    this.onSubmitted,
   });
 
+  final ValueChanged<String>? onSubmitted;
   final TextEditingController? controller;
   final String? hint;
   final ValueChanged<String>? onChanged;
@@ -358,6 +360,7 @@ class WebInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      onSubmitted: onSubmitted,
       onChanged: onChanged,
       keyboardType: keyboardType,
       maxLines: obscure ? 1 : maxLines,

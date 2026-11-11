@@ -35,11 +35,11 @@ class _ReferralView extends StatefulWidget {
 class _ReferralViewState extends State<_ReferralView> {
   bool _copied = false;
 
-  String _link(String userId) => '$kSiteUrl/r/$userId';
+  String _link(String userId) => '$kPublicSiteUrl/r/$userId';
 
   String _shareText(String link) =>
-      "tayyorr.uz — ilmiy ishlaringiz (prezentatsiya, kurs ishi, referat, diplom) uchun ishonchli tayyorlovchi toping yoki o'zingiz tayyorlab daromad qiling!\n\n"
-      "Shu havola orqali ro'yxatdan o'ting: $link";
+      "tayyorr.uz — ilmiy işlaringiz (prezentatsiya, kurs işi, referat, diplom) uçun işonçli tayyorlovçi toping yoki özingiz tayyorlab daromad qiling!\n\n"
+      "Şu havola orqali röyxatdan öting: $link";
 
   Future<void> _copy(String link) async {
     await Clipboard.setData(ClipboardData(text: link));
@@ -64,7 +64,7 @@ class _ReferralViewState extends State<_ReferralView> {
             const WebPageTitle(
               'Referal',
               size: 20,
-              subtitle: "Do'stlaringizni taklif qiling — har bir ro'yxatdan o'tgan uchun 1 star olasiz.",
+              subtitle: "Döstlaringizni taklif qiling — har bir röyxatdan ötgan uçun 1 star olasiz.",
             ),
             if (user != null) _linkCard(_link(user.id)),
             Column(
@@ -77,7 +77,7 @@ class _ReferralViewState extends State<_ReferralView> {
                   const SBlock(height: 64)
                 else if (referred.isEmpty)
                   WebCard(
-                    child: Text("Hozircha hech kim havolangiz orqali ro'yxatdan o'tmagan.",
+                    child: Text("Hozirça heç kim havolangiz orqali röyxatdan ötmagan.",
                         style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45)),
                   )
                 else
@@ -132,13 +132,13 @@ class _ReferralViewState extends State<_ReferralView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          IconLabel(Icons.card_giftcard_rounded, "Do'stlaringizni taklif qiling",
+          IconLabel(Icons.card_giftcard_rounded, "Döstlaringizni taklif qiling",
               color: WebC.indigoSoft, size: 18,
               style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text.rich(
             TextSpan(children: [
-              const TextSpan(text: "Havolangiz orqali ro'yxatdan o'tgan har bir yangi foydalanuvchi uchun sizga "),
+              const TextSpan(text: "Havolangiz orqali röyxatdan ötgan har bir yangi foydalanuvçi uçun sizga "),
               TextSpan(text: '1 ', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
               starSpan(size: 12),
               const TextSpan(text: ' beriladi.'),
@@ -167,7 +167,7 @@ class _ReferralViewState extends State<_ReferralView> {
               ),
               const SizedBox(width: 8),
               WebButton(
-                label: _copied ? 'Nusxalandi' : 'Nusxalash',
+                label: _copied ? 'Nusxalandi' : 'Nusxalaş',
                 leading: _copied ? Icons.check_rounded : null,
                 variant: WebBtn.ghost,
                 onPressed: () => _copy(link),
@@ -176,7 +176,7 @@ class _ReferralViewState extends State<_ReferralView> {
           ),
           const SizedBox(height: 8),
           WebButton(
-            label: 'Ulashish',
+            label: 'Ulaşiş',
             variant: WebBtn.ghost,
             expand: true,
             icon: Icon(Icons.ios_share_rounded, size: 16, color: WebC.zinc300),

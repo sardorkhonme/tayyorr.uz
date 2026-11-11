@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 final _somFormat = NumberFormat.decimalPattern('en');
 
 String formatSom(int amount) =>
-    "${_somFormat.format(amount).replaceAll(',', ' ')} so'm";
+    "${_somFormat.format(amount).replaceAll(',', ' ')} söm";
 
 /// Faqat raqam guruhlab: 120000 -> "120 000".
 String groupDigits(int n) => _somFormat.format(n).replaceAll(',', ' ');

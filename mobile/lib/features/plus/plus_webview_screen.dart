@@ -96,7 +96,7 @@ class _PlusWebViewScreenState extends State<PlusWebViewScreen> {
           foregroundColor: const Color(0xFF16161D),
           leading: IconButton(
             icon: Icon(_canGoBack ? Icons.arrow_back_rounded : Icons.close_rounded),
-            tooltip: _canGoBack ? 'Orqaga' : 'Yopish',
+            tooltip: _canGoBack ? 'Orqaga' : 'Yopiş',
             onPressed: () async {
               if (await _goBack() && context.mounted) Navigator.of(context).pop();
             },
@@ -119,12 +119,12 @@ class _PlusWebViewScreenState extends State<PlusWebViewScreen> {
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'Yangilash',
+              tooltip: 'Yangilaş',
               onPressed: () => _controller.reload(),
             ),
             IconButton(
               icon: const Icon(Icons.open_in_new_rounded),
-              tooltip: 'Brauzerda ochish',
+              tooltip: 'Brauzerda oçiş',
               onPressed: () async {
                 final current = await _controller.currentUrl();
                 final u = Uri.parse(current ?? kPlusUrl);

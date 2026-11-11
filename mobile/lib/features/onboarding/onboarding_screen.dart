@@ -21,20 +21,20 @@ class _IntroPage {
 final _pages = <_IntroPage>[
   _IntroPage(
     '1 · Buyurtma',
-    'Ishingizni bir marta yozing',
-    "Prezentatsiya, kurs ishi, referat, diplom — shartlarni qoldiring, barcha tayyorlovchilar ko'radi.",
+    'Işingizni bir marta yozing',
+    "Prezentatsiya, kurs işi, referat, diplom — şartlarni qoldiring, barça tayyorlovçilar köradi.",
     (t) => _OrderArt(t: t),
   ),
   _IntroPage(
     '2 · Tanlov',
-    'Eng yaxshi taklifni tanlang',
-    "Tayyorlovchilar narx va muddat taklif qiladi. Reyting va baholarga qarab o'zingizga mosini tanlaysiz.",
+    'Eng yaxşi taklifni tanlang',
+    "Tayyorlovçilar narx va muddat taklif qiladi. Reyting va baholarga qarab özingizga mosini tanlaysiz.",
     (t) => _OffersArt(t: t),
   ),
   _IntroPage(
     '3 · Xavfsiz',
-    "Pul ish tugagach o'tadi",
-    "Mablag' shartnoma vaqtida hamyonda saqlanadi, ish topshirilgach tayyorlovchiga o'tadi. Hammasi chat orqali.",
+    "Pul iş tugagaç ötadi",
+    "Mablağ şartnoma vaqtida hamyonda saqlanadi, iş topşirilgaç tayyorlovçiga ötadi. Hammasi çat orqali.",
     (t) => _SafeArt(t: t),
   ),
 ];
@@ -110,7 +110,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                       duration: const Duration(milliseconds: 200),
                       child: TextButton(
                         onPressed: isLast ? null : _finish,
-                        child: Text("O'tkazib yuborish", style: TextStyle(color: WebC.zinc400, fontSize: 14)),
+                        child: Text("Ötkazib yuboriş", style: TextStyle(color: WebC.zinc400, fontSize: 14)),
                       ),
                     ),
                   ],
@@ -216,7 +216,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                 child: SizedBox(
                   width: double.infinity,
                   child: WebButton(
-                    label: isLast ? 'Boshlash' : 'Keyingisi',
+                    label: isLast ? 'Boşlaş' : 'Keyingisi',
                     expand: true,
                     onPressed: _next,
                   ),
@@ -317,7 +317,7 @@ class _OrderArt extends StatelessWidget {
                   Row(children: [
                     Icon(Icons.edit_note_rounded, size: 20, color: WebC.indigoSoft),
                     const SizedBox(width: 8),
-                    Text('Kurs ishi', style: TextStyle(color: WebC.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text('Kurs işi', style: TextStyle(color: WebC.white, fontWeight: FontWeight.w600, fontSize: 14)),
                   ]),
                   const SizedBox(height: 12),
                   _bar(180),
@@ -327,7 +327,7 @@ class _OrderArt extends StatelessWidget {
                   _bar(160),
                   const SizedBox(height: 14),
                   Row(children: [
-                    Text("150 000 so'm", style: TextStyle(color: WebC.emerald, fontWeight: FontWeight.w700, fontSize: 14)),
+                    Text("150 000 söm", style: TextStyle(color: WebC.emerald, fontWeight: FontWeight.w700, fontSize: 14)),
                     const Spacer(),
                     Text('3 kun', style: TextStyle(color: WebC.zinc400, fontSize: 12)),
                   ]),
@@ -483,7 +483,7 @@ class _SafeArt extends StatelessWidget {
             top: 40 + _bob(t, 0.25, 7),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: IconLabel(Icons.check_circle_rounded, "Ish tayyor", color: WebC.emerald, style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(Icons.check_circle_rounded, "Iş tayyor", color: WebC.emerald, style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
           Positioned(
@@ -491,7 +491,7 @@ class _SafeArt extends StatelessWidget {
             bottom: 52 + _bob(t, 0.55, 7),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: Text("+120 000 so'm", style: TextStyle(color: WebC.emerald, fontSize: 13, fontWeight: FontWeight.w700)),
+              child: Text("+120 000 söm", style: TextStyle(color: WebC.emerald, fontSize: 13, fontWeight: FontWeight.w700)),
             ),
           ),
           Positioned(
@@ -499,7 +499,7 @@ class _SafeArt extends StatelessWidget {
             bottom: 20 + _bob(t, 0.8, 6),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: IconLabel(Icons.chat_bubble_outline_rounded, 'Chat', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(Icons.chat_bubble_outline_rounded, 'Çat', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
         ],

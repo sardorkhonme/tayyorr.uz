@@ -94,7 +94,7 @@ Future<void> saveChatFile(BuildContext context, ChatFileModel file, String key) 
     if (saved != null && context.mounted) _toast(context, 'Fayl saqlandi');
   } catch (e) {
     debugPrint('fayl saqlanmadi: $e');
-    if (context.mounted) _toast(context, "Saqlab bo'lmadi — qayta urinib ko'ring");
+    if (context.mounted) _toast(context, "Saqlab bölmadi — qayta urinib köring");
   }
 }
 
@@ -350,7 +350,7 @@ class _DownloadIconButtonState extends State<_DownloadIconButton> {
           );
         }
         return IconButton(
-          tooltip: 'Yuklab olish',
+          tooltip: 'Yuklab oliş',
           onPressed: () async {
             setState(() => _busy = true);
             await saveChatFile(context, widget.file, widget.cacheKey);
@@ -476,7 +476,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       _scheduleHide();
     } catch (_) {
       await c.dispose();
-      if (mounted) setState(() => _error = "Videoni ochib bo'lmadi");
+      if (mounted) setState(() => _error = "Videoni oçib bölmadi");
     }
   }
 
@@ -672,7 +672,7 @@ class _AudioAttachmentState extends State<AudioAttachment> {
       unawaited(p.play());
     } catch (e) {
       debugPrint('audio ijro etilmadi: $e');
-      if (mounted) _toast(context, "Audioni ijro etib bo'lmadi");
+      if (mounted) _toast(context, "Audioni ijro etib bölmadi");
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -841,11 +841,11 @@ class _DocAttachmentState extends State<_DocAttachment> {
       final res = await OpenFilex.open(f.path, type: mimeForExt(widget.file.ext))
           .timeout(const Duration(seconds: 15));
       if (res.type != ResultType.done && mounted) {
-        _toast(context, "Bu faylni ochadigan ilova topilmadi — ⋮ menyudan saqlab oling");
+        _toast(context, "Bu faylni oçadigan ilova topilmadi — ⋮ menyudan saqlab oling");
       }
     } catch (e) {
-      debugPrint('chat fayl ochilmadi: $e');
-      if (mounted) _toast(context, "Faylni yuklab bo'lmadi");
+      debugPrint('çat fayl oçilmadi: $e');
+      if (mounted) _toast(context, "Faylni yuklab bölmadi");
     }
   }
 
@@ -958,7 +958,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white38),
                 ),
                 errorBuilder: (_, __) => const Center(
-                  child: Text("PDF'ni ochib bo'lmadi", style: TextStyle(color: Colors.white70)),
+                  child: Text("PDFʼni oçib bölmadi", style: TextStyle(color: Colors.white70)),
                 ),
               ),
             ),
@@ -1004,7 +1004,7 @@ class TextViewerScreen extends StatelessWidget {
               builder: (context, snap) {
                 if (!snap.hasData) {
                   return snap.hasError
-                      ? const Center(child: Text("Faylni o'qib bo'lmadi", style: TextStyle(color: Colors.white70)))
+                      ? const Center(child: Text("Faylni öqib bölmadi", style: TextStyle(color: Colors.white70)))
                       : const Center(child: CircularProgressIndicator(strokeWidth: 2.6, color: Colors.white));
                 }
                 return SingleChildScrollView(

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../app_config.dart';
+import '../app_info.dart';
 import '../constants.dart';
 import '../storage/local_storage.dart';
 import 'api_exception.dart';
@@ -23,6 +25,8 @@ class ApiClient {
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+          // server shu raqam bo'yicha eskirgan ilovani aniqlaydi (majburiy yangilanish)
+          options.headers['X-App-Build'] = '${AppInfo.build}';
           handler.next(options);
         },
       ),
@@ -54,11 +58,18 @@ class ApiClient {
   ) async {
     try {
       final res = await call();
+      if (AppConfig.instance.maintenance != null) AppConfig.instance.setMaintenance(null);
       final data = res.data;
       if (data is Map<String, dynamic>) return data;
       return {'data': data};
     } on DioException catch (e) {
       final body = e.response?.data;
+      final code = e.response?.statusCode;
+      if (code == 426 || (body is Map && body['updateRequired'] == true)) {
+        AppConfig.instance.markUpdateRequired();
+      } else if (code == 503 && body is Map && body['maintenance'] == true) {
+        AppConfig.instance.setMaintenance(body['error'] as String? ?? 'Texnik işlar olib borilmoqda');
+      }
       final msg = (body is Map && body['error'] is String)
           ? body['error'] as String
           : _fallbackMessage(e);
@@ -71,9 +82,9 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return "Internet sekin — qayta urinib ko'ring";
+        return "Internet sekin — qayta urinib köring";
       case DioExceptionType.connectionError:
-        return 'Internetga ulanib bo\'lmadi';
+        return 'Internetga ulanib bölmadi';
       default:
         return 'Nimadir xato ketdi';
     }

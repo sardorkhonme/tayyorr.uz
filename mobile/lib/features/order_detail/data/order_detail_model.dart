@@ -23,7 +23,7 @@ class OrderPartyModel {
   String get displayName {
     if ((name ?? '').isNotEmpty) return name!;
     if (login != null) return '@$login';
-    return 'Foydalanuvchi';
+    return 'Foydalanuvçi';
   }
 }
 

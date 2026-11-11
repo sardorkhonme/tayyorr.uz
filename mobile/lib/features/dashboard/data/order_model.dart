@@ -44,17 +44,17 @@ class OrderModel {
 
 const kOrderTypeLabel = {
   'PRESENTATION': 'Prezentatsiya',
-  'COURSE_WORK': 'Kurs ishi',
+  'COURSE_WORK': 'Kurs işi',
   'REFERAT': 'Referat',
   'ESSAY': 'Esse',
-  'DIPLOMA': 'Diplom ishi',
-  'OTHER': 'Boshqa',
+  'DIPLOMA': 'Diplom işi',
+  'OTHER': 'Boşqa',
 };
 
 const kOrderStatusLabel = {
-  'OPEN': 'Ochiq',
+  'OPEN': 'Oçiq',
   'IN_PROGRESS': 'Jarayonda',
-  'DELIVERED': 'Topshirilgan',
+  'DELIVERED': 'Topşirilgan',
   'DONE': 'Yakunlangan',
   'CANCELLED': 'Bekor qilingan',
 };

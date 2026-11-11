@@ -79,7 +79,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       final user = await AuthRepository().uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
       if (mounted) context.read<AuthBloc>().add(AuthUserUpdated(user));
     } catch (_) {
-      if (mounted) setState(() => _err = "Rasmni yuklab bo'lmadi");
+      if (mounted) setState(() => _err = "Rasmni yuklab bölmadi");
     } finally {
       if (mounted) {
         setState(() {
@@ -97,7 +97,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
     if (_hearAboutUs == 'other' && _hearAboutUsDetail.text.trim().isEmpty) {
-      setState(() => _err = 'Qayerdan eshitganingizni yozing');
+      setState(() => _err = 'Qayerdan eşitganingizni yozing');
       return;
     }
     setState(() => _step = 2);
@@ -107,14 +107,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     setState(() => _err = null);
     if (_hearAboutUs == null || _hearAboutUs!.isEmpty) {
       setState(() {
-        _err = 'Bizni qayerdan eshitganingizni tanlang';
+        _err = 'Bizni qayerdan eşitganingizni tanlang';
         _step = 1;
       });
       return;
     }
     if (_hearAboutUs == 'other' && _hearAboutUsDetail.text.trim().isEmpty) {
       setState(() {
-        _err = 'Qayerdan eshitganingizni yozing';
+        _err = 'Qayerdan eşitganingizni yozing';
         _step = 1;
       });
       return;
@@ -128,19 +128,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
     if (_birth == null) {
-      setState(() => _err = "Tug'ilgan sanangizni tanlang");
+      setState(() => _err = "Tuğilgan sanangizni tanlang");
       return;
     }
     if (_login.text.trim().length < 3) {
-      setState(() => _err = "Login kamida 3 ta belgidan iborat bo'lishi kerak");
+      setState(() => _err = "Login kamida 3 ta belgidan iborat bölişi kerak");
       return;
     }
     if (_password.text.length < 6) {
-      setState(() => _err = "Parol kamida 6 ta belgidan iborat bo'lishi kerak");
+      setState(() => _err = "Parol kamida 6 ta belgidan iborat bölişi kerak");
       return;
     }
     if (_about.text.trim().length < 5) {
-      setState(() => _err = "Qo'shimcha ma'lumot kamida 5 ta belgidan iborat bo'lishi kerak");
+      setState(() => _err = "Qöşimça maʼlumot kamida 5 ta belgidan iborat bölişi kerak");
       return;
     }
     final image = context.read<AuthBloc>().state.user?.image;
@@ -149,7 +149,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
     if (!_agree) {
-      setState(() => _err = 'Davom etish uchun oferta shartlariga rozilik bering');
+      setState(() => _err = 'Davom etiş uçun oferta şartlariga rozilik bering');
       return;
     }
     FocusScope.of(context).unfocus();
@@ -262,7 +262,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          name != null && name.isNotEmpty ? 'Xush kelibsiz, $name!' : 'Xush kelibsiz!',
+          name != null && name.isNotEmpty ? 'Xuş kelibsiz, $name!' : 'Xuş kelibsiz!',
           style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
@@ -272,13 +272,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         const SizedBox(height: 20),
         _RoleButton(
-          label: 'Buyurtma beruvchi — ish buyuraman',
+          label: 'Buyurtma beruvçi — iş buyuraman',
           selected: _role == 'ORDERER',
           onTap: () => setState(() => _role = 'ORDERER'),
         ),
         const SizedBox(height: 10),
         _RoleButton(
-          label: 'Tayyorlovchi — ish tayyorlab beraman',
+          label: 'Tayyorlovçi — iş tayyorlab beraman',
           selected: _role == 'PREPARER',
           onTap: () => setState(() => _role = 'PREPARER'),
         ),
@@ -288,7 +288,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ],
         const SizedBox(height: 20),
         WebButton(
-          label: 'Davom etish →',
+          label: 'Davom etiş →',
           expand: true,
           busy: busy,
           onPressed: busy ? null : () => context.read<AuthBloc>().add(AuthRoleChosen(_role)),
@@ -335,7 +335,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                               // ================= 1-QADAM =================
                               if (_step == 1) ...[
                                 Text(
-                                  'Bizni qayerdan eshitdingiz?',
+                                  'Bizni qayerdan eşitdingiz?',
                                   style: TextStyle(
                                     color: WebC.white,
                                     fontSize: 20,
@@ -344,7 +344,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  "Tayyorr.uz haqida ma'lumotni qayerdan oldingiz? Mos variantni tanlang.",
+                                  "Tayyorr.uz haqida maʼlumotni qayerdan oldingiz? Mos variantni tanlang.",
                                   style: TextStyle(
                                     color: WebC.zinc400,
                                     fontSize: 13.5,
@@ -370,7 +370,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                   const SizedBox(height: 14),
                                   WebInput(
                                     controller: _hearAboutUsDetail,
-                                    hint: "Qayerdan eshitganingizni yozing (YouTube, TikTok...)",
+                                    hint: "Qayerdan eşitganingizni yozing (YouTube, TikTok...)",
                                   ),
                                 ],
                                 if (error != null) ...[
@@ -379,7 +379,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 ],
                                 const SizedBox(height: 22),
                                 WebButton(
-                                  label: 'Davom etish →',
+                                  label: 'Davom etiş →',
                                   expand: true,
                                   onPressed: _continueStep1,
                                 ),
@@ -388,7 +388,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                               // ================= 2-QADAM =================
                               if (_step == 2) ...[
                                 Text(
-                                  "Profilni to'ldiring",
+                                  "Profilni töldiring",
                                   style: TextStyle(
                                     color: WebC.white,
                                     fontSize: 20,
@@ -397,15 +397,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Barcha maydonlar majburiy.',
+                                  'Barça maydonlar majburiy.',
                                   style: TextStyle(color: WebC.zinc400, fontSize: 13.5),
                                 ),
                                 const SizedBox(height: 24),
                                 Row(
                                   children: [
                                     for (final r in const [
-                                      ('ORDERER', 'Buyurtma beruvchi'),
-                                      ('PREPARER', 'Tayyorlovchi'),
+                                      ('ORDERER', 'Buyurtma beruvçi'),
+                                      ('PREPARER', 'Tayyorlovçi'),
                                     ]) ...[
                                       if (r.$1 == 'PREPARER') const SizedBox(width: 12),
                                       Expanded(
@@ -428,7 +428,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                const WebLabel("Tug'ilgan sana"),
+                                const WebLabel("Tuğilgan sana"),
                                 BirthDateField(value: _birth, onChanged: (d) => setState(() => _birth = d)),
                                 const SizedBox(height: 16),
                                 _field('Login', WebInput(controller: _login)),
@@ -450,11 +450,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Keyinchalik login + parol bilan ham kira olasiz.',
+                                  'Keyinçalik login + parol bilan ham kira olasiz.',
                                   style: TextStyle(color: WebC.zinc500, fontSize: 12),
                                 ),
                                 const SizedBox(height: 16),
-                                _field("Qo'shimcha ma'lumot", WebInput(controller: _about, maxLines: 3, minLines: 3)),
+                                _field("Qöşimça maʼlumot", WebInput(controller: _about, maxLines: 3, minLines: 3)),
                                 const SizedBox(height: 16),
                                 const WebLabel('Glavniy rasm'),
                                 Row(
@@ -473,11 +473,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                           ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
                                           : (image ?? '').isNotEmpty
                                           ? Image.network(image!, width: 80, height: 80, fit: BoxFit.cover)
-                                          : Text("rasm yo'q", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                                          : Text("rasm yöq", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
                                     ),
                                     const SizedBox(width: 16),
                                     WebButton(
-                                      label: _uploading ? 'Yuklanmoqda...' : 'Rasm tanlash',
+                                      label: _uploading ? 'Yuklanmoqda...' : 'Rasm tanlaş',
                                       variant: WebBtn.ghost,
                                       onPressed: _uploading ? null : _pickAvatar,
                                     ),
@@ -513,7 +513,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                             children: [
                                               const TextSpan(text: 'Men '),
                                               TextSpan(
-                                                text: 'ommaviy oferta va foydalanish shartlari',
+                                                text: 'ommaviy oferta va foydalaniş şartlari',
                                                 style: TextStyle(
                                                   color: WebC.indigo,
                                                   decoration: TextDecoration.underline,
@@ -527,7 +527,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                               ),
                                               const TextSpan(
                                                 text:
-                                                    " bilan tanishdim, ularga roziman va ma'lumotlarni o'z ixtiyorim bilan beraman.",
+                                                    " bilan tanişdim, ularga roziman va maʼlumotlarni öz ixtiyorim bilan beraman.",
                                               ),
                                             ],
                                           ),
@@ -557,7 +557,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: WebButton(
-                                        label: busy ? 'Saqlanmoqda...' : 'Saqlash va davom etish',
+                                        label: busy ? 'Saqlanmoqda...' : 'Saqlaş va davom etiş',
                                         expand: true,
                                         onPressed: busy || !_agree ? null : _submit,
                                       ),
@@ -580,7 +580,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                             style: TextStyle(color: WebC.zinc500, fontSize: 14),
                             children: [
                               TextSpan(
-                                text: 'Kirish',
+                                text: 'Kiriş',
                                 style: TextStyle(
                                   color: WebC.indigo,
                                   fontWeight: FontWeight.w600,
@@ -648,7 +648,7 @@ final _sourceOptions = [
   ),
   _SourceOptionItem(
     id: 'ai',
-    label: "Sun'iy intellekt",
+    label: "Sunʼiy intellekt",
     icon: Container(
       width: 28,
       height: 28,
@@ -681,7 +681,7 @@ final _sourceOptions = [
   ),
   _SourceOptionItem(
     id: 'friend',
-    label: "Do'stimdan",
+    label: "Döstimdan",
     icon: Container(
       width: 28,
       height: 28,
@@ -696,7 +696,7 @@ final _sourceOptions = [
   ),
   _SourceOptionItem(
     id: 'other',
-    label: 'Boshqa',
+    label: 'Boşqa',
     icon: Container(
       width: 28,
       height: 28,
@@ -812,7 +812,7 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
               ),
               const SizedBox(height: 14),
               Text(
-                "Tug'ilgan sanangiz",
+                "Tuğilgan sanangiz",
                 style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 4),
@@ -848,7 +848,7 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
               SizedBox(
                 width: double.infinity,
                 child: WebButton(
-                  label: 'Tanlash',
+                  label: 'Tanlaş',
                   expand: true,
                   onPressed: () => Navigator.of(sheetCtx).pop(DateTime(year, month, day)),
                 ),

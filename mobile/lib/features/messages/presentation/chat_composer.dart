@@ -144,7 +144,7 @@ class _ChatComposerState extends State<ChatComposer> {
     try {
       ChatAudio.pause();
       if (!await _rec.hasPermission()) {
-        _toast("Mikrofonga ruxsat bering — sozlamalardan yoqishingiz mumkin");
+        _toast("Mikrofonga ruxsat bering — sozlamalardan yoqişingiz mumkin");
         return;
       }
       // ruxsat oynasi paytida barmoq qo'yib yuborilgan bo'lsa — yozmaymiz
@@ -159,7 +159,7 @@ class _ChatComposerState extends State<ChatComposer> {
       });
       if (mounted) setState(() => _recording = true);
     } catch (_) {
-      _toast("Ovoz yozib bo'lmadi");
+      _toast("Ovoz yozib bölmadi");
     } finally {
       _starting = false;
     }
@@ -184,13 +184,13 @@ class _ChatComposerState extends State<ChatComposer> {
       final path = await _rec.stop();
       if (path == null) return;
       if (dur < const Duration(milliseconds: 600)) {
-        _toast('Yozib olish uchun tugmani bosib turing');
+        _toast('Yozib oliş uçun tugmani bosib turing');
         return;
       }
       HapticFeedback.lightImpact();
       widget.onRecorded(path, dur);
     } catch (_) {
-      _toast("Ovoz yozib bo'lmadi");
+      _toast("Ovoz yozib bölmadi");
     }
   }
 
@@ -316,7 +316,7 @@ class _ChatComposerState extends State<ChatComposer> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                "Qo'yib yuboring — tayyor",
+                "Qöyib yuboring — tayyor",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: WebC.zinc400, fontSize: 12),
@@ -349,7 +349,7 @@ class _ChatComposerState extends State<ChatComposer> {
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
-            hintText: widget.hasAttachment ? 'Izoh qo\'shing...' : 'Xabar yozing...',
+            hintText: widget.hasAttachment ? 'Izoh qöşing...' : 'Xabar yozing...',
             hintStyle: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.5),
           ),
         ),

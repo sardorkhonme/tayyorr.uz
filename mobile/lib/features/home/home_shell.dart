@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/app_config.dart';
 import '../../core/notifications/message_notifier.dart';
+import '../../core/realtime/realtime_service.dart';
 import '../../core/notifications/push_service.dart';
 import '../../core/unread_counter.dart';
 import '../../widgets/aurora_background.dart';
@@ -48,32 +50,72 @@ class _HomeShellView extends StatefulWidget {
 
 class _HomeShellViewState extends State<_HomeShellView> with WidgetsBindingObserver {
   Timer? _unreadTimer;
+  StreamSubscription<RealtimeEvent>? _rtSub;
+  Timer? _chatDebounce;
+  DateTime _lastUnread = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _foreground = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     UnreadCounter.instance.reset();
-    UnreadCounter.instance.refresh();
-    // har 10 soniyada — yangi xabar kelsa bildirishnoma va "tin"
-    _unreadTimer = Timer.periodic(const Duration(seconds: 10), (_) => UnreadCounter.instance.refresh());
+    _refreshUnread();
+    // Real-time: server signal yuboradi — ma'lumot faqat o'zgarganda so'raladi
+    RealtimeService.instance.start();
+    _rtSub = RealtimeService.instance.events.listen(_onRealtime);
+    // ehtiyot tekshiruvi: ulangan bo'lsa daqiqada bir, ulanmagan bo'lsa 15 s da bir;
+    // fonda — faqat push ishlamasa va daqiqada bir (bildirishnoma uchun)
+    _unreadTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      final every = !_foreground
+          ? (PushService.instance.active ? null : const Duration(seconds: 60))
+          : RealtimeService.instance.connected.value
+              ? RealtimeService.safetyPoll
+              : const Duration(seconds: 15);
+      if (every != null && DateTime.now().difference(_lastUnread) >= every) _refreshUnread();
+    });
     MessageNotifier.instance.requestPermission().then((_) => PushService.instance.register());
+  }
+
+  void _refreshUnread() {
+    _lastUnread = DateTime.now();
+    UnreadCounter.instance.refresh();
+  }
+
+  void _onRealtime(RealtimeEvent e) {
+    if (e.name == 'chat') {
+      // bir nechta signal ketma-ket kelsa — bitta so'rov
+      _chatDebounce?.cancel();
+      _chatDebounce = Timer(const Duration(milliseconds: 400), _refreshUnread);
+    } else if (e.name == 'wallet' && mounted) {
+      context.read<AuthBloc>().add(const AuthMeRefreshRequested());
+    }
   }
 
   @override
   void dispose() {
     _unreadTimer?.cancel();
+    _chatDebounce?.cancel();
+    _rtSub?.cancel();
+    RealtimeService.instance.stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Foydalanuvchi tashqi brauzerda to'lov qilib qaytganda (Click) —
-    // balansni darhol yangilaymiz.
     if (state == AppLifecycleState.resumed) {
+      _foreground = true;
+      RealtimeService.instance.start();
+      // Foydalanuvchi tashqi brauzerda to'lov qilib qaytganda (Click) —
+      // balansni darhol yangilaymiz.
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-      UnreadCounter.instance.refresh();
+      _refreshUnread();
+      // yangilanish / narxlar
+      AppConfig.instance.load();
+    } else if (state == AppLifecycleState.paused) {
+      _foreground = false;
+      RealtimeService.instance.stop();
     }
   }
 

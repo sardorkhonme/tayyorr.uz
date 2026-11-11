@@ -1,3 +1,4 @@
+import '../../../core/app_config.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -16,7 +17,8 @@ import '../cubit/wallet_cubit.dart';
 import '../data/wallet_model.dart';
 import '../data/wallet_repository.dart';
 
-const _starPrice = 2000;
+/// 1 star narxi — admin belgilaydi (server /mobile/config).
+int get _starPrice => AppConfig.instance.starPrice;
 
 /// Saytdagi /wallet — balans, Star, to'ldirish, yechish va tarix.
 class WalletScreen extends StatelessWidget {
@@ -60,7 +62,7 @@ class _WalletView extends StatelessWidget {
             _PayoutForm(balance: wallet.balance, onDone: reload),
             if (wallet.payouts.isNotEmpty)
               _Section(
-                title: "Yechib olishlar",
+                title: "Yeçib olişlar",
                 children: [for (final p in wallet.payouts) _PayoutRow(payout: p, onCancelled: reload)],
               ),
             _Section(
@@ -68,7 +70,7 @@ class _WalletView extends StatelessWidget {
               children: wallet.transactions.isEmpty
                   ? [
                       WebCard(
-                        child: Text("Hozircha amallar yo'q.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+                        child: Text("Hozirça amallar yöq.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
                       ),
                     ]
                   : [for (final t in wallet.transactions) _TxnRow(txn: t)],
@@ -84,7 +86,7 @@ class _WalletView extends StatelessWidget {
             const WebPageTitle(
               'Hamyon',
               size: 24,
-              subtitle: "Hisobingizni to'ldiring, buyurtmalar uchun shu balansdan to'lov qilinadi.",
+              subtitle: "Hisobingizni töldiring, buyurtmalar uçun şu balansdan tölov qilinadi.",
             ),
             ...body,
           ],
@@ -194,10 +196,10 @@ class _CommissionBreakdown extends StatelessWidget {
       ),
       child: Column(
         children: [
-          row('Hamyondan yechiladi', "${groupDigits(amount)} so'm"),
-          row('Komissiya ($kPayoutCommissionPercent%)', "−${groupDigits(commission)} so'm"),
+          row('Hamyondan yeçiladi', "${groupDigits(amount)} söm"),
+          row('Komissiya ($kPayoutCommissionPercent%)', "−${groupDigits(commission)} söm"),
           Divider(color: WebC.border, height: 14),
-          row('Kartangizga tushadi', "${groupDigits(net)} so'm", strong: true),
+          row('Kartangizga tuşadi', "${groupDigits(net)} söm", strong: true),
         ],
       ),
     );
@@ -462,14 +464,14 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
           const SizedBox(height: 8),
           Text.rich(
             TextSpan(children: [
-              const TextSpan(text: "Buyurtmaga ariza yuborish va navbatda yuqoriga chiqish uchun kerak bo'ladi. 1 "),
+              const TextSpan(text: "Buyurtmaga ariza yuboriş va navbatda yuqoriga çiqiş uçun kerak böladi. 1 "),
               starSpan(size: 12),
-              TextSpan(text: " = ${groupDigits(_starPrice)} so'm, hamyon balansingizdan yechiladi."),
+              TextSpan(text: " = ${groupDigits(_starPrice)} söm, hamyon balansingizdan yeçiladi."),
             ]),
             style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 16),
-          const WebLabel('Nechta star (dona)'),
+          const WebLabel('Neçta star (dona)'),
           WebInput(
             controller: _stars,
             hint: '10',
@@ -478,7 +480,7 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
           ),
           if (n > 0) ...[
             const SizedBox(height: 4),
-            _Hint("Narxi: ${groupDigits(n * _starPrice)} so'm"),
+            _Hint("Narxi: ${groupDigits(n * _starPrice)} söm"),
           ],
           const SizedBox(height: 16),
           Wrap(
@@ -491,7 +493,7 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
           ),
           if (_msg != null) ...[const SizedBox(height: 16), _Msg(ok: _msg!.$1, text: _msg!.$2)],
           const SizedBox(height: 16),
-          WebButton(label: _busy ? '...' : 'Star sotib olish', onPressed: _busy ? null : _submit, expand: true),
+          WebButton(label: _busy ? '...' : 'Star sotib oliş', onPressed: _busy ? null : _submit, expand: true),
         ],
       ),
     );
@@ -534,7 +536,7 @@ class _TopUpFormState extends State<_TopUpForm> {
     try {
       final payUrl = await WalletRepository().topUp(amount, walletCode: _code.text.trim());
       final ok = await launchUrl(Uri.parse(payUrl), mode: LaunchMode.externalApplication);
-      if (!ok && mounted) setState(() => _error = "To'lov sahifasini ochib bo'lmadi");
+      if (!ok && mounted) setState(() => _error = "Tölov sahifasini oçib bölmadi");
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -548,10 +550,10 @@ class _TopUpFormState extends State<_TopUpForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _FormHead(title: "Hisobni to'ldirish", tag: 'Click orqali'),
+          const _FormHead(title: "Hisobni töldiriş", tag: 'Click orqali'),
           const SizedBox(height: 8),
-          const _Hint("Summani kiriting — Click'ning xavfsiz to'lov sahifasiga yo'naltirilasiz. "
-              "Karta ma'lumotlari saytimizda saqlanmaydi."),
+          const _Hint("Summani kiriting — Clickʼning xavfsiz tölov sahifasiga yönaltirilasiz. "
+              "Karta maʼlumotlari saytimizda saqlanmaydi."),
           const SizedBox(height: 16),
           const WebLabel('Hisob kodi (kimning hisobiga)'),
           WebInput(
@@ -566,9 +568,9 @@ class _TopUpFormState extends State<_TopUpForm> {
             },
           ),
           const SizedBox(height: 4),
-          _Hint("O'zingizniki: ${widget.myCode}"),
+          _Hint("Özingizniki: ${widget.myCode}"),
           const SizedBox(height: 16),
-          const WebLabel("Summa (so'm)"),
+          const WebLabel("Summa (söm)"),
           WebInput(controller: _amount, hint: '50000', keyboardType: TextInputType.number),
           const SizedBox(height: 16),
           Wrap(
@@ -582,7 +584,7 @@ class _TopUpFormState extends State<_TopUpForm> {
           if (_error != null) ...[const SizedBox(height: 16), _Msg(ok: false, text: _error!)],
           const SizedBox(height: 16),
           WebButton(
-            label: _busy ? '...' : "Click orqali to'lash",
+            label: _busy ? '...' : "Click orqali tölaş",
             onPressed: _busy ? null : _submit,
             expand: true,
           ),
@@ -655,7 +657,7 @@ class _PayoutFormState extends State<_PayoutForm> {
       await WalletRepository().payout(amount: amount, card: _card.text, cardName: _cardName.text.trim());
       if (!mounted) return;
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-      setState(() => _msg = (true, "Mablag' hisobdan yechildi va tez orada kartangizga o'tkaziladi."));
+      setState(() => _msg = (true, "Mablağ hisobdan yeçildi va tez orada kartangizga ötkaziladi."));
       _card.clear();
       _cardName.clear();
       _amount.clear();
@@ -673,10 +675,10 @@ class _PayoutFormState extends State<_PayoutForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Kartaga yechib olish', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Kartaga yeçib oliş', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          _Hint("Mablag' darhol hisobdan yechiladi va kartangizga o'tkaziladi. "
-              "Mavjud: ${groupDigits(widget.balance)} so'm."),
+          _Hint("Mablağ darhol hisobdan yeçiladi va kartangizga ötkaziladi. "
+              "Mavjud: ${groupDigits(widget.balance)} söm."),
           const SizedBox(height: 12),
           // saytdagidek: 5% komissiya ogohlantirishi
           Container(
@@ -695,10 +697,10 @@ class _PayoutFormState extends State<_PayoutForm> {
                   child: Text.rich(
                     TextSpan(children: [
                       const TextSpan(
-                        text: 'Diqqat: kartaga yechishda $kPayoutCommissionPercent% komissiya olinadi. ',
+                        text: 'Diqqat: kartaga yeçişda $kPayoutCommissionPercent% komissiya olinadi. ',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      const TextSpan(text: "Masalan, 100 000 so'm yechsangiz, kartangizga 95 000 so'm tushadi."),
+                      const TextSpan(text: "Masalan, 100 000 söm yeçsangiz, kartangizga 95 000 söm tuşadi."),
                     ]),
                     style: TextStyle(color: AppColors.amber, fontSize: 13, height: 1.4),
                   ),
@@ -736,7 +738,7 @@ class _PayoutFormState extends State<_PayoutForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const WebLabel("Summa (so'm)"),
+                    const WebLabel("Summa (söm)"),
                     WebInput(controller: _amount, keyboardType: TextInputType.number),
                   ],
                 ),
@@ -751,7 +753,7 @@ class _PayoutFormState extends State<_PayoutForm> {
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerLeft,
-            child: WebButton(label: _busy ? '...' : 'Yechib olish', onPressed: _busy ? null : _submit),
+            child: WebButton(label: _busy ? '...' : 'Yeçib oliş', onPressed: _busy ? null : _submit),
           ),
         ],
       ),
@@ -824,7 +826,7 @@ class _PayoutRowState extends State<_PayoutRow> {
           if (p.status == 'PENDING') ...[
             const SizedBox(width: 12),
             WebButton(
-              label: _busy ? '...' : 'Bekor qilish',
+              label: _busy ? '...' : 'Bekor qiliş',
               variant: WebBtn.ghost,
               small: true,
               onPressed: _busy ? null : _cancel,
@@ -907,7 +909,7 @@ void _showReceipt(BuildContext context, WalletTransactionModel txn) {
           ? 'Bekor qilingan'
           : switch (txn.status) {
               'PENDING' => 'Kutilmoqda',
-              'FAILED' => "Xatolik — to'lov amalga oshmadi",
+              'FAILED' => "Xatolik — tölov amalga oşmadi",
               'CANCELLED' => 'Bekor qilingan',
               _ => 'Bajarildi',
             }

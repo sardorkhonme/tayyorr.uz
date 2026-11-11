@@ -60,7 +60,7 @@ class OfferModel {
 }
 
 const kOfferStatusLabel = {
-  'PENDING': "Ko'rib chiqilmoqda",
+  'PENDING': "Körib çiqilmoqda",
   'ACCEPTED': 'Qabul qilindi',
   'REJECTED': 'Rad etildi',
   'WITHDRAWN': 'Qaytarib olindi',

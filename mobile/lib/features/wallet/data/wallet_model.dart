@@ -92,22 +92,22 @@ class WalletModel {
 }
 
 const kTxnTypeLabel = {
-  'TOPUP': "To'ldirish",
-  'SPEND': "Buyurtma to'lovi",
-  'TRANSFER_IN': "Kirim o'tkazma",
-  'TRANSFER_OUT': "Chiqim o'tkazma",
-  'PAYOUT': 'Kartaga yechish',
-  'REFUND': 'Qaytarish',
-  'HOLD': 'Shartnoma uchun bloklandi',
-  'RELEASE': 'Ish haqi (yakunlangan)',
+  'TOPUP': "Töldiriş",
+  'SPEND': "Buyurtma tölovi",
+  'TRANSFER_IN': "Kirim ötkazma",
+  'TRANSFER_OUT': "Çiqim ötkazma",
+  'PAYOUT': 'Kartaga yeçiş',
+  'REFUND': 'Qaytariş',
+  'HOLD': 'Şartnoma uçun bloklandi',
+  'RELEASE': 'Iş haqi (yakunlangan)',
   'COMMISSION': 'Sayt komissiyasi',
 };
 
 const kOutflowTypes = {'SPEND', 'TRANSFER_OUT', 'PAYOUT', 'HOLD'};
 
 const kPayoutStatusLabel = {
-  'PENDING': 'Kartaga o\'tkazilmoqda',
-  'PAID': "O'tkazildi",
-  'REJECTED': 'Rad etildi (mablag\' qaytarildi)',
+  'PENDING': 'Kartaga ötkazilmoqda',
+  'PAID': "Ötkazildi",
+  'REJECTED': 'Rad etildi (mablağ qaytarildi)',
   'CANCELLED': 'Bekor qilindi',
 };

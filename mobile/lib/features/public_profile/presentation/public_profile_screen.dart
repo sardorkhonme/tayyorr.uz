@@ -72,7 +72,7 @@ class _PublicProfileView extends StatelessWidget {
             _Head(p: p),
             if (!isMe)
               WebButton(
-                label: 'Xabar yozish',
+                label: 'Xabar yoziş',
                 variant: WebBtn.ghost,
                 expand: true,
                 onPressed: () => _openChat(context, p),
@@ -100,10 +100,10 @@ class _PublicProfileView extends StatelessWidget {
                               ])),
                   ),
                   Container(height: 1, color: WebC.fill5),
-                  _InfoRow(label: "Ro'yxatdan o'tgan", value: Text(shortDate(p.createdAt))),
+                  _InfoRow(label: "Röyxatdan ötgan", value: Text(shortDate(p.createdAt))),
                   Container(height: 1, color: WebC.fill5),
                   _InfoRow(
-                    label: p.isPreparer ? 'Olingan ishlar' : 'Berilgan buyurtmalar',
+                    label: p.isPreparer ? 'Olingan işlar' : 'Berilgan buyurtmalar',
                     value: Text('${p.isPreparer ? p.ordersTaken : p.ordersCreated}'),
                   ),
                   if ((p.about ?? '').isNotEmpty) ...[
@@ -118,12 +118,12 @@ class _PublicProfileView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    '${p.isPreparer ? "Bajarilgan ishlar" : "Berilgan buyurtmalar"} (${p.doneOrders.length})',
+                    '${p.isPreparer ? "Bajarilgan işlar" : "Berilgan buyurtmalar"} (${p.doneOrders.length})',
                     style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
                   if (p.doneOrders.isEmpty)
-                    WebCard(child: Text("Hozircha yo'q.", style: TextStyle(color: WebC.zinc500, fontSize: 14)))
+                    WebCard(child: Text("Hozirça yöq.", style: TextStyle(color: WebC.zinc500, fontSize: 14)))
                   else
                     for (final o in p.doneOrders)
                       Padding(
@@ -187,7 +187,7 @@ class _Head extends StatelessWidget {
               Text(p.name ?? '—', style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
               const SizedBox(height: 2),
               Text(
-                '@${p.login ?? "—"} · ${p.role == "PREPARER" ? "Tayyorlovchi" : p.role == "ORDERER" ? "Buyurtma beruvchi" : "—"}',
+                '@${p.login ?? "—"} · ${p.role == "PREPARER" ? "Tayyorlovçi" : p.role == "ORDERER" ? "Buyurtma beruvçi" : "—"}',
                 style: TextStyle(color: WebC.zinc500, fontSize: 14),
               ),
               const SizedBox(height: 2),
@@ -242,7 +242,7 @@ Future<void> _openChat(BuildContext context, PublicProfileModel p) async {
       ),
     ));
   } catch (_) {
-    messenger.showSnackBar(const SnackBar(content: Text("Suhbat ochilmadi — qayta urinib ko'ring")));
+    messenger.showSnackBar(const SnackBar(content: Text("Suhbat oçilmadi — qayta urinib köring")));
   }
 }
 

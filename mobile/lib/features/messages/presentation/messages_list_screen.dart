@@ -55,8 +55,8 @@ class _MessagesListView extends StatelessWidget {
               WebCard(
                 child: Text(
                   state.status == ConversationsStatus.failure
-                      ? (state.error ?? "Yuklab bo'lmadi")
-                      : "Hozircha suhbat yo'q. Buyurtma sahifasida tayyorlovchi yonidagi «Chat» tugmasidan suhbat boshlashingiz mumkin.",
+                      ? (state.error ?? "Yuklab bölmadi")
+                      : "Hozirça suhbat yöq. Buyurtma sahifasida tayyorlovçi yonidagi «Çat» tugmasidan suhbat boşlaşingiz mumkin.",
                   style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
                 ),
               )
@@ -85,7 +85,7 @@ class _ConversationTile extends StatelessWidget {
     final hasLast = c.lastMessageBody != null || lastAt != null;
     final fileOnly = hasLast && (c.lastMessageBody ?? '').isEmpty;
     final prefix = hasLast && c.lastMessageMine == true ? 'Siz: ' : '';
-    final preview = hasLast ? (fileOnly ? 'fayl' : c.lastMessageBody!) : 'Suhbat boshlandi';
+    final preview = hasLast ? (fileOnly ? 'fayl' : c.lastMessageBody!) : 'Suhbat boşlandi';
 
     Widget avatar;
     if (c.blockedMe) {

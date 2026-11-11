@@ -1,3 +1,4 @@
+import '../../../core/app_config.dart';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -27,7 +28,8 @@ import '../data/order_detail_model.dart';
 import '../data/order_detail_repository.dart';
 import 'contract_panel.dart';
 
-const _minOfferStars = 2;
+/// Ariza uchun minimal star — admin belgilaydi (server /mobile/config).
+int get _minOfferStars => AppConfig.instance.minOfferStars;
 
 /// Saytdagi /orders/[id] sahifasi bilan bir xil.
 class OrderDetailScreen extends StatelessWidget {
@@ -90,14 +92,14 @@ class _OrderDetailView extends StatelessWidget {
 
     final meta = <String>[
       if (o.deadline != null) 'Muddat: ${shortDateTime(o.deadline!)}',
-      if ((o.budget ?? 0) > 0) "Byudjet: ${groupDigits(o.budget!)} so'm",
+      if ((o.budget ?? 0) > 0) "Byudjet: ${groupDigits(o.budget!)} söm",
     ];
 
     return [
       const WebBackLink(),
       if (o.deleted) _DeletedNotice(order: o),
-      if (!isOrderer) _PersonCard(person: o.orderer, role: 'Buyurtmachi'),
-      if (o.preparer != null && !isAssigned) _PersonCard(person: o.preparer!, role: 'Tayyorlovchi'),
+      if (!isOrderer) _PersonCard(person: o.orderer, role: 'Buyurtmaçi'),
+      if (o.preparer != null && !isAssigned) _PersonCard(person: o.preparer!, role: 'Tayyorlovçi'),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,7 +139,7 @@ class _DeletedNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final by = order.deletedByRole == 'ADMIN' ? 'Administrator tomonidan' : 'Buyurtmachi tomonidan';
+    final by = order.deletedByRole == 'ADMIN' ? 'Administrator tomonidan' : 'Buyurtmaçi tomonidan';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -148,7 +150,7 @@ class _DeletedNotice extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconLabel(Icons.delete_outline_rounded, "Bu buyurtma o'chirilgan",
+          IconLabel(Icons.delete_outline_rounded, "Bu buyurtma öçirilgan",
               style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text('$by${order.deletedAt != null ? ' · ${shortDateTime(order.deletedAt!)}' : ''}',
@@ -158,7 +160,7 @@ class _DeletedNotice extends StatelessWidget {
             Text('Sabab: ${order.deleteReason}', style: TextStyle(color: WebC.zinc300, fontSize: 14)),
           ],
           const SizedBox(height: 4),
-          Text("U faqat sizga ko'rinadi, boshqalarga emas.", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+          Text("U faqat sizga körinadi, boşqalarga emas.", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
         ],
       ),
     );
@@ -244,7 +246,7 @@ class _Files extends StatelessWidget {
                     child: Text('${f.kind} · ${(f.size / 1024).toStringAsFixed(0)} KB',
                         style: TextStyle(color: WebC.indigo, fontSize: 14)),
                   )
-                : Text("${f.kind} (kirish uchun ruxsat yo'q)", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+                : Text("${f.kind} (kiriş uçun ruxsat yöq)", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
           ),
       ],
     );
@@ -261,10 +263,10 @@ class _DeleteButton extends StatelessWidget {
           : () async {
               final ok = await confirmDialog(
                 context,
-                title: "Buyurtma o'chirilsinmi?",
+                title: "Buyurtma öçirilsinmi?",
                 message:
-                    "Boshqalarga ko'rinmaydi, lekin sizda «o'chirilgan» holatida qoladi. Faol shartnomadagi mablag' qaytariladi.",
-                confirmLabel: "O'chirish",
+                    "Boşqalarga körinmaydi, lekin sizda «öçirilgan» holatida qoladi. Faol şartnomadagi mablağ qaytariladi.",
+                confirmLabel: "Öçiriş",
                 cancelLabel: 'Bekor',
               );
               if (ok == true && context.mounted) context.read<OrderDetailCubit>().deleteOrder();
@@ -277,7 +279,7 @@ class _DeleteButton extends StatelessWidget {
         ),
         child: busy
             ? Text('...', style: TextStyle(color: WebC.redSoft, fontSize: 14))
-            : IconLabel(Icons.delete_outline_rounded, "Buyurtmani o'chirish", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
+            : IconLabel(Icons.delete_outline_rounded, "Buyurtmani öçiriş", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
       ),
     );
   }
@@ -357,7 +359,7 @@ class _OrderActionsState extends State<_OrderActions> {
           conversationId: id,
           other: ChatOtherUser(
             id: user.id,
-            name: (user.name ?? '').isNotEmpty ? user.name! : (user.login ?? 'Foydalanuvchi'),
+            name: (user.name ?? '').isNotEmpty ? user.name! : (user.login ?? 'Foydalanuvçi'),
             login: user.login,
             image: user.image,
             isSupport: false,
@@ -392,7 +394,7 @@ class _OrderActionsState extends State<_OrderActions> {
         Align(
           alignment: Alignment.centerLeft,
           child: WebButton(
-            label: 'Buyurtmachi bilan yozishish',
+            label: 'Buyurtmaçi bilan yozişiş',
             leading: Icons.chat_bubble_outline_rounded,
             variant: WebBtn.ghost,
             onPressed: busy ? null : () => _startChat(o.orderer),
@@ -407,14 +409,14 @@ class _OrderActionsState extends State<_OrderActions> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconLabel(Icons.description_outlined, 'Sizga shartnoma yuborildi',
+              IconLabel(Icons.description_outlined, 'Sizga şartnoma yuborildi',
                   color: WebC.indigoSoft, size: 18,
                   style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
-              _rich('Kelishilgan summa: ', "${groupDigits(incoming.amount)} so'm"),
+              _rich('Kelişilgan summa: ', "${groupDigits(incoming.amount)} söm"),
               if (incoming.deadline != null) ...[
                 const SizedBox(height: 4),
-                _rich('Topshirish muddati: ', shortDateTime(incoming.deadline!)),
+                _rich('Topşiriş muddati: ', shortDateTime(incoming.deadline!)),
               ],
               if ((incoming.note ?? '').isNotEmpty) ...[
                 const SizedBox(height: 4),
@@ -422,18 +424,18 @@ class _OrderActionsState extends State<_OrderActions> {
               ],
               const SizedBox(height: 8),
               Text(
-                "Qabul qilganingizdan keyin shartnomani faqat ikki tomon roziligi (yoki admin qarori) bilan bekor qilish "
-                "mumkin. Muddatgacha ish topshirilmasa — shartnoma bekor bo'ladi.",
+                "Qabul qilganingizdan keyin şartnomani faqat ikki tomon roziligi (yoki admin qarori) bilan bekor qiliş "
+                "mumkin. Muddatgaça iş topşirilmasa — şartnoma bekor böladi.",
                 style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
               ),
               const SizedBox(height: 12),
               Wrap(spacing: 8, runSpacing: 8, children: [
                 WebButton(
-                  label: 'Qabul qilish va boshlash',
+                  label: 'Qabul qiliş va boşlaş',
                   onPressed: busy ? null : () => _cubit.respondToContract(incoming.id, action: 'ACCEPT'),
                 ),
                 WebButton(
-                  label: 'Rad etish',
+                  label: 'Rad etiş',
                   variant: WebBtn.ghost,
                   onPressed: busy ? null : () => _cubit.respondToContract(incoming.id, action: 'DECLINE'),
                 ),
@@ -456,13 +458,13 @@ class _OrderActionsState extends State<_OrderActions> {
                   children: [
                     iconSpan(Icons.description_outlined, size: 16, color: WebC.indigoSoft),
                     TextSpan(text: sent.preparerName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    TextSpan(text: " ga shartnoma yuborildi — ${groupDigits(sent.amount)} so'm. Javob kutilmoqda."),
+                    TextSpan(text: " ga şartnoma yuborildi — ${groupDigits(sent.amount)} söm. Javob kutilmoqda."),
                   ],
                 ),
               ),
               const SizedBox(height: 8),
               WebButton(
-                label: 'Bekor qilish',
+                label: 'Bekor qiliş',
                 variant: WebBtn.ghost,
                 onPressed: busy ? null : () => _cubit.respondToContract(sent.id, action: 'CANCEL'),
               ),
@@ -504,17 +506,17 @@ class _OrderActionsState extends State<_OrderActions> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Sizga qo'yilgan baho", style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+              Text("Sizga qöyilgan baho", style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               if (o.review != null) ...[
                 WebStars(value: o.review!.stars.toDouble(), size: 16),
                 const SizedBox(height: 8),
                 Text(
-                  (o.review!.comment ?? '').isNotEmpty ? '«${o.review!.comment}»' : 'Sharh qoldirilmagan.',
+                  (o.review!.comment ?? '').isNotEmpty ? '«${o.review!.comment}»' : 'Şarh qoldirilmagan.',
                   style: TextStyle(color: (o.review!.comment ?? '').isNotEmpty ? WebC.zinc400 : WebC.zinc500, fontSize: 14),
                 ),
               ] else
-                Text("Buyurtmachi hali baho qo'ymagan.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+                Text("Buyurtmaçi hali baho qöymagan.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
             ],
           ),
         ),
@@ -527,7 +529,7 @@ class _OrderActionsState extends State<_OrderActions> {
         Align(
           alignment: Alignment.centerLeft,
           child: WebButton(
-            label: 'Buyurtmani bekor qilish',
+            label: 'Buyurtmani bekor qiliş',
             variant: WebBtn.ghost,
             onPressed: busy
                 ? null
@@ -535,9 +537,9 @@ class _OrderActionsState extends State<_OrderActions> {
                     final ok = await confirmDialog(
                       context,
                       title: 'Buyurtma bekor qilinsinmi?',
-                      message: "Yuborilgan shartnoma bo'lsa, bloklangan mablag' sizga qaytadi.",
+                      message: "Yuborilgan şartnoma bölsa, bloklangan mablağ sizga qaytadi.",
                       confirmLabel: 'Ha',
-                      cancelLabel: "Yo'q",
+                      cancelLabel: "Yöq",
                     );
                     if (ok == true) _cubit.setStatus('CANCELLED');
                   },
@@ -573,17 +575,17 @@ class _OrderActionsState extends State<_OrderActions> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(myOffer != null ? 'Taklifni yangilash' : 'Taklif yuborish',
+          Text(myOffer != null ? 'Taklifni yangilaş' : 'Taklif yuboriş',
               style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
-          const WebLabel("Narx (so'm)"),
+          const WebLabel("Narx (söm)"),
           WebInput(controller: _price, keyboardType: TextInputType.number),
           const SizedBox(height: 12),
           const WebLabel('Xabar'),
           WebInput(controller: _message, maxLines: 3, minLines: 3),
           if (myOffer == null) ...[
             const SizedBox(height: 12),
-            const WebLabel("Star (navbatdagi boshlang'ich o'rningiz — kamida $_minOfferStars)"),
+            WebLabel("Star (navbatdagi boşlanğiç örningiz — kamida $_minOfferStars)"),
             WebInput(controller: _offerStars, keyboardType: TextInputType.number, onChanged: (_) => setState(() {})),
             const SizedBox(height: 4),
             Text.rich(
@@ -593,8 +595,8 @@ class _OrderActionsState extends State<_OrderActions> {
                   child: Padding(padding: EdgeInsets.only(right: 4), child: StarGlyph(size: 13)),
                 ),
                 TextSpan(
-                  text: 'Kamida $_minOfferStars star talab qiladi — navbatda yuqoriroqda turish uchun boshidanoq ko\'proq '
-                      'yuborishingiz mumkin. Star balansingizdan sarflanadi.',
+                  text: 'Kamida $_minOfferStars star talab qiladi — navbatda yuqoriroqda turiş uçun boşidanoq köproq '
+                      'yuborişingiz mumkin. Star balansingizdan sarflanadi.',
                 ),
               ]),
               style: TextStyle(color: WebC.amber, fontSize: 12, height: 1.4),
@@ -603,7 +605,7 @@ class _OrderActionsState extends State<_OrderActions> {
           ],
           const SizedBox(height: 12),
           WebButton(
-            label: myOffer != null ? 'Yangilash' : 'Yuborish (${stars > 0 ? stars : _minOfferStars})',
+            label: myOffer != null ? 'Yangilaş' : 'Yuboriş (${stars > 0 ? stars : _minOfferStars})',
             icon: myOffer != null ? null : const StarGlyph(size: 16),
             expand: true,
             onPressed: busy
@@ -643,7 +645,7 @@ class _OrderActionsState extends State<_OrderActions> {
                 const SizedBox(width: 8),
                 Flexible(
                   child: WebButton(
-                    label: 'Navbatda yuqoriga chiqish',
+                    label: 'Navbatda yuqoriga çiqiş',
                     leading: Icons.rocket_launch_outlined,
                     variant: WebBtn.ghost,
                     onPressed: busy
@@ -665,8 +667,8 @@ class _OrderActionsState extends State<_OrderActions> {
             ),
             const SizedBox(height: 8),
             Wrap(children: [
-              Text("Navbatda ko'proq star sarflaganlar yuqorida turadi. ", style: TextStyle(color: WebC.zinc600, fontSize: 12)),
-              _link('Star sotib olish →', WebC.zinc600),
+              Text("Navbatda köproq star sarflaganlar yuqorida turadi. ", style: TextStyle(color: WebC.zinc600, fontSize: 12)),
+              _link('Star sotib oliş →', WebC.zinc600),
             ]),
           ],
         ],
@@ -681,7 +683,7 @@ class _OrderActionsState extends State<_OrderActions> {
         children: [
           Text('Navbat (${o.queue.length})', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text("Ko'proq star sarflagan yuqorida turadi. Boshqa ishtirokchilarning ismi qisman yashiringan.",
+          Text("Köproq star sarflagan yuqorida turadi.",
               style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4)),
           const SizedBox(height: 8),
           for (final q in o.queue)
@@ -738,7 +740,7 @@ class _OrderActionsState extends State<_OrderActions> {
       children: [
         Text('Takliflar (${o.offers.length})', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
-        if (o.offers.isEmpty) Text("Hozircha taklif yo'q.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+        if (o.offers.isEmpty) Text("Hozirça taklif yöq.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
         for (final x in o.offers) ...[
           _offerCard(x, busy, status, sent),
           const SizedBox(height: 12),
@@ -798,7 +800,7 @@ class _OrderActionsState extends State<_OrderActions> {
             Text(x.preparerAbout!, style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4)),
           ],
           const SizedBox(height: 8),
-          _rich('Narx: ', "${groupDigits(x.price)} so'm"),
+          _rich('Narx: ', "${groupDigits(x.price)} söm"),
           if ((x.message ?? '').isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(x.message!, style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45)),
@@ -809,11 +811,11 @@ class _OrderActionsState extends State<_OrderActions> {
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              WebButton(label: 'Chat', leading: Icons.chat_bubble_outline_rounded, variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
-              WebButton(label: 'Shikoyat', leading: Icons.warning_amber_rounded, variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
+              WebButton(label: 'Çat', leading: Icons.chat_bubble_outline_rounded, variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
+              WebButton(label: 'Şikoyat', leading: Icons.warning_amber_rounded, variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
               if (status == 'OPEN' && x.status == 'PENDING' && sent == null) ...[
                 WebButton(
-                  label: 'Shartnoma tuzish',
+                  label: 'Şartnoma tuziş',
                   leading: Icons.description_outlined,
                   onPressed: busy
                       ? null
@@ -825,7 +827,7 @@ class _OrderActionsState extends State<_OrderActions> {
                           }),
                 ),
                 WebButton(
-                  label: 'Rad etish',
+                  label: 'Rad etiş',
                   variant: WebBtn.ghost,
                   onPressed: busy ? null : () => _cubit.respondToOffer(x.id, accept: false),
                 ),
@@ -846,12 +848,12 @@ class _OrderActionsState extends State<_OrderActions> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Kelishilgan shartnoma', style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                  Text('Kelişilgan şartnoma', style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 8),
-                  const WebLabel("Kelishilgan summa (so'm)"),
+                  const WebLabel("Kelişilgan summa (söm)"),
                   WebInput(controller: _cAmount, keyboardType: TextInputType.number),
                   const SizedBox(height: 8),
-                  const WebLabel('Topshirish muddati (sana va vaqt)'),
+                  const WebLabel('Topşiriş muddati (sana va vaqt)'),
                   WebInput(
                     readOnly: true,
                     hint: 'Sana va vaqtni tanlang',
@@ -863,13 +865,13 @@ class _OrderActionsState extends State<_OrderActions> {
                     suffix: Icon(Icons.event_rounded, size: 16, color: WebC.zinc300),
                   ),
                   const SizedBox(height: 8),
-                  const WebLabel('Izoh / shartlar (ixtiyoriy)'),
+                  const WebLabel('Izoh / şartlar (ixtiyoriy)'),
                   WebInput(controller: _cNote, maxLines: 2, minLines: 2),
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: WebButton(
-                      label: 'Shartnoma yuborish',
+                      label: 'Şartnoma yuboriş',
                       onPressed: busy
                           ? null
                           : () async {
@@ -879,7 +881,7 @@ class _OrderActionsState extends State<_OrderActions> {
                                 return;
                               }
                               if (_cDeadline == null || !_cDeadline!.isAfter(DateTime.now())) {
-                                setState(() => _localErr = 'Shartnoma muddatini (sana va vaqt) tanlang');
+                                setState(() => _localErr = 'Şartnoma muddatini (sana va vaqt) tanlang');
                                 return;
                               }
                               setState(() => _localErr = null);
@@ -907,9 +909,9 @@ class _OrderActionsState extends State<_OrderActions> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tayyorlovchini baholang', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text('Tayyorlovçini baholang', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text("Bahoyingiz tayyorlovchi profilida va o'rtacha reytingida ko'rinadi.",
+          Text("Bahoyingiz tayyorlovçi profilida va örtaça reytingida körinadi.",
               style: TextStyle(color: WebC.zinc400, fontSize: 14)),
           const SizedBox(height: 12),
           WebStarInput(value: _reviewStars, onChanged: (v) => setState(() => _reviewStars = v)),
@@ -917,7 +919,7 @@ class _OrderActionsState extends State<_OrderActions> {
           WebInput(controller: _reviewComment, hint: 'Izoh (ixtiyoriy)', maxLines: 3, minLines: 3),
           const SizedBox(height: 12),
           WebButton(
-            label: busy ? '...' : 'Bahoni yuborish',
+            label: busy ? '...' : 'Bahoni yuboriş',
             onPressed: busy
                 ? null
                 : () {
@@ -1026,18 +1028,18 @@ class _ReportFormState extends State<_ReportForm> {
   @override
   Widget build(BuildContext context) {
     if (_done) {
-      return Text("Shikoyatingiz yuborildi. Administrator ko'rib chiqadi.", style: TextStyle(color: WebC.emerald, fontSize: 14));
+      return Text("Şikoyatingiz yuborildi. Administrator körib çiqadi.", style: TextStyle(color: WebC.emerald, fontSize: 14));
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Shikoyat', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text('Şikoyat', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
-        Text("Nomaqbul xatti-harakatni batafsil yozing. Ma'lumot faqat administratorga boradi.",
+        Text("Nomaqbul xatti-harakatni batafsil yozing. Maʼlumot faqat administratorga boradi.",
             style: TextStyle(color: WebC.zinc400, fontSize: 12)),
         const SizedBox(height: 12),
-        WebInput(controller: _body, hint: "Nima bo'ldi?", maxLines: 5, minLines: 5),
+        WebInput(controller: _body, hint: "Nima böldi?", maxLines: 5, minLines: 5),
         if (_err != null) ...[
           const SizedBox(height: 12),
           Text(_err!, style: TextStyle(color: WebC.red, fontSize: 14)),
@@ -1048,7 +1050,7 @@ class _ReportFormState extends State<_ReportForm> {
           children: [
             WebButton(label: 'Bekor', variant: WebBtn.ghost, onPressed: _busy ? null : () => Navigator.of(context).pop()),
             const SizedBox(width: 8),
-            WebButton(label: _busy ? '...' : 'Yuborish', onPressed: _busy ? null : _submit),
+            WebButton(label: _busy ? '...' : 'Yuboriş', onPressed: _busy ? null : _submit),
           ],
         ),
       ],

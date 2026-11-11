@@ -1,3 +1,6 @@
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,6 +9,7 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/google_logo.dart';
 import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -62,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text('Kirish',
+                              Text('Kiriş',
                                   style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600)),
                               const SizedBox(height: 20),
                               const WebLabel('Login yoki email'),
@@ -88,13 +92,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ],
                                 ),
                               ),
+                              // saytdagidek — parol maydoni ostida; tiklash tayyorr+ da (email → havola → yangi parol)
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: GestureDetector(
+                                  onTap: () => launchUrl(Uri.parse('$kPlusUrl/forgot'), mode: LaunchMode.externalApplication),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text('Parolni unutdingizmi?', style: TextStyle(color: WebC.indigo, fontSize: 13)),
+                                  ),
+                                ),
+                              ),
                               if (state.error != null) ...[
                                 const SizedBox(height: 16),
                                 Text(state.error!, style: TextStyle(color: WebC.red, fontSize: 14)),
                               ],
                               const SizedBox(height: 16),
                               WebButton(
-                                label: busy ? '...' : 'Kirish',
+                                label: busy ? '...' : 'Kiriş',
                                 expand: true,
                                 onPressed: busy ? null : _submit,
                               ),
@@ -112,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 16),
                               WebButton(
-                                label: 'Google orqali kirish',
+                                label: 'Google orqali kiriş',
                                 variant: WebBtn.white,
                                 expand: true,
                                 icon: const GoogleLogo(size: 16),
@@ -126,15 +141,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Saytdagi kabi — ro'yxatdan o'tish Google orqali
-                    // (rol va qolgan ma'lumotlar keyingi qadamda so'raladi).
+                    // Saytdagi kabi — ro'yxatdan o'tish: email + 4 xonali kod (yoki Google);
+                    // rol va qolgan ma'lumotlar keyingi qadamda so'raladi.
                     Center(
                       child: GestureDetector(
-                        onTap: () => context.read<AuthBloc>().add(const AuthGoogleSignInRequested()),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RegisterScreen())),
                         child: Text.rich(
                           TextSpan(children: [
-                            const TextSpan(text: "Akkountingiz yo'qmi? "),
-                            TextSpan(text: "Ro'yxatdan o'tish", style: TextStyle(color: WebC.indigo)),
+                            const TextSpan(text: "Akkountingiz yöqmi? "),
+                            TextSpan(text: "Röyxatdan ötiş", style: TextStyle(color: WebC.indigo)),
                           ]),
                           style: TextStyle(color: WebC.zinc400, fontSize: 14),
                         ),

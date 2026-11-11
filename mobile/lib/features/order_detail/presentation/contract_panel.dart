@@ -32,16 +32,18 @@ class ContractPanel extends StatelessWidget {
     final c = contract;
     final cubit = context.read<OrderDetailCubit>();
     final delivered = order.status == 'DELIVERED';
-    final pending = c.cancelState == 'PENDING';
+    // rad etilgan so'rov: holat hali PENDING, lekin rad etish sababi bor — endi so'ragan tomon tanlaydi
+    final rejected = c.cancelState == 'PENDING' && (c.cancelRejectReason ?? '').isNotEmpty;
+    final pending = c.cancelState == 'PENDING' && !rejected;
     final disputed = c.cancelState == 'DISPUTED';
-    final iRequested = pending && c.cancelRequestedById == meId;
+    final iRequested = (pending || rejected) && c.cancelRequestedById == meId;
     final otherRequested = pending && !iRequested;
     final requester = c.cancelRequestedById == null
         ? ''
         : c.cancelRequestedById == meId
             ? 'Siz'
-            : (isOrderer ? 'Tayyorlovchi' : 'Buyurtmachi');
-    final som = "${groupDigits(c.amount)} so'm";
+            : (isOrderer ? 'Tayyorlovçi' : 'Buyurtmaçi');
+    final som = "${groupDigits(c.amount)} söm";
 
     Future<void> askReason(String action, String title, String help) async {
       final reason = await showWebDialog<String>(
@@ -55,8 +57,8 @@ class ContractPanel extends StatelessWidget {
       final res = await showWebDialog<(String, DateTime)>(
         context,
         builder: (_) => _ReasonDialog(
-          title: 'Nimani qayta ishlash kerak?',
-          help: "Ish tayyorlovchiga qaytadi. Yangi muddatgacha qayta topshirilmasa — shartnoma bekor bo'lib pul sizga qaytadi.",
+          title: 'Nimani qayta işlaş kerak?',
+          help: "Iş tayyorlovçiga qaytadi. Yangi muddatgaça qayta topşirilmasa — şartnoma bekor bölib pul sizga qaytadi.",
           withDeadline: true,
           initialDeadline: c.deadline,
         ),
@@ -75,28 +77,28 @@ class ContractPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconLabel(Icons.description_outlined, 'Shartnoma imzolangan',
+          IconLabel(Icons.description_outlined, 'Şartnoma imzolangan',
               color: WebC.emerald, size: 18, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          _rich('Summa: ', som, isOrderer ? ' · tayyorlovchi: ${c.preparerName}' : ''),
+          _rich('Summa: ', som, isOrderer ? ' · tayyorlovçi: ${c.preparerName}' : ''),
           if (c.deadline != null) ...[
             const SizedBox(height: 2),
-            _rich('Topshirish muddati: ', shortDateTime(c.deadline!),
-                c.revisionCount > 0 ? ' · qayta ishlash: ${c.revisionCount} marta' : '', muted: true),
+            _rich('Topşiriş muddati: ', shortDateTime(c.deadline!),
+                c.revisionCount > 0 ? ' · qayta işlaş: ${c.revisionCount} marta' : '', muted: true),
           ],
           if (delivered && c.reviewDueAt != null) ...[
             const SizedBox(height: 8),
             _note(
               icon: Icons.inventory_2_outlined,
-              "Ish topshirilgan${c.deliveredAt != null ? ' (${shortDateTime(c.deliveredAt!)})' : ''}. "
-              "${isOrderer ? 'Tekshirib javob bering' : 'Buyurtmachi tekshirmoqda'} — ${shortDateTime(c.reviewDueAt!)} "
-              "gacha javob bo'lmasa, ish muvaffaqiyatli deb topiladi va pul tayyorlovchiga o'tadi.",
+              "Iş topşirilgan${c.deliveredAt != null ? ' (${shortDateTime(c.deliveredAt!)})' : ''}. "
+              "${isOrderer ? 'Tekşirib javob bering' : 'Buyurtmaçi tekşirmoqda'} — ${shortDateTime(c.reviewDueAt!)} "
+              "gaça javob bölmasa, iş muvaffaqiyatli deb topiladi va pul tayyorlovçiga ötadi.",
             ),
           ],
           if (!delivered && c.cancelState == null) ...[
             const SizedBox(height: 8),
             Text(
-              "Muddat tugaguncha ish topshirilmasa, shartnoma bekor bo'ladi va pul buyurtmachiga qaytadi.",
+              "Muddat tugagunça iş topşirilmasa, şartnoma bekor böladi va pul buyurtmaçiga qaytadi.",
               style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
             ),
           ],
@@ -107,15 +109,15 @@ class ContractPanel extends StatelessWidget {
             _Box(
               color: const Color(0xFFF59E0B),
               children: [
-                IconLabel(Icons.warning_amber_rounded, "$requester bekor qilishni so'ra${requester == 'Siz' ? 'dingiz' : 'di'}",
+                IconLabel(Icons.warning_amber_rounded, "$requester bekor qilişni söra${requester == 'Siz' ? 'dingiz' : 'di'}",
                     style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text('Sabab: ${c.cancelReason ?? ''}', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
                 if (c.cancelDueAt != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    "${iRequested ? 'Ikkinchi tomon' : 'Siz'} ${shortDateTime(c.cancelDueAt!)} gacha javob "
-                    "${iRequested ? 'beradi' : 'bering'}. Javob bo'lmasa — rozi deb hisoblanadi va pul buyurtmachiga qaytariladi.",
+                    "${iRequested ? 'Ikkinçi tomon' : 'Siz'} ${shortDateTime(c.cancelDueAt!)} gaça javob "
+                    "${iRequested ? 'beradi' : 'bering'}. Javob bölmasa — rozi deb hisoblanadi va pul buyurtmaçiga qaytariladi.",
                     style: TextStyle(color: WebC.zinc400, fontSize: 12, height: 1.4),
                   ),
                 ],
@@ -130,9 +132,9 @@ class ContractPanel extends StatelessWidget {
                               final ok = await confirmDialog(
                                 context,
                                 title: 'Bekor qilinsinmi?',
-                                message: "Shartnoma bekor qilinadi va $som buyurtmachiga qaytariladi. Rozimisiz?",
+                                message: "Şartnoma bekor qilinadi va $som buyurtmaçiga qaytariladi. Rozimisiz?",
                                 confirmLabel: 'Roziman',
-                                cancelLabel: "Yo'q",
+                                cancelLabel: "Yöq",
                               );
                               if (ok == true) cubit.respondToContract(c.id, action: 'APPROVE_CANCEL');
                             },
@@ -143,16 +145,69 @@ class ContractPanel extends StatelessWidget {
                       onPressed: busy
                           ? null
                           : () => askReason('REJECT_CANCEL', 'Nega rozi emassiz?',
-                              "Sabab admin va ikkinchi tomonga ko'rinadi. Masalani admin hal qiladi."),
+                              "Sababingiz söragan tomonga yuboriladi. U şartnomani davom ettirişi yoki masalani administratorga yuborişi mumkin."),
                     ),
                   ],
                   if (iRequested)
                     WebButton(
-                      label: "So'rovni qaytarib olish",
+                      label: "Sörovni qaytarib oliş",
                       variant: WebBtn.ghost,
                       onPressed: busy ? null : () => cubit.respondToContract(c.id, action: 'WITHDRAW_CANCEL'),
                     ),
                 ]),
+              ],
+            ),
+          ],
+
+          // rozi bo'linmadi — so'ragan tomon: davom ettiradi yoki adminga yuboradi
+          if (rejected) ...[
+            const SizedBox(height: 12),
+            _Box(
+              color: const Color(0xFFF97316),
+              children: [
+                IconLabel(
+                    Icons.highlight_off_rounded,
+                    iRequested
+                        ? "${isOrderer ? 'Tayyorlovçi' : 'Buyurtmaçi'} bekor qilişga rozi bölmadi"
+                        : "Siz bekor qilişga rozi bölmadingiz",
+                    style: const TextStyle(color: Color(0xFFFDBA74), fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text('Bekor qiliş sababi: ${c.cancelReason ?? ''}', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
+                Text('Rad etiş sababi: ${c.cancelRejectReason ?? ''}', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
+                const SizedBox(height: 4),
+                Text(
+                  iRequested
+                      ? "Endi siz tanlang${c.cancelDueAt != null ? ' — ${shortDateTime(c.cancelDueAt!)} gaça' : ''}: şartnomani davom ettiriş yoki masalani administratorga yuboriş. Tanlamasangiz — şartnoma davom etadi."
+                      : "Javobingiz yuborildi. Endi ${requester.toLowerCase()} qaror qiladi: şartnomani davom ettiradi yoki masalani administratorga yuboradi${c.cancelDueAt != null ? ' (${shortDateTime(c.cancelDueAt!)} gaça)' : ''}.",
+                  style: TextStyle(color: WebC.zinc400, fontSize: 12, height: 1.4),
+                ),
+                if (iRequested) ...[
+                  const SizedBox(height: 12),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    WebButton(
+                      label: 'Şartnomani davom ettiraman',
+                      leading: Icons.check_circle_outline_rounded,
+                      onPressed: busy ? null : () => cubit.respondToContract(c.id, action: 'WITHDRAW_CANCEL'),
+                    ),
+                    WebButton(
+                      label: "Qarorimni özgartirmayman",
+                      leading: Icons.balance_rounded,
+                      variant: WebBtn.ghost,
+                      onPressed: busy
+                          ? null
+                          : () async {
+                              final ok = await confirmDialog(
+                                context,
+                                title: "Qaroringiz özgarmaydimi?",
+                                message: 'Masala administratorga yuboriladi va u yakuniy qaror qabul qiladi.',
+                                confirmLabel: 'Ha, yuborilsin',
+                                cancelLabel: 'Bekor',
+                              );
+                              if (ok == true) cubit.respondToContract(c.id, action: 'INSIST_CANCEL');
+                            },
+                    ),
+                  ]),
+                ],
               ],
             ),
           ],
@@ -162,15 +217,15 @@ class ContractPanel extends StatelessWidget {
             _Box(
               color: const Color(0xFFEF4444),
               children: [
-                IconLabel(Icons.balance_rounded, "Masala administrator ko'rib chiqmoqda",
+                IconLabel(Icons.balance_rounded, "Masala administrator körib çiqmoqda",
                     style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
-                Text('Bekor qilish sababi: ${c.cancelReason ?? ''}',
+                Text('Bekor qiliş sababi: ${c.cancelReason ?? ''}',
                     style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
-                Text('Rad etish sababi: ${c.cancelRejectReason ?? ''}',
+                Text('Rad etiş sababi: ${c.cancelRejectReason ?? ''}',
                     style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
                 const SizedBox(height: 4),
-                Text("Admin bekor qilish, davom ettirish yoki yakunlash bo'yicha qaror qabul qiladi. Qaror chatga yoziladi.",
+                Text("Admin bekor qiliş, davom ettiriş yoki yakunlaş böyiça qaror qabul qiladi. Qaror çatga yoziladi.",
                     style: TextStyle(color: WebC.zinc400, fontSize: 12, height: 1.4)),
               ],
             ),
@@ -182,36 +237,36 @@ class ContractPanel extends StatelessWidget {
             Wrap(spacing: 8, runSpacing: 8, children: [
               if (isOrderer)
                 WebButton(
-                  label: 'Ishni yakunlash',
+                  label: 'Işni yakunlaş',
                   leading: Icons.check_circle_outline_rounded,
                   onPressed: busy
                       ? null
                       : () async {
                           final ok = await confirmDialog(
                             context,
-                            title: 'Ish yakunlansinmi?',
-                            message: "Ish yakunlanadi va $som to'liq tayyorlovchiga o'tadi.",
-                            confirmLabel: 'Yakunlash',
+                            title: 'Iş yakunlansinmi?',
+                            message: "Iş yakunlanadi va $som töliq tayyorlovçiga ötadi.",
+                            confirmLabel: 'Yakunlaş',
                             cancelLabel: 'Bekor',
                           );
                           if (ok == true) cubit.finalizeOrder();
                         },
                 ),
               if (isOrderer && delivered && c.cancelState == null)
-                WebButton(label: 'Qayta ishlash', leading: Icons.refresh_rounded, variant: WebBtn.ghost, onPressed: busy ? null : askRevision),
+                WebButton(label: 'Qayta işlaş', leading: Icons.refresh_rounded, variant: WebBtn.ghost, onPressed: busy ? null : askRevision),
               if (!isOrderer && order.status == 'IN_PROGRESS')
-                WebButton(label: 'Ishni topshirdim', leading: Icons.inventory_2_outlined, onPressed: busy ? null : () => cubit.setStatus('DELIVERED')),
+                WebButton(label: 'Işni topşirdim', leading: Icons.inventory_2_outlined, onPressed: busy ? null : () => cubit.setStatus('DELIVERED')),
               if (c.cancelState == null)
                 WebButton(
-                  label: "Bekor qilishni so'rash",
+                  label: "Bekor qilişni söraş",
                   leading: Icons.highlight_off_rounded,
                   variant: WebBtn.ghost,
                   onPressed: busy
                       ? null
                       : () => askReason(
                             'REQUEST_CANCEL',
-                            'Bekor qilish sababi',
-                            "Ikkinchi tomonga yuboriladi. U 3 ish kuni ichida rozi bo'lsa (yoki javob bermasa) — pul buyurtmachiga qaytadi, rozi bo'lmasa — admin hal qiladi.",
+                            'Bekor qiliş sababi',
+                            "Ikkinçi tomonga yuboriladi. U 3 iş kuni içida rozi bölsa (yoki javob bermasa) — pul buyurtmaçiga qaytadi. Rozi bölmasa — siz davom ettiriş yoki masalani administratorga yuborişni tanlaysiz.",
                           ),
                 ),
             ]),
@@ -345,7 +400,7 @@ class _ReasonDialogState extends State<_ReasonDialog> {
           children: [
             WebButton(label: 'Bekor', variant: WebBtn.ghost, onPressed: () => Navigator.of(context).pop()),
             const SizedBox(width: 8),
-            WebButton(label: 'Yuborish', onPressed: _submit),
+            WebButton(label: 'Yuboriş', onPressed: _submit),
           ],
         ),
       ],

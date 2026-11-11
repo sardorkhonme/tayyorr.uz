@@ -1,3 +1,4 @@
+import '../features/guide/guide_screen.dart';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -337,6 +338,14 @@ class _MenuPanel extends StatelessWidget {
                     ],
                   ),
                 ),
+                _Row(
+                  icon: Icons.menu_book_rounded,
+                  label: "Qöllanma",
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(outer).push(MaterialPageRoute(builder: (_) => const GuideScreen()));
+                  },
+                ),
                 divider,
                 // tayyorr+ — saytdagidek menyuning eng pastida, gradient kartochka
                 Padding(
@@ -409,7 +418,7 @@ class _PlusCard extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
                   ),
                   SizedBox(height: 1),
-                  Text('SMM va boshqalar', style: TextStyle(color: Color(0xCCFFFFFF), fontSize: 11)),
+                  Text('SMM va boşqalar', style: TextStyle(color: Color(0xCCFFFFFF), fontSize: 11)),
                 ],
               ),
             ),

@@ -40,7 +40,7 @@ class PushService {
       _initialized = true;
       return true;
     } catch (e) {
-      debugPrint('Firebase ishga tushmadi: $e');
+      debugPrint('Firebase işga tuşmadi: $e');
       return false;
     }
   }

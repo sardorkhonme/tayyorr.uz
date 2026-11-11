@@ -23,6 +23,12 @@ class AuthGoogleSignInRequested extends AuthEvent {
   const AuthGoogleSignInRequested();
 }
 
+/// Email kod bilan kirildi / ro'yxatdan o'tildi (token saqlangan).
+class AuthSignedIn extends AuthEvent {
+  const AuthSignedIn(this.user);
+  final UserModel user;
+}
+
 /// tayyorr+ hisobi (login bor, rol yo'q) — faqat rol tanlash.
 class AuthRoleChosen extends AuthEvent {
   const AuthRoleChosen(this.role);

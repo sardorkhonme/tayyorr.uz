@@ -57,7 +57,7 @@ class AuthRepository {
     final googleAuth = await account.authentication;
     final idToken = googleAuth.idToken;
     if (idToken == null) {
-      throw ApiException("Google'dan token olinmadi — qayta urinib ko'ring");
+      throw ApiException("Googleʼdan token olinmadi — qayta urinib köring");
     }
 
     // Tug'ilgan kun ruxsati serverda yoqilgan bo'lsa — qo'shimcha so'raymiz
@@ -72,6 +72,21 @@ class AuthRepository {
       'idToken': idToken,
       if (accessToken != null) 'accessToken': accessToken,
     });
+    await _storage.saveToken(res['token'] as String);
+    return _user(res);
+  }
+
+  /// Email bilan ro'yxatdan o'tish (1-qadam): emailga 4 xonali kod. Kod tayyorr+ da yuboriladi
+  /// (Brevo o'sha yerda). Qaytaradi: qayta yuborishgacha soniya.
+  Future<int> sendEmailCode(String email) async {
+    final res = await _api.post('$kPlusUrl/api/mobile/email/send', data: {'email': email});
+    return (res['waitSec'] as num?)?.toInt() ?? 60;
+  }
+
+  /// 2-qadam: kod to'g'ri bo'lsa tayyorr+ qisqa chipta beradi — u app'da mobil tokenga almashtiriladi.
+  Future<UserModel> verifyEmailCode(String email, String code) async {
+    final r = await _api.post('$kPlusUrl/api/mobile/email/verify', data: {'email': email, 'code': code});
+    final res = await _api.post('/mobile/auth/email', data: {'ticket': r['ticket']});
     await _storage.saveToken(res['token'] as String);
     return _user(res);
   }

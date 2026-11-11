@@ -15,6 +15,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStarted>(_onStarted);
     on<AuthLoginRequested>(_onLogin);
     on<AuthGoogleSignInRequested>(_onGoogleSignIn);
+    on<AuthSignedIn>((event, emit) {
+      _syncTheme(event.user);
+      emit(state.copyWith(status: _statusFor(event.user), user: event.user, clearError: true));
+    });
     on<AuthOnboardingCompleted>(_onOnboardingCompleted);
     on<AuthRoleChosen>(_onRoleChosen);
     on<AuthLoggedOut>(_onLoggedOut);

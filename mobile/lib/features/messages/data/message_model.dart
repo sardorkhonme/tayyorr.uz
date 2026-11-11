@@ -65,6 +65,13 @@ class ChatFileModel {
   }
 }
 
+/// Xabar ostidagi tugma (masalan "Hisobni ko'rish" → /wallet).
+class MessageAction {
+  final String url;
+  final String label;
+  const MessageAction({required this.url, required this.label});
+}
+
 class ChatMessageModel {
   final String id;
   final String senderId;
@@ -72,6 +79,7 @@ class ChatMessageModel {
   final bool system;
   /// Tizim xabari tegishli buyurtma — ostidagi tugma shuni ochadi
   final String? orderId;
+  final MessageAction? action;
   final int createdAt; // epoch ms
   final int updatedAt; // epoch ms
   final bool mine;
@@ -90,6 +98,7 @@ class ChatMessageModel {
     required this.body,
     required this.system,
     this.orderId,
+    this.action,
     required this.createdAt,
     required this.updatedAt,
     required this.mine,
@@ -110,6 +119,12 @@ class ChatMessageModel {
       body: json['body'] as String? ?? '',
       system: json['system'] as bool? ?? false,
       orderId: json['orderId'] as String?,
+      action: json['action'] is Map && (json['action'] as Map)['url'] is String
+          ? MessageAction(
+              url: (json['action'] as Map)['url'] as String,
+              label: ((json['action'] as Map)['label'] as String?) ?? "Köriş",
+            )
+          : null,
       createdAt: (json['createdAt'] as num).toInt(),
       updatedAt: (json['updatedAt'] as num).toInt(),
       mine: json['mine'] as bool? ?? false,
@@ -178,9 +193,9 @@ class ChatContractOrderRef {
   /// Qadalgan panel uchun qisqa holat matni (saytdagi pinBadge bilan bir xil).
   /// Ikonkasi UI'da [badgeKind] bo'yicha qo'yiladi.
   String get badge {
-    if (contractStatus == 'SENT') return 'Shartnoma yuborilgan';
-    if (cancelState == 'DISPUTED') return "Admin ko'rib chiqmoqda";
-    if (cancelState == 'PENDING') return "Bekor qilish so'ralgan";
+    if (contractStatus == 'SENT') return 'Şartnoma yuborilgan';
+    if (cancelState == 'DISPUTED') return "Admin körib çiqmoqda";
+    if (cancelState == 'PENDING') return "Bekor qiliş söralgan";
     return kOrderStatusLabel[status] ?? status;
   }
 

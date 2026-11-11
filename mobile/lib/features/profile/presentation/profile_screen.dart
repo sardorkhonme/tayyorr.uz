@@ -1,11 +1,10 @@
+import '../../../core/app_info.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../widgets/link_text.dart';
 import '../../../widgets/confirm_dialog.dart';
@@ -31,7 +30,7 @@ class ProfileScreen extends StatelessWidget {
               WebPageTitle('Profil', size: 24),
               const SizedBox(height: 4),
               Text(
-                '@${user.login ?? '—'} · ${user.isPreparer ? 'Tayyorlovchi' : 'Buyurtma beruvchi'}'
+                '@${user.login ?? '—'} · ${user.isPreparer ? 'Tayyorlovçi' : 'Buyurtma beruvçi'}'
                 '${(user.email ?? '').isNotEmpty ? ' · ${user.email}' : ''}',
                 style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
               ),
@@ -45,7 +44,7 @@ class ProfileScreen extends StatelessWidget {
               Container(height: 1, color: WebC.border),
               const SizedBox(height: 24),
               Text(
-                "Hisobdan chiqsangiz, qayta kirish uchun login/parol yoki Google kerak bo'ladi.",
+                "Hisobdan çiqsangiz, qayta kiriş uçun login/parol yoki Google kerak böladi.",
                 style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
               ),
               const SizedBox(height: 12),
@@ -54,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
               Wrap(
                 spacing: 6,
                 children: [
-                  _DocLink(label: 'Foydalanish shartlari', path: '/terms'),
+                  _DocLink(label: 'Foydalaniş şartlari', path: '/terms'),
                   Text('·', style: TextStyle(color: WebC.zinc600, fontSize: 13)),
                   _DocLink(label: 'Maxfiylik siyosati', path: '/privacy'),
                 ],
@@ -120,7 +119,7 @@ class _ProfileFormState extends State<_ProfileForm> {
       final user = await _repo.uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
       if (mounted) context.read<AuthBloc>().add(AuthUserUpdated(user));
     } catch (_) {
-      if (mounted) setState(() => _avatarErr = "Rasmni yuklab bo'lmadi");
+      if (mounted) setState(() => _avatarErr = "Rasmni yuklab bölmadi");
     } finally {
       if (mounted) {
         setState(() {
@@ -179,7 +178,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                     ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
                     : (image ?? '').isNotEmpty
                     ? Image.network(image!, width: 80, height: 80, fit: BoxFit.cover)
-                    : Text("rasm yo'q", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                    : Text("rasm yöq", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
               ),
               const SizedBox(width: 16),
               Flexible(
@@ -188,7 +187,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     WebButton(
-                      label: _uploading ? 'Yuklanmoqda...' : 'Rasm tanlash',
+                      label: _uploading ? 'Yuklanmoqda...' : 'Rasm tanlaş',
                       variant: WebBtn.ghost,
                       onPressed: _uploading ? null : _pickAvatar,
                     ),
@@ -221,20 +220,20 @@ class _ProfileFormState extends State<_ProfileForm> {
             ],
           ),
           const SizedBox(height: 12),
-          const WebLabel("Tug'ilgan sana"),
+          const WebLabel("Tuğilgan sana"),
           BirthDateField(
             value: _birth,
             onChanged: (d) => setState(() => _birth = d),
           ),
           const SizedBox(height: 12),
-          const WebLabel("Qo'shimcha ma'lumot"),
+          const WebLabel("Qöşimça maʼlumot"),
           WebInput(controller: _about, maxLines: 4, minLines: 4),
           if (_msg != null) ...[
             const SizedBox(height: 12),
             Text(_msg!, style: TextStyle(color: WebC.zinc400, fontSize: 14)),
           ],
           const SizedBox(height: 12),
-          WebButton(label: _busy ? '...' : 'Saqlash', onPressed: _busy ? null : _submit, expand: true),
+          WebButton(label: _busy ? '...' : 'Saqlaş', onPressed: _busy ? null : _submit, expand: true),
         ],
       ),
     );
@@ -282,7 +281,7 @@ class _AccountFormState extends State<_AccountForm> {
     final login = _login.text.trim();
     final loginChanged = login.isNotEmpty && login != widget.initialLogin;
     if (!loginChanged && pw.isEmpty) {
-      setState(() => _msg = (false, "O'zgartirish kiritilmadi"));
+      setState(() => _msg = (false, "Özgartiriş kiritilmadi"));
       return;
     }
     setState(() => _busy = true);
@@ -338,7 +337,7 @@ class _AccountFormState extends State<_AccountForm> {
             Text(_msg!.$2, style: TextStyle(color: _msg!.$1 ? WebC.emerald : WebC.red, fontSize: 14)),
           ],
           const SizedBox(height: 12),
-          WebButton(label: _busy ? '...' : 'Saqlash', onPressed: _busy ? null : _save, expand: true),
+          WebButton(label: _busy ? '...' : 'Saqlaş', onPressed: _busy ? null : _save, expand: true),
         ],
       ),
     );
@@ -354,9 +353,9 @@ class _SignOutButton extends StatelessWidget {
       onTap: () async {
         final ok = await confirmDialog(
           context,
-          title: 'Chiqmoqchimisiz?',
-          message: "Hisobingizdan chiqasiz, qaytadan kirishingiz kerak bo'ladi.",
-          confirmLabel: 'Ha, chiqish',
+          title: 'Çiqmoqçimisiz?',
+          message: "Hisobingizdan çiqasiz, qaytadan kirişingiz kerak böladi.",
+          confirmLabel: 'Ha, çiqiş',
         );
         if (ok == true && context.mounted) context.read<AuthBloc>().add(const AuthLoggedOut());
       },
@@ -372,7 +371,7 @@ class _SignOutButton extends StatelessWidget {
           children: [
             Icon(Icons.power_settings_new_rounded, size: 18, color: WebC.redSoft),
             const SizedBox(width: 8),
-            Text('Hisobdan chiqish', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
+            Text('Hisobdan çiqiş', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -394,47 +393,15 @@ class _DocLink extends StatelessWidget {
   }
 }
 
-/// "tayyorr.uz v1.0.2" — admin yorliq qo'ygan bo'lsa o'sha, aks holda o'rnatilgan build versiyasi.
-class _VersionLabel extends StatefulWidget {
+/// "tayyorr.uz v1.1" — o'rnatilgan versiya.
+class _VersionLabel extends StatelessWidget {
   const _VersionLabel();
 
-  @override
-  State<_VersionLabel> createState() => _VersionLabelState();
-}
-
-class _VersionLabelState extends State<_VersionLabel> {
-  static String? _cached;
-  String? _label = _cached;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    // ikkalasi parallel va vaqt chegarasi bilan — biri osilib qolsa ham ikkinchisi ishlaydi
-    final results = await Future.wait<String>([
-      PackageInfo.fromPlatform()
-          .then((i) => i.version.isEmpty ? '' : 'v${i.version}')
-          .timeout(const Duration(seconds: 4))
-          .catchError((_) => ''),
-      ApiClient.instance
-          .get('/mobile/config')
-          .then((r) => (r['versionLabel'] as String? ?? '').trim())
-          .timeout(const Duration(seconds: 8))
-          .catchError((_) => ''),
-    ]);
-    final label = results[1].isNotEmpty ? results[1] : results[0];
-    if (label.isEmpty || !mounted) return;
-    _cached = label;
-    setState(() => _label = label);
-  }
-
+  /// O'rnatilgan ilovaning haqiqiy versiyasi (APK ichidan) — faqat yangi versiya o'rnatilganda o'zgaradi.
   @override
   Widget build(BuildContext context) {
-    final l = _label;
-    if (l == null) return const SizedBox(height: 16);
-    return Text('tayyorr.uz $l', style: TextStyle(color: WebC.zinc600, fontSize: 12));
+    final v = AppInfo.short;
+    if (v.isEmpty) return const SizedBox(height: 16);
+    return Text('tayyorr.uz v$v', style: TextStyle(color: WebC.zinc600, fontSize: 12));
   }
 }

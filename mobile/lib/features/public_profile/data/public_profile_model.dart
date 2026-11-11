@@ -90,7 +90,7 @@ class PublicProfileModel {
   String get displayName {
     if ((name ?? '').isNotEmpty) return name!;
     if (login != null) return '@$login';
-    return 'Foydalanuvchi';
+    return 'Foydalanuvçi';
   }
 
   factory PublicProfileModel.fromJson(Map<String, dynamic> json) {

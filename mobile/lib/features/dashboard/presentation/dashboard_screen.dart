@@ -37,7 +37,7 @@ final _buckets = [
   _Bucket('lt5', '5 tadan kam', (n) => n < 5),
   _Bucket('5-10', '5 – 10 ta', (n) => n >= 5 && n <= 10),
   _Bucket('10-50', '10 – 50 ta', (n) => n > 10 && n <= 50),
-  _Bucket('gt50', "50 tadan ko'p", (n) => n > 50),
+  _Bucket('gt50', "50 tadan köp", (n) => n > 50),
 ];
 
 class DashboardScreen extends StatelessWidget {
@@ -184,7 +184,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          section('Ishning turi', [
+                          section('Işning turi', [
                             for (final e in kOrderTypeLabel.entries)
                               WebPill(
                                 bordered: true,
@@ -194,7 +194,7 @@ class _DashboardViewState extends State<_DashboardView> {
                               ),
                           ]),
                           const SizedBox(height: 20),
-                          section('Topshirganlar soni', [
+                          section('Topşirganlar soni', [
                             for (final b in _buckets)
                               WebPill(
                                 bordered: true,
@@ -218,10 +218,10 @@ class _DashboardViewState extends State<_DashboardView> {
                             _types.clear();
                             _bucketKeys.clear();
                           }),
-                          child: Text('Hammasini tozalash', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
+                          child: Text('Hammasini tozalaş', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
                         ),
                         const Spacer(),
-                        WebButton(label: "Ko'rsatish ($count)", onPressed: () => Navigator.of(sheetContext).pop()),
+                        WebButton(label: "Körsatiş ($count)", onPressed: () => Navigator.of(sheetContext).pop()),
                       ],
                     ),
                   ),
@@ -292,9 +292,9 @@ class _DashboardViewState extends State<_DashboardView> {
                               child: WebCard(
                                 child: Text(
                                   state.status == DashboardStatus.failure
-                                      ? (state.error ?? 'Yuklab bo\'lmadi')
+                                      ? (state.error ?? 'Yuklab bölmadi')
                                       : state.orders.isEmpty
-                                          ? "Hali buyurtma yo'q."
+                                          ? "Hali buyurtma yöq."
                                           : 'Mos buyurtma topilmadi.',
                                   style: TextStyle(color: WebC.zinc500, fontSize: 14),
                                 ),
@@ -342,7 +342,7 @@ class _DashboardViewState extends State<_DashboardView> {
           }),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            child: Text('Tozalash', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+            child: Text('Tozalaş', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
           ),
         ),
       ],
@@ -417,7 +417,7 @@ class _ControlsDelegate extends SliverPersistentHeaderDelegate {
                   height: 42,
                   child: Row(
                     children: [
-                      Expanded(child: WebInput(hint: "Sarlavha, tavsif yoki tur bo'yicha qidirish…", onChanged: onSearch)),
+                      Expanded(child: WebInput(hint: "Sarlavha, tavsif yoki tur böyiça qidiriş…", onChanged: onSearch)),
                       const SizedBox(width: 8),
                       WebButton(
                         label: activeCount > 0 ? 'Filtr · $activeCount' : 'Filtr',
@@ -461,9 +461,9 @@ class _OrderRow extends StatelessWidget {
     final o = order;
     final meta = [
       kOrderTypeLabel[o.type] ?? o.type,
-      o.deleted ? "o'chirilgan" : (kOrderStatusLabel[o.status] ?? o.status),
+      o.deleted ? "öçirilgan" : (kOrderStatusLabel[o.status] ?? o.status),
       if (o.ordererLabel != null) '@${o.ordererLabel}',
-      if ((o.budget ?? 0) > 0) "${groupDigits(o.budget!)} so'm",
+      if ((o.budget ?? 0) > 0) "${groupDigits(o.budget!)} söm",
     ].join(' · ');
     return WebCard(
       onTap: onTap,
@@ -483,7 +483,7 @@ class _OrderRow extends StatelessWidget {
                           color: const Color(0xFFEF4444).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text("O'CHIRILGAN",
+                        child: Text("ÖÇIRILGAN",
                             style: TextStyle(color: WebC.redSoft, fontSize: 10, fontWeight: FontWeight.w600)),
                       ),
                       const SizedBox(width: 8),

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleState, WidgetsBinding;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/bloc/safe_emit.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/notifications/message_notifier.dart';
+import '../../../core/realtime/realtime_service.dart';
 import '../data/message_model.dart';
 import '../data/messages_repository.dart';
 
@@ -93,12 +95,39 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     }
   }
 
+  StreamSubscription<RealtimeEvent>? _rtSub;
+  DateTime _lastPoll = DateTime.now();
+  bool _polling = false;
+
+  /// Real-time ulangan bo'lsa — xabar signal bilan darhol keladi, ehtiyot so'rovi daqiqada bir;
+  /// ulanmagan bo'lsa — avvalgidek 4 soniyada bir. Ilova fonda bo'lsa — so'ralmaydi.
   void _startPolling() {
     _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) => _poll());
+    _rtSub?.cancel();
+    _lastPoll = DateTime.now();
+    _rtSub = RealtimeService.instance.events.listen((e) {
+      if (e.name == 'chat' && (e.data['c'] == null || e.data['c'] == conversationId)) _poll();
+    });
+    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      final state = WidgetsBinding.instance.lifecycleState;
+      if (state != null && state != AppLifecycleState.resumed) return;
+      final every = RealtimeService.instance.connected.value ? RealtimeService.safetyPoll : const Duration(seconds: 4);
+      if (DateTime.now().difference(_lastPoll) >= every) _poll();
+    });
   }
 
   Future<void> _poll() async {
+    if (_polling) return;
+    _polling = true;
+    _lastPoll = DateTime.now();
+    try {
+      await _pollOnce();
+    } finally {
+      _polling = false;
+    }
+  }
+
+  Future<void> _pollOnce() async {
     try {
       final since = state.messages.isEmpty
           ? null
@@ -301,6 +330,7 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   @override
   Future<void> close() {
     _pollTimer?.cancel();
+    _rtSub?.cancel();
     return super.close();
   }
 }

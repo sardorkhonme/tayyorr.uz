@@ -13,9 +13,9 @@ import '../data/offers_repository.dart';
 
 const _filters = [
   ('ALL', 'Hammasi'),
-  ('OPEN', 'Ochiq'),
+  ('OPEN', 'Oçiq'),
   ('IN_PROGRESS', 'Jarayonda'),
-  ('DELIVERED', 'Topshirilgan'),
+  ('DELIVERED', 'Topşirilgan'),
   ('DONE', 'Yakunlangan'),
   ('CANCELLED', 'Bekor qilingan'),
 ];
@@ -53,7 +53,7 @@ class _OffersViewState extends State<_OffersView> {
           background: false,
           onRefresh: () => context.read<OffersCubit>().load(),
           children: [
-            const WebPageTitle('Mening takliflarim', size: 20, subtitle: 'Siz yuborgan barcha takliflar (arizalar) shu yerda.'),
+            const WebPageTitle('Mening takliflarim', size: 20, subtitle: 'Siz yuborgan barça takliflar (arizalar) şu yerda.'),
             const SizedBox(height: 16),
             Wrap(
               spacing: 6,
@@ -84,7 +84,7 @@ class _OffersViewState extends State<_OffersView> {
             else if (list.isEmpty)
               WebCard(
                 child: Text(
-                  state.status == OffersStatus.failure ? (state.error ?? "Yuklab bo'lmadi") : 'Bu holatda taklif topilmadi.',
+                  state.status == OffersStatus.failure ? (state.error ?? "Yuklab bölmadi") : 'Bu holatda taklif topilmadi.',
                   style: TextStyle(color: WebC.zinc500, fontSize: 14),
                 ),
               )
@@ -140,7 +140,7 @@ class _OfferCard extends StatelessWidget {
                           TextSpan(text: o.order.title),
                           if (o.order.deleted)
                             TextSpan(
-                              text: "  (o'chirilgan)",
+                              text: "  (öçirilgan)",
                               style: TextStyle(color: WebC.amber, fontSize: 12, fontWeight: FontWeight.w400),
                             ),
                         ],
@@ -171,7 +171,7 @@ class _OfferCard extends StatelessWidget {
                 style: TextStyle(color: WebC.zinc300, fontSize: 14),
                 children: [
                   const TextSpan(text: 'Narx: '),
-                  TextSpan(text: "${groupDigits(o.price)} so'm", style: const TextStyle(fontWeight: FontWeight.w700)),
+                  TextSpan(text: "${groupDigits(o.price)} söm", style: const TextStyle(fontWeight: FontWeight.w700)),
                 ],
               )),
               Text(kOfferStatusLabel[o.status] ?? o.status, style: TextStyle(color: statusColor, fontSize: 14)),

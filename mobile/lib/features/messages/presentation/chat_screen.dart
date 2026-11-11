@@ -16,6 +16,7 @@ import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../../core/media/media_cache.dart';
+import '../../../core/navigation/open_internal.dart';
 import '../../../core/notifications/message_notifier.dart';
 import '../../../widgets/link_text.dart';
 import '../../../widgets/web_ui.dart';
@@ -73,7 +74,7 @@ class _ChatViewState extends State<_ChatView> {
     final index = messages.indexWhere((m) => m.id == id);
     if (index < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Asl xabar topilmadi (o'chirilgan yoki juda eski)")),
+        const SnackBar(content: Text("Asl xabar topilmadi (öçirilgan yoki juda eski)")),
       );
       return;
     }
@@ -205,7 +206,7 @@ class _ChatViewState extends State<_ChatView> {
     } catch (e) {
       if (token.isCancelled || !mounted || !identical(_pending, pending)) return;
       setState(() => _pending = null);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Faylni yuklab bo'lmadi — qayta urinib ko'ring")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Faylni yuklab bölmadi — qayta urinib köring")));
     }
   }
 
@@ -275,7 +276,7 @@ class _ChatViewState extends State<_ChatView> {
                             child: Padding(
                               padding: EdgeInsets.all(24),
                               child: Text(
-                                'Bu foydalanuvchi sizni bloklagan — xabar yoza olmaysiz.',
+                                'Bu foydalanuvçi sizni bloklagan — xabar yoza olmaysiz.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: AppColors.textMuted),
                               ),
@@ -285,7 +286,7 @@ class _ChatViewState extends State<_ChatView> {
                         if (state.messages.isEmpty) {
                           return const Center(
                             child: Text(
-                              'Xabar yozing — suhbat shu yerdan boshlanadi',
+                              'Xabar yozing — suhbat şu yerdan boşlanadi',
                               style: TextStyle(color: AppColors.textMuted),
                             ),
                           );
@@ -338,7 +339,7 @@ class _ChatViewState extends State<_ChatView> {
                       padding: const EdgeInsets.all(16),
                       child: OutlinedButton(
                         onPressed: () => context.read<ChatCubit>().toggleBlock(),
-                        child: const Text('Blokdan chiqarish'),
+                        child: const Text('Blokdan çiqariş'),
                       ),
                     ),
                 ],
@@ -418,7 +419,7 @@ class _ChatHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         if (other.isSupport)
-                          Text("Qo'llab-quvvatlash", style: TextStyle(color: WebC.emerald, fontSize: 12))
+                          Text("Qöllab-quvvatlaş", style: TextStyle(color: WebC.emerald, fontSize: 12))
                         else
                           Row(
                             children: [
@@ -456,18 +457,18 @@ class _ChatHeader extends StatelessWidget {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 'report',
-                  child: Text('Shikoyat qilish', style: TextStyle(color: AppColors.textPrimary)),
+                  child: Text('Şikoyat qiliş', style: TextStyle(color: AppColors.textPrimary)),
                 ),
                 PopupMenuItem(
                   value: 'block',
                   child: Text(
-                    blockedByMe ? 'Blokdan chiqarish' : 'Bloklash',
+                    blockedByMe ? 'Blokdan çiqariş' : 'Bloklaş',
                     style: TextStyle(color: AppColors.textPrimary),
                   ),
                 ),
                 const PopupMenuItem(
                   value: 'delete',
-                  child: Text("Suhbatni o'chirish", style: TextStyle(color: AppColors.red)),
+                  child: Text("Suhbatni öçiriş", style: TextStyle(color: AppColors.red)),
                 ),
               ],
               child: Container(
@@ -499,9 +500,9 @@ class _ChatHeader extends StatelessWidget {
       case 'delete':
         final ok = await confirmDialog(
           context,
-          title: "Suhbat o'chirilsinmi?",
-          message: 'Suhbat ikkala tomondan ham o\'chiriladi.',
-          confirmLabel: "Ha, o'chirish",
+          title: "Suhbat öçirilsinmi?",
+          message: 'Suhbat ikkala tomondan ham öçiriladi.',
+          confirmLabel: "Ha, öçiriş",
         );
         if (ok == true && context.mounted) {
           final done = await cubit.deleteConversation();
@@ -533,16 +534,16 @@ Future<void> _showReportDialog(BuildContext context, {String? messageId}) async 
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Shikoyat qilish',
+              'Şikoyat qiliş',
               style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             const Text(
-              'Nima sodir bo\'lganini yozing (kamida 10 belgi).',
+              'Nima sodir bölganini yozing (kamida 10 belgi).',
               style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
             ),
             const SizedBox(height: 14),
-            AppTextField(label: 'Shikoyat matni', controller: text, maxLines: 4),
+            AppTextField(label: 'Şikoyat matni', controller: text, maxLines: 4),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -552,10 +553,10 @@ Future<void> _showReportDialog(BuildContext context, {String? messageId}) async 
                   Navigator.of(sheetContext).pop();
                   final ok = await cubit.report(text.text.trim(), messageId: messageId);
                   if (ok && sheetContext.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Shikoyat yuborildi')));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Şikoyat yuborildi')));
                   }
                 },
-                child: const Text('Yuborish'),
+                child: const Text('Yuboriş'),
               ),
             ),
           ],
@@ -659,7 +660,7 @@ class _PinnedContractCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: const Text(
-                      "Ishni ko'rish",
+                      "Işni köriş",
                       style: TextStyle(color: AppColors.indigo, fontSize: 11.5, fontWeight: FontWeight.w700),
                     ),
                   ),
@@ -699,7 +700,7 @@ class _ReplyBanner extends StatelessWidget {
                 ),
                 Text(
                   message.deleted
-                      ? "o'chirilgan xabar"
+                      ? "öçirilgan xabar"
                       : (message.body.isNotEmpty ? message.body : (message.file?.name ?? 'xabar')),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -777,7 +778,7 @@ class _MessageBubble extends StatelessWidget {
             Divider(color: AppColors.cardBorder, height: 1),
             ListTile(
               leading: Icon(Icons.reply_rounded, color: AppColors.textSecondary),
-              title: Text('Javob berish', style: TextStyle(color: AppColors.textPrimary)),
+              title: Text('Javob beriş', style: TextStyle(color: AppColors.textPrimary)),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 cubit.setReplyTo(message);
@@ -787,7 +788,7 @@ class _MessageBubble extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.download_rounded, color: AppColors.textSecondary),
                 title: Text(
-                  message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlash' : 'Yuklab olish',
+                  message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
                   style: TextStyle(color: AppColors.textPrimary),
                 ),
                 onTap: () {
@@ -798,7 +799,7 @@ class _MessageBubble extends StatelessWidget {
             if (message.body.isNotEmpty)
               ListTile(
                 leading: Icon(Icons.copy_rounded, color: AppColors.textSecondary),
-                title: Text('Nusxa olish', style: TextStyle(color: AppColors.textPrimary)),
+                title: Text('Nusxa oliş', style: TextStyle(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   Clipboard.setData(ClipboardData(text: message.body));
@@ -808,7 +809,7 @@ class _MessageBubble extends StatelessWidget {
             if (message.mine) ...[
               ListTile(
                 leading: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
-                title: Text('Tahrirlash', style: TextStyle(color: AppColors.textPrimary)),
+                title: Text('Tahrirlaş', style: TextStyle(color: AppColors.textPrimary)),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _showEditSheet(context, cubit, message);
@@ -816,14 +817,14 @@ class _MessageBubble extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline_rounded, color: AppColors.red),
-                title: const Text("O'chirish", style: TextStyle(color: AppColors.red)),
+                title: const Text("Öçiriş", style: TextStyle(color: AppColors.red)),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   final ok = await confirmDialog(
                     context,
-                    title: "O'chirilsinmi?",
-                    message: "Xabar ikkala tomondan ham o'chiriladi.",
-                    confirmLabel: "Ha, o'chirish",
+                    title: "Öçirilsinmi?",
+                    message: "Xabar ikkala tomondan ham öçiriladi.",
+                    confirmLabel: "Ha, öçiriş",
                   );
                   if (ok == true) cubit.deleteMessage(message.id);
                 },
@@ -831,7 +832,7 @@ class _MessageBubble extends StatelessWidget {
             ] else
               ListTile(
                 leading: const Icon(Icons.flag_outlined, color: AppColors.red),
-                title: const Text('Shikoyat qilish', style: TextStyle(color: AppColors.red)),
+                title: const Text('Şikoyat qiliş', style: TextStyle(color: AppColors.red)),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _showReportDialog(context, messageId: message.id);
@@ -863,7 +864,7 @@ class _MessageBubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Xabarni tahrirlash',
+                'Xabarni tahrirlaş',
                 style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 14),
@@ -878,7 +879,7 @@ class _MessageBubble extends StatelessWidget {
                     Navigator.of(sheetContext).pop();
                     cubit.editMessage(message.id, text);
                   },
-                  child: const Text('Saqlash'),
+                  child: const Text('Saqlaş'),
                 ),
               ),
             ],
@@ -922,7 +923,7 @@ class _MessageBubble extends StatelessWidget {
                     context,
                   ).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: (message.orderId ?? pinnedOrderId)!))),
                   child: Text(
-                    'Buyurtmani ko\'rish ›',
+                    'Buyurtmani köriş ›',
                     style: TextStyle(color: bubbleTextColor, fontSize: 12.5, fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -984,9 +985,39 @@ class _MessageBubble extends StatelessWidget {
                 linkColor: mine ? Colors.white : WebC.indigoSoft,
               ),
             ],
+            if (message.action != null && !message.deleted) ...[
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => openInternalUrl(context, message.action!.url),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: mine ? Colors.white.withValues(alpha: 0.15) : AppColors.indigo.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.account_balance_wallet_outlined, size: 16, color: mine ? Colors.white : WebC.indigoSoft),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          '${message.action!.label} ›',
+                          style: TextStyle(
+                            color: mine ? Colors.white : WebC.indigoSoft,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             if (message.deleted)
               Text(
-                "o'chirilgan xabar",
+                "öçirilgan xabar",
                 style: TextStyle(color: timeColor, fontStyle: FontStyle.italic, fontSize: 14),
               ),
             const SizedBox(height: 2),
@@ -1076,7 +1107,7 @@ class _ReplyQuote extends StatelessWidget {
         border: Border(left: BorderSide(color: mine ? const Color(0xFFA5B4FC) : WebC.indigo, width: 2)),
       ),
       child: Text(
-        reply.deleted ? "o'chirilgan xabar" : reply.text,
+        reply.deleted ? "öçirilgan xabar" : reply.text,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: mine ? const Color(0xFFC7D2FE) : WebC.zinc400, fontSize: 12),

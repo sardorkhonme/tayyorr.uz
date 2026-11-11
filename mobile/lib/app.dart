@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/storage/local_storage.dart';
+import 'core/update/update_overlay.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'features/auth/bloc/auth_bloc.dart';
@@ -63,7 +64,8 @@ class TayyorrApp extends StatelessWidget {
                     (route) => false,
                   );
                 },
-                child: _ThemeRebuilder(child: child ?? const SizedBox.shrink()),
+                // yangilanish / texnik ishlar oynasi — hamma sahifalar ustida
+                child: UpdateOverlay(child: _ThemeRebuilder(child: child ?? const SizedBox.shrink())),
               );
             },
           ),
