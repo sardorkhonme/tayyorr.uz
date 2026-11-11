@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { sendMobileNotice } from "@/lib/mobile-push";
 import { sendPlusPush } from "@/lib/push";
 import { presignPrivate, putPrivate } from "@/lib/r2";
 import { notifyAdmins } from "@/lib/telegram";
@@ -116,7 +117,11 @@ export async function sendSupportNotice(userId: string, text: string) {
     });
   });
   // sayt yopiq bo'lsa ham — brauzer bildirishnomasi
-  await sendPlusPush(userId, { title: SUPPORT_NAME, body: text.slice(0, 140), url: "/support", tag: `plus-${c.id}` }).catch(() => {});
+  await Promise.allSettled([
+    sendPlusPush(userId, { title: SUPPORT_NAME, body: text.slice(0, 140), url: "/support", tag: `plus-${c.id}` }),
+    // mobil ilova (tayyorr+ bo'limi)
+    sendMobileNotice(userId, c.id, supportId, SUPPORT_NAME, text),
+  ]);
 }
 
 /** Foydalanuvchi support'ga yozadi — xabar tayyorr.uz admin paneliga boradi. */

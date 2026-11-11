@@ -23,7 +23,7 @@ export interface PushPayload {
   tag?: string;
 }
 
-export type PushSite = "uz" | "plus";
+export type PushSite = "uz" | "plus" | "smm";
 
 /**
  * Foydalanuvchining shu sayt(lar)dagi qurilmalariga push yuboradi.

@@ -65,6 +65,14 @@ export async function deliverMessage(m: Message) {
       ["plus"],
     ).catch(() => {});
   }
+  // Tayyorr SMM brauzer bildirishnomasi — support xabari SMM ga bo'lsa
+  if (sender?.isSupport && ps.includes("smm")) {
+    await sendPushToUser(
+      recipientId,
+      { title: SUPPORT_NAME, body: snippet(m), url: "/support", tag: `smm-${m.conversationId}` },
+      ["smm"],
+    ).catch(() => {});
+  }
 
   // mobil ilova (FCM) — ilovada barcha xizmatlar bor (tayyorr.uz, tayyorr+, SMM): har biriga push,
   // `scope` bo'yicha ilova bildirishnoma belgisini va qaysi bo'limda ochishni tanlaydi

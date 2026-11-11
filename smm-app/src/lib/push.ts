@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 /**
  * tayyorr+ brauzer bildirishnomalari — tayyorr.uz bilan bir xil VAPID kalitlar
  * (support javoblari tayyorr.uz serveridan ham shu obunalarga yuboriladi).
- * Obunalar umumiy jadvalda, `site: "plus"`.
+ * Obunalar umumiy jadvalda, `site: "smm"`.
  */
 const PUB = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const PRIV = process.env.VAPID_PRIVATE_KEY;
@@ -20,9 +20,9 @@ function ensure() {
   return configured;
 }
 
-export async function sendPlusPush(userId: string, payload: { title: string; body: string; url?: string; tag?: string }) {
+export async function sendSmmPush(userId: string, payload: { title: string; body: string; url?: string; tag?: string }) {
   if (!ensure()) return;
-  const subs = await db.pushSubscription.findMany({ where: { userId, site: "plus" } });
+  const subs = await db.pushSubscription.findMany({ where: { userId, site: "smm" } });
   const data = JSON.stringify(payload);
   await Promise.all(
     subs.map(async (s) => {

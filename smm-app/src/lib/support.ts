@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { sendMobileNotice } from "@/lib/mobile-push";
+import { sendSmmPush } from "@/lib/push";
 import { presignPrivate, putPrivate } from "@/lib/r2";
 import { notifyAdmins } from "@/lib/telegram";
 import { randomUUID } from "crypto";
@@ -115,6 +117,11 @@ export async function sendSupportNotice(userId: string, text: string) {
       data: { lastMessageAt: msg.createdAt, deletedByUsersAt: null },
     });
   });
+  // sayt yopiq bo'lsa ham — brauzer va mobil ilova (SMM bo'limi) bildirishnomasi
+  await Promise.allSettled([
+    sendSmmPush(userId, { title: SUPPORT_NAME, body: text.slice(0, 140), url: "/support", tag: `smm-${c.id}` }),
+    sendMobileNotice(userId, c.id, supportId, SUPPORT_NAME, text),
+  ]);
 }
 
 /** Foydalanuvchi support'ga yozadi — xabar tayyorr.uz admin paneliga boradi. */

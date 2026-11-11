@@ -41,6 +41,8 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   // ---- API: yengil yo'l. Tez-tez keladigan o'qish so'rovlari (polling, mobil ilova) uchun imzo
   // tekshiruvi, audit va NextAuth sessiyasini ochish kerak emas — route'lar o'zi tekshiradi.
+  // serverlararo (tayyorr+ / SMM → mobil push) — o'zi imzo tekshiradi
+  if (pathname.startsWith("/api/internal/")) return NextResponse.next();
   if (pathname.startsWith("/api/")) {
     const method = req.method.toUpperCase();
     // eski mobil ilova — admin belgilagan majburiy versiyadan past bo'lsa, bazaga tegmay qaytadi

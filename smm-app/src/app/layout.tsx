@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SmmHeader, type HeaderUser } from "@/components/smm-header";
 import { SupportWidget } from "@/components/support-widget";
 import { currentUser } from "@/lib/session";
+import { PushPrompt } from "@/components/push-prompt";
 import { ActivityTracker } from "@/components/activity-tracker";
 
 // shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
@@ -46,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <SiteFooter />
         </main>
         <SupportWidget loggedIn={!!u} />
+        {u && <PushPrompt />}
         <PlatformTransition />
         <ActivityTracker />
       </body>

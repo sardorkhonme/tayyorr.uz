@@ -106,3 +106,21 @@ export function sourceLabel(source: MessageSource | undefined): string {
   if (source === "ikkalasi") return "Hammasi";
   return platformsOf(source).map((p) => PLATFORM_LABEL[p]).join(" + ");
 }
+
+/** Platformada ko'rinadigan xabarlar (Prisma `where`) — mobil ilovaning tayyorr+ / SMM / tayyorr.uz bo'limlari uchun. */
+export function visibleOn(platform: Platform) {
+  if (platform === "uz") return VISIBLE_ON_UZ;
+  const tags = platform === "plus" ? [PLUS_TAG, ALL_TAG, "[uz+plus]", "[plus+smm]"] : [SMM_TAG, ALL_TAG, "[uz+smm]", "[plus+smm]"];
+  return { OR: tags.map((t) => ({ body: { startsWith: t } })) };
+}
+
+/** So'rovdagi ?scope= (mobil ilova) → platforma; noma'lum bo'lsa tayyorr.uz. */
+export function scopeOf(url: string): Platform {
+  const s = new URL(url).searchParams.get("scope");
+  return s === "plus" || s === "smm" ? s : "uz";
+}
+
+/** Platformadan yuborilgan xabar belgisi (tayyorr.uz — belgisiz). */
+export function tagFor(platform: Platform): MessageSource {
+  return platform === "plus" ? "tayyorr+" : platform === "smm" ? "smm" : "tayyorr.uz";
+}
