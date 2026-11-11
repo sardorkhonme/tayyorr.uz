@@ -1,36 +1,25 @@
+import '../core/navigation/open_internal.dart';
+import '../core/ui/app_dialogs.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../features/order_detail/presentation/order_detail_screen.dart';
-import '../features/public_profile/presentation/public_profile_screen.dart';
 
 final _urlRe = RegExp(
   r'((?:https?:\/\/|www\.)[^\s<>"]+|\btayyorr\.uz\/[^\s<>"]*)',
   caseSensitive: false,
 );
 
-/// Havolani ochadi: tayyorr.uz ichki sahifalari — ilovaning o'zida,
+/// Havolani ochadi: tayyorr.uz (va barcha *.tayyorr.uz) sahifalari — ilovaning o'zida,
 /// boshqa saytlar — ilova ichidagi brauzer oynasida (ilovadan chiqmasdan).
 Future<void> openLink(BuildContext context, String raw) async {
   var url = raw;
   if (!url.toLowerCase().startsWith('http')) url = 'https://$url';
   final uri = Uri.tryParse(url);
   if (uri == null) return;
-
   final host = uri.host.toLowerCase();
-  if (host == 'tayyorr.uz' || host.endsWith('.tayyorr.uz')) {
-    final seg = uri.pathSegments.where((s) => s.isNotEmpty).toList();
-    if (seg.length >= 2 && seg[0] == 'orders' && seg[1] != 'new') {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: seg[1])));
-      return;
-    }
-    if (seg.length >= 2 && seg[0] == 'u') {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: seg[1])));
-      return;
-    }
-  }
+  if (host == 'tayyorr.uz' || host.endsWith('.tayyorr.uz')) return openInternalUrl(context, url);
   final ok = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
   if (!ok) await launchUrl(uri, mode: LaunchMode.externalApplication);
 }
@@ -96,7 +85,7 @@ class _LinkTextState extends State<LinkText> {
         final first = _urlRe.firstMatch(text)?.group(0);
         if (first == null) return;
         Clipboard.setData(ClipboardData(text: first));
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Havola nusxalandi')));
+        showToast(context, 'Havola nusxalandi', kind: ToastKind.success);
       },
       child: Text.rich(TextSpan(children: spans), style: widget.style),
     );

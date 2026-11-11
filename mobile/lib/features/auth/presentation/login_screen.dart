@@ -1,6 +1,3 @@
-import 'package:url_launcher/url_launcher.dart';
-
-import '../../../core/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,6 +6,7 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/google_logo.dart';
 import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
+import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -96,7 +94,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: GestureDetector(
-                                  onTap: () => launchUrl(Uri.parse('$kPlusUrl/forgot'), mode: LaunchMode.externalApplication),
+                                  onTap: () async {
+                                    final email = await Navigator.of(context).push<String>(
+                                      MaterialPageRoute(builder: (_) => ForgotPasswordScreen(initialEmail: _login.text.trim())),
+                                    );
+                                    if (email != null && mounted) setState(() => _login.text = email);
+                                  },
                                   child: Padding(
                                     padding: const EdgeInsets.only(top: 8),
                                     child: Text('Parolni unutdingizmi?', style: TextStyle(color: WebC.indigo, fontSize: 13)),

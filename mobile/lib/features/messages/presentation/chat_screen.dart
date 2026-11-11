@@ -1,3 +1,4 @@
+import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
@@ -73,9 +74,7 @@ class _ChatViewState extends State<_ChatView> {
     final messages = context.read<ChatCubit>().state.messages;
     final index = messages.indexWhere((m) => m.id == id);
     if (index < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Asl xabar topilmadi (öçirilgan yoki juda eski)")),
-      );
+      showToast(context, "Asl xabar topilmadi (öçirilgan yoki juda eski)");
       return;
     }
     // Xabar hali qurilmagan (ekrandan uzoqda) bo'lsa — taxminiy joyga
@@ -179,7 +178,7 @@ class _ChatViewState extends State<_ChatView> {
   Future<void> _stage(Uint8List bytes, String name, String type) async {
     _cancelPending();
     if (bytes.length > 100 * 1024 * 1024) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fayl 100MB dan katta')));
+      showToast(context, 'Fayl 100MB dan katta', kind: ToastKind.error);
       return;
     }
     final key = 'local-${DateTime.now().microsecondsSinceEpoch}';
@@ -206,7 +205,7 @@ class _ChatViewState extends State<_ChatView> {
     } catch (e) {
       if (token.isCancelled || !mounted || !identical(_pending, pending)) return;
       setState(() => _pending = null);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Faylni yuklab bölmadi — qayta urinib köring")));
+      showToast(context, "Faylni yuklab bölmadi — qayta urinib köring", kind: ToastKind.error);
     }
   }
 
@@ -450,37 +449,32 @@ class _ChatHeader extends StatelessWidget {
             ),
           ),
           if (!other.isSupport)
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              color: AppColors.surface,
-              onSelected: (value) => _onMenuSelect(context, value),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'report',
-                  child: Text('Şikoyat qiliş', style: TextStyle(color: AppColors.textPrimary)),
-                ),
-                PopupMenuItem(
-                  value: 'block',
-                  child: Text(
-                    blockedByMe ? 'Blokdan çiqariş' : 'Bloklaş',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Text("Suhbatni öçiriş", style: TextStyle(color: AppColors.red)),
-                ),
-              ],
+            GestureDetector(
+              onTap: () async {
+                final v = await showAppSheet<String>(
+                  context,
+                  builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
+                    AppSheetAction(icon: Icons.flag_outlined, label: 'Şikoyat qiliş', onTap: () => Navigator.of(ctx).pop('report')),
+                    AppSheetAction(
+                      icon: blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
+                      label: blockedByMe ? 'Blokdan çiqariş' : 'Bloklaş',
+                      onTap: () => Navigator.of(ctx).pop('block'),
+                    ),
+                    AppSheetAction(icon: Icons.delete_outline_rounded, label: 'Suhbatni öçiriş', danger: true, onTap: () => Navigator.of(ctx).pop('delete')),
+                  ]),
+                );
+                if (v != null && context.mounted) _onMenuSelect(context, v);
+              },
               child: Container(
-                width: 32,
-                height: 32,
+                width: 36,
+                height: 36,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: WebC.border),
                   color: WebC.fill5,
                 ),
-                child: Text('⋮', style: TextStyle(color: WebC.zinc300, fontSize: 16, height: 1)),
+                child: Icon(Icons.more_horiz_rounded, size: 20, color: WebC.zinc300),
               ),
             ),
         ],
@@ -516,51 +510,31 @@ class _ChatHeader extends StatelessWidget {
 Future<void> _showReportDialog(BuildContext context, {String? messageId}) async {
   final cubit = context.read<ChatCubit>();
   final text = TextEditingController();
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (sheetContext) => Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: AppColors.cardBorder)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Şikoyat qiliş',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Nima sodir bölganini yozing (kamida 10 belgi).',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
-            ),
-            const SizedBox(height: 14),
-            AppTextField(label: 'Şikoyat matni', controller: text, maxLines: 4),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (text.text.trim().length < 10) return;
-                  Navigator.of(sheetContext).pop();
-                  final ok = await cubit.report(text.text.trim(), messageId: messageId);
-                  if (ok && sheetContext.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Şikoyat yuborildi')));
-                  }
-                },
-                child: const Text('Yuboriş'),
-              ),
-            ),
-          ],
-        ),
+  await showAppSheet(
+    context,
+    title: 'Şikoyat qiliş',
+    builder: (sheetContext) => Builder(
+      builder: (sheetContext) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Nima sodir bölganini yozing (kamida 10 belgi). Şikoyat administratorga yuboriladi.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5, height: 1.4)),
+          const SizedBox(height: 14),
+          AppTextField(label: 'Şikoyat matni', controller: text, maxLines: 4),
+          const SizedBox(height: 16),
+          ListenableBuilder(listenable: text, builder: (_, __) => AppDialogButton(
+            label: 'Yuboriş',
+            danger: true,
+            onTap: text.text.trim().length < 10
+                ? null
+                : () async {
+                    Navigator.of(sheetContext).pop();
+                    final ok = await cubit.report(text.text.trim(), messageId: messageId);
+                    if (ok && context.mounted) showToast(context, 'Şikoyat yuborildi', kind: ToastKind.success);
+                  },
+          )),
+        ],
       ),
     ),
   );
@@ -737,154 +711,122 @@ class _MessageBubble extends StatelessWidget {
   void _openMenu(BuildContext context) {
     if (message.deleted) return;
     final cubit = context.read<ChatCubit>();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: AppColors.cardBorder)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _ReactionButton(
-                    icon: Icons.thumb_up_alt_rounded,
-                    active: message.reactions.mine == 'LIKE',
-                    onTap: () {
-                      Navigator.of(sheetContext).pop();
-                      cubit.react(message.id, message.reactions.mine == 'LIKE' ? null : 'LIKE');
-                    },
-                  ),
-                  const SizedBox(width: 28),
-                  _ReactionButton(
-                    icon: Icons.thumb_down_alt_rounded,
-                    active: message.reactions.mine == 'DISLIKE',
-                    onTap: () {
-                      Navigator.of(sheetContext).pop();
-                      cubit.react(message.id, message.reactions.mine == 'DISLIKE' ? null : 'DISLIKE');
-                    },
-                  ),
-                ],
+    showAppSheet(
+      context,
+      builder: (sheetContext) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _ReactionButton(
+                icon: Icons.thumb_up_alt_rounded,
+                active: message.reactions.mine == 'LIKE',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  cubit.react(message.id, message.reactions.mine == 'LIKE' ? null : 'LIKE');
+                },
               ),
-            ),
-            Divider(color: AppColors.cardBorder, height: 1),
-            ListTile(
-              leading: Icon(Icons.reply_rounded, color: AppColors.textSecondary),
-              title: Text('Javob beriş', style: TextStyle(color: AppColors.textPrimary)),
+              const SizedBox(width: 28),
+              _ReactionButton(
+                icon: Icons.thumb_down_alt_rounded,
+                active: message.reactions.mine == 'DISLIKE',
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  cubit.react(message.id, message.reactions.mine == 'DISLIKE' ? null : 'DISLIKE');
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          AppSheetAction(
+            icon: Icons.reply_rounded,
+            label: 'Javob beriş',
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              cubit.setReplyTo(message);
+            },
+          ),
+          if (message.file != null)
+            AppSheetAction(
+              icon: Icons.download_rounded,
+              label: message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
               onTap: () {
                 Navigator.of(sheetContext).pop();
-                cubit.setReplyTo(message);
+                saveChatFile(context, message.file!, message.id);
               },
             ),
-            if (message.file != null)
-              ListTile(
-                leading: Icon(Icons.download_rounded, color: AppColors.textSecondary),
-                title: Text(
-                  message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
-                  style: TextStyle(color: AppColors.textPrimary),
-                ),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  saveChatFile(context, message.file!, message.id);
-                },
-              ),
-            if (message.body.isNotEmpty)
-              ListTile(
-                leading: Icon(Icons.copy_rounded, color: AppColors.textSecondary),
-                title: Text('Nusxa oliş', style: TextStyle(color: AppColors.textPrimary)),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  Clipboard.setData(ClipboardData(text: message.body));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nusxalandi')));
-                },
-              ),
-            if (message.mine) ...[
-              ListTile(
-                leading: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
-                title: Text('Tahrirlaş', style: TextStyle(color: AppColors.textPrimary)),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _showEditSheet(context, cubit, message);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline_rounded, color: AppColors.red),
-                title: const Text("Öçiriş", style: TextStyle(color: AppColors.red)),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  final ok = await confirmDialog(
-                    context,
-                    title: "Öçirilsinmi?",
-                    message: "Xabar ikkala tomondan ham öçiriladi.",
-                    confirmLabel: "Ha, öçiriş",
-                  );
-                  if (ok == true) cubit.deleteMessage(message.id);
-                },
-              ),
-            ] else
-              ListTile(
-                leading: const Icon(Icons.flag_outlined, color: AppColors.red),
-                title: const Text('Şikoyat qiliş', style: TextStyle(color: AppColors.red)),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _showReportDialog(context, messageId: message.id);
-                },
-              ),
-          ],
-        ),
+          if (message.body.isNotEmpty)
+            AppSheetAction(
+              icon: Icons.copy_rounded,
+              label: 'Nusxa oliş',
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                Clipboard.setData(ClipboardData(text: message.body));
+                showToast(context, 'Nusxalandi', kind: ToastKind.success);
+              },
+            ),
+          if (message.mine) ...[
+            AppSheetAction(
+              icon: Icons.edit_outlined,
+              label: 'Tahrirlaş',
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _showEditSheet(context, cubit, message);
+              },
+            ),
+            AppSheetAction(
+              icon: Icons.delete_outline_rounded,
+              label: 'Öçiriş',
+              danger: true,
+              onTap: () async {
+                Navigator.of(sheetContext).pop();
+                final ok = await confirmDialog(
+                  context,
+                  title: "Öçirilsinmi?",
+                  message: "Xabar ikkala tomondan ham öçiriladi.",
+                  confirmLabel: "Ha, öçiriş",
+                  icon: Icons.delete_outline_rounded,
+                );
+                if (ok == true) cubit.deleteMessage(message.id);
+              },
+            ),
+          ] else
+            AppSheetAction(
+              icon: Icons.flag_outlined,
+              label: 'Şikoyat qiliş',
+              danger: true,
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _showReportDialog(context, messageId: message.id);
+              },
+            ),
+        ],
       ),
     );
   }
 
   void _showEditSheet(BuildContext context, ChatCubit cubit, ChatMessageModel message) {
     final controller = TextEditingController(text: message.body);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: AppColors.cardBorder)),
+    showAppSheet(
+      context,
+      title: 'Xabarni tahrirlaş',
+      builder: (sheetContext) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppTextField(label: 'Xabar', controller: controller, maxLines: 4),
+          const SizedBox(height: 16),
+          AppDialogButton(
+            label: 'Saqlaş',
+            onTap: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              Navigator.of(sheetContext).pop();
+              cubit.editMessage(message.id, text);
+            },
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Xabarni tahrirlaş',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 14),
-              AppTextField(label: 'Xabar', controller: controller, maxLines: 4),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final text = controller.text.trim();
-                    if (text.isEmpty) return;
-                    Navigator.of(sheetContext).pop();
-                    cubit.editMessage(message.id, text);
-                  },
-                  child: const Text('Saqlaş'),
-                ),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }

@@ -255,7 +255,8 @@ class OrderDetailModel {
 }
 
 class OrderFileModel {
-  const OrderFileModel({required this.id, required this.kind, required this.size, this.url});
+  const OrderFileModel({required this.id, required this.kind, required this.size, this.url, this.mimeType});
+  final String? mimeType;
   final String id;
   final String kind;
   final int size;
@@ -264,6 +265,7 @@ class OrderFileModel {
   factory OrderFileModel.fromJson(Map<String, dynamic> json) => OrderFileModel(
         id: json['id'] as String,
         kind: json['kind'] as String,
+        mimeType: json['mimeType'] as String?,
         size: (json['size'] as num).toInt(),
         url: json['url'] as String?,
       );

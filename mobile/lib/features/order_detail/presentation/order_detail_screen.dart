@@ -1,9 +1,9 @@
+import '../../messages/presentation/chat_media.dart';
 import '../../../core/app_config.dart';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
@@ -241,10 +241,15 @@ class _Files extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: f.url != null
-                ? GestureDetector(
-                    onTap: () => launchUrl(Uri.parse(f.url!), mode: LaunchMode.externalApplication),
-                    child: Text('${f.kind} · ${(f.size / 1024).toStringAsFixed(0)} KB',
-                        style: TextStyle(color: WebC.indigo, fontSize: 14)),
+                ? ChatAttachment(
+                    file: ChatFileModel(
+                      name: '${f.kind}${_extFor(f.mimeType)}',
+                      type: f.mimeType ?? 'application/octet-stream',
+                      size: f.size,
+                      url: f.url!,
+                    ),
+                    cacheKey: 'order-file-${f.id}',
+                    mine: false,
                   )
                 : Text("${f.kind} (kiriş uçun ruxsat yöq)", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
           ),
@@ -1056,4 +1061,26 @@ class _ReportFormState extends State<_ReportForm> {
       ],
     );
   }
+}
+
+/// Fayl turi (MIME) → kengaytma — ilova ichidagi ko'rsatgich mos ochishi uchun.
+String _extFor(String? mime) {
+  final m = (mime ?? '').toLowerCase();
+  const map = {
+    'application/pdf': '.pdf',
+    'image/png': '.png',
+    'image/jpeg': '.jpg',
+    'image/webp': '.webp',
+    'image/gif': '.gif',
+    'video/mp4': '.mp4',
+    'text/plain': '.txt',
+    'application/msword': '.doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/vnd.ms-powerpoint': '.ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+    'application/vnd.ms-excel': '.xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/zip': '.zip',
+  };
+  return map[m] ?? '';
 }

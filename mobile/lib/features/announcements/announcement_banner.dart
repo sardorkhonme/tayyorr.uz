@@ -1,9 +1,8 @@
+import '../../core/navigation/open_internal.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/constants.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../widgets/app_header_sliver.dart';
@@ -106,8 +105,7 @@ class _AnnouncementCarouselState extends State<AnnouncementCarousel> with Single
       goToSection(context, section);
       return;
     }
-    final full = url.startsWith('http') ? url : '$kSiteUrl${url.startsWith('/') ? '' : '/'}$url';
-    await launchUrl(Uri.parse(full), mode: LaunchMode.externalApplication);
+    if (url.isNotEmpty && mounted) await openInternalUrl(context, url.startsWith('http') || url.startsWith('/') ? url : '/$url');
   }
 
   @override

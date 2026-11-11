@@ -1,3 +1,4 @@
+import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:ui';
 
@@ -196,7 +197,7 @@ class _ChatComposerState extends State<ChatComposer> {
 
   void _toast(String text) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 2)));
+    showToast(context, text, kind: ToastKind.error);
   }
 
   String get _mmss {

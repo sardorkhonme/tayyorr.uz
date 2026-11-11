@@ -1,3 +1,4 @@
+import '../../legal/legal_screen.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
@@ -6,9 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
@@ -520,10 +519,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                                   decorationColor: WebC.indigo,
                                                 ),
                                                 recognizer: TapGestureRecognizer()
-                                                  ..onTap = () => launchUrl(
-                                                    Uri.parse('$kSiteUrl/terms'),
-                                                    mode: LaunchMode.externalApplication,
-                                                  ),
+                                                  ..onTap = () => LegalScreen.open(context),
                                               ),
                                               const TextSpan(
                                                 text:

@@ -1,3 +1,4 @@
+import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
@@ -61,7 +62,7 @@ String _mmss(Duration d) {
 }
 
 void _toast(BuildContext context, String text) {
-  ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 2)));
+  showToast(context, text);
 }
 
 /// Faylni qurilmaga saqlash: rasm/video — galereyaga, qolganlari — foydalanuvchi

@@ -1,3 +1,4 @@
+import '../core/ui/app_dialogs.dart';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -455,19 +456,8 @@ class WebStarInput extends StatelessWidget {
   }
 }
 
-/// Saytdagi modal oyna (`rounded-2xl bg-[#14141b] p-6`).
-Future<T?> showWebDialog<T>(BuildContext context, {required WidgetBuilder builder}) {
-  return showDialog<T>(
-    context: context,
-    barrierColor: AppColors.isLight ? const Color(0xFFE4E4E9).withValues(alpha: 0.66) : Colors.black.withValues(alpha: 0.75),
-    builder: (ctx) => Dialog(
-      backgroundColor: AppColors.isLight ? Colors.white : const Color(0xFF14141B),
-      insetPadding: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: WebC.border)),
-      child: Padding(padding: const EdgeInsets.all(24), child: builder(ctx)),
-    ),
-  );
-}
+/// Erkin tarkibli oyna (forma, chek va h.k.) — zamonaviy uslubda (core/ui/app_dialogs.dart).
+Future<T?> showWebDialog<T>(BuildContext context, {required WidgetBuilder builder}) => showAppDialog<T>(context, builder: builder);
 
 /// Star (ichki valyuta) belgisi — "⭐" emoji o'rniga sariq to'ldirilgan yulduz
 /// (saytdagi `<StarIcon>`).

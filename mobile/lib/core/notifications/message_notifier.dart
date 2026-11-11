@@ -63,6 +63,20 @@ class MessageNotifier {
     }
   }
 
+  /// Ruxsat allaqachon berilganmi (Android 13 dan eski — doim true).
+  Future<bool> isPermissionGranted() async {
+    if (kIsWeb) return true;
+    await init();
+    try {
+      final r = await _plugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.areNotificationsEnabled();
+      return r ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
   /// Android 13+ da ruxsat so'raydi (tizimga kirgandan keyin chaqiriladi).
   Future<void> requestPermission() async {
     if (kIsWeb) return;

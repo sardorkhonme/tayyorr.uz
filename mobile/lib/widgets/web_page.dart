@@ -33,7 +33,8 @@ class WebPage extends StatelessWidget {
       slivers: [
         const AppHeaderSliver(),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(12, 20, 12, 40),
+          // pastki panel (Scaffold.extendBody) balandligi MediaQuery orqali keladi
+          padding: EdgeInsets.fromLTRB(12, 20, 12, 40 + MediaQuery.paddingOf(context).bottom),
           sliver: SliverList.list(
             children: [
               for (var i = 0; i < children.length; i++) ...[

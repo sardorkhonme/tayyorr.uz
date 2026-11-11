@@ -53,6 +53,18 @@ class LocalStorage {
 
   /// Ilova ochilishida serverdan javob kutmasdan darhol to'g'ri mavzuni
   /// ko'rsatish uchun — oxirgi bilingan qiymat mahalliy keshda saqlanadi.
+  /// Bildirişnoma ruxsati so'ralgan oxirgi vaqt ("Keyinroq" — 3 kundan keyin yana so'raladi).
+  DateTime? get notifPromptAt {
+    final v = _box?.get('notifPromptAt') as int?;
+    return v == null ? null : DateTime.fromMillisecondsSinceEpoch(v);
+  }
+
+  Future<void> setNotifPromptAt(DateTime t) async => _box?.put('notifPromptAt', t.millisecondsSinceEpoch);
+
+  /// Tayyorr SMM qo'llanmasi o'qilganmi (saytdagi "smm-guide-read" kabi).
+  bool get smmGuideRead => _box?.get('smmGuideRead', defaultValue: false) as bool? ?? false;
+  Future<void> setSmmGuideRead() async => _box?.put('smmGuideRead', true);
+
   String? get cachedTheme => _box?.get(_themeKey) as String?;
   Future<void> setCachedTheme(String theme) => _box!.put(_themeKey, theme);
 }

@@ -5,8 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/navigation/support.dart';
+import '../../../widgets/aurora_background.dart';
+import '../../../widgets/theme_toggle.dart';
+import '../../guide/guide_screen.dart';
+import '../../legal/legal_screen.dart';
+import '../../referral/presentation/referral_screen.dart';
 import '../../../core/network/api_exception.dart';
-import '../../../widgets/link_text.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
@@ -14,6 +19,62 @@ import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/presentation/complete_profile_screen.dart' show BirthDateField;
 import '../../auth/data/auth_repository.dart';
+
+/// tayyorr+ bosh sahifasi va SMM dan ochiladigan profil (alohida sahifa).
+class StandaloneProfile extends StatelessWidget {
+  const StandaloneProfile({super.key});
+
+  @override
+  Widget build(BuildContext context) => const AuroraBackground(child: ProfileScreen());
+}
+
+/// Tezkor havolalar: referal, qo'llanma, yordam, mavzu.
+class _QuickLinks extends StatelessWidget {
+  const _QuickLinks({required this.isPreparer});
+  final bool isPreparer;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget row(IconData icon, String label, Color c, VoidCallback onTap, {String? sub}) => InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+            child: Row(children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: c.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: c, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(label, style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                  if (sub != null) Text(sub, style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
+                ]),
+              ),
+              Icon(Icons.chevron_right_rounded, color: WebC.zinc500),
+            ]),
+          ),
+        );
+    return WebCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Column(children: [
+        if (isPreparer)
+          row(Icons.card_giftcard_rounded, 'Referal', const Color(0xFFF59E0B),
+              () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AuroraBackground(child: ReferralScreen()))),
+              sub: "Döstingizni taklif qiling — har biri uçun +1 star"),
+        row(Icons.menu_book_rounded, "Qöllanma", const Color(0xFF8B5CF6),
+            () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GuideScreen())),
+            sub: 'Qanday işlaydi — qadamma-qadam'),
+        row(Icons.support_agent_rounded, "Yordam", const Color(0xFF10B981), () => openSupportChat(context),
+            sub: "Qöllab-quvvatlaş xizmatiga yoziş"),
+        const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: ThemeToggle()),
+      ]),
+    );
+  }
+}
 
 /// Saytdagi /profile — profil formasi, akkaunt formasi va chiqish.
 class ProfileScreen extends StatelessWidget {
@@ -35,6 +96,8 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
               ),
               const SizedBox(height: 20),
+              _QuickLinks(isPreparer: user.isPreparer),
+              const SizedBox(height: 16),
               _ProfileForm(key: ValueKey('p-${user.id}')),
               const SizedBox(height: 16),
               _AccountForm(key: ValueKey('a-${user.id}'), initialLogin: user.login ?? ''),
@@ -387,7 +450,7 @@ class _DocLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => openLink(context, 'https://tayyorr.uz$path'),
+      onTap: () => LegalScreen.open(context, privacy: path == '/privacy'),
       child: Text(label, style: TextStyle(color: WebC.zinc500, fontSize: 13, decoration: TextDecoration.underline)),
     );
   }

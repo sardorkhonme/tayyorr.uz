@@ -91,6 +91,17 @@ class AuthRepository {
     return _user(res);
   }
 
+  /// Parolni tiklash (1): emailga 4 xonali kod (hisob bo'lmasa ham "yuborildi" deyiladi).
+  Future<int> sendResetCode(String email) async {
+    final res = await _api.post('$kPlusUrl/api/mobile/password/send', data: {'email': email});
+    return (res['waitSec'] as num?)?.toInt() ?? 60;
+  }
+
+  /// Parolni tiklash (2): kod + yangi parol.
+  Future<void> resetPassword(String email, String code, String password) async {
+    await _api.post('$kPlusUrl/api/mobile/password/reset', data: {'email': email, 'code': code, 'password': password});
+  }
+
   /// Google bilan birinchi marta kirgan foydalanuvchi uchun profilni
   /// tugallash (rol, login, parol).
   Future<UserModel> completeOnboarding({

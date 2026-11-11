@@ -9,7 +9,7 @@ import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/presentation/complete_profile_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
-import 'features/home/home_shell.dart';
+import 'features/home/session_root.dart';
 import 'features/home/section_cubit.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'widgets/brand_splash.dart';
@@ -102,7 +102,7 @@ class _RootGate extends StatelessWidget {
       case AuthStatus.unknown:
         return const BrandSplash();
       case AuthStatus.authenticated:
-        return const HomeShell();
+        return const SessionRoot();
       case AuthStatus.onboarding:
         return const CompleteProfileScreen();
       case AuthStatus.authenticating:

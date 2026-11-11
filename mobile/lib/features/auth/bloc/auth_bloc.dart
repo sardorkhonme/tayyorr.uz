@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../smm/data/smm_api.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/notifications/push_service.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -141,6 +142,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoggedOut(
       AuthLoggedOut event, Emitter<AuthState> emit) async {
+    SmmApi.instance.reset();
     await PushService.instance.unregister();
     await _repo.logout();
     emit(const AuthState(status: AuthStatus.unauthenticated));

@@ -280,7 +280,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     sliver: SliverToBoxAdapter(child: _activeChips()),
                   ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
+                  padding: EdgeInsets.fromLTRB(12, 12, 12, 32 + MediaQuery.paddingOf(context).bottom),
                   sliver: loading
                       ? SliverList.separated(
                           itemCount: 4,

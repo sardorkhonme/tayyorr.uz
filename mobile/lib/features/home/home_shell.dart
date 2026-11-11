@@ -1,12 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/app_config.dart';
-import '../../core/notifications/message_notifier.dart';
-import '../../core/realtime/realtime_service.dart';
-import '../../core/notifications/push_service.dart';
+import '../../core/navigation/services.dart';
+import '../../core/ui/gradient_bottom_bar.dart';
 import '../../core/unread_counter.dart';
 import '../../widgets/aurora_background.dart';
 import '../auth/bloc/auth_bloc.dart';
@@ -18,16 +14,19 @@ import '../referral/presentation/referral_screen.dart';
 import '../wallet/presentation/wallet_screen.dart';
 import 'section_cubit.dart';
 
-/// Saytda bo'lgani kabi — pastki navbar yo'q, bo'limlar orasida
-/// headerdagi menyu tugmasi ochadigan panel orqali o'tiladi.
+/// Tayyorr.uz xizmati (ilmiy ishlar) — tayyorr+ bosh sahifasidan ochiladi.
+/// Pastki panel: Asosiy, (tayyorlovchida) Takliflarim, Xabarlar, Hamyon, Profil.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: SectionCubit.instance,
-      child: const _HomeShellView(),
+    return ServiceScope(
+      kind: ServiceKind.uz,
+      child: BlocProvider.value(
+        value: SectionCubit.instance,
+        child: const _HomeShellView(),
+      ),
     );
   }
 }
@@ -41,107 +40,72 @@ const _sectionOrder = [
   AppSection.profile,
 ];
 
-class _HomeShellView extends StatefulWidget {
+class _HomeShellView extends StatelessWidget {
   const _HomeShellView();
 
   @override
-  State<_HomeShellView> createState() => _HomeShellViewState();
-}
-
-class _HomeShellViewState extends State<_HomeShellView> with WidgetsBindingObserver {
-  Timer? _unreadTimer;
-  StreamSubscription<RealtimeEvent>? _rtSub;
-  Timer? _chatDebounce;
-  DateTime _lastUnread = DateTime.fromMillisecondsSinceEpoch(0);
-  bool _foreground = true;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    UnreadCounter.instance.reset();
-    _refreshUnread();
-    // Real-time: server signal yuboradi — ma'lumot faqat o'zgarganda so'raladi
-    RealtimeService.instance.start();
-    _rtSub = RealtimeService.instance.events.listen(_onRealtime);
-    // ehtiyot tekshiruvi: ulangan bo'lsa daqiqada bir, ulanmagan bo'lsa 15 s da bir;
-    // fonda — faqat push ishlamasa va daqiqada bir (bildirishnoma uchun)
-    _unreadTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      final every = !_foreground
-          ? (PushService.instance.active ? null : const Duration(seconds: 60))
-          : RealtimeService.instance.connected.value
-              ? RealtimeService.safetyPoll
-              : const Duration(seconds: 15);
-      if (every != null && DateTime.now().difference(_lastUnread) >= every) _refreshUnread();
-    });
-    MessageNotifier.instance.requestPermission().then((_) => PushService.instance.register());
-  }
-
-  void _refreshUnread() {
-    _lastUnread = DateTime.now();
-    UnreadCounter.instance.refresh();
-  }
-
-  void _onRealtime(RealtimeEvent e) {
-    if (e.name == 'chat') {
-      // bir nechta signal ketma-ket kelsa — bitta so'rov
-      _chatDebounce?.cancel();
-      _chatDebounce = Timer(const Duration(milliseconds: 400), _refreshUnread);
-    } else if (e.name == 'wallet' && mounted) {
-      context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-    }
-  }
-
-  @override
-  void dispose() {
-    _unreadTimer?.cancel();
-    _chatDebounce?.cancel();
-    _rtSub?.cancel();
-    RealtimeService.instance.stop();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _foreground = true;
-      RealtimeService.instance.start();
-      // Foydalanuvchi tashqi brauzerda to'lov qilib qaytganda (Click) —
-      // balansni darhol yangilaymiz.
-      context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-      _refreshUnread();
-      // yangilanish / narxlar
-      AppConfig.instance.load();
-    } else if (state == AppLifecycleState.paused) {
-      _foreground = false;
-      RealtimeService.instance.stop();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final isPreparer = context.select<AuthBloc, bool>((b) => b.state.user?.isPreparer ?? false);
+    final bar = <AppSection>[
+      AppSection.dashboard,
+      if (isPreparer) AppSection.offers,
+      AppSection.messages,
+      AppSection.wallet,
+      AppSection.profile,
+    ];
     return BlocBuilder<SectionCubit, AppSection>(
       builder: (context, section) {
-        return AuroraBackground(
-          child: _SectionFade(
-            sectionKey: section,
-            child: IndexedStack(
-              index: _sectionOrder.indexOf(section),
-              children: const [
-                DashboardScreen(),
-                OffersScreen(),
-                ReferralScreen(),
-                MessagesListScreen(),
-                WalletScreen(),
-                ProfileScreen(),
-              ],
+        return PopScope(
+          // ichki bo'limda "orqaga" — avval Asosiy bo'limga, keyin tayyorr+ ga
+          canPop: section == AppSection.dashboard,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) SectionCubit.instance.select(AppSection.dashboard);
+          },
+          child: AuroraBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              extendBody: true,
+              body: _SectionFade(
+                sectionKey: section,
+                child: IndexedStack(
+                  index: _sectionOrder.indexOf(section),
+                  children: const [
+                    DashboardScreen(),
+                    OffersScreen(),
+                    ReferralScreen(),
+                    MessagesListScreen(),
+                    WalletScreen(),
+                    ProfileScreen(),
+                  ],
+                ),
+              ),
+              bottomNavigationBar: ValueListenableBuilder<int>(
+                valueListenable: UnreadCounter.instance,
+                builder: (context, unread, _) => GradientBottomBar(
+                  index: bar.indexOf(section),
+                  onTap: (i) => SectionCubit.instance.select(bar[i]),
+                  items: [
+                    for (final s in bar) _item(s, unread),
+                  ],
+                ),
+              ),
             ),
           ),
         );
       },
     );
   }
+
+  BottomBarItem _item(AppSection s, int unread) => switch (s) {
+        AppSection.dashboard => const BottomBarItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Asosiy'),
+        AppSection.offers => const BottomBarItem(icon: Icons.back_hand_outlined, activeIcon: Icons.back_hand_rounded, label: 'Takliflarim'),
+        AppSection.messages =>
+          BottomBarItem(icon: Icons.chat_bubble_outline_rounded, activeIcon: Icons.chat_bubble_rounded, label: 'Xabarlar', badge: unread),
+        AppSection.wallet =>
+          const BottomBarItem(icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet_rounded, label: 'Hamyon'),
+        AppSection.profile => const BottomBarItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profil'),
+        AppSection.referral => const BottomBarItem(icon: Icons.card_giftcard_outlined, activeIcon: Icons.card_giftcard_rounded, label: 'Referal'),
+      };
 }
 
 /// Bo'lim almashganda IndexedStack'ning barcha bolalari (va ularning

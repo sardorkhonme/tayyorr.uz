@@ -1,3 +1,5 @@
+import '../../../widgets/aurora_background.dart';
+import '../../../core/ui/app_dialogs.dart';
 import '../../../core/app_config.dart';
 import 'dart:ui';
 
@@ -21,6 +23,14 @@ import '../data/wallet_repository.dart';
 int get _starPrice => AppConfig.instance.starPrice;
 
 /// Saytdagi /wallet — balans, Star, to'ldirish, yechish va tarix.
+/// Hamyon alohida sahifa sifatida (tayyorr+ bosh sahifasi va SMM dan).
+class StandaloneWallet extends StatelessWidget {
+  const StandaloneWallet({super.key});
+
+  @override
+  Widget build(BuildContext context) => const AuroraBackground(child: WalletScreen());
+}
+
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
@@ -535,7 +545,9 @@ class _TopUpFormState extends State<_TopUpForm> {
     });
     try {
       final payUrl = await WalletRepository().topUp(amount, walletCode: _code.text.trim());
-      final ok = await launchUrl(Uri.parse(payUrl), mode: LaunchMode.externalApplication);
+      // Click to'lov sahifasi — ilova ichidagi brauzer oynasida (to'lovdan so'ng ilovaga qaytiladi, balans yangilanadi)
+      var ok = await launchUrl(Uri.parse(payUrl), mode: LaunchMode.inAppBrowserView);
+      if (!ok) ok = await launchUrl(Uri.parse(payUrl), mode: LaunchMode.externalApplication);
       if (!ok && mounted) setState(() => _error = "Tölov sahifasini oçib bölmadi");
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -783,7 +795,7 @@ class _PayoutRowState extends State<_PayoutRow> {
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
       await widget.onCancelled();
     } on ApiException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) showToast(context, e.message, kind: ToastKind.error);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

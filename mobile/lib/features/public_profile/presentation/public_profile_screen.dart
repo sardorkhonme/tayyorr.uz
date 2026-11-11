@@ -1,3 +1,4 @@
+import '../../../core/ui/app_dialogs.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -231,7 +232,6 @@ class _Head extends StatelessWidget {
 
 Future<void> _openChat(BuildContext context, PublicProfileModel p) async {
   final navigator = Navigator.of(context);
-  final messenger = ScaffoldMessenger.of(context);
   try {
     final convId = await MessagesRepository().startConversation(p.id);
     if (!context.mounted) return;
@@ -242,7 +242,7 @@ Future<void> _openChat(BuildContext context, PublicProfileModel p) async {
       ),
     ));
   } catch (_) {
-    messenger.showSnackBar(const SnackBar(content: Text("Suhbat oçilmadi — qayta urinib köring")));
+    if (context.mounted) showToast(context, "Suhbat oçilmadi — qayta urinib köring", kind: ToastKind.error);
   }
 }
 
