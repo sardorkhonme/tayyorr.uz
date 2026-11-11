@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -96,7 +97,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 initialValue: _type,
                 isExpanded: true,
                 dropdownColor: AppColors.isLight ? Colors.white : const Color(0xFF141419),
-                icon: Icon(Icons.keyboard_arrow_down_rounded, color: WebC.zinc300),
+                icon: TIcon(TI.keyboard_arrow_down_rounded, color: WebC.zinc300),
                 style: TextStyle(color: WebC.zinc200, fontSize: 14),
                 decoration: webInputDecoration(),
                 items: [
@@ -121,7 +122,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           onTap: _pickDeadline,
                           hint: 'Sana va vaqt',
                           controller: TextEditingController(text: _deadline == null ? '' : shortDateTime(_deadline!)),
-                          suffix: Icon(Icons.calendar_today_rounded, size: 16, color: WebC.zinc300),
+                          suffix: TIcon(TI.calendar_today_rounded, size: 16, color: WebC.zinc300),
                         ),
                       ],
                     ),

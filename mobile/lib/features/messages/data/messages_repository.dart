@@ -6,7 +6,13 @@ import '../../../core/network/api_client.dart';
 import 'message_model.dart';
 
 class MessagesRepository {
+  /// [scope] — qaysi xizmatdan: 'uz' (Tayyorr.uz), 'plus' (tayyorr+), 'smm'. Support çati shu bo'yicha
+  /// faqat o'sha xizmatning xabarlarini ko'rsatadi va yuborilgan xabar o'sha belgi bilan ketadi.
+  MessagesRepository({this.scope = 'uz'});
+  final String scope;
   final _api = ApiClient.instance;
+
+  String get _q => scope == 'uz' ? '' : '?scope=$scope';
 
   Future<List<ConversationModel>> fetchConversations() async {
     final res = await _api.get('/mobile/messages');
@@ -15,7 +21,7 @@ class MessagesRepository {
   }
 
   Future<ChatConversationData> fetchConversation(String id, {int? since}) async {
-    final res = await _api.get('/mobile/messages/$id', query: since != null ? {'since': since} : null);
+    final res = await _api.get('/mobile/messages/$id', query: {if (since != null) 'since': since, if (scope != 'uz') 'scope': scope});
     final other = res['other'] != null ? ChatOtherUser.fromJson(res['other'] as Map<String, dynamic>) : null;
     final messages =
         (res['messages'] as List).cast<Map<String, dynamic>>().map(ChatMessageModel.fromJson).toList();
@@ -38,7 +44,7 @@ class MessagesRepository {
     String? replyToId,
     Map<String, dynamic>? file,
   }) async {
-    final res = await _api.post('/mobile/messages/$conversationId', data: {
+    final res = await _api.post('/mobile/messages/$conversationId$_q', data: {
       if (body != null && body.isNotEmpty) 'body': body,
       if (replyToId != null) 'replyToId': replyToId,
       if (file != null) 'file': file,
@@ -86,7 +92,7 @@ class MessagesRepository {
   }
 
   Future<void> markRead(String conversationId) async {
-    await _api.post('/mobile/messages/$conversationId/read');
+    await _api.post('/mobile/messages/$conversationId/read$_q');
   }
 
   /// Chatga fayl biriktiradi: R2'ga to'g'ridan PUT qiladi, so'ng xabar sifatida yuboradi.

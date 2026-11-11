@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class DangerButton extends StatelessWidget {
 
   final String label;
   final VoidCallback? onPressed;
-  final IconData? icon;
+  final TIData? icon;
   final bool expand;
   final bool dense;
 
@@ -44,7 +45,7 @@ class DangerButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 17, color: AppColors.red),
+                    TIcon(icon, size: 17, color: AppColors.red),
                     const SizedBox(width: 8),
                   ],
                   Text(

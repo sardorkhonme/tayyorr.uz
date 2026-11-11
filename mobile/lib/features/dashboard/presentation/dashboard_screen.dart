@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -173,7 +174,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         const Spacer(),
                         GestureDetector(
                           onTap: () => Navigator.of(sheetContext).pop(),
-                          child: Icon(Icons.close_rounded, size: 18, color: WebC.zinc500),
+                          child: TIcon(TI.close_rounded, size: 18, color: WebC.zinc500),
                         ),
                       ],
                     ),
@@ -323,7 +324,7 @@ class _DashboardViewState extends State<_DashboardView> {
             children: [
               Text(label, style: TextStyle(color: WebC.zinc300, fontSize: 12)),
               const SizedBox(width: 4),
-              GestureDetector(onTap: onRemove, child: Icon(Icons.close_rounded, size: 14, color: WebC.zinc500)),
+              GestureDetector(onTap: onRemove, child: TIcon(TI.close_rounded, size: 14, color: WebC.zinc500)),
             ],
           ),
         );

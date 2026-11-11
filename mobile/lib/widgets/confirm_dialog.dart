@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../core/ui/app_dialogs.dart';
@@ -10,7 +11,7 @@ Future<bool?> confirmDialog(
   required String message,
   String confirmLabel = 'Ha',
   String cancelLabel = "Yöq",
-  IconData? icon,
+  TIData? icon,
   bool? danger,
 }) {
   final isDanger = danger ?? RegExp(r'öçir|çiq|blok|bekor|rad|örtaga', caseSensitive: false).hasMatch('$confirmLabel $title');

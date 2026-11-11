@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ import '../../core/storage/local_storage.dart';
 import '../../core/ui/app_dialogs.dart';
 import '../../core/unread_counter.dart';
 import '../auth/bloc/auth_bloc.dart';
-import '../plus/plus_home_screen.dart';
+import '../plus/plus_shell.dart';
 
 /// Kirgandan keyingi ildiz: butun ilova bo'yicha fon ishlari (real-time, o'qilmaganlar, bildirishnomalar,
 /// fondan qaytganda yangilash) shu yerda — bosh sahifa (tayyorr+) va undan ochiladigan xizmatlar ustida.
@@ -107,7 +108,7 @@ class _SessionRootState extends State<SessionRoot> with WidgetsBindingObserver {
     if (!mounted) return;
     final ok = await showPermissionPrompt(
       context,
-      icon: Icons.notifications_active_rounded,
+      icon: TI.notifications_active_rounded,
       title: 'Bildirişnomalarni yoqasizmi?',
       message: "Muhim narsalarni ötkazib yubormang — ilova yopiq bölsa ham xabar beramiz.",
       points: const ['Yangi xabar va javoblar', 'Şartnoma va buyurtma holati', 'Hamyonga pul tuşganda'],
@@ -121,5 +122,5 @@ class _SessionRootState extends State<SessionRoot> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) => const PlusHomeScreen();
+  Widget build(BuildContext context) => const PlusShell();
 }

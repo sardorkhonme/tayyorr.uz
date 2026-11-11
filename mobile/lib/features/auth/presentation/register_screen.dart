@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../legal/legal_screen.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
@@ -141,6 +143,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: TextStyle(color: WebC.zinc400, fontSize: 14),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 18),
+                    // saytdagidek — eng pastda rozilik matni (hujjatlar ilova ichida ochiladi)
+                    Text.rich(
+                      TextSpan(children: [
+                        const TextSpan(text: "Röyxatdan ötiş orqali "),
+                        TextSpan(
+                          text: 'ommaviy oferta va foydalaniş şartlari',
+                          style: TextStyle(color: WebC.indigo, decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()..onTap = () => LegalScreen.open(context),
+                        ),
+                        const TextSpan(text: ' hamda '),
+                        TextSpan(
+                          text: 'maxfiylik siyosati',
+                          style: TextStyle(color: WebC.indigo, decoration: TextDecoration.underline),
+                          recognizer: TapGestureRecognizer()..onTap = () => LegalScreen.open(context, privacy: true),
+                        ),
+                        const TextSpan(text: 'ga rozilik bildirasiz.'),
+                      ]),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: WebC.zinc500, fontSize: 12.5, height: 1.45),
                     ),
                   ],
                 ),

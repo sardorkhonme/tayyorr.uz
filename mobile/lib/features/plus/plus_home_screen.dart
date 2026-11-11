@@ -1,22 +1,18 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/navigation/services.dart';
-import '../../core/navigation/support.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/ui/platform_icon.dart';
-import '../../core/utils/format.dart';
 import '../../widgets/app_header_sliver.dart';
-import '../../widgets/aurora_background.dart';
 import '../../widgets/web_ui.dart';
 import '../auth/bloc/auth_bloc.dart';
-import '../guide/guide_screen.dart';
 import '../home/section_cubit.dart';
-import '../wallet/presentation/wallet_screen.dart';
 
-/// tayyorr+ — ilova ochilganda birinchi ekran: hamyon va xizmatlar (Tayyorr.uz, Tayyorr SMM).
+/// tayyorr+ bosh sahifasi — xizmatlar (Tayyorr.uz, Tayyorr SMM). Hamyon, yordam, qo'llanma, profil — pastki panelda.
 /// Saytdagi plus.tayyorr.uz bosh sahifasining ilovadagi (native) ko'rinishi.
 class PlusHomeScreen extends StatefulWidget {
   const PlusHomeScreen({super.key});
@@ -44,156 +40,88 @@ class _PlusHomeScreenState extends State<PlusHomeScreen> {
         _smmServices = (r['smmServices'] as num?)?.toInt();
         _smmOrders = (r['smmOrders'] as num?)?.toInt() ?? 0;
       });
-    } catch (_) {/* jim — kartochkalar raqamsiz ham ishlaydi */}
+    } catch (_) {
+      /* jim — kartochkalar raqamsiz ham ishlaydi */
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthBloc>().state.user;
-    final first = (user?.firstName ?? '').trim().isNotEmpty ? user!.firstName!.trim() : (user?.displayName ?? '');
-    return ServiceScope(
-      kind: ServiceKind.plus,
-      child: AuroraBackground(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: RefreshIndicator(
-            onRefresh: _load,
-            color: AppColors.indigo,
-            edgeOffset: 80,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                const AppHeaderSliver(),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(14, 18, 14, 36),
-                  sliver: SliverList.list(children: [
-                    Text(first.isEmpty ? 'Xuş kelibsiz!' : 'Salom, $first!',
-                        style: TextStyle(color: WebC.zinc500, fontSize: 15, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 4),
-                    Text.rich(
-                      const TextSpan(text: 'tayyorr', children: [
-                        TextSpan(text: '+', style: TextStyle(color: Color(0xFFD946EF))),
-                        TextSpan(text: ' xizmatlari'),
-                      ]),
-                      style: GoogleFonts.spaceGrotesk(
-                          color: WebC.white, fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.8, height: 1.1),
+    final first = (user?.firstName ?? '').trim().isNotEmpty
+        ? user!.firstName!.trim()
+        : (user?.displayName ?? '');
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: RefreshIndicator(
+        onRefresh: _load,
+        color: AppColors.indigo,
+        edgeOffset: 80,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const AppHeaderSliver(),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(14, 18, 14, 36),
+              sliver: SliverList.list(
+                children: [
+                  Text(
+                    first.isEmpty ? 'Xuş kelibsiz!' : 'Salom, $first!',
+                    style: TextStyle(
+                      color: WebC.zinc500,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 6),
-                    Text('Bitta hisob va bitta hamyon bilan barça xizmatlar. Kerakligini tanlang.',
-                        style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45)),
-                    const SizedBox(height: 18),
-                    _WalletCard(balance: user?.balance ?? 0, code: user?.walletCode),
-                    const SizedBox(height: 18),
-                    _UzCard(roleLabel: user == null ? null : (user.role == null ? 'Rol tanlanmagan' : user.roleLabel)),
-                    const SizedBox(height: 14),
-                    _SmmCard(services: _smmServices, orders: _smmOrders),
-                    const SizedBox(height: 14),
-                    const _SoonCard(),
-                    const SizedBox(height: 18),
-                    Row(children: [
-                      Expanded(
-                        child: _QuickTile(
-                          icon: Icons.support_agent_rounded,
-                          color: const Color(0xFF10B981),
-                          title: 'Yordam',
-                          sub: 'Supportga yoziş',
-                          onTap: () => openSupportChat(context),
+                  ),
+                  const SizedBox(height: 4),
+                  Text.rich(
+                    const TextSpan(
+                      text: 'tayyorr',
+                      children: [
+                        TextSpan(
+                          text: '+',
+                          style: TextStyle(color: Color(0xFFD946EF)),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _QuickTile(
-                          icon: Icons.menu_book_rounded,
-                          color: const Color(0xFF8B5CF6),
-                          title: 'Qöllanma',
-                          sub: 'Qanday işlaydi',
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GuideScreen())),
-                        ),
-                      ),
-                    ]),
-                  ]),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WalletCard extends StatelessWidget {
-  const _WalletCard({required this.balance, this.code});
-  final int balance;
-  final String? code;
-
-  void _openWallet(BuildContext context) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const StandaloneWallet()));
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _openWallet(context),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFFC026D3)],
-          ),
-          boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14), spreadRadius: -10)],
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            const Icon(Icons.account_balance_wallet_rounded, color: Colors.white70, size: 18),
-            const SizedBox(width: 6),
-            const Text('Hamyon', style: TextStyle(color: Colors.white70, fontSize: 13.5, fontWeight: FontWeight.w600)),
-            const Spacer(),
-            if ((code ?? '').isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(99)),
-                child: Text('kod: $code', style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600)),
+                        TextSpan(text: ' xizmatlari'),
+                      ],
+                    ),
+                    style: GoogleFonts.spaceGrotesk(
+                      color: WebC.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.8,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Bitta hisob va bitta hamyon bilan barça xizmatlar. Kerakligini tanlang.',
+                    style: TextStyle(
+                      color: WebC.zinc400,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _UzCard(
+                    roleLabel: user == null
+                        ? null
+                        : (user.role == null
+                              ? 'Rol tanlanmagan'
+                              : user.roleLabel),
+                  ),
+                  const SizedBox(height: 14),
+                  _SmmCard(services: _smmServices, orders: _smmOrders),
+                  const SizedBox(height: 14),
+                  const _SoonCard(),
+                ],
               ),
-          ]),
-          const SizedBox(height: 10),
-          Text.rich(
-            TextSpan(text: groupDigits(balance), children: const [
-              TextSpan(text: ' söm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white70)),
-            ]),
-            style: GoogleFonts.spaceGrotesk(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -0.6),
-          ),
-          const SizedBox(height: 4),
-          const Text('Barça tayyorr xizmatlari uçun bitta hamyon', style: TextStyle(color: Colors.white70, fontSize: 12.5)),
-          const SizedBox(height: 16),
-          Row(children: [
-            Expanded(child: _pill(Icons.add_rounded, 'Töldiriş', true, () => _openWallet(context))),
-            const SizedBox(width: 10),
-            Expanded(child: _pill(Icons.credit_card_rounded, 'Kartaga yeçiş', false, () => _openWallet(context))),
-          ]),
-        ]),
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  Widget _pill(IconData icon, String label, bool filled, VoidCallback onTap) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          height: 44,
-          decoration: BoxDecoration(
-            color: filled ? Colors.white : Colors.white.withValues(alpha: 0.16),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, size: 18, color: filled ? const Color(0xFF4F46E5) : Colors.white),
-            const SizedBox(width: 6),
-            Text(label,
-                style: TextStyle(color: filled ? const Color(0xFF4F46E5) : Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-          ]),
-        ),
-      );
 }
 
 /// Xizmat kartochkasi (umumiy ko'rinish).
@@ -225,56 +153,116 @@ class _ServiceCard extends StatelessWidget {
           color: WebC.cardBg,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: WebC.cardBorder),
-          boxShadow: [BoxShadow(color: glow.withValues(alpha: AppColors.isLight ? 0.12 : 0.18), blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -12)],
+          boxShadow: [
+            BoxShadow(
+              color: glow.withValues(alpha: AppColors.isLight ? 0.12 : 0.18),
+              blurRadius: 30,
+              offset: const Offset(0, 12),
+              spreadRadius: -12,
+            ),
+          ],
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: 54,
-              height: 54,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-              ),
-              child: Image.asset(mark, filterQuality: FilterQuality.high),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  child: Image.asset(mark, filterQuality: FilterQuality.high),
+                ),
+                const Spacer(),
+                if (badge != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: glow.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Text(
+                      badge!,
+                      style: TextStyle(
+                        color: glow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const Spacer(),
-            if (badge != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: glow.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(99)),
-                child: Text(badge!, style: TextStyle(color: glow, fontSize: 12, fontWeight: FontWeight.w700)),
-              ),
-          ]),
-          const SizedBox(height: 14),
-          title,
-          const SizedBox(height: 6),
-          Text(desc, style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45)),
-          if (bottom != null) ...[const SizedBox(height: 14), bottom!],
-          const SizedBox(height: 14),
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [glow, Color.lerp(glow, const Color(0xFF3B82F6), 0.5)!]),
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Text('Oçiş', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w700)),
-                SizedBox(width: 4),
-                Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
-              ]),
+            const SizedBox(height: 14),
+            title,
+            const SizedBox(height: 6),
+            Text(
+              desc,
+              style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45),
             ),
-          ]),
-        ]),
+            if (bottom != null) ...[const SizedBox(height: 14), bottom!],
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        glow,
+                        Color.lerp(glow, const Color(0xFF3B82F6), 0.5)!,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Oçiş',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      TIcon(
+                        TI.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-TextStyle _titleStyle() => GoogleFonts.spaceGrotesk(color: WebC.white, fontSize: 21, fontWeight: FontWeight.w700, letterSpacing: -0.4);
+TextStyle _titleStyle() => GoogleFonts.spaceGrotesk(
+  color: WebC.white,
+  fontSize: 21,
+  fontWeight: FontWeight.w700,
+  letterSpacing: -0.4,
+);
 
 class _UzCard extends StatelessWidget {
   const _UzCard({this.roleLabel});
@@ -285,21 +273,46 @@ class _UzCard extends StatelessWidget {
     return _ServiceCard(
       mark: 'assets/logo-mark.png',
       title: Text.rich(
-        const TextSpan(text: 'Tayyorr', children: [TextSpan(text: '.uz', style: TextStyle(color: Color(0xFF818CF8)))]),
+        const TextSpan(
+          text: 'Tayyorr',
+          children: [
+            TextSpan(
+              text: '.uz',
+              style: TextStyle(color: Color(0xFF818CF8)),
+            ),
+          ],
+        ),
         style: _titleStyle(),
       ),
-      desc: 'Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.',
+      desc:
+          'Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.',
       glow: const Color(0xFF6366F1),
       badge: roleLabel,
       onTap: () => openUzSection(AppSection.dashboard),
-      bottom: Wrap(spacing: 6, runSpacing: 6, children: [
-        for (final c in const ['Prezentatsiya', 'Kurs işi', 'Referat', 'Diplom işi'])
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(color: WebC.fill5, borderRadius: BorderRadius.circular(99), border: Border.all(color: WebC.border)),
-            child: Text(c, style: TextStyle(color: WebC.zinc300, fontSize: 12.5)),
-          ),
-      ]),
+      bottom: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final c in const [
+            'Prezentatsiya',
+            'Kurs işi',
+            'Referat',
+            'Diplom işi',
+          ])
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: WebC.fill5,
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: WebC.border),
+              ),
+              child: Text(
+                c,
+                style: TextStyle(color: WebC.zinc300, fontSize: 12.5),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -323,27 +336,42 @@ class _SmmCard extends StatelessWidget {
     return _ServiceCard(
       mark: 'assets/smm-mark.png',
       title: Text.rich(
-        const TextSpan(text: 'Tayyorr ', children: [TextSpan(text: 'SMM', style: TextStyle(color: Color(0xFFD946EF)))]),
+        const TextSpan(
+          text: 'Tayyorr ',
+          children: [
+            TextSpan(
+              text: 'SMM',
+              style: TextStyle(color: Color(0xFFD946EF)),
+            ),
+          ],
+        ),
         style: _titleStyle(),
       ),
-      desc: 'Obunaçilar, layklar va körişlar — bir neça daqiqada, avtomatik. Bajarilmasa pul qaytadi.',
+      desc:
+          'Obunaçilar, layklar va körişlar — bir neça daqiqada, avtomatik. Bajarilmasa pul qaytadi.',
       glow: const Color(0xFFD946EF),
       badge: services == null ? null : '$services ta xizmat',
       onTap: () => openSmm(orders > 0 ? null : 0),
-      bottom: Row(children: [
-        for (final p in _platforms) ...[
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(11),
-              gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [p.$2, p.$3]),
+      bottom: Row(
+        children: [
+          for (final p in _platforms) ...[
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(11),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [p.$2, p.$3],
+                ),
+              ),
+              child: Center(child: PlatformIcon(p.$1, size: 18)),
             ),
-            child: Center(child: PlatformIcon(p.$1, size: 18)),
-          ),
-          const SizedBox(width: 6),
+            const SizedBox(width: 6),
+          ],
         ],
-      ]),
+      ),
     );
   }
 }
@@ -359,54 +387,44 @@ class _SoonCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: WebC.border, width: 1.4),
       ),
-      child: Row(children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(color: WebC.fill5, borderRadius: BorderRadius.circular(14)),
-          child: Icon(Icons.auto_awesome_rounded, color: WebC.zinc400),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Yangi xizmatlar tez orada', style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 2),
-            Text('tayyorr+ doimiy kengayib boradi — kuzatib boring.', style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.4)),
-          ]),
-        ),
-      ]),
-    );
-  }
-}
-
-class _QuickTile extends StatelessWidget {
-  const _QuickTile({required this.icon, required this.color, required this.title, required this.sub, required this.onTap});
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String sub;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return WebCard(
-      padding: const EdgeInsets.all(14),
-      onTap: onTap,
-      child: Row(children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(color: WebC.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
-            Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-          ]),
-        ),
-      ]),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: WebC.fill5,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: TIcon(TI.auto_awesome_rounded, color: WebC.zinc400),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Yangi xizmatlar tez orada',
+                  style: TextStyle(
+                    color: WebC.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'tayyorr+ doimiy kengayib boradi — kuzatib boring.',
+                  style: TextStyle(
+                    color: WebC.zinc500,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

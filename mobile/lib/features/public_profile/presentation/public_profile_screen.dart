@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/ui/app_dialogs.dart';
 import 'dart:ui';
 
@@ -55,7 +56,7 @@ class _PublicProfileView extends StatelessWidget {
             Row(
               children: [
                 _AvatarCircle(
-                  child: Icon(Icons.block_rounded, size: 32, color: WebC.zinc500),
+                  child: TIcon(TI.block_rounded, size: 32, color: WebC.zinc500),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

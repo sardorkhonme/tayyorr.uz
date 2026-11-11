@@ -153,9 +153,10 @@ class MessageNotifier {
         id: conversationId.hashCode & 0x7fffffff,
         title: title,
         body: body,
-        notificationDetails: _details(body),
+        notificationDetails: _details(body, scope: _scope(data['scope'])),
         payload: jsonEncode({
           'id': conversationId,
+          'scope': _scope(data['scope']),
           'otherId': data['otherId'],
           'name': data['name'] ?? title,
           'login': data['login'],
@@ -174,6 +175,7 @@ class MessageNotifier {
     if (id == null) return;
     _openFromPayload(jsonEncode({
       'id': id,
+      'scope': _scope(data['scope']),
       'otherId': data['otherId'] ?? '',
       'name': data['name'] ?? '',
       'login': data['login'],
@@ -182,8 +184,13 @@ class MessageNotifier {
     }));
   }
 
-  NotificationDetails _details(String body) => NotificationDetails(
+  /// Xizmat: 'uz' (Tayyorr.uz), 'plus' (tayyorr+), 'smm' — bildirishnoma belgisi va qaysi bo'limda ochish.
+  static String _scope(Object? v) => v == 'plus' || v == 'smm' ? v as String : 'uz';
+
+  NotificationDetails _details(String body, {String scope = 'uz'}) => NotificationDetails(
         android: AndroidNotificationDetails(
+          // har xizmatning o'z belgisi (katta ikonka)
+          largeIcon: DrawableResourceAndroidBitmap('notif_$scope'),
           _channel.id,
           _channel.name,
           channelDescription: _channel.description,
@@ -205,6 +212,7 @@ class MessageNotifier {
       navigatorKey.currentState?.push(MaterialPageRoute(
         builder: (_) => ChatScreen(
           conversationId: id,
+          scope: d['scope'] as String? ?? 'uz',
           other: ChatOtherUser(
             id: d['otherId'] as String,
             name: d['name'] as String? ?? '',

@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -89,11 +90,11 @@ class _ConversationTile extends StatelessWidget {
 
     Widget avatar;
     if (c.blockedMe) {
-      avatar = Icon(Icons.block_rounded, size: 20, color: WebC.zinc500);
+      avatar = TIcon(TI.block_rounded, size: 20, color: WebC.zinc500);
     } else if (img.isNotEmpty) {
       avatar = Image.network(img, fit: BoxFit.cover, width: 44, height: 44, errorBuilder: (_, __, ___) => const SizedBox());
     } else if (support) {
-      avatar = Icon(Icons.support_rounded, size: 22, color: WebC.indigoSoft);
+      avatar = TIcon(TI.support_rounded, size: 22, color: WebC.indigoSoft);
     } else {
       avatar = const SizedBox();
     }
@@ -123,7 +124,7 @@ class _ConversationTile extends StatelessWidget {
                 Row(
                   children: [
                     if (support) ...[
-                      Icon(Icons.push_pin_rounded, size: 13, color: WebC.indigo),
+                      TIcon(TI.push_pin_rounded, size: 13, color: WebC.indigo),
                       const SizedBox(width: 6),
                     ],
                     Expanded(
@@ -145,7 +146,7 @@ class _ConversationTile extends StatelessWidget {
                       child: Text.rich(
                           TextSpan(children: [
                             if (prefix.isNotEmpty) TextSpan(text: prefix),
-                            if (fileOnly) iconSpan(Icons.attach_file_rounded, size: 14, color: WebC.zinc400, gap: 2),
+                            if (fileOnly) iconSpan(TI.attach_file_rounded, size: 14, color: WebC.zinc400, gap: 2),
                             TextSpan(text: preview),
                           ]),
                           maxLines: 1,

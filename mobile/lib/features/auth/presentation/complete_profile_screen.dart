@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../legal/legal_screen.dart';
 import 'dart:typed_data';
 
@@ -439,8 +440,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                     obscure: !_showPw,
                                     suffix: GestureDetector(
                                       onTap: () => setState(() => _showPw = !_showPw),
-                                      child: Icon(
-                                        _showPw ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                      child: TIcon(
+                                        _showPw ? TI.visibility_off_outlined : TI.visibility_outlined,
                                         size: 18,
                                         color: WebC.zinc500,
                                       ),
@@ -626,7 +627,7 @@ final _sourceOptions = [
         ),
       ),
       child: const Center(
-        child: Icon(Icons.camera_alt, color: Colors.white, size: 16),
+        child: TIcon(TI.camera_alt, color: Colors.white, size: 16),
       ),
     ),
   ),
@@ -657,7 +658,7 @@ final _sourceOptions = [
         ),
       ),
       child: const Center(
-        child: Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+        child: TIcon(TI.auto_awesome, color: Colors.white, size: 16),
       ),
     ),
   ),
@@ -686,7 +687,7 @@ final _sourceOptions = [
         color: const Color(0xFF0D9488),
       ),
       child: const Center(
-        child: Icon(Icons.people_alt_rounded, color: Colors.white, size: 16),
+        child: TIcon(TI.people_alt_rounded, color: Colors.white, size: 16),
       ),
     ),
   ),
@@ -701,7 +702,7 @@ final _sourceOptions = [
         color: const Color(0xFF6366F1),
       ),
       child: const Center(
-        child: Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 15),
+        child: TIcon(TI.chat_bubble_outline_rounded, color: Colors.white, size: 15),
       ),
     ),
   ),
@@ -888,7 +889,7 @@ class BirthDateField extends StatelessWidget {
                 style: TextStyle(color: value == null ? WebC.zinc500 : WebC.white, fontSize: 14),
               ),
             ),
-            Icon(Icons.cake_outlined, size: 18, color: WebC.zinc500),
+            TIcon(TI.cake_outlined, size: 18, color: WebC.zinc500),
           ],
         ),
       ),

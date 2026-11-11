@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:io';
@@ -162,7 +163,7 @@ class _ImageAttachmentState extends State<_ImageAttachment> {
             errorBuilder: (_, __, ___) => SizedBox(
               width: ChatAttachment.width,
               height: 120,
-              child: Center(child: Icon(Icons.broken_image_outlined, color: WebC.zinc500)),
+              child: Center(child: TIcon(TI.broken_image_outlined, color: WebC.zinc500)),
             ),
           );
     return GestureDetector(
@@ -303,7 +304,7 @@ class _ViewerTopBar extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close_rounded, color: Colors.white),
+              icon: const TIcon(TI.close_rounded, color: Colors.white),
             ),
             Expanded(
               child: Column(
@@ -357,7 +358,7 @@ class _DownloadIconButtonState extends State<_DownloadIconButton> {
             await saveChatFile(context, widget.file, widget.cacheKey);
             if (mounted) setState(() => _busy = false);
           },
-          icon: const Icon(Icons.download_rounded, color: Colors.white),
+          icon: const TIcon(TI.download_rounded, color: Colors.white),
         );
       },
     );
@@ -402,7 +403,7 @@ class _VideoAttachment extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.45),
                     border: Border.all(color: Colors.white24),
                   ),
-                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32),
+                  child: const TIcon(TI.play_arrow_rounded, color: Colors.white, size: 32),
                 ),
               ),
               Positioned(
@@ -411,7 +412,7 @@ class _VideoAttachment extends StatelessWidget {
                 bottom: 8,
                 child: Row(
                   children: [
-                    const Icon(Icons.videocam_rounded, size: 14, color: Colors.white70),
+                    const TIcon(TI.videocam_rounded, size: 14, color: Colors.white70),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -552,8 +553,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                               shape: BoxShape.circle,
                               color: Colors.black.withValues(alpha: 0.5),
                             ),
-                            child: Icon(
-                              c.value.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            child: TIcon(
+                              c.value.isPlaying ? TI.pause_rounded : TI.play_arrow_rounded,
                               color: Colors.white,
                               size: 40,
                             ),
@@ -729,7 +730,7 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                                     child: ProgressRing(value: p, size: 36, stroke: 2.6, color: fg),
                                   ),
                                 )
-                              : Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded, color: fg, size: 28),
+                              : TIcon(playing ? TI.pause_rounded : TI.play_arrow_rounded, color: fg, size: 28),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -875,8 +876,8 @@ class _DocAttachmentState extends State<_DocAttachment> {
                         child: ProgressRing(value: p, size: 38, stroke: 2.6, color: fg),
                       )
                     : _cached
-                    ? Icon(Icons.insert_drive_file_rounded, color: fg, size: 22)
-                    : Icon(Icons.arrow_downward_rounded, color: fg, size: 24),
+                    ? TIcon(TI.insert_drive_file_rounded, color: fg, size: 22)
+                    : TIcon(TI.arrow_downward_rounded, color: fg, size: 24),
               ),
             ),
             const SizedBox(width: 10),

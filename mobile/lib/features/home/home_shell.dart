@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -21,7 +22,7 @@ class HomeShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ServiceScope(
+    return ServiceMarker(
       kind: ServiceKind.uz,
       child: BlocProvider.value(
         value: SectionCubit.instance,
@@ -46,6 +47,7 @@ class _HomeShellView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPreparer = context.select<AuthBloc, bool>((b) => b.state.user?.isPreparer ?? false);
+    final user = context.select<AuthBloc, (String?, String)>((b) => (b.state.user?.image, b.state.user?.displayName ?? ''));
     final bar = <AppSection>[
       AppSection.dashboard,
       if (isPreparer) AppSection.offers,
@@ -65,7 +67,9 @@ class _HomeShellView extends StatelessWidget {
             child: Scaffold(
               backgroundColor: Colors.transparent,
               extendBody: true,
-              body: _SectionFade(
+              body: ShellRootScope(
+                kind: ServiceKind.uz,
+                child: _SectionFade(
                 sectionKey: section,
                 child: IndexedStack(
                   index: _sectionOrder.indexOf(section),
@@ -79,13 +83,14 @@ class _HomeShellView extends StatelessWidget {
                   ],
                 ),
               ),
+              ),
               bottomNavigationBar: ValueListenableBuilder<int>(
                 valueListenable: UnreadCounter.instance,
                 builder: (context, unread, _) => GradientBottomBar(
                   index: bar.indexOf(section),
                   onTap: (i) => SectionCubit.instance.select(bar[i]),
                   items: [
-                    for (final s in bar) _item(s, unread),
+                    for (final s in bar) _item(s, unread, user),
                   ],
                 ),
               ),
@@ -96,15 +101,20 @@ class _HomeShellView extends StatelessWidget {
     );
   }
 
-  BottomBarItem _item(AppSection s, int unread) => switch (s) {
-        AppSection.dashboard => const BottomBarItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Asosiy'),
-        AppSection.offers => const BottomBarItem(icon: Icons.back_hand_outlined, activeIcon: Icons.back_hand_rounded, label: 'Takliflarim'),
+  BottomBarItem _item(AppSection s, int unread, (String?, String) user) => switch (s) {
+        AppSection.dashboard => const BottomBarItem(icon: TI.home_outlined, activeIcon: TI.home_rounded, label: 'Asosiy'),
+        AppSection.offers => const BottomBarItem(icon: TI.back_hand_outlined, activeIcon: TI.back_hand_rounded, label: 'Takliflarim'),
         AppSection.messages =>
-          BottomBarItem(icon: Icons.chat_bubble_outline_rounded, activeIcon: Icons.chat_bubble_rounded, label: 'Xabarlar', badge: unread),
+          BottomBarItem(icon: TI.chat_bubble_outline_rounded, activeIcon: TI.chat_bubble_rounded, label: 'Xabarlar', badge: unread),
         AppSection.wallet =>
-          const BottomBarItem(icon: Icons.account_balance_wallet_outlined, activeIcon: Icons.account_balance_wallet_rounded, label: 'Hamyon'),
-        AppSection.profile => const BottomBarItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profil'),
-        AppSection.referral => const BottomBarItem(icon: Icons.card_giftcard_outlined, activeIcon: Icons.card_giftcard_rounded, label: 'Referal'),
+          const BottomBarItem(icon: TI.account_balance_wallet_outlined, activeIcon: TI.account_balance_wallet_rounded, label: 'Hamyon'),
+        AppSection.profile => BottomBarItem(
+            icon: TI.person_outline_rounded,
+            activeIcon: TI.person_rounded,
+            label: 'Profil',
+            avatar: (size, selected) => profileAvatar(user.$1, user.$2, size, selected),
+          ),
+        AppSection.referral => const BottomBarItem(icon: TI.card_giftcard_outlined, activeIcon: TI.card_giftcard_rounded, label: 'Referal'),
       };
 }
 

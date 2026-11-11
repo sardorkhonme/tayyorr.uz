@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -184,7 +185,7 @@ class SmmStepTitle extends StatelessWidget {
 /// Bo'sh holat.
 class SmmEmpty extends StatelessWidget {
   const SmmEmpty({super.key, required this.icon, required this.title, this.text, this.action});
-  final IconData icon;
+  final TIData icon;
   final String title;
   final String? text;
   final Widget? action;
@@ -197,7 +198,7 @@ class SmmEmpty extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(color: AppColors.indigo.withValues(alpha: 0.12), shape: BoxShape.circle),
-            child: Icon(icon, color: const Color(0xFF818CF8), size: 30),
+            child: TIcon(icon, color: const Color(0xFF818CF8), size: 30),
           ),
           const SizedBox(height: 14),
           Text(title, textAlign: TextAlign.center, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w700)),

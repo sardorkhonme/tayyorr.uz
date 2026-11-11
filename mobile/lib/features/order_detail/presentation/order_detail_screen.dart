@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../messages/presentation/chat_media.dart';
 import '../../../core/app_config.dart';
 import 'dart:ui' show ImageFilter;
@@ -150,7 +151,7 @@ class _DeletedNotice extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconLabel(Icons.delete_outline_rounded, "Bu buyurtma öçirilgan",
+          IconLabel(TI.delete_outline_rounded, "Bu buyurtma öçirilgan",
               style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text('$by${order.deletedAt != null ? ' · ${shortDateTime(order.deletedAt!)}' : ''}',
@@ -284,7 +285,7 @@ class _DeleteButton extends StatelessWidget {
         ),
         child: busy
             ? Text('...', style: TextStyle(color: WebC.redSoft, fontSize: 14))
-            : IconLabel(Icons.delete_outline_rounded, "Buyurtmani öçiriş", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
+            : IconLabel(TI.delete_outline_rounded, "Buyurtmani öçiriş", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
       ),
     );
   }
@@ -400,7 +401,7 @@ class _OrderActionsState extends State<_OrderActions> {
           alignment: Alignment.centerLeft,
           child: WebButton(
             label: 'Buyurtmaçi bilan yozişiş',
-            leading: Icons.chat_bubble_outline_rounded,
+            leading: TI.chat_bubble_outline_rounded,
             variant: WebBtn.ghost,
             onPressed: busy ? null : () => _startChat(o.orderer),
           ),
@@ -414,7 +415,7 @@ class _OrderActionsState extends State<_OrderActions> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconLabel(Icons.description_outlined, 'Sizga şartnoma yuborildi',
+              IconLabel(TI.description_outlined, 'Sizga şartnoma yuborildi',
                   color: WebC.indigoSoft, size: 18,
                   style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
@@ -461,7 +462,7 @@ class _OrderActionsState extends State<_OrderActions> {
                 TextSpan(
                   style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
                   children: [
-                    iconSpan(Icons.description_outlined, size: 16, color: WebC.indigoSoft),
+                    iconSpan(TI.description_outlined, size: 16, color: WebC.indigoSoft),
                     TextSpan(text: sent.preparerName, style: const TextStyle(fontWeight: FontWeight.w700)),
                     TextSpan(text: " ga şartnoma yuborildi — ${groupDigits(sent.amount)} söm. Javob kutilmoqda."),
                   ],
@@ -651,7 +652,7 @@ class _OrderActionsState extends State<_OrderActions> {
                 Flexible(
                   child: WebButton(
                     label: 'Navbatda yuqoriga çiqiş',
-                    leading: Icons.rocket_launch_outlined,
+                    leading: TI.rocket_launch_outlined,
                     variant: WebBtn.ghost,
                     onPressed: busy
                         ? null
@@ -816,12 +817,12 @@ class _OrderActionsState extends State<_OrderActions> {
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              WebButton(label: 'Çat', leading: Icons.chat_bubble_outline_rounded, variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
-              WebButton(label: 'Şikoyat', leading: Icons.warning_amber_rounded, variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
+              WebButton(label: 'Çat', leading: TI.chat_bubble_outline_rounded, variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
+              WebButton(label: 'Şikoyat', leading: TI.warning_amber_rounded, variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
               if (status == 'OPEN' && x.status == 'PENDING' && sent == null) ...[
                 WebButton(
                   label: 'Şartnoma tuziş',
-                  leading: Icons.description_outlined,
+                  leading: TI.description_outlined,
                   onPressed: busy
                       ? null
                       : () => setState(() {
@@ -867,7 +868,7 @@ class _OrderActionsState extends State<_OrderActions> {
                       final d = await pickDateTime(context, initial: _cDeadline);
                       if (d != null && mounted) setState(() => _cDeadline = d);
                     },
-                    suffix: Icon(Icons.event_rounded, size: 16, color: WebC.zinc300),
+                    suffix: TIcon(TI.event_rounded, size: 16, color: WebC.zinc300),
                   ),
                   const SizedBox(height: 8),
                   const WebLabel('Izoh / şartlar (ixtiyoriy)'),

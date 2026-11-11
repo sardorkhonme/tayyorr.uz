@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -68,7 +69,7 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
         if (_error != null && c == null) ...[
           const SizedBox(height: 14),
           SmmEmpty(
-            icon: Icons.wifi_off_rounded,
+            icon: TI.wifi_off_rounded,
             title: _error!,
             action: WebButton(label: 'Qayta uriniş', onPressed: () {
               setState(() => _error = null);
@@ -105,7 +106,7 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
 
   List<Widget> _content(SmmCatalog c) {
     if (c.services.isEmpty) {
-      return const [SizedBox(height: 14), SmmEmpty(icon: Icons.hourglass_empty_rounded, title: 'Xizmatlar tez orada qöşiladi')];
+      return const [SizedBox(height: 14), SmmEmpty(icon: TI.hourglass_empty_rounded, title: 'Xizmatlar tez orada qöşiladi')];
     }
     final maxDisc = c.services.fold<int>(0, (m, s) => s.discount > m ? s.discount : m);
     final discCount = c.services.where((s) => s.discount > 0).length;
@@ -203,11 +204,11 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
               _q = v;
               _shown = 12;
             }),
-            suffix: Icon(Icons.search_rounded, size: 18, color: WebC.zinc500),
+            suffix: TIcon(TI.search_rounded, size: 18, color: WebC.zinc500),
           ))
           ..add(const SizedBox(height: 12));
         if (items.isEmpty) {
-          out.add(const SmmEmpty(icon: Icons.search_off_rounded, title: 'Hec nima topilmadi'));
+          out.add(const SmmEmpty(icon: TI.search_off_rounded, title: 'Hec nima topilmadi'));
         }
         for (final s in items.take(_shown)) {
           out
@@ -315,7 +316,7 @@ class _KindTile extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(color: k.color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
-            child: Icon(k.icon, color: k.color, size: 22),
+            child: TIcon(k.icon, color: k.color, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -326,7 +327,7 @@ class _KindTile extends StatelessWidget {
           ),
           if (maxDiscount > 0) ...[DiscountBadge(maxDiscount), const SizedBox(width: 6)],
           Text('$count', style: TextStyle(color: WebC.zinc400, fontSize: 13, fontWeight: FontWeight.w700)),
-          Icon(Icons.chevron_right_rounded, color: WebC.zinc500),
+          TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
         ]),
       ),
     );
@@ -354,10 +355,10 @@ class _GuideBannerState extends State<_GuideBanner> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: BoxDecoration(color: WebC.fill5, borderRadius: BorderRadius.circular(14), border: Border.all(color: WebC.border)),
           child: Row(children: [
-            const Icon(Icons.menu_book_rounded, size: 18, color: Color(0xFF818CF8)),
+            const TIcon(TI.menu_book_rounded, size: 18, color: Color(0xFF818CF8)),
             const SizedBox(width: 10),
             Expanded(child: Text("Qöllanma — qaysi xizmatni oliş kerak?", style: TextStyle(color: WebC.zinc300, fontSize: 13.5))),
-            Icon(Icons.chevron_right_rounded, color: WebC.zinc500),
+            TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
           ]),
         ),
       );
@@ -416,7 +417,7 @@ class _SaleBanner extends StatelessWidget {
           boxShadow: [BoxShadow(color: const Color(0xFFF43F5E).withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 10), spreadRadius: -10)],
         ),
         child: Row(children: [
-          const Icon(Icons.local_offer_rounded, color: Colors.white, size: 26),
+          const TIcon(TI.local_offer_rounded, color: Colors.white, size: 26),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -424,7 +425,7 @@ class _SaleBanner extends StatelessWidget {
               Text('$count ta xizmat arzonlaşdi — ulgurib qoling', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12.5)),
             ]),
           ),
-          const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+          const TIcon(TI.arrow_forward_rounded, color: Colors.white),
         ]),
       ),
     );

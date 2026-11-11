@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/navigation/services.dart';
@@ -59,7 +60,7 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
                   gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.menu_book_rounded, color: Colors.white, size: 26),
+                child: const TIcon(TI.menu_book_rounded, color: Colors.white, size: 26),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -80,7 +81,7 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
               ]),
             ),
             if (_error != null && g == null)
-              SmmEmpty(icon: Icons.wifi_off_rounded, title: _error!)
+              SmmEmpty(icon: TI.wifi_off_rounded, title: _error!)
             else if (g == null)
               const SBlock(height: 240)
             else ...[
@@ -203,7 +204,7 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
             AnimatedRotation(
               turns: open ? 0.125 : 0,
               duration: const Duration(milliseconds: 200),
-              child: Icon(Icons.add_rounded, color: open ? const Color(0xFF818CF8) : WebC.zinc500),
+              child: TIcon(TI.add_rounded, color: open ? const Color(0xFF818CF8) : WebC.zinc500),
             ),
           ]),
           AnimatedSize(

@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -132,7 +133,7 @@ class _ReferralViewState extends State<_ReferralView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          IconLabel(Icons.card_giftcard_rounded, "Döstlaringizni taklif qiling",
+          IconLabel(TI.card_giftcard_rounded, "Döstlaringizni taklif qiling",
               color: WebC.indigoSoft, size: 18,
               style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
@@ -168,7 +169,7 @@ class _ReferralViewState extends State<_ReferralView> {
               const SizedBox(width: 8),
               WebButton(
                 label: _copied ? 'Nusxalandi' : 'Nusxalaş',
-                leading: _copied ? Icons.check_rounded : null,
+                leading: _copied ? TI.check_rounded : null,
                 variant: WebBtn.ghost,
                 onPressed: () => _copy(link),
               ),
@@ -179,7 +180,7 @@ class _ReferralViewState extends State<_ReferralView> {
             label: 'Ulaşiş',
             variant: WebBtn.ghost,
             expand: true,
-            icon: Icon(Icons.ios_share_rounded, size: 16, color: WebC.zinc300),
+            icon: TIcon(TI.ios_share_rounded, size: 16, color: WebC.zinc300),
             onPressed: () => Share.share(_shareText(link)),
           ),
         ],

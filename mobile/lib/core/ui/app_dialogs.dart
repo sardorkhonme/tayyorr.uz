@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 import 'dart:ui';
 
@@ -79,7 +80,7 @@ class AppDialogButton extends StatelessWidget {
 /// Doira ichidagi ikonka (gradient yoki rangli fon).
 class AppDialogIcon extends StatelessWidget {
   const AppDialogIcon(this.icon, {super.key, this.danger = false, this.color});
-  final IconData icon;
+  final TIData icon;
   final bool danger;
   final Color? color;
 
@@ -94,7 +95,7 @@ class AppDialogIcon extends StatelessWidget {
         color: c.withValues(alpha: 0.12),
         border: Border.all(color: c.withValues(alpha: 0.25), width: 1.5),
       ),
-      child: Icon(icon, color: c, size: 30),
+      child: TIcon(icon, color: c, size: 30),
     );
   }
 }
@@ -170,13 +171,13 @@ Future<bool?> showAppConfirm(
   required String message,
   String confirmLabel = 'Ha',
   String cancelLabel = 'Bekor',
-  IconData? icon,
+  TIData? icon,
   bool danger = false,
 }) {
   return Navigator.of(context, rootNavigator: true).push<bool>(_dialogRoute(context, (ctx) {
     return AppDialogCard(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        AppDialogIcon(icon ?? (danger ? Icons.warning_amber_rounded : Icons.help_outline_rounded), danger: danger),
+        AppDialogIcon(icon ?? (danger ? TI.warning_amber_rounded : TI.help_outline_rounded), danger: danger),
         const SizedBox(height: 16),
         Text(title,
             textAlign: TextAlign.center,
@@ -200,7 +201,7 @@ Future<T?> showAppDialog<T>(BuildContext context, {required WidgetBuilder builde
 }
 
 /// Pastdan chiqadigan panel: tutqich, sarlavha (ixtiyoriy), katta yuqori burchaklar.
-Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder, String? title, bool scrollable = true}) {
+Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder, String? title, bool scrollable = true, bool closable = true}) {
   return showModalBottomSheet<T>(
     context: context,
     useRootNavigator: true,
@@ -216,13 +217,29 @@ Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder
             child: Container(
               width: 40,
               height: 5,
-              margin: const EdgeInsets.only(bottom: 14),
+              margin: const EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(color: AppColors.tint(0.2), borderRadius: BorderRadius.circular(9)),
             ),
           ),
-          if (title != null) ...[
-            Text(title, style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-            const SizedBox(height: 14),
+          if (title != null || closable) ...[
+            Row(children: [
+              Expanded(
+                child: title == null
+                    ? const SizedBox()
+                    : Text(title, style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+              ),
+              if (closable)
+                GestureDetector(
+                  onTap: () => Navigator.of(ctx).maybePop(),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.tint(0.08)),
+                    child: Center(child: TIcon(TI.close_rounded, size: 18, color: AppColors.textSecondary)),
+                  ),
+                ),
+            ]),
+            const SizedBox(height: 12),
           ],
           builder(ctx),
         ],
@@ -249,7 +266,7 @@ Future<T?> showAppSheet<T>(BuildContext context, {required WidgetBuilder builder
 /// Sheet ichidagi amal qatori (ikonka + yozuv).
 class AppSheetAction extends StatelessWidget {
   const AppSheetAction({super.key, required this.icon, required this.label, required this.onTap, this.danger = false, this.trailing});
-  final IconData icon;
+  final TIData icon;
   final String label;
   final VoidCallback onTap;
   final bool danger;
@@ -271,7 +288,7 @@ class AppSheetAction extends StatelessWidget {
               color: (danger ? const Color(0xFFF43F5E) : const Color(0xFF6366F1)).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 19, color: danger ? const Color(0xFFF43F5E) : const Color(0xFF818CF8)),
+            child: TIcon(icon, size: 19, color: danger ? const Color(0xFFF43F5E) : const Color(0xFF818CF8)),
           ),
           const SizedBox(width: 14),
           Expanded(child: Text(label, style: TextStyle(color: c, fontSize: 15, fontWeight: FontWeight.w600))),
@@ -331,9 +348,9 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final (icon, color) = switch (widget.kind) {
-      ToastKind.success => (Icons.check_circle_rounded, const Color(0xFF10B981)),
-      ToastKind.error => (Icons.error_rounded, const Color(0xFFF43F5E)),
-      ToastKind.info => (Icons.info_rounded, const Color(0xFF818CF8)),
+      ToastKind.success => (TI.check_circle_rounded, const Color(0xFF10B981)),
+      ToastKind.error => (TI.error_rounded, const Color(0xFFF43F5E)),
+      ToastKind.info => (TI.info_rounded, const Color(0xFF818CF8)),
     };
     final bottom = MediaQuery.paddingOf(context).bottom + 96;
     return Positioned(
@@ -360,7 +377,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(icon, color: color, size: 20),
+                        TIcon(icon, color: color, size: 20),
                         const SizedBox(width: 10),
                         Flexible(
                           child: Text(widget.message,
@@ -383,7 +400,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
 /// true — foydalanuvchi "Ruxsat berish"ni bosdi (keyin tizim oynasi chiqariladi).
 Future<bool> showPermissionPrompt(
   BuildContext context, {
-  required IconData icon,
+  required TIData icon,
   required String title,
   required String message,
   List<String> points = const [],
@@ -401,7 +418,7 @@ Future<bool> showPermissionPrompt(
           borderRadius: BorderRadius.circular(24),
           boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.4), blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -8)],
         ),
-        child: Icon(icon, color: Colors.white, size: 36),
+        child: TIcon(icon, color: Colors.white, size: 36),
       ),
       const SizedBox(height: 18),
       Text(title, textAlign: TextAlign.center, style: TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
@@ -413,7 +430,7 @@ Future<bool> showPermissionPrompt(
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(children: [
-              const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+              const TIcon(TI.check_circle_rounded, color: Color(0xFF10B981), size: 18),
               const SizedBox(width: 10),
               Expanded(child: Text(p, style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.35))),
             ]),

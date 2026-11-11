@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -144,7 +145,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         key: const ValueKey('e'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Center(child: AppDialogIcon(Icons.lock_reset_rounded)),
+          const Center(child: AppDialogIcon(TI.lock_reset_rounded)),
           const SizedBox(height: 14),
           Text('Parolni unutdingizmi?', textAlign: TextAlign.center, style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
@@ -197,7 +198,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             obscure: !_show,
             suffix: GestureDetector(
               onTap: () => setState(() => _show = !_show),
-              child: Icon(_show ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: WebC.zinc500),
+              child: TIcon(_show ? TI.visibility_off_outlined : TI.visibility_outlined, size: 18, color: WebC.zinc500),
             ),
           ),
           const SizedBox(height: 12),

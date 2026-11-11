@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -117,7 +118,7 @@ class _OrderFormState extends State<_OrderForm> {
       Text(s.verdictReason, style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
       if (s.kind == 'followers' && !s.guaranteeOk) ...[
         const SizedBox(height: 10),
-        _note(Icons.warning_amber_rounded, const Color(0xFFF59E0B),
+        _note(TI.warning_amber_rounded, const Color(0xFFF59E0B),
             "Kafolatsiz obunaçilar vaqt öti bilan kamayişi mumkin va qaytmaydi. Kafolatli (♻️) xizmatni tanlaş tavsiya etiladi."),
       ],
       if ((s.description ?? '').trim().isNotEmpty) ...[
@@ -181,7 +182,7 @@ class _OrderFormState extends State<_OrderForm> {
       ),
       if (_qtyOk && !enough) ...[
         const SizedBox(height: 10),
-        _note(Icons.account_balance_wallet_outlined, const Color(0xFFF59E0B), 'Mablağ yetarli emas. Avval hamyonni töldiring.'),
+        _note(TI.account_balance_wallet_outlined, const Color(0xFFF59E0B), 'Mablağ yetarli emas. Avval hamyonni töldiring.'),
         const SizedBox(height: 8),
         AppDialogButton(
           label: 'Hamyonni töldiriş',
@@ -211,7 +212,7 @@ class _OrderFormState extends State<_OrderForm> {
             shape: BoxShape.circle,
             gradient: LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
           ),
-          child: const Icon(Icons.check_rounded, color: Colors.white, size: 42),
+          child: const TIcon(TI.check_rounded, color: Colors.white, size: 42),
         ),
         const SizedBox(height: 16),
         Text('Buyurtma qabul qilindi!', style: TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800)),
@@ -243,11 +244,11 @@ class _OrderFormState extends State<_OrderForm> {
         ]),
       );
 
-  Widget _note(IconData icon, Color c, String text) => Container(
+  Widget _note(TIData icon, Color c, String text) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: c.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14), border: Border.all(color: c.withValues(alpha: 0.3))),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon, color: c, size: 18),
+          TIcon(icon, color: c, size: 18),
           const SizedBox(width: 8),
           Expanded(child: Text(text, style: TextStyle(color: WebC.zinc300, fontSize: 13, height: 1.4))),
         ]),

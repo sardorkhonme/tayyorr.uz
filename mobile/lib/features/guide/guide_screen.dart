@@ -1,3 +1,6 @@
+import '../../core/navigation/services.dart';
+import '../../core/navigation/support.dart';
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -42,6 +45,13 @@ class _GuideScreenState extends State<GuideScreen> {
   List<_GuideStep> _steps = const [];
   List<_GuideVideo> _videos = const [];
   final _videosKey = GlobalKey();
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -95,18 +105,20 @@ class _GuideScreenState extends State<GuideScreen> {
   @override
   Widget build(BuildContext context) {
     return WebPage(
+      controller: _scroll,
+      background: ShellRootScope.of(context) == null,
       onRefresh: _load,
       children: [
-        const WebBackLink(),
+        if (ShellRootScope.of(context) == null) const WebBackLink(),
         const SizedBox(height: 8),
         const WebPageTitle("Qöllanma", subtitle: "Tayyorrʼda qanday işlaş — qadamma-qadam, oddiy tilda."),
         const SizedBox(height: 16),
-        _hero(),
-        const SizedBox(height: 16),
+        // video bo'lsagina — "Video bilan tushunish osonroq" bloki
+        if (!_loading && _videos.isNotEmpty) ...[_hero(), const SizedBox(height: 16)],
         Row(children: [
-          Expanded(child: _roleTab('ORDERER', 'Buyurtma beruvçi', Icons.inventory_2_outlined)),
+          Expanded(child: _roleTab('ORDERER', 'Buyurtma beruvçi', TI.inventory_2_outlined)),
           const SizedBox(width: 8),
-          Expanded(child: _roleTab('PREPARER', 'Tayyorlovçi', Icons.auto_awesome_rounded)),
+          Expanded(child: _roleTab('PREPARER', 'Tayyorlovçi', TI.auto_awesome_rounded)),
         ]),
         const SizedBox(height: 20),
         if (_loading)
@@ -145,7 +157,7 @@ class _GuideScreenState extends State<GuideScreen> {
           width: 46,
           height: 46,
           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(14)),
-          child: const Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 28),
+          child: const TIcon(TI.play_circle_fill_rounded, color: Colors.white, size: 28),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -162,9 +174,14 @@ class _GuideScreenState extends State<GuideScreen> {
         if (_videos.isNotEmpty)
           GestureDetector(
             onTap: () {
-              final ctx = _videosKey.currentContext;
-              if (ctx != null) {
-                Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 500), curve: Curves.easeOutCubic);
+              // ro'yxat dangasa quriladi (pastdagi videolar hali chizilmagan) — scroll'ni eng pastga suramiz
+              if (_scroll.hasClients) {
+                _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 650), curve: Curves.easeOutCubic);
+                Future.delayed(const Duration(milliseconds: 700), () {
+                  if (_scroll.hasClients) {
+                    _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+                  }
+                });
               }
             },
             child: Container(
@@ -177,7 +194,7 @@ class _GuideScreenState extends State<GuideScreen> {
     );
   }
 
-  Widget _roleTab(String id, String label, IconData icon) {
+  Widget _roleTab(String id, String label, TIData icon) {
     final on = _role == id;
     return GestureDetector(
       onTap: () => _setRole(id),
@@ -190,7 +207,7 @@ class _GuideScreenState extends State<GuideScreen> {
           border: Border.all(color: on ? const Color(0xFF818CF8) : WebC.border),
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon, size: 16, color: on ? WebC.white : WebC.zinc400),
+          TIcon(icon, size: 16, color: on ? WebC.white : WebC.zinc400),
           const SizedBox(width: 6),
           Flexible(
             child: Text(label,
@@ -215,7 +232,7 @@ class _GuideScreenState extends State<GuideScreen> {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFA855F7)]),
               ),
-              child: Icon(_icon(s.icon), color: Colors.white, size: 19),
+              child: TIcon(_icon(s.icon), color: Colors.white, size: 19),
             ),
             if (!last)
               Expanded(
@@ -276,7 +293,7 @@ class _GuideScreenState extends State<GuideScreen> {
   Widget _helpCard() {
     return WebCard(
       child: Row(children: [
-        Icon(Icons.support_agent_rounded, color: WebC.indigoSoft, size: 26),
+        TIcon(TI.support_agent_rounded, color: WebC.indigoSoft, size: 26),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -287,7 +304,7 @@ class _GuideScreenState extends State<GuideScreen> {
           ]),
         ),
         const SizedBox(width: 8),
-        WebButton(label: 'Yoziş', small: true, onPressed: () => openInternalUrl(context, '/messages')),
+        WebButton(label: 'Yoziş', small: true, onPressed: () => openSupportChat(context)),
       ]),
     );
   }
@@ -330,7 +347,7 @@ class _GuideScreenState extends State<GuideScreen> {
                 border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
               child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.play_arrow_rounded, color: Colors.white, size: 26),
+                TIcon(TI.play_arrow_rounded, color: Colors.white, size: 26),
                 SizedBox(width: 4),
                 Text("Köriş", style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
               ]),
@@ -351,44 +368,44 @@ class _GuideScreenState extends State<GuideScreen> {
   }
 
   /// Saytdagi ikonka nomlari → Material ikonkalar.
-  IconData _icon(String name) {
+  TIData _icon(String name) {
     switch (name) {
       case 'package':
-        return Icons.inventory_2_outlined;
+        return TI.inventory_2_outlined;
       case 'banknote':
-        return Icons.payments_outlined;
+        return TI.payments_outlined;
       case 'check':
-        return Icons.check_rounded;
+        return TI.check_rounded;
       case 'check-circle':
-        return Icons.check_circle_outline_rounded;
+        return TI.check_circle_outline_rounded;
       case 'clock':
-        return Icons.schedule_rounded;
+        return TI.schedule_rounded;
       case 'coins':
-        return Icons.monetization_on_outlined;
+        return TI.monetization_on_outlined;
       case 'file':
-        return Icons.description_outlined;
+        return TI.description_outlined;
       case 'hand':
-        return Icons.back_hand_outlined;
+        return TI.back_hand_outlined;
       case 'lifebuoy':
-        return Icons.support_rounded;
+        return TI.support_rounded;
       case 'message':
-        return Icons.chat_bubble_outline_rounded;
+        return TI.chat_bubble_outline_rounded;
       case 'scale':
-        return Icons.balance_rounded;
+        return TI.balance_rounded;
       case 'search':
-        return Icons.search_rounded;
+        return TI.search_rounded;
       case 'send':
-        return Icons.send_rounded;
+        return TI.send_rounded;
       case 'star':
-        return Icons.star_rounded;
+        return TI.star_rounded;
       case 'user':
-        return Icons.person_outline_rounded;
+        return TI.person_outline_rounded;
       case 'users':
-        return Icons.group_outlined;
+        return TI.group_outlined;
       case 'wallet':
-        return Icons.account_balance_wallet_outlined;
+        return TI.account_balance_wallet_outlined;
       default:
-        return Icons.circle_outlined;
+        return TI.circle_outlined;
     }
   }
 }

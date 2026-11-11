@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:io';
@@ -30,23 +31,31 @@ import '../data/message_model.dart';
 import '../data/messages_repository.dart';
 
 class ChatScreen extends StatelessWidget {
-  const ChatScreen({super.key, required this.conversationId, required this.other});
+  const ChatScreen({super.key, required this.conversationId, required this.other, this.scope = 'uz', this.embedded = false});
 
   final String conversationId;
   final ChatOtherUser other;
 
+  /// Support çati qaysi xizmatniki ('uz' | 'plus' | 'smm').
+  final String scope;
+
+  /// Qobiq bo'limi sifatida (pastki panel bilan) — orqaga tugmasi yo'q.
+  final bool embedded;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ChatCubit(MessagesRepository(), conversationId)..load(),
-      child: _ChatView(initialOther: other),
+      create: (_) => ChatCubit(MessagesRepository(scope: scope), conversationId)..load(),
+      child: _ChatView(initialOther: other, scope: scope, embedded: embedded),
     );
   }
 }
 
 class _ChatView extends StatefulWidget {
-  const _ChatView({required this.initialOther});
+  const _ChatView({required this.initialOther, this.scope = 'uz', this.embedded = false});
   final ChatOtherUser initialOther;
+  final String scope;
+  final bool embedded;
 
   @override
   State<_ChatView> createState() => _ChatViewState();
@@ -191,7 +200,7 @@ class _ChatViewState extends State<_ChatView> {
       _uploadToken = token;
     });
     try {
-      final prepared = await MessagesRepository().uploadChatFile(
+      final prepared = await MessagesRepository(scope: widget.scope).uploadChatFile(
         context.read<ChatCubit>().conversationId,
         bytes: bytes,
         filename: name,
@@ -235,7 +244,7 @@ class _ChatViewState extends State<_ChatView> {
               final other = state.other ?? widget.initialOther;
               return Column(
                 children: [
-                  _ChatHeader(other: other, blockedByMe: state.blockedByMe),
+                  _ChatHeader(other: other, blockedByMe: state.blockedByMe, embedded: widget.embedded),
                   if (state.activeContracts.isNotEmpty)
                     _PinnedContractCard(
                       order: state.activeContracts[_contractIndex % state.activeContracts.length],
@@ -352,9 +361,10 @@ class _ChatViewState extends State<_ChatView> {
 }
 
 class _ChatHeader extends StatelessWidget {
-  const _ChatHeader({required this.other, required this.blockedByMe});
+  const _ChatHeader({required this.other, required this.blockedByMe, this.embedded = false});
   final ChatOtherUser other;
   final bool blockedByMe;
+  final bool embedded;
 
   String _presence(DateTime? lastSeenAt) {
     if (lastSeenAt == null) return 'oflayn';
@@ -378,15 +388,18 @@ class _ChatHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => Navigator.of(context).pop(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text('‹', style: TextStyle(color: WebC.zinc400, fontSize: 26, height: 1)),
+          if (!embedded) ...[
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => Navigator.of(context).pop(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: TIcon(TI.arrow_back_ios_new_rounded, size: 20, color: WebC.zinc400),
+              ),
             ),
-          ),
-          const SizedBox(width: 4),
+            const SizedBox(width: 4),
+          ] else
+            const SizedBox(width: 8),
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -454,13 +467,13 @@ class _ChatHeader extends StatelessWidget {
                 final v = await showAppSheet<String>(
                   context,
                   builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
-                    AppSheetAction(icon: Icons.flag_outlined, label: 'Şikoyat qiliş', onTap: () => Navigator.of(ctx).pop('report')),
+                    AppSheetAction(icon: TI.flag_outlined, label: 'Şikoyat qiliş', onTap: () => Navigator.of(ctx).pop('report')),
                     AppSheetAction(
-                      icon: blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
+                      icon: blockedByMe ? TI.lock_open_rounded : TI.block_rounded,
                       label: blockedByMe ? 'Blokdan çiqariş' : 'Bloklaş',
                       onTap: () => Navigator.of(ctx).pop('block'),
                     ),
-                    AppSheetAction(icon: Icons.delete_outline_rounded, label: 'Suhbatni öçiriş', danger: true, onTap: () => Navigator.of(ctx).pop('delete')),
+                    AppSheetAction(icon: TI.delete_outline_rounded, label: 'Suhbatni öçiriş', danger: true, onTap: () => Navigator.of(ctx).pop('delete')),
                   ]),
                 );
                 if (v != null && context.mounted) _onMenuSelect(context, v);
@@ -474,7 +487,7 @@ class _ChatHeader extends StatelessWidget {
                   border: Border.all(color: WebC.border),
                   color: WebC.fill5,
                 ),
-                child: Icon(Icons.more_horiz_rounded, size: 20, color: WebC.zinc300),
+                child: TIcon(TI.more_horiz_rounded, size: 20, color: WebC.zinc300),
               ),
             ),
         ],
@@ -572,7 +585,7 @@ class _PinnedContractCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.push_pin_rounded, size: 16, color: AppColors.indigo),
+                  const TIcon(TI.push_pin_rounded, size: 16, color: AppColors.indigo),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -591,7 +604,7 @@ class _PinnedContractCard extends StatelessWidget {
                                 alignment: PlaceholderAlignment.middle,
                                 child: Padding(
                                   padding: EdgeInsets.only(right: 3),
-                                  child: Icon(Icons.schedule_rounded, size: 12, color: AppColors.textMuted),
+                                  child: TIcon(TI.schedule_rounded, size: 12, color: AppColors.textMuted),
                                 ),
                               ),
                               TextSpan(text: '${shortDateTime(order.deadline!)} · '),
@@ -601,11 +614,11 @@ class _PinnedContractCard extends StatelessWidget {
                                 alignment: PlaceholderAlignment.middle,
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 3),
-                                  child: Icon(
+                                  child: TIcon(
                                     switch (order.badgeKind) {
-                                      'contract' => Icons.description_outlined,
-                                      'disputed' => Icons.balance_rounded,
-                                      _ => Icons.warning_amber_rounded,
+                                      'contract' => TI.description_outlined,
+                                      'disputed' => TI.balance_rounded,
+                                      _ => TI.warning_amber_rounded,
                                     },
                                     size: 12,
                                     color: AppColors.textMuted,
@@ -624,7 +637,7 @@ class _PinnedContractCard extends StatelessWidget {
                   if (total > 1)
                     IconButton(
                       onPressed: onCycle,
-                      icon: const Icon(Icons.swap_horiz_rounded, size: 18, color: AppColors.textMuted),
+                      icon: const TIcon(TI.swap_horiz_rounded, size: 18, color: AppColors.textMuted),
                     ),
                   const SizedBox(width: 4),
                   Container(
@@ -685,7 +698,7 @@ class _ReplyBanner extends StatelessWidget {
           ),
           IconButton(
             onPressed: () => context.read<ChatCubit>().setReplyTo(null),
-            icon: Icon(Icons.close_rounded, size: 18, color: AppColors.textFaint),
+            icon: TIcon(TI.close_rounded, size: 18, color: AppColors.textFaint),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -720,7 +733,7 @@ class _MessageBubble extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _ReactionButton(
-                icon: Icons.thumb_up_alt_rounded,
+                icon: TI.thumb_up_alt_rounded,
                 active: message.reactions.mine == 'LIKE',
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -729,7 +742,7 @@ class _MessageBubble extends StatelessWidget {
               ),
               const SizedBox(width: 28),
               _ReactionButton(
-                icon: Icons.thumb_down_alt_rounded,
+                icon: TI.thumb_down_alt_rounded,
                 active: message.reactions.mine == 'DISLIKE',
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -740,7 +753,7 @@ class _MessageBubble extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           AppSheetAction(
-            icon: Icons.reply_rounded,
+            icon: TI.reply_rounded,
             label: 'Javob beriş',
             onTap: () {
               Navigator.of(sheetContext).pop();
@@ -749,7 +762,7 @@ class _MessageBubble extends StatelessWidget {
           ),
           if (message.file != null)
             AppSheetAction(
-              icon: Icons.download_rounded,
+              icon: TI.download_rounded,
               label: message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
               onTap: () {
                 Navigator.of(sheetContext).pop();
@@ -758,7 +771,7 @@ class _MessageBubble extends StatelessWidget {
             ),
           if (message.body.isNotEmpty)
             AppSheetAction(
-              icon: Icons.copy_rounded,
+              icon: TI.copy_rounded,
               label: 'Nusxa oliş',
               onTap: () {
                 Navigator.of(sheetContext).pop();
@@ -768,7 +781,7 @@ class _MessageBubble extends StatelessWidget {
             ),
           if (message.mine) ...[
             AppSheetAction(
-              icon: Icons.edit_outlined,
+              icon: TI.edit_outlined,
               label: 'Tahrirlaş',
               onTap: () {
                 Navigator.of(sheetContext).pop();
@@ -776,7 +789,7 @@ class _MessageBubble extends StatelessWidget {
               },
             ),
             AppSheetAction(
-              icon: Icons.delete_outline_rounded,
+              icon: TI.delete_outline_rounded,
               label: 'Öçiriş',
               danger: true,
               onTap: () async {
@@ -786,14 +799,14 @@ class _MessageBubble extends StatelessWidget {
                   title: "Öçirilsinmi?",
                   message: "Xabar ikkala tomondan ham öçiriladi.",
                   confirmLabel: "Ha, öçiriş",
-                  icon: Icons.delete_outline_rounded,
+                  icon: TI.delete_outline_rounded,
                 );
                 if (ok == true) cubit.deleteMessage(message.id);
               },
             ),
           ] else
             AppSheetAction(
-              icon: Icons.flag_outlined,
+              icon: TI.flag_outlined,
               label: 'Şikoyat qiliş',
               danger: true,
               onTap: () {
@@ -940,7 +953,7 @@ class _MessageBubble extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.account_balance_wallet_outlined, size: 16, color: mine ? Colors.white : WebC.indigoSoft),
+                      TIcon(TI.account_balance_wallet_outlined, size: 16, color: mine ? Colors.white : WebC.indigoSoft),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
@@ -973,8 +986,8 @@ class _MessageBubble extends StatelessWidget {
                 // Telegramdagidek: ✓ — yetkazildi, ✓✓ — o'qildi
                 if (mine && !message.deleted) ...[
                   const SizedBox(width: 3),
-                  Icon(
-                    message.readAt != null ? Icons.done_all_rounded : Icons.done_rounded,
+                  TIcon(
+                    message.readAt != null ? TI.done_all_rounded : TI.done_rounded,
                     size: 14,
                     color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
                   ),
@@ -1013,9 +1026,9 @@ class _MessageBubble extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (message.reactions.like > 0) _ReactionCountPill(icon: Icons.thumb_up_alt_outlined, count: message.reactions.like),
+                  if (message.reactions.like > 0) _ReactionCountPill(icon: TI.thumb_up_alt_outlined, count: message.reactions.like),
                   if (message.reactions.like > 0 && message.reactions.dislike > 0) const SizedBox(width: 6),
-                  if (message.reactions.dislike > 0) _ReactionCountPill(icon: Icons.thumb_down_alt_outlined, count: message.reactions.dislike),
+                  if (message.reactions.dislike > 0) _ReactionCountPill(icon: TI.thumb_down_alt_outlined, count: message.reactions.dislike),
                 ],
               ),
             ),
@@ -1061,7 +1074,7 @@ class _ReplyQuote extends StatelessWidget {
 
 class _ReactionButton extends StatelessWidget {
   const _ReactionButton({required this.icon, required this.active, required this.onTap});
-  final IconData icon;
+  final TIData icon;
   final bool active;
   final VoidCallback onTap;
 
@@ -1075,7 +1088,7 @@ class _ReactionButton extends StatelessWidget {
           color: active ? AppColors.indigo.withValues(alpha: 0.2) : AppColors.tint(0.05),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, size: 22, color: active ? AppColors.indigo : AppColors.textSecondary),
+        child: TIcon(icon, size: 22, color: active ? AppColors.indigo : AppColors.textSecondary),
       ),
     );
   }
@@ -1083,7 +1096,7 @@ class _ReactionButton extends StatelessWidget {
 
 class _ReactionCountPill extends StatelessWidget {
   const _ReactionCountPill({required this.icon, required this.count});
-  final IconData icon;
+  final TIData icon;
   final int count;
 
   @override
@@ -1098,7 +1111,7 @@ class _ReactionCountPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppColors.textSecondary),
+          TIcon(icon, size: 13, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text('$count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
         ],

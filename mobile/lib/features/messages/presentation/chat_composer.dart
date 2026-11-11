@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -81,7 +82,7 @@ class PendingAttachmentBar extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(shape: BoxShape.circle, color: WebC.fill10),
-                  child: Icon(Icons.close_rounded, size: 16, color: WebC.zinc300),
+                  child: TIcon(TI.close_rounded, size: 16, color: WebC.zinc300),
                 ),
               ),
               const SizedBox(height: 6),
@@ -236,7 +237,7 @@ class _ChatComposerState extends State<ChatComposer> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: WebC.border),
                     ),
-                    child: Icon(Icons.attach_file_rounded, size: 20, color: WebC.zinc300),
+                    child: TIcon(TI.attach_file_rounded, size: 20, color: WebC.zinc300),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -252,7 +253,7 @@ class _ChatComposerState extends State<ChatComposer> {
                         opacity: enabled ? 1 : 0.5,
                         child: GestureDetector(
                           onTap: enabled ? widget.onSend : null,
-                          child: _roundButton(const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 18)),
+                          child: _roundButton(const TIcon(TI.rocket_launch_rounded, color: Colors.white, size: 18)),
                         ),
                       );
                     }
@@ -265,7 +266,7 @@ class _ChatComposerState extends State<ChatComposer> {
                         scale: _recording ? 1.18 : 1,
                         duration: const Duration(milliseconds: 150),
                         child: _roundButton(
-                          const Icon(Icons.mic_rounded, color: Colors.white, size: 22),
+                          const TIcon(TI.mic_rounded, color: Colors.white, size: 22),
                           red: _recording,
                         ),
                       ),

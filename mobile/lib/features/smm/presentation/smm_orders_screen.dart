@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -76,7 +77,7 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
         Text('Holati öz-özidan yangilanib turadi.', style: TextStyle(color: WebC.zinc500, fontSize: 13.5)),
         const SizedBox(height: 16),
         if (_error != null && d == null)
-          SmmEmpty(icon: Icons.wifi_off_rounded, title: _error!, action: WebButton(label: 'Qayta uriniş', onPressed: load))
+          SmmEmpty(icon: TI.wifi_off_rounded, title: _error!, action: WebButton(label: 'Qayta uriniş', onPressed: load))
         else if (d == null) ...const [SBlock(height: 150), SizedBox(height: 12), SBlock(height: 90), SizedBox(height: 10), SBlock(height: 90)]
         else ...[
           GridView.count(
@@ -87,16 +88,16 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
             crossAxisSpacing: 10,
             childAspectRatio: 1.75,
             children: [
-              _stat(Icons.inventory_2_rounded, const Color(0xFF6366F1), 'Jami buyurtma', '${d.total}'),
-              _stat(Icons.autorenew_rounded, const Color(0xFF0EA5E9), 'Bajarilmoqda', '${d.active}'),
-              _stat(Icons.check_circle_rounded, const Color(0xFF10B981), 'Yetkazildi', groupDigitsSafe(d.delivered), sub: '${d.deliveredIn} ta buyurtmada'),
-              _stat(Icons.payments_rounded, const Color(0xFFD946EF), 'Sarflandi', som(d.spent)),
+              _stat(TI.inventory_2_rounded, const Color(0xFF6366F1), 'Jami buyurtma', '${d.total}'),
+              _stat(TI.autorenew_rounded, const Color(0xFF0EA5E9), 'Bajarilmoqda', '${d.active}'),
+              _stat(TI.check_circle_rounded, const Color(0xFF10B981), 'Yetkazildi', groupDigitsSafe(d.delivered), sub: '${d.deliveredIn} ta buyurtmada'),
+              _stat(TI.payments_rounded, const Color(0xFFD946EF), 'Sarflandi', som(d.spent)),
             ],
           ),
           const SizedBox(height: 16),
           if (d.orders.isEmpty)
             SmmEmpty(
-              icon: Icons.shopping_bag_outlined,
+              icon: TI.shopping_bag_outlined,
               title: 'Hali buyurtma yöq',
               text: 'Xizmatni tanlang — bir neça daqiqada boşlanadi.',
               action: WebButton(label: 'Xizmat tanlaş', onPressed: widget.onCatalogTap),
@@ -108,12 +109,12 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
     );
   }
 
-  Widget _stat(IconData icon, Color c, String label, String value, {String? sub}) => Container(
+  Widget _stat(TIData icon, Color c, String label, String value, {String? sub}) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Icon(icon, color: c, size: 16),
+            TIcon(icon, color: c, size: 16),
             const SizedBox(width: 6),
             Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.zinc500, fontSize: 12))),
           ]),

@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -77,7 +78,7 @@ class ContractPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconLabel(Icons.description_outlined, 'Şartnoma imzolangan',
+          IconLabel(TI.description_outlined, 'Şartnoma imzolangan',
               color: WebC.emerald, size: 18, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           _rich('Summa: ', som, isOrderer ? ' · tayyorlovçi: ${c.preparerName}' : ''),
@@ -89,7 +90,7 @@ class ContractPanel extends StatelessWidget {
           if (delivered && c.reviewDueAt != null) ...[
             const SizedBox(height: 8),
             _note(
-              icon: Icons.inventory_2_outlined,
+              icon: TI.inventory_2_outlined,
               "Iş topşirilgan${c.deliveredAt != null ? ' (${shortDateTime(c.deliveredAt!)})' : ''}. "
               "${isOrderer ? 'Tekşirib javob bering' : 'Buyurtmaçi tekşirmoqda'} — ${shortDateTime(c.reviewDueAt!)} "
               "gaça javob bölmasa, iş muvaffaqiyatli deb topiladi va pul tayyorlovçiga ötadi.",
@@ -109,7 +110,7 @@ class ContractPanel extends StatelessWidget {
             _Box(
               color: const Color(0xFFF59E0B),
               children: [
-                IconLabel(Icons.warning_amber_rounded, "$requester bekor qilişni söra${requester == 'Siz' ? 'dingiz' : 'di'}",
+                IconLabel(TI.warning_amber_rounded, "$requester bekor qilişni söra${requester == 'Siz' ? 'dingiz' : 'di'}",
                     style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text('Sabab: ${c.cancelReason ?? ''}', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.4)),
@@ -166,7 +167,7 @@ class ContractPanel extends StatelessWidget {
               color: const Color(0xFFF97316),
               children: [
                 IconLabel(
-                    Icons.highlight_off_rounded,
+                    TI.highlight_off_rounded,
                     iRequested
                         ? "${isOrderer ? 'Tayyorlovçi' : 'Buyurtmaçi'} bekor qilişga rozi bölmadi"
                         : "Siz bekor qilişga rozi bölmadingiz",
@@ -186,12 +187,12 @@ class ContractPanel extends StatelessWidget {
                   Wrap(spacing: 8, runSpacing: 8, children: [
                     WebButton(
                       label: 'Şartnomani davom ettiraman',
-                      leading: Icons.check_circle_outline_rounded,
+                      leading: TI.check_circle_outline_rounded,
                       onPressed: busy ? null : () => cubit.respondToContract(c.id, action: 'WITHDRAW_CANCEL'),
                     ),
                     WebButton(
                       label: "Qarorimni özgartirmayman",
-                      leading: Icons.balance_rounded,
+                      leading: TI.balance_rounded,
                       variant: WebBtn.ghost,
                       onPressed: busy
                           ? null
@@ -217,7 +218,7 @@ class ContractPanel extends StatelessWidget {
             _Box(
               color: const Color(0xFFEF4444),
               children: [
-                IconLabel(Icons.balance_rounded, "Masala administrator körib çiqmoqda",
+                IconLabel(TI.balance_rounded, "Masala administrator körib çiqmoqda",
                     style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text('Bekor qiliş sababi: ${c.cancelReason ?? ''}',
@@ -238,7 +239,7 @@ class ContractPanel extends StatelessWidget {
               if (isOrderer)
                 WebButton(
                   label: 'Işni yakunlaş',
-                  leading: Icons.check_circle_outline_rounded,
+                  leading: TI.check_circle_outline_rounded,
                   onPressed: busy
                       ? null
                       : () async {
@@ -253,13 +254,13 @@ class ContractPanel extends StatelessWidget {
                         },
                 ),
               if (isOrderer && delivered && c.cancelState == null)
-                WebButton(label: 'Qayta işlaş', leading: Icons.refresh_rounded, variant: WebBtn.ghost, onPressed: busy ? null : askRevision),
+                WebButton(label: 'Qayta işlaş', leading: TI.refresh_rounded, variant: WebBtn.ghost, onPressed: busy ? null : askRevision),
               if (!isOrderer && order.status == 'IN_PROGRESS')
-                WebButton(label: 'Işni topşirdim', leading: Icons.inventory_2_outlined, onPressed: busy ? null : () => cubit.setStatus('DELIVERED')),
+                WebButton(label: 'Işni topşirdim', leading: TI.inventory_2_outlined, onPressed: busy ? null : () => cubit.setStatus('DELIVERED')),
               if (c.cancelState == null)
                 WebButton(
                   label: "Bekor qilişni söraş",
-                  leading: Icons.highlight_off_rounded,
+                  leading: TI.highlight_off_rounded,
                   variant: WebBtn.ghost,
                   onPressed: busy
                       ? null
@@ -285,7 +286,7 @@ class ContractPanel extends StatelessWidget {
         ],
       ));
 
-  Widget _note(String text, {IconData? icon}) => Container(
+  Widget _note(String text, {TIData? icon}) => Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(color: AppColors.tint(0.04), borderRadius: BorderRadius.circular(8)),
@@ -387,7 +388,7 @@ class _ReasonDialogState extends State<_ReasonDialog> {
               final d = await pickDateTime(context, initial: _deadline);
               if (d != null) setState(() => _deadline = d);
             },
-            suffix: Icon(Icons.event_rounded, size: 16, color: WebC.zinc300),
+            suffix: TIcon(TI.event_rounded, size: 16, color: WebC.zinc300),
           ),
         ],
         if (_err != null) ...[

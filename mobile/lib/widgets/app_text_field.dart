@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
@@ -51,8 +52,8 @@ class _AppTextFieldState extends State<AppTextField> {
               ? InputDecoration(
                   suffixIcon: IconButton(
                     onPressed: () => setState(() => _hidden = !_hidden),
-                    icon: Icon(
-                      _hidden ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                    icon: TIcon(
+                      _hidden ? TI.visibility_off_rounded : TI.visibility_rounded,
                       size: 19,
                       color: AppColors.textFaint,
                     ),

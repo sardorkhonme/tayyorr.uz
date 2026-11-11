@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -88,7 +89,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
           onRefresh: _load,
           children: [
             if (_error != null && d == null)
-              SmmEmpty(icon: Icons.error_outline_rounded, title: _error!)
+              SmmEmpty(icon: TI.error_outline_rounded, title: _error!)
             else if (d == null) ...const [SBlock(height: 140), SizedBox(height: 12), SBlock(height: 200)]
             else ..._body(d),
           ],
@@ -174,7 +175,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
                   style: TextStyle(color: WebC.zinc500, fontSize: 12),
                 ),
               ),
-              WebButton(label: _refreshing ? 'Yangilanmoqda…' : 'Yangilaş', small: true, leading: Icons.refresh_rounded, onPressed: _refreshing ? null : _refresh),
+              WebButton(label: _refreshing ? 'Yangilanmoqda…' : 'Yangilaş', small: true, leading: TI.refresh_rounded, onPressed: _refreshing ? null : _refresh),
             ]),
           ],
         ]),
@@ -231,7 +232,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(children: [
-                  Icon(t.type == 'REFUND' ? Icons.south_west_rounded : Icons.north_east_rounded,
+                  TIcon(t.type == 'REFUND' ? TI.south_west_rounded : TI.north_east_rounded,
                       size: 16, color: t.type == 'REFUND' ? WebC.emerald : WebC.zinc400),
                   const SizedBox(width: 8),
                   Expanded(child: Text(t.type == 'REFUND' ? 'Qaytarildi' : 'Tölandi', style: TextStyle(color: WebC.zinc300, fontSize: 13.5))),
@@ -251,7 +252,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
       const SizedBox(height: 12),
       WebCard(
         child: Row(children: [
-          const Icon(Icons.support_agent_rounded, color: Color(0xFF10B981), size: 26),
+          const TIcon(TI.support_agent_rounded, color: Color(0xFF10B981), size: 26),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -308,7 +309,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
                   shape: BoxShape.circle,
                   color: steps[i].$2 ? (i == 3 && o.failed ? const Color(0xFFF43F5E) : const Color(0xFF10B981)) : WebC.fill10,
                 ),
-                child: steps[i].$2 ? Icon(i == 3 && o.failed ? Icons.close_rounded : Icons.check_rounded, size: 14, color: Colors.white) : null,
+                child: steps[i].$2 ? TIcon(i == 3 && o.failed ? TI.close_rounded : TI.check_rounded, size: 14, color: Colors.white) : null,
               ),
               if (i < steps.length - 1) Container(width: 2, height: 18, color: steps[i + 1].$2 ? const Color(0xFF10B981) : WebC.fill10),
             ]),

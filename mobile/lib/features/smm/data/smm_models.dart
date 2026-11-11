@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 Color _hex(String? h, [Color fallback = const Color(0xFF6366F1)]) {
@@ -31,13 +32,13 @@ class SmmKind {
 
   factory SmmKind.fromJson(Map<String, dynamic> j) => SmmKind('${j['key']}', '${j['label']}', '${j['hint']}', _hex(j['color'] as String?));
 
-  IconData get icon => switch (key) {
-        'followers' => Icons.group_rounded,
-        'views' => Icons.visibility_rounded,
-        'likes' => Icons.favorite_rounded,
-        'comments' => Icons.chat_bubble_rounded,
-        'shares' => Icons.share_rounded,
-        _ => Icons.grid_view_rounded,
+  TIData get icon => switch (key) {
+        'followers' => TI.group_rounded,
+        'views' => TI.visibility_rounded,
+        'likes' => TI.favorite_rounded,
+        'comments' => TI.chat_bubble_rounded,
+        'shares' => TI.share_rounded,
+        _ => TI.grid_view_rounded,
       };
 }
 

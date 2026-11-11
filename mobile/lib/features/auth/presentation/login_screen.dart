@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -80,8 +81,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       obscure: !_showPw,
                                       suffix: GestureDetector(
                                         onTap: () => setState(() => _showPw = !_showPw),
-                                        child: Icon(
-                                          _showPw ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                        child: TIcon(
+                                          _showPw ? TI.visibility_off_outlined : TI.visibility_outlined,
                                           size: 18,
                                           color: WebC.zinc500,
                                         ),

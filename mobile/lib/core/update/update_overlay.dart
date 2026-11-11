@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -302,7 +303,7 @@ class _MaintenanceCardState extends State<_MaintenanceCard> {
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.construction_rounded, color: Color(0xFFFBBF24), size: 48),
+        const TIcon(TI.construction_rounded, color: Color(0xFFFBBF24), size: 48),
         const SizedBox(height: 14),
         const Text('Texnik işlar',
             style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),

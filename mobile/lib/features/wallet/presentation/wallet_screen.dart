@@ -1,3 +1,5 @@
+import 'pay_screen.dart';
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../core/ui/app_dialogs.dart';
 import '../../../core/app_config.dart';
@@ -6,7 +8,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
@@ -68,7 +69,7 @@ class _WalletView extends StatelessWidget {
           body = [
             _BalanceCard(wallet: wallet),
             if (isPreparer) _BuyStarsForm(starBalance: wallet.starBalance, onDone: reload),
-            _TopUpForm(myCode: wallet.walletCode),
+            const _TopUpCta(),
             _PayoutForm(balance: wallet.balance, onDone: reload),
             if (wallet.payouts.isNotEmpty)
               _Section(
@@ -357,8 +358,8 @@ class _BalanceCardState extends State<_BalanceCard> {
                             _balanceHidden = !_balanceHidden;
                             if (!_balanceHidden) _run++;
                           }),
-                          child: Icon(
-                            _balanceHidden ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          child: TIcon(
+                            _balanceHidden ? TI.visibility_off_outlined : TI.visibility_outlined,
                             size: 18,
                             color: WebC.zinc500,
                           ),
@@ -386,7 +387,7 @@ class _BalanceCardState extends State<_BalanceCard> {
                             onTap: _copy,
                             child: _copied
                                 ? Text('nusxa olindi', style: TextStyle(color: WebC.emerald, fontSize: 12))
-                                : Icon(Icons.copy_rounded, size: 16, color: WebC.zinc400),
+                                : TIcon(TI.copy_rounded, size: 16, color: WebC.zinc400),
                           ),
                         ],
                       ),
@@ -512,101 +513,41 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
 
 // ── To'ldirish ──────────────────────────────────────────────────────
 
-class _TopUpForm extends StatefulWidget {
-  const _TopUpForm({required this.myCode});
-  final String myCode;
-
-  @override
-  State<_TopUpForm> createState() => _TopUpFormState();
-}
-
-class _TopUpFormState extends State<_TopUpForm> {
-  late final _code = TextEditingController(text: widget.myCode);
-  final _amount = TextEditingController();
-  bool _busy = false;
-  String? _error;
-
-  @override
-  void dispose() {
-    _code.dispose();
-    _amount.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final amount = int.tryParse(_amount.text.trim());
-    if (amount == null) {
-      setState(() => _error = 'Summani kiriting');
-      return;
-    }
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    try {
-      final payUrl = await WalletRepository().topUp(amount, walletCode: _code.text.trim());
-      // Click to'lov sahifasi — ilova ichidagi brauzer oynasida (to'lovdan so'ng ilovaga qaytiladi, balans yangilanadi)
-      var ok = await launchUrl(Uri.parse(payUrl), mode: LaunchMode.inAppBrowserView);
-      if (!ok) ok = await launchUrl(Uri.parse(payUrl), mode: LaunchMode.externalApplication);
-      if (!ok && mounted) setState(() => _error = "Tölov sahifasini oçib bölmadi");
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
+/// "Hamyonni to'ldirish" — alohida to'lov sahifasiga (barcha xizmatlar uchun bitta).
+class _TopUpCta extends StatelessWidget {
+  const _TopUpCta();
 
   @override
   Widget build(BuildContext context) {
-    return WebCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _FormHead(title: "Hisobni töldiriş", tag: 'Click orqali'),
-          const SizedBox(height: 8),
-          const _Hint("Summani kiriting — Clickʼning xavfsiz tölov sahifasiga yönaltirilasiz. "
-              "Karta maʼlumotlari saytimizda saqlanmaydi."),
-          const SizedBox(height: 16),
-          const WebLabel('Hisob kodi (kimning hisobiga)'),
-          WebInput(
-            controller: _code,
-            hint: 'TYR-XXXX',
-            mono: true,
-            onChanged: (v) {
-              final up = v.toUpperCase();
-              if (up != v) {
-                _code.value = _code.value.copyWith(text: up, selection: TextSelection.collapsed(offset: up.length));
-              }
-            },
+    return GestureDetector(
+      onTap: () => PayScreen.open(context),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: WebC.cardBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: WebC.cardBorder),
+        ),
+        child: Row(children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(gradient: kBrandGradient, borderRadius: BorderRadius.circular(14)),
+            child: const Center(child: TIcon(TI.add_rounded, color: Colors.white, size: 24)),
           ),
-          const SizedBox(height: 4),
-          _Hint("Özingizniki: ${widget.myCode}"),
-          const SizedBox(height: 16),
-          const WebLabel("Summa (söm)"),
-          WebInput(controller: _amount, hint: '50000', keyboardType: TextInputType.number),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final q in const [20000, 50000, 100000, 300000])
-                _Quick(label: '+${groupDigits(q)}', onTap: () => _amount.text = '$q'),
-            ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text("Hamyonni töldiriş", style: TextStyle(color: WebC.white, fontSize: 15.5, fontWeight: FontWeight.w700)),
+              Text('Click orqali — bir neça soniyada', style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
+            ]),
           ),
-          if (_error != null) ...[const SizedBox(height: 16), _Msg(ok: false, text: _error!)],
-          const SizedBox(height: 16),
-          WebButton(
-            label: _busy ? '...' : "Click orqali tölaş",
-            onPressed: _busy ? null : _submit,
-            expand: true,
-          ),
-        ],
+          TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
+        ]),
       ),
     );
   }
 }
-
-// ── Yechib olish ────────────────────────────────────────────────────
 
 class _CardNumberFormatter extends TextInputFormatter {
   @override
@@ -703,7 +644,7 @@ class _PayoutFormState extends State<_PayoutForm> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.amber),
+                TIcon(TI.warning_amber_rounded, size: 18, color: AppColors.amber),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text.rich(

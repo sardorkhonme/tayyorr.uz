@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -60,7 +61,7 @@ class _SmmDiscountsScreenState extends State<SmmDiscountsScreen> {
               gradient: const LinearGradient(colors: [Color(0xFFF43F5E), Color(0xFFD946EF)]),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.local_offer_rounded, color: Colors.white),
+            child: const TIcon(TI.local_offer_rounded, color: Colors.white),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -72,11 +73,11 @@ class _SmmDiscountsScreenState extends State<SmmDiscountsScreen> {
         ]),
         const SizedBox(height: 16),
         if (_error != null && c == null)
-          SmmEmpty(icon: Icons.wifi_off_rounded, title: _error!)
+          SmmEmpty(icon: TI.wifi_off_rounded, title: _error!)
         else if (c == null) ...const [SBlock(height: 160), SizedBox(height: 10), SBlock(height: 160)]
         else if (all.isEmpty)
           SmmEmpty(
-            icon: Icons.local_offer_outlined,
+            icon: TI.local_offer_outlined,
             title: 'Hozirça çegirmalar yöq',
             text: 'Yangi çegirmalar paydo bölganda şu yerda körinadi.',
             action: WebButton(label: 'Barça xizmatlar', onPressed: widget.onAllTap),

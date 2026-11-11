@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../core/ui/app_dialogs.dart';
 import 'dart:ui' show ImageFilter;
 
@@ -111,7 +112,7 @@ class WebButton extends StatelessWidget {
   final Widget? icon;
 
   /// Matn oldidagi ikonka — tugma matni rangida chiziladi (emoji o'rniga).
-  final IconData? leading;
+  final TIData? leading;
   final bool busy;
   final bool small;
 
@@ -172,7 +173,7 @@ class WebButton extends StatelessWidget {
           )
         else ...[
           if (icon != null) ...[icon!, const SizedBox(width: 8)],
-          if (leading != null) ...[Icon(leading, size: small ? 15 : 16, color: fg), const SizedBox(width: 8)],
+          if (leading != null) ...[TIcon(leading, size: small ? 15 : 16, color: fg), const SizedBox(width: 8)],
           Flexible(
             child: Text(
               label,
@@ -418,8 +419,8 @@ class WebStars extends StatelessWidget {
         for (var i = 1; i <= 5; i++)
           Padding(
             padding: const EdgeInsets.only(right: 2),
-            child: Icon(
-              i <= rounded || i - 0.5 == rounded ? Icons.star_rounded : Icons.star_outline_rounded,
+            child: TIcon(
+              i <= rounded || i - 0.5 == rounded ? TI.star_rounded : TI.star_outline_rounded,
               size: size + 2,
               color: i <= rounded || i - 0.5 == rounded ? AppColors.amber : WebC.zinc600,
             ),
@@ -444,8 +445,8 @@ class WebStarInput extends StatelessWidget {
             onTap: () => onChanged(i),
             child: Padding(
               padding: const EdgeInsets.only(right: 4),
-              child: Icon(
-                i <= value ? Icons.star_rounded : Icons.star_outline_rounded,
+              child: TIcon(
+                i <= value ? TI.star_rounded : TI.star_outline_rounded,
                 size: 34,
                 color: i <= value ? AppColors.amber : WebC.zinc600,
               ),
@@ -466,15 +467,15 @@ class StarGlyph extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => Icon(Icons.star_rounded, size: size, color: AppColors.amber);
+  Widget build(BuildContext context) => TIcon(TI.star_rounded, size: size, color: AppColors.amber);
 }
 
 /// Matn (Text.rich) ichida ikonka — emoji o'rniga.
-WidgetSpan iconSpan(IconData icon, {double size = 14, Color? color, double gap = 4}) => WidgetSpan(
+WidgetSpan iconSpan(TIData icon, {double size = 14, Color? color, double gap = 4}) => WidgetSpan(
       alignment: PlaceholderAlignment.middle,
       child: Padding(
         padding: EdgeInsets.only(right: gap),
-        child: Icon(icon, size: size, color: color),
+        child: TIcon(icon, size: size, color: color),
       ),
     );
 
@@ -487,7 +488,7 @@ WidgetSpan starSpan({double size = 14}) => WidgetSpan(
 /// "ikonka + matn" qatori (sarlavhalar, holat yozuvlari uchun).
 class IconLabel extends StatelessWidget {
   const IconLabel(this.icon, this.text, {super.key, required this.style, this.size, this.color, this.gap = 6});
-  final IconData icon;
+  final TIData icon;
   final String text;
   final TextStyle style;
   final double? size;
@@ -499,7 +500,7 @@ class IconLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: size ?? (style.fontSize ?? 14) + 2, color: color ?? style.color),
+        TIcon(icon, size: size ?? (style.fontSize ?? 14) + 2, color: color ?? style.color),
         SizedBox(width: gap),
         Flexible(child: Text(text, style: style)),
       ],

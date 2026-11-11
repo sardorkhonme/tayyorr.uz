@@ -14,7 +14,11 @@ class WebPage extends StatelessWidget {
     this.gap = 0,
     this.bottom,
     this.background = true,
+    this.controller,
   });
+
+  /// Sahifa scroll'i (masalan "pastga — videolarga" tugmasi uchun).
+  final ScrollController? controller;
 
   /// `false` — bosh qobiq ichidagi bo'lim (fonni qobiq beradi).
   final bool background;
@@ -29,6 +33,7 @@ class WebPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget scroll = CustomScrollView(
+      controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         const AppHeaderSliver(),

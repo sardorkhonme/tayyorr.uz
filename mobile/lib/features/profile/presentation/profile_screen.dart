@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/app_info.dart';
 import 'dart:typed_data';
 
@@ -5,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/navigation/services.dart';
+import '../../smm/presentation/smm_guide_screen.dart';
 import '../../../core/navigation/support.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/theme_toggle.dart';
@@ -35,7 +38,7 @@ class _QuickLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget row(IconData icon, String label, Color c, VoidCallback onTap, {String? sub}) => InkWell(
+    Widget row(TIData icon, String label, Color c, VoidCallback onTap, {String? sub}) => InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
@@ -45,7 +48,7 @@ class _QuickLinks extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(color: c.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, color: c, size: 20),
+                child: TIcon(icon, color: c, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -54,21 +57,29 @@ class _QuickLinks extends StatelessWidget {
                   if (sub != null) Text(sub, style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
                 ]),
               ),
-              Icon(Icons.chevron_right_rounded, color: WebC.zinc500),
+              TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
             ]),
           ),
         );
+    final service = ServiceScope.of(context);
+    // tayyorr+ da qo'llanma va yordam pastki panelda bor — takrorlamaymiz
+    final showHelp = service != ServiceKind.plus;
     return WebCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Column(children: [
-        if (isPreparer)
-          row(Icons.card_giftcard_rounded, 'Referal', const Color(0xFFF59E0B),
+        // referal — hozircha faqat Tayyorr.uz da
+        if (isPreparer && service == ServiceKind.uz)
+          row(TI.card_giftcard_rounded, 'Referal', const Color(0xFFF59E0B),
               () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AuroraBackground(child: ReferralScreen()))),
               sub: "Döstingizni taklif qiling — har biri uçun +1 star"),
-        row(Icons.menu_book_rounded, "Qöllanma", const Color(0xFF8B5CF6),
-            () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GuideScreen())),
+        if (showHelp)
+          row(TI.menu_book_rounded, "Qöllanma", const Color(0xFF8B5CF6),
+            () => service == ServiceKind.smm
+                ? Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SmmGuideScreen()))
+                : Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GuideScreen())),
             sub: 'Qanday işlaydi — qadamma-qadam'),
-        row(Icons.support_agent_rounded, "Yordam", const Color(0xFF10B981), () => openSupportChat(context),
+        if (showHelp)
+          row(TI.support_agent_rounded, "Yordam", const Color(0xFF10B981), () => openSupportChat(context),
             sub: "Qöllab-quvvatlaş xizmatiga yoziş"),
         const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: ThemeToggle()),
       ]),
@@ -367,7 +378,7 @@ class _AccountFormState extends State<_AccountForm> {
 
   Widget _eye(bool shown, VoidCallback onTap) => GestureDetector(
         onTap: onTap,
-        child: Icon(shown ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: WebC.zinc500),
+        child: TIcon(shown ? TI.visibility_off_outlined : TI.visibility_outlined, size: 18, color: WebC.zinc500),
       );
 
   @override
@@ -432,7 +443,7 @@ class _SignOutButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.power_settings_new_rounded, size: 18, color: WebC.redSoft),
+            TIcon(TI.power_settings_new_rounded, size: 18, color: WebC.redSoft),
             const SizedBox(width: 8),
             Text('Hisobdan çiqiş', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
           ],

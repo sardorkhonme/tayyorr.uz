@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/theme_controller.dart';
@@ -20,7 +21,7 @@ class ThemeToggle extends StatelessWidget {
           children: [
             Expanded(
               child: _Segment(
-                icon: Icons.light_mode_rounded,
+                icon: TI.light_mode_rounded,
                 label: 'Yorug\'',
                 selected: isLight,
                 onTap: () => ThemeController.instance.setLight(true),
@@ -29,7 +30,7 @@ class ThemeToggle extends StatelessWidget {
             const SizedBox(width: 4),
             Expanded(
               child: _Segment(
-                icon: Icons.dark_mode_rounded,
+                icon: TI.dark_mode_rounded,
                 label: 'Qorong\'i',
                 selected: !isLight,
                 onTap: () => ThemeController.instance.setLight(false),
@@ -54,7 +55,7 @@ class ThemeToggle extends StatelessWidget {
 
 class _Segment extends StatelessWidget {
   const _Segment({required this.icon, required this.label, required this.selected, required this.onTap});
-  final IconData icon;
+  final TIData icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -73,7 +74,7 @@ class _Segment extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: selected ? WebC.white : WebC.zinc400),
+            TIcon(icon, size: 14, color: selected ? WebC.white : WebC.zinc400),
             const SizedBox(width: 6),
             Text(label, style: TextStyle(color: selected ? WebC.white : WebC.zinc400, fontSize: 12)),
           ],

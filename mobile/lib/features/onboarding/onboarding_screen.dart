@@ -1,3 +1,4 @@
+import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -315,7 +316,7 @@ class _OrderArt extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(children: [
-                    Icon(Icons.edit_note_rounded, size: 20, color: WebC.indigoSoft),
+                    TIcon(TI.edit_note_rounded, size: 20, color: WebC.indigoSoft),
                     const SizedBox(width: 8),
                     Text('Kurs işi', style: TextStyle(color: WebC.white, fontWeight: FontWeight.w600, fontSize: 14)),
                   ]),
@@ -341,7 +342,7 @@ class _OrderArt extends StatelessWidget {
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               radius: 99,
-              child: IconLabel(Icons.school_rounded, 'Diplom', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(TI.school_rounded, 'Diplom', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
           Positioned(
@@ -350,7 +351,7 @@ class _OrderArt extends StatelessWidget {
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               radius: 99,
-              child: IconLabel(Icons.bar_chart_rounded, 'Prezentatsiya', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(TI.bar_chart_rounded, 'Prezentatsiya', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
         ],
@@ -402,7 +403,7 @@ class _OffersArt extends StatelessWidget {
                     color: const Color(0xFF10B981).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(99),
                   ),
-                  child: IconLabel(Icons.check_rounded, 'tanlandi', gap: 2, style: TextStyle(color: WebC.emerald, fontSize: 10)),
+                  child: IconLabel(TI.check_rounded, 'tanlandi', gap: 2, style: TextStyle(color: WebC.emerald, fontSize: 10)),
                 ),
             ],
           ),
@@ -475,7 +476,7 @@ class _SafeArt extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(Icons.verified_user_rounded, color: Colors.white, size: 56),
+              child: const TIcon(TI.verified_user_rounded, color: Colors.white, size: 56),
             ),
           ),
           Positioned(
@@ -483,7 +484,7 @@ class _SafeArt extends StatelessWidget {
             top: 40 + _bob(t, 0.25, 7),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: IconLabel(Icons.check_circle_rounded, "Iş tayyor", color: WebC.emerald, style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(TI.check_circle_rounded, "Iş tayyor", color: WebC.emerald, style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
           Positioned(
@@ -499,7 +500,7 @@ class _SafeArt extends StatelessWidget {
             bottom: 20 + _bob(t, 0.8, 6),
             child: _Glass(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: IconLabel(Icons.chat_bubble_outline_rounded, 'Çat', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
+              child: IconLabel(TI.chat_bubble_outline_rounded, 'Çat', style: TextStyle(color: WebC.zinc200, fontSize: 12)),
             ),
           ),
         ],
