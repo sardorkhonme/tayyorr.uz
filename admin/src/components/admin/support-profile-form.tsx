@@ -79,7 +79,8 @@ export function SupportProfileForm() {
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-      <h2 className="mb-3 font-semibold text-white">tayyorr.uz support profili</h2>
+      <h2 className="font-semibold text-white">Tayyorr Support profili</h2>
+      <p className="mb-3 mt-1 text-xs text-zinc-500">Support çatlarida, Tayyorr’s Family guruhida va ilovadagi «Xabarlar» bölimida şu nom va rasm körinadi.</p>
       <form onSubmit={save} className="flex flex-col gap-3">
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 overflow-hidden rounded-full border border-white/10 bg-white/5">

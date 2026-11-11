@@ -3,11 +3,10 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import {
-  BRAND_AUTHOR,
-  SUPPORT_AUTHOR,
   dispatchDueFamily,
   dispatchFamily,
   displayName,
+  familyAuthors,
   familyInclude,
   familyRole,
   parseMentions,
@@ -90,7 +89,8 @@ export async function GET(req: Request) {
   const self = user
     ? { kind: "user" as const, id: user.id, name: displayName(user), login: user.login, image: user.avatarUrl ?? user.image ?? null }
     : null;
-  const identities = (isAdmin ? [self, BRAND_AUTHOR, SUPPORT_AUTHOR] : [self]).filter(Boolean);
+  const authors = await familyAuthors();
+  const identities = (isAdmin ? [self, authors.brand, authors.support] : [self]).filter(Boolean);
   return mobileJson({
     me: { id: me, isAdmin, identities },
     messages: await toFamilyClients(page, { meId: me }),

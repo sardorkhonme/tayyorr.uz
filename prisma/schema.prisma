@@ -104,7 +104,7 @@ model User {
   lastName     String?
   login        String? @unique
   passwordHash String? // Google-only foydalanuvchida null
-  // qanday ro'yxatdan o'tgan: "GOOGLE" (sayt), "GOOGLE_MOBILE" (ilova), "EMAIL" (email + kod); eski hisoblarda null
+  // qanday ro'yxatdan o'tgan: "GOOGLE" (sayt), "GOOGLE_MOBILE" (ilova), "EMAIL" (sayt: email + kod), "EMAIL_MOBILE" (ilova); eski hisoblarda null
   signupMethod String?
   role         Role?
   about        String? // qo'shimcha ma'lumot
@@ -133,6 +133,10 @@ model User {
 
   isSupport  Boolean   @default(false) // "tayyorr.uz support" tizim hisobi
   isPlatform Boolean   @default(false) // sayt komissiya hisobi
+  // mobil ilova: birinchi / oxirgi foydalanish (kuniga bir marta yangilanadi) va ilovadan chiqish
+  mobileFirstAt  DateTime?
+  mobileLastAt   DateTime?
+  mobileLogoutAt DateTime?
   familyAdmin Boolean  @default(false) // «Tayyorr's Family» guruhi admini (admin paneldan belgilanadi)
   lastSeenAt DateTime? // oxirgi faollik (online holati)
   locale     String? // "uz" | "ru" | "en" — tanlangan til
@@ -187,6 +191,8 @@ model User {
   deviceTokens       DeviceToken[]
   familyMessages     FamilyMessage[]     @relation("FamilyMessages")
   familyMember       FamilyMember?
+  familyReactions    FamilyReaction[]
+  mobileDays         MobileDay[]
   payoutRequests     PayoutRequest[]
   reactions          MessageReaction[]
   activityLogs       ActivityLog[]
@@ -856,6 +862,7 @@ model FamilyMessage {
   replyToId String?
   replyTo   FamilyMessage?  @relation("FamilyReplies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies   FamilyMessage[] @relation("FamilyReplies")
+  reactions FamilyReaction[]
 
   // belgilanganlar: foydalanuvchi id'lari, «brand» / «support» — adminlarga
   mentions  String[] @default([])
@@ -884,4 +891,28 @@ model FamilyMember {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lastReadAt DateTime @default(now())
   joinedAt   DateTime @default(now())
+}
+
+// Mobil ilovadan foydalangan kunlar (Toshkent sanasi) — kunlik / haftalik / oylik faol foydalanuvchilar uchun
+model MobileDay {
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day     DateTime @db.Date
+  firstAt DateTime @default(now())
+
+  @@id([userId, day])
+  @@index([day])
+}
+
+// Guruh xabariga reaksiya — har odam bitta xabarga bitta (boshqasini bossa almashadi)
+model FamilyReaction {
+  messageId String
+  message   FamilyMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime      @default(now())
+
+  @@id([messageId, userId])
+  @@index([messageId])
 }

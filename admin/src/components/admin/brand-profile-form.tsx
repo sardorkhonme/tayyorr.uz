@@ -1,0 +1,125 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+/** «Tayyorr.uz» profili (guruhda admin shu nomdan yozganda) — nom va rasm. */
+export function BrandProfileForm() {
+  const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/brand-profile")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.profile) {
+          setName(d.profile.name ?? "");
+          setAvatarUrl(d.profile.avatarUrl ?? "");
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function upload(file: File) {
+    setUploading(true);
+    setMsg(null);
+    try {
+      const pres = await fetch("/api/admin/upload/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "AVATAR",
+          filename: file.name,
+          contentType: file.type || "image/png",
+        }),
+      });
+      const p = await pres.json();
+      if (!pres.ok) throw new Error(p.error);
+      const put = await fetch(p.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/png" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("Yuklanmadi");
+      setAvatarUrl(p.publicUrl);
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Xatolik");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/admin/brand-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name || undefined,
+          avatarUrl: avatarUrl || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Xatolik");
+      setMsg("Saqlandi");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Xatolik");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+      <h2 className="font-semibold text-white">Tayyorr.uz profili</h2>
+      <p className="mb-3 mt-1 text-xs text-zinc-500">Tayyorr’s Family guruhida admin «Tayyorr.uz» nomidan yozganda şu nom va rasm körinadi.</p>
+      <form onSubmit={save} className="flex flex-col gap-3">
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 overflow-hidden rounded-full border border-white/10 bg-white/5">
+            {avatarUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) upload(f);
+            }}
+          />
+          <button
+            type="button"
+            className="btn-ghost"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+          >
+            {uploading ? "Yuklanmoqda..." : "Rasm tanlaş"}
+          </button>
+        </div>
+        <div>
+          <label className="label">Nom</label>
+          <input
+            className="input"
+            placeholder="Tayyorr.uz"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        {msg && <p className="text-sm text-zinc-400">{msg}</p>}
+        <button className="btn-primary w-fit" disabled={busy}>
+          {busy ? "..." : "Saqlaş"}
+        </button>
+      </form>
+    </section>
+  );
+}

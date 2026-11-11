@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { BRAND_AUTHOR, SUPPORT_AUTHOR, displayName, type FamilyAuthor } from "@/lib/family";
+import { displayName, familyAuthors, type FamilyAuthor } from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 
@@ -12,9 +12,10 @@ export async function GET(req: Request) {
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
   const q = (new URL(req.url).searchParams.get("q") ?? "").trim().replace(/^@/, "").toLowerCase().slice(0, 40);
-  if (!q) return mobileJson({ users: [BRAND_AUTHOR, SUPPORT_AUTHOR] });
+  const { brand, support } = await familyAuthors();
+  if (!q) return mobileJson({ users: [brand, support] });
 
-  const special = [BRAND_AUTHOR, SUPPORT_AUTHOR].filter((a) => a.login!.startsWith(q) || a.name.toLowerCase().startsWith(q));
+  const special = [brand, support].filter((a) => a.login!.startsWith(q) || a.name.toLowerCase().startsWith(q));
   const rows = await db.user.findMany({
     where: {
       isSupport: false,

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatSom } from "@/lib/wallet";
 import { SupportProfileForm } from "@/components/admin/support-profile-form";
+import { BrandProfileForm } from "@/components/admin/brand-profile-form";
 import {
   HEAR_ABOUT_US_LABELS,
   ChannelBrandIcon,
@@ -119,6 +120,7 @@ export default async function AdminHome() {
       )}
 
       <SupportProfileForm />
+      <BrandProfileForm />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { sendFamilyPush } from "@/lib/fcm";
-import { FAMILY_NAME, authorOf, familyInclude, familyRole, familySignal, toFamilyClients } from "@/lib/family";
+import { FAMILY_NAME, familyInclude, familyRole, familySignal, toFamilyClients } from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 
@@ -54,7 +54,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ msgId:
     const text = row.body.trim() || (row.fileName ? `📎 ${row.fileName}` : "xabar");
     await sendFamilyPush(
       "all",
-      { title: `${FAMILY_NAME} — qadaldi`, body: `${authorOf(row).name}: ${text.slice(0, 140)}`, messageId: row.id, kind: "pin" },
+      { title: `${FAMILY_NAME} — qadaldi`, body: `${m.author.name}: ${text.slice(0, 140)}`, messageId: row.id, kind: "pin" },
       me,
     ).catch(() => {});
   }

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import jwt from "jsonwebtoken";
 
 import { db } from "@/lib/db";
@@ -26,6 +26,32 @@ function verifyMobileToken(token: string): string | null {
     return typeof decoded.sub === "string" ? decoded.sub : null;
   } catch {
     return null;
+  }
+}
+
+/** Toshkent sanasi "YYYY-MM-DD". */
+const tashkentDay = () => new Date(Date.now() + 5 * 3600 * 1000).toISOString().slice(0, 10);
+const tracked = new Map<string, string>();
+
+/**
+ * Mobil ilovadan foydalanish statistikasi: har foydalanuvchi uchun kuniga bir marta (shu server nusxasida)
+ * MobileDay qatori + mobileFirstAt / mobileLastAt. Javobni kechiktirmaydi (after).
+ */
+function trackMobile(userId: string) {
+  const day = tashkentDay();
+  if (tracked.get(userId) === day) return;
+  if (tracked.size > 20000) tracked.clear();
+  tracked.set(userId, day);
+  const job = async () => {
+    const now = new Date();
+    await db.mobileDay.createMany({ data: [{ userId, day: new Date(`${day}T00:00:00Z`), firstAt: now }], skipDuplicates: true });
+    await db.user.update({ where: { id: userId }, data: { mobileLastAt: now } });
+    await db.user.updateMany({ where: { id: userId, mobileFirstAt: null }, data: { mobileFirstAt: now } });
+  };
+  try {
+    after(() => job().catch(() => {}));
+  } catch {
+    void job().catch(() => {});
   }
 }
 
@@ -60,5 +86,6 @@ export async function requireMobileAuth(
     if (known.size > 5000) known.clear();
     known.set(userId, Date.now());
   }
+  trackMobile(userId);
   return { userId };
 }

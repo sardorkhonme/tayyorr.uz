@@ -110,6 +110,8 @@ const ACTIONS: [RegExp, RegExp, string][] = [
   [/./, /^\/api\/admin\/version/, "Ilova versiyasini özgartirdi"],
   [/./, /^\/api\/admin\/mobile-update/, "Ilova yangilanişini (APK / majburiy versiya) özgartirdi"],
   [/./, /^\/api\/admin\/support-profile/, "Support profilini özgartirdi"],
+  [/./, /^\/api\/admin\/brand-profile/, "Tayyorr.uz profilini özgartirdi"],
+  [/./, /^\/api\/admin\/family\/admins/, "Tayyorr’s Family adminlarini özgartirdi"],
   [/./, /^\/api\/admin\/telegram-test/, "Telegram xabarini sinadi"],
   [/./, /^\/api\/admin\/upload/, "Fayl yukladi"],
   [/POST/, /^\/api\/orders\/[^/]+\/refresh/, "Buyurtma statistikasini yangiladi"],

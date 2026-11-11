@@ -6,6 +6,8 @@ import { shortDateTime } from "@/lib/date";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { FamilyAdmins } from "@/components/admin/family-admins";
 import { FamilyRefresh } from "@/components/admin/family-refresh";
+import { BrandProfileForm } from "@/components/admin/brand-profile-form";
+import { SupportProfileForm } from "@/components/admin/support-profile-form";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +79,11 @@ export default async function AdminFamily({ searchParams }: { searchParams: Prom
             <p className="mt-1 text-2xl font-semibold text-white">{s.value.toLocaleString("ru-RU")}</p>
           </div>
         ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <BrandProfileForm />
+        <SupportProfileForm />
       </div>
 
       <FamilyAdmins admins={admins.map((a) => ({ id: a.id, name: nameOf(a), login: a.login, image: a.avatarUrl ?? a.image ?? null }))} />

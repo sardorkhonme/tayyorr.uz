@@ -35,5 +35,7 @@ export async function DELETE(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return mobileJson({ error: "Token kerak" }, { status: 400 });
   await db.deviceToken.deleteMany({ where: { token: parsed.data.token, userId: auth.userId } });
+  // statistika: ilovadan chiqdi (keyin yana foydalansa — mobileLastAt undan keyin bo'ladi)
+  await db.user.update({ where: { id: auth.userId }, data: { mobileLogoutAt: new Date() } }).catch(() => {});
   return mobileJson({ ok: true });
 }

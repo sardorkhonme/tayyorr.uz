@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         data: {
           email,
           emailVerified: new Date(),
-          signupMethod: "EMAIL",
+          signupMethod: "EMAIL_MOBILE",
           termsAcceptedAt: new Date(),
           termsVersion: TERMS_VERSION,
         },

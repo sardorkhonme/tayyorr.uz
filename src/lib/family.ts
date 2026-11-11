@@ -16,6 +16,8 @@ import { FAMILY_CHANNEL, signal } from "@/lib/realtime";
  */
 export const FAMILY_NAME = "Tayyorr’s Family";
 export const FILE_TTL_MS = 5 * 24 * 3600 * 1000;
+/** Ruxsat etilgan reaksiyalar (ilovadagi tanlov bilan bir xil). */
+export const FAMILY_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "🙏", "👏"];
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz").replace(/\/+$/, "");
 
 export const BRAND_LOGIN = "tayyorr.uz";
@@ -47,6 +49,7 @@ const senderSelect = {
 
 export const familyInclude = {
   sender: { select: senderSelect },
+  reactions: { select: { userId: true, emoji: true }, orderBy: { createdAt: "asc" as const } },
   replyTo: { include: { sender: { select: senderSelect } } },
 } satisfies Prisma.FamilyMessageInclude;
 
@@ -60,9 +63,39 @@ export function displayName(u: Pick<Sender, "firstName" | "lastName" | "name" | 
   return [u.firstName, u.lastName].filter(Boolean).join(" ") || u.name || (u.login ? `@${u.login}` : "Foydalanuvçi");
 }
 
-export function authorOf(m: { as: string; sender: Sender }): FamilyAuthor {
-  if (m.as === "brand") return BRAND_AUTHOR;
-  if (m.as === "support") return SUPPORT_AUTHOR;
+/** Admin paneldagi «Tayyorr.uz profili» (AppSetting, JSON: { name, avatarUrl }). */
+export const BRAND_PROFILE_KEY = "family.brand";
+
+export type FamilyAuthors = { brand: FamilyAuthor; support: FamilyAuthor };
+let authorsCache: { at: number; v: FamilyAuthors } | null = null;
+
+/**
+ * Tayyorr.uz va Tayyorr Support ko'rinishi — admin panelda o'zgartiriladi (Tayyorr.uz — «Tayyorr.uz profili»,
+ * Support — «support profili»: nomi va rasmi). 1 daqiqa keshlanadi.
+ */
+export async function familyAuthors(): Promise<FamilyAuthors> {
+  if (authorsCache && Date.now() - authorsCache.at < 60_000) return authorsCache.v;
+  const [setting, sup] = await Promise.all([
+    db.appSetting.findUnique({ where: { key: BRAND_PROFILE_KEY } }).catch(() => null),
+    db.user.findFirst({ where: { isSupport: true }, select: { name: true, avatarUrl: true, image: true } }),
+  ]);
+  let b: { name?: string; avatarUrl?: string } = {};
+  try {
+    b = JSON.parse(setting?.value ?? "{}");
+  } catch {
+    /* bo'sh */
+  }
+  const v: FamilyAuthors = {
+    brand: { ...BRAND_AUTHOR, name: b.name?.trim() || BRAND_AUTHOR.name, image: b.avatarUrl || BRAND_AUTHOR.image },
+    support: { ...SUPPORT_AUTHOR, name: sup?.name?.trim() || SUPPORT_AUTHOR.name, image: sup?.avatarUrl ?? sup?.image ?? SUPPORT_AUTHOR.image },
+  };
+  authorsCache = { at: Date.now(), v };
+  return v;
+}
+
+export function authorOf(m: { as: string; sender: Sender }, a: FamilyAuthors): FamilyAuthor {
+  if (m.as === "brand") return a.brand;
+  if (m.as === "support") return a.support;
   const s = m.sender;
   return { kind: "user", id: s.id, name: displayName(s), login: s.login, image: s.avatarUrl ?? s.image ?? null };
 }
@@ -100,6 +133,10 @@ export interface FamilyClientMessage {
   expiredFile: { name: string; type: string; size: number } | null;
   replyTo: { id: string; authorName: string; text: string; deleted: boolean } | null;
   mentions: { id: string; login: string }[];
+  /** reaksiyalar: emoji, soni va bosganlar id'lari (50 tagacha — «meniki»ni aniqlash uchun) */
+  reactions: { emoji: string; count: number; users: string[] }[];
+  /** nechta a'zo ko'rgan (yozuvchidan tashqari) */
+  seen: number;
   notifyAll: boolean;
   pinned: boolean;
   scheduled: boolean;
@@ -124,11 +161,46 @@ async function mentionMap(rows: { mentions: string[] }[]) {
   return map;
 }
 
+/** Reaksiyalarni emoji bo'yicha guruhlaydi. */
+function reactionSummary(rs: { userId: string; emoji: string }[]) {
+  const map = new Map<string, string[]>();
+  for (const r of rs) map.set(r.emoji, [...(map.get(r.emoji) ?? []), r.userId]);
+  return [...map.entries()].map(([emoji, users]) => ({ emoji, count: users.length, users: users.slice(0, 50) }));
+}
+
+/**
+ * «Ko'rdi»: a'zolarning lastReadAt qiymatlari (bir so'rov) — har xabar uchun nechta a'zo o'qiganini
+ * ikkilik qidiruv bilan hisoblaydi (yozuvchi o'zi sanalmaydi).
+ */
+async function seenCounter(rows: FamilyRow[]) {
+  if (!rows.length) return () => 0;
+  const members = await db.familyMember.findMany({ select: { userId: true, lastReadAt: true } });
+  const times = members.map((m) => m.lastReadAt.getTime()).sort((a, b) => a - b);
+  const readAt = new Map(members.map((m) => [m.userId, m.lastReadAt.getTime()]));
+  return (m: FamilyRow) => {
+    const t = m.sendAt.getTime();
+    let lo = 0;
+    let hi = times.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (times[mid] >= t) hi = mid;
+      else lo = mid + 1;
+    }
+    const n = times.length - lo;
+    const self = (readAt.get(m.senderId) ?? 0) >= t ? 1 : 0;
+    return Math.max(0, n - self);
+  };
+}
+
 export async function toFamilyClients(
   rows: FamilyRow[],
-  opts: { meId?: string; forAdmin?: boolean } = {},
+  opts: { meId?: string; forAdmin?: boolean; noSeen?: boolean } = {},
 ): Promise<FamilyClientMessage[]> {
-  const logins = await mentionMap(rows);
+  const [logins, authors, seenOf] = await Promise.all([
+    mentionMap(rows),
+    familyAuthors(),
+    opts.noSeen ? Promise.resolve(() => 0) : seenCounter(rows),
+  ]);
   const now = Date.now();
   return Promise.all(
     rows.map(async (m) => {
@@ -143,13 +215,15 @@ export async function toFamilyClients(
       const r = m.replyTo;
       return {
         id: m.id,
-        author: authorOf(m),
+        author: authorOf(m, authors),
         ...(opts.meId ? { mine: m.senderId === opts.meId } : {}),
         body: hide ? "" : m.body,
         file,
         expiredFile: !hide && meta && expired ? meta : null,
-        replyTo: r ? { id: r.id, authorName: authorOf(r).name, text: snippet(r), deleted: !!r.deletedAt } : null,
+        replyTo: r ? { id: r.id, authorName: authorOf(r, authors).name, text: snippet(r), deleted: !!r.deletedAt } : null,
         mentions: m.mentions.map((id) => ({ id, login: logins.get(id) ?? "" })).filter((x) => x.login),
+        reactions: hide ? [] : reactionSummary(m.reactions),
+        seen: seenOf(m),
         notifyAll: m.notifyAll,
         pinned: !!m.pinnedAt && !deleted,
         scheduled: m.scheduled && m.sendAt.getTime() > now,
@@ -199,10 +273,10 @@ export function familySignal(e: "new" | "upd" | "del", data: { id: string; m?: F
 
 /** Xabar ko'rinadigan bo'lganda: realtime + kerakli bildirishnomalar (javobdan keyin, fonda). */
 export async function dispatchFamily(row: FamilyRow) {
-  const [client] = await toFamilyClients([row]);
+  const [client] = await toFamilyClients([row], { noSeen: true });
   familySignal("new", { id: row.id, m: client });
 
-  const author = authorOf(row);
+  const author = client.author;
   const text = snippet(row, 140);
   const senderId = row.senderId;
   const job = async () => {
