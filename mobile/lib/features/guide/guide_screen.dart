@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/navigation/open_internal.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_exception.dart';
+import '../../widgets/skeleton.dart';
 import '../../widgets/web_page.dart';
 import '../../widgets/web_ui.dart';
 import '../auth/bloc/auth_bloc.dart';
@@ -122,7 +123,7 @@ class _GuideScreenState extends State<GuideScreen> {
         ]),
         const SizedBox(height: 20),
         if (_loading)
-          const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()))
+          ...[for (var i = 0; i < 4; i++) _stepSkeleton(last: i == 3)]
         else if (_error != null)
           WebCard(child: Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)))
         else ...[
@@ -282,6 +283,44 @@ class _GuideScreenState extends State<GuideScreen> {
                     onPressed: () => openInternalUrl(context, s.linkHref!),
                   ),
                 ],
+              ]),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  /// Qadam kartasining skeleti — haqiqiy [_stepTile] bilan bir xil joylashuv.
+  Widget _stepSkeleton({required bool last}) {
+    return IntrinsicHeight(
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SizedBox(
+          width: 40,
+          child: Column(children: [
+            const SCircle(size: 40),
+            if (!last)
+              Expanded(
+                child: Container(width: 2, margin: const EdgeInsets.symmetric(vertical: 4), color: WebC.border),
+              ),
+          ]),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: last ? 0 : 16),
+            child: WebCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+                SBar(width: 56, height: 10),
+                SizedBox(height: 8),
+                SBar(width: 170, height: 16),
+                SizedBox(height: 12),
+                SBar(height: 12),
+                SizedBox(height: 8),
+                SBar(width: 210, height: 12),
+                SizedBox(height: 8),
+                SBar(width: 150, height: 12),
               ]),
             ),
           ),

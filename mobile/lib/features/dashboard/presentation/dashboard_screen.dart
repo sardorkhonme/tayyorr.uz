@@ -244,7 +244,7 @@ class _DashboardViewState extends State<_DashboardView> {
       backgroundColor: Colors.transparent,
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
-          final loading = state.status == DashboardStatus.loading && state.orders.isEmpty;
+          final loading = (state.status == DashboardStatus.loading || state.status == DashboardStatus.initial) && state.orders.isEmpty;
           final filtered = _filtered(state.orders);
           return RefreshIndicator(
             onRefresh: _refresh,
@@ -286,7 +286,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       ? SliverList.separated(
                           itemCount: 4,
                           separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (_, __) => const SBlock(height: 92),
+                          itemBuilder: (_, __) => const _OrderRowSkeleton(),
                         )
                       : filtered.isEmpty
                           ? SliverToBoxAdapter(
@@ -452,6 +452,30 @@ class _ControlsDelegate extends SliverPersistentHeaderDelegate {
 }
 
 /// Saytdagi buyurtma qatori (`.card` ichida chapda matn, o'ngda "N taklif").
+/// [_OrderRow] skeleti: sarlavha, meta qatori, vaqt va o'ngda «taklif» belgisi.
+class _OrderRowSkeleton extends StatelessWidget {
+  const _OrderRowSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const WebCard(
+      child: Row(children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SBar(width: 200, height: 16),
+            SizedBox(height: 8),
+            SBar(width: 170, height: 11),
+            SizedBox(height: 7),
+            SBar(width: 110, height: 10),
+          ]),
+        ),
+        SizedBox(width: 16),
+        SBar(width: 62, height: 22, borderRadius: 99),
+      ]),
+    );
+  }
+}
+
 class _OrderRow extends StatelessWidget {
   const _OrderRow({required this.order, required this.onTap});
   final OrderModel order;

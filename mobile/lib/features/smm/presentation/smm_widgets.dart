@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/ui/platform_icon.dart';
 import '../../../core/utils/format.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/smm_models.dart';
 
@@ -89,6 +90,43 @@ class SmmTag extends StatelessWidget {
 }
 
 /// Xizmat kartochkasi — saytdagi ServiceCard: nom, teglar, tavsiya, kafolat, oraliq va 1000 ta narxi.
+/// [SmmServiceTile] skeleti — xuddi shu karta: sarlavha, yorliqlar, narx va «Tanlaş» tugmasi.
+class SmmServiceTileSkeleton extends StatelessWidget {
+  const SmmServiceTileSkeleton({super.key, this.withLabel = false});
+  final bool withLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: WebC.cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: WebC.cardBorder),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        if (withLabel) ...const [SBar(width: 130, height: 11), SizedBox(height: 7)],
+        const SBar(height: 15),
+        const SizedBox(height: 6),
+        const SBar(width: 170, height: 15),
+        const SizedBox(height: 12),
+        const Row(children: [SBar(width: 92, height: 22, borderRadius: 99), SizedBox(width: 6), SBar(width: 110, height: 22, borderRadius: 99)]),
+        const SizedBox(height: 14),
+        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+          const Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SBar(width: 96, height: 19),
+              SizedBox(height: 6),
+              SBar(width: 150, height: 11),
+            ]),
+          ),
+          const SBar(width: 78, height: 38, borderRadius: 12),
+        ]),
+      ]),
+    );
+  }
+}
+
 class SmmServiceTile extends StatelessWidget {
   const SmmServiceTile({super.key, required this.s, required this.onTap, this.label});
   final SmmService s;

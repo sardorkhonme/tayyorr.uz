@@ -40,7 +40,7 @@ class _MessagesListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationsCubit, ConversationsState>(
       builder: (context, state) {
-        final loading = state.status == ConversationsStatus.loading && state.conversations.isEmpty;
+        final loading = (state.status == ConversationsStatus.loading || state.status == ConversationsStatus.initial) && state.conversations.isEmpty;
         return WebPage(
           background: false,
           onRefresh: () async {
@@ -51,7 +51,7 @@ class _MessagesListView extends StatelessWidget {
             Text('Xabarlar', style: TextStyle(color: WebC.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
             const SizedBox(height: 20),
             if (loading)
-              for (var i = 0; i < 4; i++) ...[const SBlock(height: 70), const SizedBox(height: 8)]
+              for (var i = 0; i < 5; i++) ...[const _ConversationSkeleton(), const SizedBox(height: 8)]
             else if (state.conversations.isEmpty)
               WebCard(
                 child: Text(
@@ -69,6 +69,30 @@ class _MessagesListView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// [_ConversationTile] skeleti: 44px avatar, ism + vaqt, oxirgi xabar.
+class _ConversationSkeleton extends StatelessWidget {
+  const _ConversationSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(16), border: Border.all(color: WebC.cardBorder)),
+      child: const Row(children: [
+        SCircle(size: 44),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [Expanded(child: Align(alignment: Alignment.centerLeft, child: SBar(width: 130, height: 15))), SizedBox(width: 8), SBar(width: 36, height: 11)]),
+            SizedBox(height: 7),
+            SBar(width: 200, height: 12),
+          ]),
+        ),
+      ]),
     );
   }
 }

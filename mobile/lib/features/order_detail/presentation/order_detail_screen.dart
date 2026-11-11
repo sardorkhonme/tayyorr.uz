@@ -56,21 +56,51 @@ class _OrderDetailView extends StatelessWidget {
       builder: (context, state) {
         final order = state.order;
         if (order == null) {
-          return WebPage(
-            children: [
-              const WebBackLink(),
-              const SizedBox(height: 24),
-              if (state.status == OrderDetailStatus.failure)
-                WebCard(child: Text(state.error ?? 'Topilmadi', style: TextStyle(color: WebC.zinc500, fontSize: 14)))
-              else ...[
-                const SBlock(height: 70),
-                const SizedBox(height: 24),
-                const SBar(width: 120, height: 12),
-                const SizedBox(height: 10),
-                const SBar(width: 240, height: 24),
-                const SizedBox(height: 24),
-                const SBlock(height: 90),
+          if (state.status == OrderDetailStatus.failure) {
+            return WebPage(
+              gap: 24,
+              children: [
+                const WebBackLink(),
+                WebCard(child: Text(state.error ?? 'Topilmadi', style: TextStyle(color: WebC.zinc500, fontSize: 14))),
               ],
+            );
+          }
+          // haqiqiy [_sections] tuzilmasi: shaxs kartasi, tur·holat + sarlavha, tavsif, muddat/byudjet, amallar
+          return const WebPage(
+            gap: 24,
+            children: [
+              WebBackLink(),
+              WebCard(
+                child: Row(children: [
+                  SCircle(size: 44),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      SBar(width: 140, height: 15),
+                      SizedBox(height: 6),
+                      SBar(width: 80, height: 11),
+                    ]),
+                  ),
+                ]),
+              ),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SBar(width: 150, height: 12),
+                SizedBox(height: 10),
+                SBar(height: 24),
+                SizedBox(height: 6),
+                SBar(width: 180, height: 24),
+              ]),
+              WebCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SBar(height: 13),
+                  SizedBox(height: 7),
+                  SBar(height: 13),
+                  SizedBox(height: 7),
+                  SBar(width: 200, height: 13),
+                ]),
+              ),
+              Row(children: [SBar(width: 150, height: 13), SizedBox(width: 16), SBar(width: 130, height: 13)]),
+              SBlock(height: 120),
             ],
           );
         }

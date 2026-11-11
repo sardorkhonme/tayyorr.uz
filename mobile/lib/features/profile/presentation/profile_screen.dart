@@ -99,7 +99,47 @@ class ProfileScreen extends StatelessWidget {
     return WebPage(
       background: false,
       children: user == null
-          ? const [SBlock(height: 28, width: 120), SizedBox(height: 20), SBlock(height: 380)]
+          ? [
+              // haqiqiy tuzilma: sarlavha, login qatori, tezkor havolalar, profil formasi (80px rasm + maydonlar)
+              WebPageTitle('Profil', size: 24),
+              const SizedBox(height: 6),
+              const SBar(width: 220, height: 13),
+              const SizedBox(height: 20),
+              WebCard(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Column(children: [
+                  for (var i = 0; i < 3; i++)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                      child: Row(children: [
+                        Skel(width: 40, height: 40, borderRadius: 12),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            SBar(width: 110, height: 14),
+                            SizedBox(height: 6),
+                            SBar(width: 170, height: 11),
+                          ]),
+                        ),
+                      ]),
+                    ),
+                ]),
+              ),
+              const SizedBox(height: 16),
+              const WebCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SBar(width: 120, height: 17),
+                  SizedBox(height: 16),
+                  Row(children: [SCircle(size: 80), SizedBox(width: 16), SBar(width: 120, height: 36, borderRadius: 10)]),
+                  SizedBox(height: 16),
+                  SField(),
+                  SizedBox(height: 14),
+                  SField(),
+                  SizedBox(height: 14),
+                  SField(),
+                ]),
+              ),
+            ]
           : [
               WebPageTitle('Profil', size: 24),
               const SizedBox(height: 4),

@@ -64,7 +64,13 @@ class _WalletView extends StatelessWidget {
             ),
           ];
         } else if (wallet == null) {
-          body = const [SBlock(height: 150), SBlock(height: 300), SBlock(height: 260)];
+          // haqiqiy tuzilma: balans kartasi, to'ldirish, yechib olish formasi, amallar tarixi
+          body = [
+            const _BalanceSkeleton(),
+            const _TopUpSkeleton(),
+            const SBlock(height: 280),
+            _Section(title: 'Amallar tarixi', children: [for (var i = 0; i < 4; i++) const _TxnSkeleton()]),
+          ];
         } else {
           body = [
             _BalanceCard(wallet: wallet),
@@ -103,6 +109,74 @@ class _WalletView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _BalanceSkeleton extends StatelessWidget {
+  const _BalanceSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: WebC.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: WebC.cardBorder),
+      ),
+      child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SBar(width: 90, height: 13),
+        SizedBox(height: 10),
+        SBar(width: 190, height: 36, borderRadius: 10),
+        SizedBox(height: 14),
+        SBar(width: 210, height: 32, borderRadius: 8),
+      ]),
+    );
+  }
+}
+
+class _TopUpSkeleton extends StatelessWidget {
+  const _TopUpSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(20), border: Border.all(color: WebC.cardBorder)),
+      child: const Row(children: [
+        Skel(width: 46, height: 46, borderRadius: 14),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SBar(width: 140, height: 15),
+            SizedBox(height: 6),
+            SBar(width: 190, height: 11),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+class _TxnSkeleton extends StatelessWidget {
+  const _TxnSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const WebCard(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SBar(width: 120, height: 14),
+            SizedBox(height: 6),
+            SBar(width: 150, height: 11),
+          ]),
+        ),
+        SizedBox(width: 12),
+        SBar(width: 80, height: 14),
+      ]),
     );
   }
 }

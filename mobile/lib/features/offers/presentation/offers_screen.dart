@@ -48,7 +48,7 @@ class _OffersViewState extends State<_OffersView> {
     return BlocBuilder<OffersCubit, OffersState>(
       builder: (context, state) {
         final list = state.offers.where((o) => _filter == 'ALL' || o.order.status == _filter).toList();
-        final loading = state.status == OffersStatus.loading && state.offers.isEmpty;
+        final loading = (state.status == OffersStatus.loading || state.status == OffersStatus.initial) && state.offers.isEmpty;
         return WebPage(
           background: false,
           onRefresh: () => context.read<OffersCubit>().load(),
@@ -80,7 +80,7 @@ class _OffersViewState extends State<_OffersView> {
             ),
             const SizedBox(height: 16),
             if (loading)
-              for (var i = 0; i < 3; i++) ...[const SBlock(height: 120), const SizedBox(height: 8)]
+              for (var i = 0; i < 4; i++) ...[const _OfferCardSkeleton(), const SizedBox(height: 8)]
             else if (list.isEmpty)
               WebCard(
                 child: Text(
@@ -104,6 +104,34 @@ class _OffersViewState extends State<_OffersView> {
           ],
         );
       },
+    );
+  }
+}
+
+/// [_OfferCard] skeleti.
+class _OfferCardSkeleton extends StatelessWidget {
+  const _OfferCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const WebCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SBar(width: 190, height: 16),
+              SizedBox(height: 6),
+              SBar(width: 140, height: 11),
+            ]),
+          ),
+          SizedBox(width: 12),
+          SBar(width: 28, height: 12),
+        ]),
+        SizedBox(height: 10),
+        Row(children: [SBar(width: 120, height: 14), SizedBox(width: 16), SBar(width: 80, height: 14)]),
+        SizedBox(height: 10),
+        SBar(width: 100, height: 11),
+      ]),
     );
   }
 }

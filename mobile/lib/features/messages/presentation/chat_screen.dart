@@ -256,10 +256,12 @@ class _ChatViewState extends State<_ChatView> {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        if (state.status == ChatStatus.loading && state.messages.isEmpty) {
+                        if ((state.status == ChatStatus.loading || state.status == ChatStatus.initial) && state.messages.isEmpty) {
                           return Padding(
                             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                            // xabarlar pastdan joylashadi (reverse ro'yxat) — skelet ham pastda
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: const [
                                 SBubble(widthFraction: 0.4),
                                 SizedBox(height: 10),

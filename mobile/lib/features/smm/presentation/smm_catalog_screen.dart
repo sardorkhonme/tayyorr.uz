@@ -77,10 +77,23 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
             }),
           ),
         ] else if (c == null) ...[
-          const SizedBox(height: 14),
-          const SBlock(height: 90),
+          // haqiqiy ko'rinish: 1-qadam sarlavhasi + 3 ustunli platforma plitkalari
+          const SizedBox(height: 22),
+          const SmmStepTitle(1, 'Platformani tanlang'),
           const SizedBox(height: 12),
-          const SBlock(height: 260),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.92,
+            // Skel cheklangan balandlik talab qiladi (nur animatsiyasi) — katakning o'lchamini beramiz
+            children: [
+              for (var i = 0; i < 6; i++)
+                LayoutBuilder(builder: (_, box) => Skel(width: box.maxWidth, height: box.maxHeight, borderRadius: 20)),
+            ],
+          ),
         ] else
           ..._content(c),
       ],

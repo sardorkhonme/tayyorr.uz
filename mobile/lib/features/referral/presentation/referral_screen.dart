@@ -56,7 +56,7 @@ class _ReferralViewState extends State<_ReferralView> {
     return BlocBuilder<ReferralCubit, ReferralState>(
       builder: (context, state) {
         final referred = state.data?.referredUsers ?? const <ReferredUserModel>[];
-        final loading = state.status == ReferralStatus.loading && referred.isEmpty;
+        final loading = (state.status == ReferralStatus.loading || state.status == ReferralStatus.initial) && referred.isEmpty;
         return WebPage(
           background: false,
           onRefresh: () => context.read<ReferralCubit>().load(),
@@ -75,7 +75,19 @@ class _ReferralViewState extends State<_ReferralView> {
                     style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 if (loading)
-                  const SBlock(height: 64)
+                  for (var i = 0; i < 3; i++)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: WebCard(
+                        child: Row(children: [
+                          Expanded(child: Align(alignment: Alignment.centerLeft, child: SBar(width: 170, height: 14))),
+                          SizedBox(width: 12),
+                          SBar(width: 70, height: 11),
+                          SizedBox(width: 12),
+                          SBar(width: 38, height: 18, borderRadius: 99),
+                        ]),
+                      ),
+                    )
                 else if (referred.isEmpty)
                   WebCard(
                     child: Text("Hozirça heç kim havolangiz orqali röyxatdan ötmagan.",

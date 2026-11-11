@@ -2,7 +2,6 @@ import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/network/api_exception.dart';
-import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/smm_api.dart';
@@ -74,7 +73,7 @@ class _SmmDiscountsScreenState extends State<SmmDiscountsScreen> {
         const SizedBox(height: 16),
         if (_error != null && c == null)
           SmmEmpty(icon: TI.wifi_off_rounded, title: _error!)
-        else if (c == null) ...const [SBlock(height: 160), SizedBox(height: 10), SBlock(height: 160)]
+        else if (c == null) ...[for (var i = 0; i < 3; i++) ...const [SmmServiceTileSkeleton(withLabel: true), SizedBox(height: 10)]]
         else if (all.isEmpty)
           SmmEmpty(
             icon: TI.local_offer_outlined,

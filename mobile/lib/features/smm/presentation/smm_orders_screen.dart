@@ -78,7 +78,20 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
         const SizedBox(height: 16),
         if (_error != null && d == null)
           SmmEmpty(icon: TI.wifi_off_rounded, title: _error!, action: WebButton(label: 'Qayta uriniş', onPressed: load))
-        else if (d == null) ...const [SBlock(height: 150), SizedBox(height: 12), SBlock(height: 90), SizedBox(height: 10), SBlock(height: 90)]
+        else if (d == null) ...[
+          // haqiqiy ko'rinish: 2×2 statistika + buyurtma qatorlari
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 1.75,
+            children: [for (var i = 0; i < 4; i++) _statSkeleton()],
+          ),
+          const SizedBox(height: 16),
+          for (var i = 0; i < 4; i++) ...[_orderSkeleton(), const SizedBox(height: 10)],
+        ]
         else ...[
           GridView.count(
             crossAxisCount: 2,
@@ -128,6 +141,41 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
         ]),
       );
 }
+
+Widget _statSkeleton() => Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
+      child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SBar(width: 90, height: 12),
+        Spacer(),
+        SBar(width: 70, height: 20),
+      ]),
+    );
+
+/// [_OrderRow] skeleti.
+Widget _orderSkeleton() => Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
+      child: const Column(children: [
+        Row(children: [
+          Skel(width: 42, height: 42, borderRadius: 12),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SBar(width: 170, height: 14),
+              SizedBox(height: 6),
+              SBar(width: 130, height: 11),
+            ]),
+          ),
+          SizedBox(width: 8),
+          SBar(width: 64, height: 22, borderRadius: 99),
+        ]),
+        SizedBox(height: 12),
+        SBar(height: 6, borderRadius: 9),
+        SizedBox(height: 6),
+        Align(alignment: Alignment.centerRight, child: SBar(width: 60, height: 10)),
+      ]),
+    );
 
 String groupDigitsSafe(int n) => som(n).replaceAll(' söm', '');
 

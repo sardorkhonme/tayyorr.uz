@@ -46,7 +46,34 @@ class _LegalScreenState extends State<LegalScreen> {
       children: [
         if (_error != null)
           WebCard(child: Text(_error!, style: TextStyle(color: WebC.red)))
-        else if (d == null) ...const [SBlock(height: 30, width: 220), SizedBox(height: 16), SBlock(height: 400)]
+        else if (d == null) ...[
+          // sarlavha, sana, kirish matni va bo'lim kartalari — haqiqiy tuzilma
+          const SBar(width: 240, height: 26),
+          const SizedBox(height: 10),
+          const SBar(width: 150, height: 12),
+          const SizedBox(height: 18),
+          const SBar(height: 13),
+          const SizedBox(height: 7),
+          const SBar(height: 13),
+          const SizedBox(height: 7),
+          const SBar(width: 220, height: 13),
+          const SizedBox(height: 20),
+          for (var i = 0; i < 4; i++) ...[
+            const WebCard(
+              padding: EdgeInsets.all(16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SBar(width: 190, height: 16),
+                SizedBox(height: 12),
+                SBar(height: 12),
+                SizedBox(height: 7),
+                SBar(height: 12),
+                SizedBox(height: 7),
+                SBar(width: 160, height: 12),
+              ]),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ]
         else ...[
           WebPageTitle('${d['title']}', size: 23),
           const SizedBox(height: 6),

@@ -90,13 +90,57 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
           children: [
             if (_error != null && d == null)
               SmmEmpty(icon: TI.error_outline_rounded, title: _error!)
-            else if (d == null) ...const [SBlock(height: 140), SizedBox(height: 12), SBlock(height: 200)]
+            else if (d == null) ..._skeleton()
             else ..._body(d),
           ],
         ),
       ),
     );
   }
+
+  /// Haqiqiy [_body] tuzilmasi: gradient sarlavha, bajarilish halqasi, 2×3 statistika, havola kartasi.
+  List<Widget> _skeleton() => [
+        const Skel(height: 128, borderRadius: 24),
+        const SizedBox(height: 14),
+        const WebCard(
+          child: Row(children: [
+            SCircle(size: 92),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SBar(width: 110, height: 18),
+                SizedBox(height: 8),
+                SBar(height: 12),
+                SizedBox(height: 6),
+                SBar(width: 140, height: 12),
+              ]),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 2.1,
+          children: [
+            for (var i = 0; i < 6; i++)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(16), border: Border.all(color: WebC.cardBorder)),
+                child: const Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                  SBar(width: 70, height: 10),
+                  SizedBox(height: 6),
+                  SBar(width: 90, height: 16),
+                ]),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        const SBlock(height: 120),
+      ];
 
   List<Widget> _body(SmmOrderDetail d) {
     final o = d.order;
