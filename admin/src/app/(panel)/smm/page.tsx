@@ -6,6 +6,7 @@ import { shortDateTime } from "@/lib/date";
 import { getSmmSettings, refreshSmmUsdRate } from "@/lib/smm-settings";
 import { SmmProviderBalance } from "@/components/admin/smm-provider-balance";
 import { SmmOrderRefresh } from "@/components/admin/smm-order-refresh";
+import { SmmRateRefresh } from "@/components/admin/smm-rate-refresh";
 import { Icon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
@@ -118,6 +119,7 @@ export default async function AdminSmm() {
               : "Kursni olib bölmadi"}
           </span>
           <span className="mt-2 text-xs text-zinc-600">Har 6 soatda avtomatik yangilanadi.</span>
+          <SmmRateRefresh />
         </div>
         <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <span className="text-sm text-zinc-400">Ustama</span>

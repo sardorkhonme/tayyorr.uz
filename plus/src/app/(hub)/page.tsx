@@ -5,6 +5,7 @@ import { currentUser } from "@/auth";
 import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { TopupButton } from "@/components/topup-button";
+import { AppDownloadBanner, AppDownloadSection } from "@/components/app-download";
 import { db } from "@/lib/db";
 import { MAIN_SITE_URL, SMM_URL } from "@/lib/hub-nav";
 import { num } from "@/lib/format";
@@ -49,6 +50,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-10">
+      <AppDownloadBanner />
       {welcome && user && (
         <div className="animate-rise flex flex-col gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 text-indigo-900 sm:flex-row sm:items-center sm:justify-between">
           <span className="flex items-center gap-3">
@@ -176,6 +178,8 @@ export default async function DashboardPage({
           </div>
         </section>
       )}
+
+      <AppDownloadSection />
     </div>
   );
 }

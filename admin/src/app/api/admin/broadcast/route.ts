@@ -75,9 +75,35 @@ export async function POST(req: Request) {
     if (to) where.createdAt.lte = new Date(`${to}T23:59:59.999`);
   }
 
-  const count = await db.user.count({ where });
+  // ro'yxatdan tanlanganlar (admin ba'zilarini olib tashlagan bo'lishi mumkin) — filtr bilan kesishmasi
+  const pickedIds = Array.isArray(raw.userIds)
+    ? (raw.userIds as unknown[]).filter((x): x is string => typeof x === "string").slice(0, MAX)
+    : null;
+  if (pickedIds) where.id = { in: pickedIds };
 
-  if (preview) return NextResponse.json({ count });
+  if (preview) {
+    const users = await db.user.findMany({
+      where,
+      select: { id: true, name: true, firstName: true, lastName: true, login: true, email: true, image: true, role: true, balance: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: MAX,
+    });
+    return NextResponse.json({
+      count: users.length,
+      users: users.map((u) => ({
+        id: u.id,
+        name: [u.firstName, u.lastName].filter(Boolean).join(" ") || u.name || u.login || "—",
+        login: u.login,
+        email: u.email,
+        image: u.image,
+        role: u.role,
+        balance: u.balance,
+        createdAt: u.createdAt.toISOString(),
+      })),
+    });
+  }
+
+  const count = await db.user.count({ where });
   if (count === 0) {
     return NextResponse.json({ error: "Filtrga mos foydalanuvçi yöq" }, { status: 400 });
   }

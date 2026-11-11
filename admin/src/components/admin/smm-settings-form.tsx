@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-/** tayyorr+: ustama (%) va dollar kursini yangilash. */
+/** Tayyorr SMM: ustama (%). Dollar kursi — «Tayyorr SMM» bo'limida. */
 export function SmmSettingsForm({
   markupPercent,
   markupIsDefault,
@@ -15,24 +15,24 @@ export function SmmSettingsForm({
 }) {
   const router = useRouter();
   const [value, setValue] = useState(String(markupPercent));
-  const [busy, setBusy] = useState<"save" | "rate" | null>(null);
+  const [busy, setBusy] = useState<"save" | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const pct = Number(value);
   const example = fx && Number.isFinite(pct) ? Math.ceil((1 * fx * (1 + pct / 100)) / 100) * 100 : null;
 
-  async function call(kind: "save" | "rate") {
+  async function call(kind: "save") {
     setBusy(kind);
     setMsg(null);
     try {
-      const res = await fetch(kind === "save" ? "/api/admin/smm-settings" : "/api/admin/smm-settings/rate", {
+      const res = await fetch("/api/admin/smm-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: kind === "save" ? JSON.stringify({ markupPercent: pct }) : "{}",
+        body: JSON.stringify({ markupPercent: pct }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
-      setMsg({ ok: true, text: kind === "save" ? "Saqlandi — narxlar 1 daqiqa içida yangilanadi" : "Kurs yangilandi" });
+      setMsg({ ok: true, text: "Saqlandi — narxlar 1 daqiqa içida yangilanadi" });
       router.refresh();
     } catch (err) {
       setMsg({ ok: false, text: err instanceof Error ? err.message : "Xatolik" });
@@ -68,9 +68,6 @@ export function SmmSettingsForm({
         </div>
         <button className="btn-primary" disabled={busy !== null || !Number.isFinite(pct)}>
           {busy === "save" ? "..." : "Saqlaş"}
-        </button>
-        <button type="button" className="btn-ghost" disabled={busy !== null} onClick={() => call("rate")}>
-          {busy === "rate" ? "..." : "Kursni hozir yangilaş"}
         </button>
       </div>
       {example != null && (

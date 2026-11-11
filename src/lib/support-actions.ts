@@ -26,6 +26,8 @@ export async function sendSupportMessage(
 
 const TELEGRAM_NEWS_URL = "https://t.me/tayyorruz";
 const TELEGRAM_WORKS_URL = "https://t.me/tayyorruz_works";
+/** Xush kelibsiz xabarining belgisi (eski va yangi alifboda bir xil qism). */
+export const WELCOME_MARK = "kelibsiz 🎉";
 
 /** Ro'yxatdan o'tgach bir marta yuboriladigan xabarlar (xush kelibsiz + kanal). */
 export async function sendWelcome(userId: string, firstName?: string | null) {
@@ -33,7 +35,7 @@ export async function sendWelcome(userId: string, firstName?: string | null) {
   const conv = await getOrCreateConversation(supportId, userId, null);
   // allaqachon yuborilgan bo'lsa — qayta yo'q (çatda boshqa xabarlar — referal bonusi, tayyorr+ / SMM — bo'lishi mumkin)
   const sent = await db.message.findFirst({
-    where: { conversationId: conv.id, senderId: supportId, body: { contains: "xuş kelibsiz 🎉" } },
+    where: { conversationId: conv.id, senderId: supportId, body: { contains: WELCOME_MARK } },
     select: { id: true },
   });
   if (sent) return;

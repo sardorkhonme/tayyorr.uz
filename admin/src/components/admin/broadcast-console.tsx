@@ -9,6 +9,7 @@ import { RocketIcon, Icon } from "@/components/icons";
 import { AutoTextarea } from "@/components/admin/auto-textarea";
 import { PeopleModal, type Person } from "@/components/admin/people-modal";
 import { useDismiss } from "@/components/use-dismiss";
+import { BroadcastRecipients, type Recipient } from "@/components/admin/broadcast-recipients";
 import { prepareBroadcastFile, type PreparedChatFile } from "@/lib/upload-client";
 import { smartTime } from "@/lib/date";
 import { type MessageSource } from "@/lib/message-source";
@@ -47,6 +48,10 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [count, setCount] = useState<number | null>(null);
+  const [recipients, setRecipients] = useState<Recipient[] | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [counting, setCounting] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [attachment, setAttachment] = useState<PreparedChatFile | null>(null);
@@ -133,10 +138,18 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   // filtr o'zgarganda hisob eskiradi
   useEffect(() => {
     setCount(null);
+    setRecipients(null);
+    setPicked(new Set());
   }, [role, balanceMin, balanceMax, from, to]);
 
   async function preview() {
+    // ro'yxat ochiq bo'lsa — yopiladi (tanlov saqlanadi)
+    if (recipients) {
+      setListOpen((v) => !v);
+      return;
+    }
     setErr(null);
+    setCounting(true);
     try {
       const res = await fetch("/api/admin/broadcast", {
         method: "POST",
@@ -146,8 +159,14 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setCount(data.count);
+      const list: Recipient[] = data.users ?? [];
+      setRecipients(list);
+      setPicked(new Set(list.map((u) => u.id)));
+      setListOpen(true);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");
+    } finally {
+      setCounting(false);
     }
   }
 
@@ -187,10 +206,16 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
     e.preventDefault();
     const body = text.trim();
     if ((!body && !attachment) || uploading) return;
+    // ro'yxat yuklangan bo'lsa — faqat belgilanganlarga
+    const ids = recipients ? [...picked] : null;
+    if (ids && ids.length === 0) {
+      setErr("Heç kim tanlanmagan");
+      return;
+    }
     if (
       !window.confirm(
-        count != null
-          ? `${count} ta foydalanuvçiga yuborilsinmi?`
+        ids
+          ? `${ids.length} ta foydalanuvçiga yuborilsinmi?`
           : "Filtrga mos hammaga yuborilsinmi?",
       )
     )
@@ -208,6 +233,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             ? { key: file.key, name: file.name, type: file.type, size: file.size }
             : undefined,
           ...filters(),
+          ...(ids ? { userIds: ids } : {}),
           source,
         }),
       });
@@ -220,6 +246,8 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
       setText("");
       setAttachment(null);
       setCount(null);
+      setRecipients(null);
+      setPicked(new Set());
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");
     } finally {
@@ -288,9 +316,10 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
             onClick={preview}
             className="btn-ghost self-end"
           >
-            {count != null ? `${count} ta mos` : "Neçta?"}
+            {counting ? "..." : count != null ? `${picked.size} / ${count} tanlangan ${listOpen ? "▴" : "▾"}` : "Neçta?"}
           </button>
         </div>
+        {recipients && listOpen && <BroadcastRecipients list={recipients} selected={picked} onChange={setPicked} />}
         <p className="mt-1.5 text-[11px] text-zinc-600">
           Böş maydonlar hisobga olinmaydi (hammasi).
         </p>

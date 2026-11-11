@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { BroadcastConsole } from "@/components/admin/broadcast-console";
+import { WelcomeBackfill } from "@/components/admin/welcome-backfill";
 import { splitSource, stripSource } from "@/lib/message-source";
 
 export default async function AdminBroadcast() {
@@ -58,6 +59,7 @@ export default async function AdminBroadcast() {
           support» nomidan boradi (real vaqt + push).
         </p>
       </div>
+      <WelcomeBackfill />
       <BroadcastConsole initial={initial} />
     </div>
   );

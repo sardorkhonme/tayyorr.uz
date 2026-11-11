@@ -26,13 +26,19 @@ export async function sendSupportMessage(
 
 const TELEGRAM_NEWS_URL = "https://t.me/tayyorruz";
 const TELEGRAM_WORKS_URL = "https://t.me/tayyorruz_works";
+/** Xush kelibsiz xabarining belgisi (eski va yangi alifboda bir xil qism). */
+export const WELCOME_MARK = "kelibsiz 🎉";
 
 /** Ro'yxatdan o'tgach bir marta yuboriladigan xabarlar (xush kelibsiz + kanal). */
 export async function sendWelcome(userId: string, firstName?: string | null) {
   const supportId = await getSupportUserId();
   const conv = await getOrCreateConversation(supportId, userId, null);
-  const count = await db.message.count({ where: { conversationId: conv.id } });
-  if (count > 0) return; // allaqachon yozilgan
+  // allaqachon yuborilgan bo'lsa — qayta yo'q (çatda boshqa xabarlar bo'lishi mumkin)
+  const sent = await db.message.findFirst({
+    where: { conversationId: conv.id, senderId: supportId, body: { contains: WELCOME_MARK } },
+    select: { id: true },
+  });
+  if (sent) return;
 
   const me = await db.user.findUnique({
     where: { id: userId },
@@ -67,4 +73,24 @@ export async function sendWelcome(userId: string, firstName?: string | null) {
     system: false,
   });
   await deliverMessage(m2);
+}
+
+/** Rol tanlagan, lekin xush kelibsiz xabarini olmagan foydalanuvchilar. */
+export async function usersWithoutWelcome() {
+  const supportId = await getSupportUserId();
+  const welcomed = await db.message.findMany({
+    where: { senderId: supportId, body: { contains: WELCOME_MARK } },
+    select: { conversation: { select: { userAId: true, userBId: true } } },
+  });
+  const got = new Set<string>();
+  for (const m of welcomed) {
+    got.add(m.conversation.userAId);
+    got.add(m.conversation.userBId);
+  }
+  const users = await db.user.findMany({
+    where: { role: { not: null }, isSupport: false, isPlatform: false, login: { not: null } },
+    select: { id: true, firstName: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return users.filter((u) => !got.has(u.id));
 }
