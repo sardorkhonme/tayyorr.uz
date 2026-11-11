@@ -327,3 +327,13 @@ export async function dispatchDueFamily() {
 
 /** A'zolarga ko'rinadigan xabarlar (rejalashtirilgani — vaqti kelgach). */
 export const visibleFamily = (): Prisma.FamilyMessageWhereInput => ({ sendAt: { lte: new Date() } });
+
+/** Guruh a'zolari va hozir onlayn (so'nggi 2 daqiqada faol) bo'lganlar soni. */
+export async function familyPresence() {
+  const since = new Date(Date.now() - 2 * 60_000);
+  const [members, online] = await Promise.all([
+    db.familyMember.count(),
+    db.familyMember.count({ where: { user: { lastSeenAt: { gte: since } } } }),
+  ]);
+  return { members, online };
+}

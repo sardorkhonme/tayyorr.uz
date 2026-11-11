@@ -37,7 +37,23 @@ const tracked = new Map<string, string>();
  * Mobil ilovadan foydalanish statistikasi: har foydalanuvchi uchun kuniga bir marta (shu server nusxasida)
  * MobileDay qatori + mobileFirstAt / mobileLastAt. Javobni kechiktirmaydi (after).
  */
+const seenAt = new Map<string, number>();
+/** Onlayn holati (lastSeenAt) — ilova so'rovlarida, foydalanuvchi uchun daqiqada ko'pi bilan bir marta. */
+function touchPresence(userId: string) {
+  const now = Date.now();
+  if (now - (seenAt.get(userId) ?? 0) < 60_000) return;
+  if (seenAt.size > 20000) seenAt.clear();
+  seenAt.set(userId, now);
+  const job = () => db.user.update({ where: { id: userId }, data: { lastSeenAt: new Date(now) } }).then(() => {});
+  try {
+    after(() => job().catch(() => {}));
+  } catch {
+    void job().catch(() => {});
+  }
+}
+
 function trackMobile(userId: string) {
+  touchPresence(userId);
   const day = tashkentDay();
   if (tracked.get(userId) === day) return;
   if (tracked.size > 20000) tracked.clear();

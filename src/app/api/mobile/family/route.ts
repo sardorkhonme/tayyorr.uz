@@ -8,6 +8,7 @@ import {
   displayName,
   familyAuthors,
   familyInclude,
+  familyPresence,
   familyRole,
   parseMentions,
   toFamilyClients,
@@ -89,10 +90,13 @@ export async function GET(req: Request) {
   const self = user
     ? { kind: "user" as const, id: user.id, name: displayName(user), login: user.login, image: user.avatarUrl ?? user.image ?? null }
     : null;
-  const authors = await familyAuthors();
+  const [authors, presence] = await Promise.all([familyAuthors(), familyPresence()]);
   const identities = (isAdmin ? [self, authors.brand, authors.support] : [self]).filter(Boolean);
   return mobileJson({
     me: { id: me, isAdmin, identities },
+    // sarlavha: «N aʼzo · M onlayn»
+    members: presence.members,
+    online: presence.online,
     messages: await toFamilyClients(page, { meId: me }),
     hasMore,
     pinned: await toFamilyClients(pinned, { meId: me }),
