@@ -11,7 +11,13 @@ class GoogleLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // qattiq cheklovli qutida (padding'li Container) ham belgi `size` da, markazda qoladi
-    return SizedBox(width: size, height: size, child: Center(child: SvgPicture.string(_googleGSvg, width: size, height: size)));
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Center(
+        child: SvgPicture.string(_googleGSvg, width: size, height: size),
+      ),
+    );
   }
 }
 

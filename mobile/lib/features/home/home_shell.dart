@@ -8,6 +8,7 @@ import '../../core/unread_counter.dart';
 import '../../widgets/aurora_background.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
+import '../dashboard/presentation/my_orders_screen.dart';
 import '../messages/presentation/messages_list_screen.dart';
 import '../offers/presentation/offers_screen.dart';
 import '../profile/presentation/profile_screen.dart';
@@ -16,7 +17,8 @@ import '../wallet/presentation/wallet_screen.dart';
 import 'section_cubit.dart';
 
 /// Tayyorr.uz xizmati (ilmiy ishlar) — tayyorr+ bosh sahifasidan ochiladi.
-/// Pastki panel: Asosiy, (tayyorlovchida) Takliflarim, Xabarlar, Hamyon, Profil.
+/// Pastki panel: Asosiy, (tayyorlovchida) Takliflarim yoki (buyurtmachida) Buyurtmalarim,
+/// Xabarlar, Hamyon, Profil.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key});
 
@@ -35,6 +37,7 @@ class HomeShell extends StatelessWidget {
 const _sectionOrder = [
   AppSection.dashboard,
   AppSection.offers,
+  AppSection.myOrders,
   AppSection.referral,
   AppSection.messages,
   AppSection.wallet,
@@ -46,11 +49,15 @@ class _HomeShellView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPreparer = context.select<AuthBloc, bool>((b) => b.state.user?.isPreparer ?? false);
-    final user = context.select<AuthBloc, (String?, String)>((b) => (b.state.user?.image, b.state.user?.displayName ?? ''));
+    final isPreparer = context.select<AuthBloc, bool>(
+      (b) => b.state.user?.isPreparer ?? false,
+    );
+    final user = context.select<AuthBloc, (String?, String)>(
+      (b) => (b.state.user?.image, b.state.user?.displayName ?? ''),
+    );
     final bar = <AppSection>[
       AppSection.dashboard,
-      if (isPreparer) AppSection.offers,
+      if (isPreparer) AppSection.offers else AppSection.myOrders,
       AppSection.messages,
       AppSection.wallet,
       AppSection.profile,
@@ -70,28 +77,32 @@ class _HomeShellView extends StatelessWidget {
               body: ShellRootScope(
                 kind: ServiceKind.uz,
                 child: _SectionFade(
-                sectionKey: section,
-                child: IndexedStack(
-                  index: _sectionOrder.indexOf(section),
-                  children: const [
-                    DashboardScreen(),
-                    OffersScreen(),
-                    ReferralScreen(),
-                    MessagesListScreen(),
-                    WalletScreen(),
-                    ProfileScreen(),
-                  ],
+                  sectionKey: section,
+                  child: IndexedStack(
+                    index: _sectionOrder.indexOf(section),
+                    // rolga tegishli bo'lmagan bo'lim qurilmaydi (keraksiz so'rov yubormasin)
+                    children: [
+                      const DashboardScreen(),
+                      isPreparer
+                          ? const OffersScreen()
+                          : const SizedBox.shrink(),
+                      isPreparer
+                          ? const SizedBox.shrink()
+                          : const MyOrdersScreen(),
+                      const ReferralScreen(),
+                      const MessagesListScreen(),
+                      const WalletScreen(),
+                      const ProfileScreen(),
+                    ],
+                  ),
                 ),
-              ),
               ),
               bottomNavigationBar: ValueListenableBuilder<int>(
                 valueListenable: UnreadCounter.instance,
                 builder: (context, unread, _) => GradientBottomBar(
                   index: bar.indexOf(section),
                   onTap: (i) => SectionCubit.instance.select(bar[i]),
-                  items: [
-                    for (final s in bar) _item(s, unread, user),
-                  ],
+                  items: [for (final s in bar) _item(s, unread, user)],
                 ),
               ),
             ),
@@ -101,20 +112,46 @@ class _HomeShellView extends StatelessWidget {
     );
   }
 
-  BottomBarItem _item(AppSection s, int unread, (String?, String) user) => switch (s) {
-        AppSection.dashboard => const BottomBarItem(icon: TI.home_outlined, activeIcon: TI.home_rounded, label: 'Asosiy'),
-        AppSection.offers => const BottomBarItem(icon: TI.back_hand_outlined, activeIcon: TI.back_hand_rounded, label: 'Takliflarim'),
-        AppSection.messages =>
-          BottomBarItem(icon: TI.chat_bubble_outline_rounded, activeIcon: TI.chat_bubble_rounded, label: 'Xabarlar', badge: unread),
-        AppSection.wallet =>
-          const BottomBarItem(icon: TI.account_balance_wallet_outlined, activeIcon: TI.account_balance_wallet_rounded, label: 'Hamyon'),
+  BottomBarItem _item(AppSection s, int unread, (String?, String) user) =>
+      switch (s) {
+        AppSection.dashboard => const BottomBarItem(
+          icon: TI.home_outlined,
+          activeIcon: TI.home_rounded,
+          label: 'Asosiy',
+        ),
+        AppSection.offers => const BottomBarItem(
+          icon: TI.back_hand_outlined,
+          activeIcon: TI.back_hand_rounded,
+          label: 'Takliflarim',
+        ),
+        AppSection.myOrders => const BottomBarItem(
+          icon: TI.receipt_long_outlined,
+          activeIcon: TI.receipt_long_rounded,
+          label: 'Buyurtmalarim',
+        ),
+        AppSection.messages => BottomBarItem(
+          icon: TI.chat_bubble_outline_rounded,
+          activeIcon: TI.chat_bubble_rounded,
+          label: 'Xabarlar',
+          badge: unread,
+        ),
+        AppSection.wallet => const BottomBarItem(
+          icon: TI.account_balance_wallet_outlined,
+          activeIcon: TI.account_balance_wallet_rounded,
+          label: 'Hamyon',
+        ),
         AppSection.profile => BottomBarItem(
-            icon: TI.person_outline_rounded,
-            activeIcon: TI.person_rounded,
-            label: 'Profil',
-            avatar: (size, selected) => profileAvatar(user.$1, user.$2, size, selected),
-          ),
-        AppSection.referral => const BottomBarItem(icon: TI.card_giftcard_outlined, activeIcon: TI.card_giftcard_rounded, label: 'Referal'),
+          icon: TI.person_outline_rounded,
+          activeIcon: TI.person_rounded,
+          label: 'Profil',
+          avatar: (size, selected) =>
+              profileAvatar(user.$1, user.$2, size, selected),
+        ),
+        AppSection.referral => const BottomBarItem(
+          icon: TI.card_giftcard_outlined,
+          activeIcon: TI.card_giftcard_rounded,
+          label: 'Referal',
+        ),
       };
 }
 
@@ -131,7 +168,8 @@ class _SectionFade extends StatefulWidget {
   State<_SectionFade> createState() => _SectionFadeState();
 }
 
-class _SectionFadeState extends State<_SectionFade> with SingleTickerProviderStateMixin {
+class _SectionFadeState extends State<_SectionFade>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override

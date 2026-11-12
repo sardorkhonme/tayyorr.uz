@@ -41,9 +41,18 @@ export type IconName =
   | "file"
   | "tag"
   | "refresh"
-  | "book";
+  | "book"
+  | "sun"
+  | "moon";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1" />
+    </>
+  ),
+  moon: <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />,
   book: (
     <>
       <path d="M12 6.5C10.3 5 7.9 4.5 4.5 4.5v13c3.4 0 5.8.5 7.5 2 1.7-1.5 4.1-2 7.5-2v-13c-3.4 0-5.8.5-7.5 2z" />

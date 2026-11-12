@@ -20,9 +20,10 @@ export function MarkGuideRead() {
 
 /**
  * Buyurtma sahifalari tepasida: qo'llanmani o'qimagan foydalanuvchiga "avval qo'llanma" maslahati.
- * Qo'llanma ochilsa yoki "O'qidim" bosilsa — katta banner o'rniga ixcham havola qoladi.
+ * Qo'llanma ochilsa yoki "O'qidim" bosilsa — katta banner o'rniga ixcham havola qoladi
+ * ([hideWhenRead] — headerda qöllanma ikonkasi bor sahifalarda butunlay yöqoladi).
  */
-export function GuideBanner() {
+export function GuideBanner({ hideWhenRead = false }: { hideWhenRead?: boolean }) {
   const [show, setShow] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export function GuideBanner() {
 
   if (show === null) return null;
   // o'qigan bo'lsa — qo'llanma havolasi ixcham qatorda doim turadi
+  if (!show && hideWhenRead) return null;
   if (!show)
     return (
       <Link
@@ -57,7 +59,7 @@ export function GuideBanner() {
   }
 
   return (
-    <div className="animate-rise relative overflow-hidden rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 p-4 shadow-lg shadow-amber-500/10 sm:p-6">
+    <div className="animate-rise relative overflow-hidden rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-lg shadow-amber-500/10 sm:p-6">
       <div className="flex flex-wrap items-start gap-x-4 gap-y-4 sm:flex-nowrap sm:items-center">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-orange-500/30 sm:h-12 sm:w-12">
           <Icon name="book" className="h-6 w-6" />

@@ -14,26 +14,43 @@ class WebC {
   static bool get _l => AppColors.isLight;
 
   static Color get white => _l ? const Color(0xFF18181B) : Colors.white;
-  static Color get zinc200 => _l ? const Color(0xFF27272A) : const Color(0xFFE4E4E7);
-  static Color get zinc300 => _l ? const Color(0xFF27272A) : const Color(0xFFD4D4D8);
-  static Color get zinc400 => _l ? const Color(0xFF52525B) : const Color(0xFFA1A1AA);
-  static Color get zinc500 => _l ? const Color(0xFF52525B) : const Color(0xFF71717A);
-  static Color get zinc600 => _l ? const Color(0xFF71717A) : const Color(0xFF52525B);
-  static Color get emerald => _l ? const Color(0xFF047857) : const Color(0xFF34D399);
-  static Color get red => _l ? const Color(0xFFDC2626) : const Color(0xFFF87171);
-  static Color get redSoft => _l ? const Color(0xFFDC2626) : const Color(0xFFFCA5A5);
-  static Color get amber => _l ? const Color(0xFFB45309) : const Color(0xFFFCD34D);
-  static Color get indigo => _l ? const Color(0xFF4338CA) : const Color(0xFF818CF8);
-  static Color get indigoSoft => _l ? const Color(0xFF4338CA) : const Color(0xFFA5B4FC);
+  static Color get zinc200 =>
+      _l ? const Color(0xFF27272A) : const Color(0xFFE4E4E7);
+  static Color get zinc300 =>
+      _l ? const Color(0xFF27272A) : const Color(0xFFD4D4D8);
+  static Color get zinc400 =>
+      _l ? const Color(0xFF52525B) : const Color(0xFFA1A1AA);
+  static Color get zinc500 =>
+      _l ? const Color(0xFF52525B) : const Color(0xFF71717A);
+  static Color get zinc600 =>
+      _l ? const Color(0xFF71717A) : const Color(0xFF52525B);
+  static Color get emerald =>
+      _l ? const Color(0xFF047857) : const Color(0xFF34D399);
+  static Color get red =>
+      _l ? const Color(0xFFDC2626) : const Color(0xFFF87171);
+  static Color get redSoft =>
+      _l ? const Color(0xFFDC2626) : const Color(0xFFFCA5A5);
+  static Color get amber =>
+      _l ? const Color(0xFFB45309) : const Color(0xFFFCD34D);
+  static Color get indigo =>
+      _l ? const Color(0xFF4338CA) : const Color(0xFF818CF8);
+  static Color get indigoSoft =>
+      _l ? const Color(0xFF4338CA) : const Color(0xFFA5B4FC);
 
   /// `bg-white/5`
-  static Color get fill5 => _l ? Colors.black.withValues(alpha: 0.04) : Colors.white.withValues(alpha: 0.05);
+  static Color get fill5 => _l
+      ? Colors.black.withValues(alpha: 0.04)
+      : Colors.white.withValues(alpha: 0.05);
 
   /// `bg-white/10`
-  static Color get fill10 => _l ? Colors.black.withValues(alpha: 0.06) : Colors.white.withValues(alpha: 0.10);
+  static Color get fill10 => _l
+      ? Colors.black.withValues(alpha: 0.06)
+      : Colors.white.withValues(alpha: 0.10);
 
   /// `border-white/10`
-  static Color get border => _l ? Colors.black.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.10);
+  static Color get border => _l
+      ? Colors.black.withValues(alpha: 0.10)
+      : Colors.white.withValues(alpha: 0.10);
 
   /// `bg-indigo-500/15..20`
   static Color get indigoFill => _l
@@ -41,12 +58,19 @@ class WebC {
       : const Color(0xFF6366F1).withValues(alpha: 0.18);
 
   /// `.card` foni/chegarasi
-  static Color get cardBg => _l ? Colors.white : Colors.white.withValues(alpha: 0.035);
-  static Color get cardBorder => _l ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.08);
+  static Color get cardBg =>
+      _l ? Colors.white : Colors.white.withValues(alpha: 0.035);
+  static Color get cardBorder => _l
+      ? Colors.black.withValues(alpha: 0.08)
+      : Colors.white.withValues(alpha: 0.08);
 
   /// Header / menyu paneli (`bg-[#0b0b12]/90`, `bg-[#0e0e16]/95`)
-  static Color get panel => _l ? Colors.white.withValues(alpha: 0.88) : const Color(0xFF0E0E16).withValues(alpha: 0.95);
-  static Color get headerBar => _l ? Colors.white.withValues(alpha: 0.88) : const Color(0xFF0B0B12).withValues(alpha: 0.90);
+  static Color get panel => _l
+      ? Colors.white.withValues(alpha: 0.88)
+      : const Color(0xFF0E0E16).withValues(alpha: 0.95);
+  static Color get headerBar => _l
+      ? Colors.white.withValues(alpha: 0.88)
+      : const Color(0xFF0B0B12).withValues(alpha: 0.90);
 }
 
 /// Saytdagi `.card`: 16px burchak, nozik chegara, 20px ichki bo'shliq.
@@ -79,12 +103,19 @@ class WebCard extends StatelessWidget {
     if (!AppColors.isLight) {
       box = ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14), child: box),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: box,
+        ),
       );
     }
     if (opacity < 1) box = Opacity(opacity: opacity, child: box);
     if (onTap == null) return box;
-    return GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: box);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: box,
+    );
   }
 }
 
@@ -173,7 +204,10 @@ class WebButton extends StatelessWidget {
           )
         else ...[
           if (icon != null) ...[icon!, const SizedBox(width: 8)],
-          if (leading != null) ...[TIcon(leading, size: small ? 15 : 16, color: fg), const SizedBox(width: 8)],
+          if (leading != null) ...[
+            TIcon(leading, size: small ? 15 : 16, color: fg),
+            const SizedBox(width: 8),
+          ],
           Flexible(
             child: Text(
               label,
@@ -194,7 +228,10 @@ class WebButton extends StatelessWidget {
       child: GestureDetector(
         onTap: disabled ? null : onPressed,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: small ? 14 : 17.6, vertical: small ? 8 : 9.6),
+          padding: EdgeInsets.symmetric(
+            horizontal: small ? 14 : 17.6,
+            vertical: small ? 8 : 9.6,
+          ),
           decoration: deco,
           child: content,
         ),
@@ -212,7 +249,14 @@ class WebLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 5.6),
-      child: Text(text, style: TextStyle(color: WebC.zinc400, fontSize: 12.8, fontWeight: FontWeight.w500)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: WebC.zinc400,
+          fontSize: 12.8,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }
@@ -231,11 +275,19 @@ class WebPageTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(color: WebC.white, fontSize: size, fontWeight: FontWeight.w600, letterSpacing: -0.3),
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: size,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
+          ),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 4),
-          Text(subtitle!, style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45)),
+          Text(
+            subtitle!,
+            style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45),
+          ),
         ],
       ],
     );
@@ -254,7 +306,10 @@ class WebBackLink extends StatelessWidget {
       onTap: onTap ?? () => Navigator.of(context).maybePop(),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Text('‹ orqaga', style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+        child: Text(
+          '‹ orqaga',
+          style: TextStyle(color: WebC.zinc500, fontSize: 14),
+        ),
       ),
     );
   }
@@ -287,9 +342,17 @@ class WebPill extends StatelessWidget {
           decoration: BoxDecoration(
             color: active ? WebC.indigoFill : WebC.fill5,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: active ? const Color(0xFF818CF8) : WebC.border),
+            border: Border.all(
+              color: active ? const Color(0xFF818CF8) : WebC.border,
+            ),
           ),
-          child: Text(label, style: TextStyle(color: active ? WebC.white : WebC.zinc300, fontSize: 14)),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: active ? WebC.white : WebC.zinc300,
+              fontSize: 14,
+            ),
+          ),
         ),
       );
     }
@@ -301,7 +364,13 @@ class WebPill extends StatelessWidget {
           color: active ? WebC.indigoFill : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(label, style: TextStyle(color: active ? WebC.white : WebC.zinc500, fontSize: 12)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? WebC.white : WebC.zinc500,
+            fontSize: 12,
+          ),
+        ),
       ),
     );
   }
@@ -322,7 +391,10 @@ class WebBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: WebC.border),
       ),
-      child: Text(text, style: TextStyle(color: color ?? WebC.zinc400, fontSize: 12)),
+      child: Text(
+        text,
+        style: TextStyle(color: color ?? WebC.zinc400, fontSize: 12),
+      ),
     );
   }
 }
@@ -371,7 +443,9 @@ class WebInput extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       style: TextStyle(
-        color: AppColors.isLight ? const Color(0xFF1B1B1F) : const Color(0xFFE4E4E7),
+        color: AppColors.isLight
+            ? const Color(0xFF1B1B1F)
+            : const Color(0xFFE4E4E7),
         fontSize: 14,
         height: 1.5,
         fontFamily: mono ? 'monospace' : null,
@@ -384,13 +458,19 @@ class WebInput extends StatelessWidget {
 InputDecoration webInputDecoration({String? hint, Widget? suffix}) {
   final light = AppColors.isLight;
   OutlineInputBorder b(Color c, [double w = 1]) => OutlineInputBorder(
-        borderRadius: BorderRadius.circular(11.2),
-        borderSide: BorderSide(color: c, width: w),
-      );
-  final normal = light ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10);
+    borderRadius: BorderRadius.circular(11.2),
+    borderSide: BorderSide(color: c, width: w),
+  );
+  final normal = light
+      ? Colors.black.withValues(alpha: 0.14)
+      : Colors.white.withValues(alpha: 0.10);
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 14, height: 1.5),
+    hintStyle: const TextStyle(
+      color: Color(0xFF71717A),
+      fontSize: 14,
+      height: 1.5,
+    ),
     isDense: true,
     filled: true,
     fillColor: light ? Colors.white : Colors.white.withValues(alpha: 0.04),
@@ -420,9 +500,13 @@ class WebStars extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 2),
             child: TIcon(
-              i <= rounded || i - 0.5 == rounded ? TI.star_rounded : TI.star_outline_rounded,
+              i <= rounded || i - 0.5 == rounded
+                  ? TI.star_rounded
+                  : TI.star_outline_rounded,
               size: size + 2,
-              color: i <= rounded || i - 0.5 == rounded ? AppColors.amber : WebC.zinc600,
+              color: i <= rounded || i - 0.5 == rounded
+                  ? AppColors.amber
+                  : WebC.zinc600,
             ),
           ),
       ],
@@ -458,7 +542,10 @@ class WebStarInput extends StatelessWidget {
 }
 
 /// Erkin tarkibli oyna (forma, chek va h.k.) — zamonaviy uslubda (core/ui/app_dialogs.dart).
-Future<T?> showWebDialog<T>(BuildContext context, {required WidgetBuilder builder}) => showAppDialog<T>(context, builder: builder);
+Future<T?> showWebDialog<T>(
+  BuildContext context, {
+  required WidgetBuilder builder,
+}) => showAppDialog<T>(context, builder: builder);
 
 /// Star (ichki valyuta) belgisi — "⭐" emoji o'rniga sariq to'ldirilgan yulduz
 /// (saytdagi `<StarIcon>`).
@@ -467,27 +554,41 @@ class StarGlyph extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => TIcon(TI.star_rounded, size: size, color: AppColors.amber);
+  Widget build(BuildContext context) =>
+      TIcon(TI.star_rounded, size: size, color: AppColors.amber);
 }
 
 /// Matn (Text.rich) ichida ikonka — emoji o'rniga.
-WidgetSpan iconSpan(TIData icon, {double size = 14, Color? color, double gap = 4}) => WidgetSpan(
-      alignment: PlaceholderAlignment.middle,
-      child: Padding(
-        padding: EdgeInsets.only(right: gap),
-        child: TIcon(icon, size: size, color: color),
-      ),
-    );
+WidgetSpan iconSpan(
+  TIData icon, {
+  double size = 14,
+  Color? color,
+  double gap = 4,
+}) => WidgetSpan(
+  alignment: PlaceholderAlignment.middle,
+  child: Padding(
+    padding: EdgeInsets.only(right: gap),
+    child: TIcon(icon, size: size, color: color),
+  ),
+);
 
 /// Matn ichida star belgisi: `Text.rich(TextSpan(children: [TextSpan(text: '5 '), starSpan()]))`.
 WidgetSpan starSpan({double size = 14}) => WidgetSpan(
-      alignment: PlaceholderAlignment.middle,
-      child: StarGlyph(size: size),
-    );
+  alignment: PlaceholderAlignment.middle,
+  child: StarGlyph(size: size),
+);
 
 /// "ikonka + matn" qatori (sarlavhalar, holat yozuvlari uchun).
 class IconLabel extends StatelessWidget {
-  const IconLabel(this.icon, this.text, {super.key, required this.style, this.size, this.color, this.gap = 6});
+  const IconLabel(
+    this.icon,
+    this.text, {
+    super.key,
+    required this.style,
+    this.size,
+    this.color,
+    this.gap = 6,
+  });
   final TIData icon;
   final String text;
   final TextStyle style;
@@ -500,7 +601,11 @@ class IconLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TIcon(icon, size: size ?? (style.fontSize ?? 14) + 2, color: color ?? style.color),
+        TIcon(
+          icon,
+          size: size ?? (style.fontSize ?? 14) + 2,
+          color: color ?? style.color,
+        ),
         SizedBox(width: gap),
         Flexible(child: Text(text, style: style)),
       ],

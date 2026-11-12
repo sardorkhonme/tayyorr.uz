@@ -35,7 +35,10 @@ class DangerButton extends StatelessWidget {
           child: InkWell(
             onTap: onPressed,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: dense ? 10 : 15),
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: dense ? 10 : 15,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.red.withValues(alpha: 0.4)),
@@ -51,7 +54,9 @@ class DangerButton extends StatelessWidget {
                   Text(
                     label,
                     style: TextStyle(
-                      color: onPressed == null ? AppColors.red.withValues(alpha: 0.4) : AppColors.red,
+                      color: onPressed == null
+                          ? AppColors.red.withValues(alpha: 0.4)
+                          : AppColors.red,
                       fontSize: dense ? 13 : 15,
                       fontWeight: FontWeight.w600,
                     ),

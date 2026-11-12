@@ -108,7 +108,7 @@ export function ServicesBoard({
   }
 
   return (
-    <section id="start" className="scroll-mt-24 space-y-20">
+    <section id="start" className="scroll-mt-24">
       {/* 1-qadam: tarmoq */}
       <div className="space-y-8">
         <StepTitle n={1} title="Ijtimoiy tarmoqni tanlang" hint="Qaysi tarmoqdagi sahifangizni östirmoqçisiz?" />
@@ -156,10 +156,10 @@ export function ServicesBoard({
         </div>
       </div>
 
-      {/* 2-qadam: nima kerak */}
+      {/* 2-qadam: nima kerak (tanlanmaguncha — böş joy qoldirmaydi) */}
       <div ref={step2} className="scroll-mt-24">
         {platform && (
-          <div className="animate-rise space-y-8">
+          <div className="animate-rise mt-20 space-y-8">
             <StepTitle n={2} title="Nima kerak?" hint={`${platformName} uçun xizmat turini tanlang`} />
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {kinds.map((k) => {
@@ -204,7 +204,7 @@ export function ServicesBoard({
       {/* 3-qadam: xizmat */}
       <div ref={step3} className="scroll-mt-24">
         {platform && kind && (
-          <div className="animate-rise space-y-8">
+          <div className="animate-rise mt-20 space-y-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <StepTitle n={3} title="Xizmatni tanlang" hint={`${platformName} · ${kindLabel} — eng arzonidan boşlab`} />
               <input

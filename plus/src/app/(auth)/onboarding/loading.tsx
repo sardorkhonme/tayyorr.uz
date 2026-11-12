@@ -2,7 +2,7 @@ import { SBar, SBlock } from "@/components/skeleton";
 
 export default function OnboardingLoading() {
   return (
-    <main className="hero-bg grid min-h-dvh place-items-center px-5 py-10 lg:ml-[46%]">
+    <main className="grid min-h-dvh place-items-center px-5 py-10 lg:ml-[46%]">
       <div className="card w-full max-w-md space-y-5 !rounded-3xl p-8">
         <SBar className="h-7 w-48" />
         <SBar className="h-4 w-64" />

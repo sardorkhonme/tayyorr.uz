@@ -8,14 +8,12 @@ enum AuthStatus {
   // Google bilan kirdi, lekin rol/login hali tanlanmagan — profilni
   // tugallash sahifasi ko'rsatiladi.
   onboarding,
+  // «Hisobdan çiqilmoqda» animatsiyasi körsatilayotgan payt
+  signingOut,
 }
 
 class AuthState extends Equatable {
-  const AuthState({
-    this.status = AuthStatus.unknown,
-    this.user,
-    this.error,
-  });
+  const AuthState({this.status = AuthStatus.unknown, this.user, this.error});
 
   final AuthStatus status;
   final UserModel? user;

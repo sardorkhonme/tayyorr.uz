@@ -30,10 +30,6 @@ export function AppDownloadSection() {
   return (
     <section id="ilova" className="relative scroll-mt-24 pt-36 sm:pt-48 lg:pt-6">
       <div className="relative overflow-visible rounded-3xl bg-zinc-950 p-7 pt-32 text-white sm:p-10 sm:pt-44 lg:min-h-[20rem] lg:pt-10">
-        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
-          <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/30 blur-3xl" />
-          <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
-        </div>
         <div className="pointer-events-none absolute -top-36 left-1/2 w-[19rem] max-w-[88vw] -translate-x-1/2 sm:-top-44 sm:w-[26rem] lg:left-auto lg:right-2 lg:top-1/2 lg:w-[28rem] lg:-translate-y-1/2 lg:translate-x-0">
           <div className="animate-float">
             {/* eslint-disable-next-line @next/next/no-img-element */}

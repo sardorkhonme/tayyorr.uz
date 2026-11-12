@@ -58,9 +58,31 @@ export type IconName =
   | "arrow-up"
   | "reply"
   | "clock"
-  | "headset";
+  | "headset"
+  | "sliders"
+  | "calendar"
+  | "tag";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  sliders: (
+    <>
+      <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="10" cy="17" r="2" />
+    </>
+  ),
+  calendar: (
+    <>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+      <path d="M3.5 10h17M8 3v4M16 3v4" />
+    </>
+  ),
+  tag: (
+    <>
+      <path d="M3.5 12.2V5a1.5 1.5 0 0 1 1.5-1.5h7.2a1.5 1.5 0 0 1 1.06.44l7.3 7.3a1.5 1.5 0 0 1 0 2.12l-7.2 7.2a1.5 1.5 0 0 1-2.12 0l-7.3-7.3a1.5 1.5 0 0 1-.44-1.06z" />
+      <path d="M8 8h.01" strokeWidth="2.6" />
+    </>
+  ),
   home: (
     <>
       <path d="M3.5 10.5 12 3.5l8.5 7" />

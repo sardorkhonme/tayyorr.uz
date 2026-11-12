@@ -18,7 +18,10 @@ class AppLogo extends StatelessWidget {
       TextSpan(
         text: 'Tayyorr',
         children: const [
-          TextSpan(text: '.uz', style: TextStyle(color: Color(0xFF818CF8))),
+          TextSpan(
+            text: '.uz',
+            style: TextStyle(color: Color(0xFF818CF8)),
+          ),
         ],
       ),
       maxLines: 1,

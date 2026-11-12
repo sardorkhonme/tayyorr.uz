@@ -19,10 +19,12 @@ import '../../referral/presentation/referral_screen.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/skeleton.dart';
+import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/presentation/complete_profile_screen.dart' show BirthDateField;
+import '../../auth/presentation/complete_profile_screen.dart'
+    show BirthDateField;
 import '../../auth/data/auth_repository.dart';
 
 /// tayyorr+ bosh sahifasi va SMM dan ochiladigan profil (alohida sahifa).
@@ -30,66 +32,144 @@ class StandaloneProfile extends StatelessWidget {
   const StandaloneProfile({super.key});
 
   @override
-  Widget build(BuildContext context) => const AuroraBackground(child: ProfileScreen());
+  Widget build(BuildContext context) =>
+      const AuroraBackground(child: ProfileScreen());
 }
 
-/// Tezkor havolalar: referal, qo'llanma, yordam, mavzu.
-class _QuickLinks extends StatelessWidget {
-  const _QuickLinks({required this.isPreparer});
-  final bool isPreparer;
+/// Header öngidagi ikonkalar:
+///  · Tayyorr.uz, tayyorlovçi — Qöllanma va Referal;
+///  · Tayyorr.uz, buyurtmaçi va Tayyorr SMM — Qöllanma va Yordam (support çati);
+///  · tayyorr+ — yöq (qöllanma va yordam pastki panelda bor).
+Widget? _headerActions(BuildContext context, bool isPreparer) {
+  final service = ServiceScope.of(context);
+  if (service == ServiceKind.plus) return null;
+  void push(Widget page) =>
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+  return HeaderIconGroup(
+    items: [
+      HeaderIconItem(
+        icon: TI.menu_book_rounded,
+        label: "Qöllanma",
+        onTap: () => push(
+          service == ServiceKind.smm
+              ? const SmmGuideScreen()
+              : const GuideScreen(),
+        ),
+      ),
+      if (service == ServiceKind.uz && isPreparer)
+        HeaderIconItem(
+          icon: TI.card_giftcard_outlined,
+          label: 'Referal',
+          onTap: () => push(const AuroraBackground(child: ReferralScreen())),
+        )
+      else
+        HeaderIconItem(
+          icon: TI.support_agent_rounded,
+          label: 'Yordam',
+          onTap: () => openSupportChat(context),
+        ),
+    ],
+  );
+}
+
+/// «Ilova» sozlamalari: mavzu (yorug' / qorong'i) va yangilanişlarni tekşiriş.
+class _AppSettings extends StatelessWidget {
+  const _AppSettings();
 
   @override
   Widget build(BuildContext context) {
-    Widget row(TIData icon, String label, Color c, VoidCallback onTap, {String? sub}) => InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-            child: Row(children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(color: c.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
-                child: TIcon(icon, color: c, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(label, style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w600)),
-                  if (sub != null) Text(sub, style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
-                ]),
-              ),
-              TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
-            ]),
-          ),
-        );
-    final service = ServiceScope.of(context);
-    // tayyorr+ da qo'llanma va yordam pastki panelda bor — takrorlamaymiz
-    final showHelp = service != ServiceKind.plus;
     return WebCard(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Column(children: [
-        // referal — hozircha faqat Tayyorr.uz da
-        if (isPreparer && service == ServiceKind.uz)
-          row(TI.card_giftcard_rounded, 'Referal', const Color(0xFFF59E0B),
-              () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AuroraBackground(child: ReferralScreen()))),
-              sub: "Döstingizni taklif qiling — har biri uçun +1 star"),
-        if (showHelp)
-          row(TI.menu_book_rounded, "Qöllanma", const Color(0xFF8B5CF6),
-            () => service == ServiceKind.smm
-                ? Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SmmGuideScreen()))
-                : Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GuideScreen())),
-            sub: 'Qanday işlaydi — qadamma-qadam'),
-        if (showHelp)
-          row(TI.support_agent_rounded, "Yordam", const Color(0xFF10B981), () => openSupportChat(context),
-            sub: "Qöllab-quvvatlaş xizmatiga yoziş"),
-        const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: ThemeToggle()),
-      ]),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Ilova',
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SettingRow(
+            icon: TI.dark_mode_rounded,
+            color: const Color(0xFF818CF8),
+            title: 'Mavzu',
+            subtitle: "Yoruğ yoki qoronği körinişni tanlang",
+          ),
+          const SizedBox(height: 12),
+          const ThemeToggle(),
+          const SizedBox(height: 16),
+          Container(height: 1, color: WebC.border),
+          const SizedBox(height: 4),
+          const _UpdateCheck(),
+        ],
+      ),
     );
   }
 }
 
-/// Saytdagi /profile — profil formasi, akkaunt formasi va chiqish.
+/// Sozlama qatori: 40px rangli ikonka qutisi, sarlavha va izoh, ixtiyoriy öng qism.
+class _SettingRow extends StatelessWidget {
+  const _SettingRow({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+  });
+  final TIData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(child: TIcon(icon, size: 20, color: color)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: WebC.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: WebC.zinc500, fontSize: 12.5),
+              ),
+            ],
+          ),
+        ),
+        ?trailing,
+      ],
+    );
+  }
+}
+
+/// Saytdagi /profile — profil formasi, akkaunt formasi, ilova sozlamalari va chiqish.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -98,82 +178,81 @@ class ProfileScreen extends StatelessWidget {
     final user = context.select((AuthBloc b) => b.state.user);
     return WebPage(
       background: false,
+      headerTrailing: _headerActions(context, user?.isPreparer ?? false),
       children: user == null
           ? [
-              // haqiqiy tuzilma: sarlavha, login qatori, tezkor havolalar, profil formasi (80px rasm + maydonlar)
-              WebPageTitle('Profil', size: 24),
-              const SizedBox(height: 6),
+              // haqiqiy tuzilma: sarlavha, login qatori, profil formasi (80px rasm + maydonlar)
+              WebPageTitle('Profil', size: 20),
+              const SizedBox(height: 4),
               const SBar(width: 220, height: 13),
-              const SizedBox(height: 20),
-              WebCard(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Column(children: [
-                  for (var i = 0; i < 3; i++)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                      child: Row(children: [
-                        Skel(width: 40, height: 40, borderRadius: 12),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            SBar(width: 110, height: 14),
-                            SizedBox(height: 6),
-                            SBar(width: 170, height: 11),
-                          ]),
-                        ),
-                      ]),
-                    ),
-                ]),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               const WebCard(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SBar(width: 120, height: 17),
-                  SizedBox(height: 16),
-                  Row(children: [SCircle(size: 80), SizedBox(width: 16), SBar(width: 120, height: 36, borderRadius: 10)]),
-                  SizedBox(height: 16),
-                  SField(),
-                  SizedBox(height: 14),
-                  SField(),
-                  SizedBox(height: 14),
-                  SField(),
-                ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SBar(width: 120, height: 17),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        SCircle(size: 80),
+                        SizedBox(width: 16),
+                        SBar(width: 120, height: 36, borderRadius: 10),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    SField(),
+                    SizedBox(height: 12),
+                    SField(),
+                    SizedBox(height: 12),
+                    SField(),
+                  ],
+                ),
               ),
             ]
           : [
-              WebPageTitle('Profil', size: 24),
+              WebPageTitle('Profil', size: 20),
               const SizedBox(height: 4),
               Text(
                 '@${user.login ?? '—'} · ${user.isPreparer ? 'Tayyorlovçi' : 'Buyurtma beruvçi'}'
                 '${(user.email ?? '').isNotEmpty ? ' · ${user.email}' : ''}',
-                style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
+                style: TextStyle(
+                  color: WebC.zinc500,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
               ),
-              const SizedBox(height: 20),
-              _QuickLinks(isPreparer: user.isPreparer),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
               _ProfileForm(key: ValueKey('p-${user.id}')),
               const SizedBox(height: 16),
-              _AccountForm(key: ValueKey('a-${user.id}'), initialLogin: user.login ?? ''),
-              const SizedBox(height: 8),
-              const SizedBox(height: 4),
-              const _UpdateCheck(),
-              const SizedBox(height: 8),
-              const Center(child: _VersionLabel()),
-              const SizedBox(height: 32),
+              _AccountForm(
+                key: ValueKey('a-${user.id}'),
+                initialLogin: user.login ?? '',
+              ),
+              const SizedBox(height: 16),
+              const _AppSettings(),
+              const SizedBox(height: 24),
               Container(height: 1, color: WebC.border),
               const SizedBox(height: 24),
               Text(
                 "Hisobdan çiqsangiz, qayta kiriş uçun login/parol yoki Google kerak böladi.",
-                style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
+                style: TextStyle(
+                  color: WebC.zinc500,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
               ),
               const SizedBox(height: 12),
-              const Align(alignment: Alignment.centerLeft, child: _SignOutButton()),
+              const _SignOutButton(),
               const SizedBox(height: 24),
               Wrap(
-                spacing: 6,
+                spacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   _DocLink(label: 'Foydalaniş şartlari', path: '/terms'),
-                  Text('·', style: TextStyle(color: WebC.zinc600, fontSize: 13)),
+                  Text(
+                    '·',
+                    style: TextStyle(color: WebC.zinc600, fontSize: 13),
+                  ),
                   _DocLink(label: 'Maxfiylik siyosati', path: '/privacy'),
                 ],
               ),
@@ -220,7 +299,11 @@ class _ProfileFormState extends State<_ProfileForm> {
   }
 
   Future<void> _pickAvatar() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 800, imageQuality: 85);
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
     if (file == null) return;
     setState(() {
       _uploading = true;
@@ -229,13 +312,19 @@ class _ProfileFormState extends State<_ProfileForm> {
     try {
       final bytes = await file.readAsBytes();
       if (mounted) setState(() => _preview = bytes);
-      final ext = file.name.contains('.') ? file.name.split('.').last.toLowerCase() : 'jpg';
+      final ext = file.name.contains('.')
+          ? file.name.split('.').last.toLowerCase()
+          : 'jpg';
       final contentType = switch (ext) {
         'png' => 'image/png',
         'webp' => 'image/webp',
         _ => 'image/jpeg',
       };
-      final user = await _repo.uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
+      final user = await _repo.uploadAvatar(
+        bytes: bytes,
+        filename: file.name,
+        contentType: contentType,
+      );
       if (mounted) context.read<AuthBloc>().add(AuthUserUpdated(user));
     } catch (_) {
       if (mounted) setState(() => _avatarErr = "Rasmni yuklab bölmadi");
@@ -290,14 +379,30 @@ class _ProfileFormState extends State<_ProfileForm> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: WebC.fill5,
-                  ),
+                ),
                 alignment: Alignment.center,
-                foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
+                foregroundDecoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: WebC.border),
+                ),
                 child: _preview != null
-                    ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
+                    ? Image.memory(
+                        _preview!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
                     : (image ?? '').isNotEmpty
-                    ? Image.network(image!, width: 80, height: 80, fit: BoxFit.cover)
-                    : Text("rasm yöq", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                    ? Image.network(
+                        image!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
+                    : Text(
+                        "rasm yöq",
+                        style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                      ),
               ),
               const SizedBox(width: 16),
               Flexible(
@@ -312,7 +417,10 @@ class _ProfileFormState extends State<_ProfileForm> {
                     ),
                     if (_avatarErr != null) ...[
                       const SizedBox(height: 4),
-                      Text(_avatarErr!, style: TextStyle(color: WebC.red, fontSize: 12)),
+                      Text(
+                        _avatarErr!,
+                        style: TextStyle(color: WebC.red, fontSize: 12),
+                      ),
                     ],
                   ],
                 ),
@@ -326,14 +434,20 @@ class _ProfileFormState extends State<_ProfileForm> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [const WebLabel('Ism'), WebInput(controller: _firstName)],
+                  children: [
+                    const WebLabel('Ism'),
+                    WebInput(controller: _firstName),
+                  ],
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [const WebLabel('Familiya'), WebInput(controller: _lastName)],
+                  children: [
+                    const WebLabel('Familiya'),
+                    WebInput(controller: _lastName),
+                  ],
                 ),
               ),
             ],
@@ -352,7 +466,11 @@ class _ProfileFormState extends State<_ProfileForm> {
             Text(_msg!, style: TextStyle(color: WebC.zinc400, fontSize: 14)),
           ],
           const SizedBox(height: 12),
-          WebButton(label: _busy ? '...' : 'Saqlaş', onPressed: _busy ? null : _submit, expand: true),
+          WebButton(
+            label: _busy ? '...' : 'Saqlaş',
+            onPressed: _busy ? null : _submit,
+            expand: true,
+          ),
         ],
       ),
     );
@@ -422,9 +540,13 @@ class _AccountFormState extends State<_AccountForm> {
   }
 
   Widget _eye(bool shown, VoidCallback onTap) => GestureDetector(
-        onTap: onTap,
-        child: TIcon(shown ? TI.visibility_off_outlined : TI.visibility_outlined, size: 18, color: WebC.zinc500),
-      );
+    onTap: onTap,
+    child: TIcon(
+      shown ? TI.visibility_off_outlined : TI.visibility_outlined,
+      size: 18,
+      color: WebC.zinc500,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -432,7 +554,14 @@ class _AccountFormState extends State<_AccountForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Akkaunt', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(
+            'Akkaunt',
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 12),
           const WebLabel('Login'),
           WebInput(controller: _login, hint: 'login'),
@@ -453,10 +582,20 @@ class _AccountFormState extends State<_AccountForm> {
           ),
           if (_msg != null) ...[
             const SizedBox(height: 12),
-            Text(_msg!.$2, style: TextStyle(color: _msg!.$1 ? WebC.emerald : WebC.red, fontSize: 14)),
+            Text(
+              _msg!.$2,
+              style: TextStyle(
+                color: _msg!.$1 ? WebC.emerald : WebC.red,
+                fontSize: 14,
+              ),
+            ),
           ],
           const SizedBox(height: 12),
-          WebButton(label: _busy ? '...' : 'Saqlaş', onPressed: _busy ? null : _save, expand: true),
+          WebButton(
+            label: _busy ? '...' : 'Saqlaş',
+            onPressed: _busy ? null : _save,
+            expand: true,
+          ),
         ],
       ),
     );
@@ -476,21 +615,32 @@ class _SignOutButton extends StatelessWidget {
           message: "Hisobingizdan çiqasiz, qaytadan kirişingiz kerak böladi.",
           confirmLabel: 'Ha, çiqiş',
         );
-        if (ok == true && context.mounted) context.read<AuthBloc>().add(const AuthLoggedOut());
+        if (ok == true && context.mounted) {
+          context.read<AuthBloc>().add(const AuthLoggedOut());
+        }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 17.6, vertical: 9.6),
+        height: 44,
         decoration: BoxDecoration(
           color: const Color(0xFFEF4444).withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF87171).withValues(alpha: 0.30)),
+          border: Border.all(
+            color: const Color(0xFFF87171).withValues(alpha: 0.30),
+          ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TIcon(TI.power_settings_new_rounded, size: 18, color: WebC.redSoft),
             const SizedBox(width: 8),
-            Text('Hisobdan çiqiş', style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w500)),
+            Text(
+              'Hisobdan çiqiş',
+              style: TextStyle(
+                color: WebC.redSoft,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
@@ -507,21 +657,15 @@ class _DocLink extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => LegalScreen.open(context, privacy: path == '/privacy'),
-      child: Text(label, style: TextStyle(color: WebC.zinc500, fontSize: 13, decoration: TextDecoration.underline)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: WebC.zinc500,
+          fontSize: 13,
+          decoration: TextDecoration.underline,
+        ),
+      ),
     );
-  }
-}
-
-/// "tayyorr.uz v1.1" — o'rnatilgan versiya.
-class _VersionLabel extends StatelessWidget {
-  const _VersionLabel();
-
-  /// O'rnatilgan ilovaning haqiqiy versiyasi (APK ichidan) — faqat yangi versiya o'rnatilganda o'zgaradi.
-  @override
-  Widget build(BuildContext context) {
-    final v = AppInfo.short;
-    if (v.isEmpty) return const SizedBox(height: 16);
-    return Text('tayyorr.uz v$v', style: TextStyle(color: WebC.zinc600, fontSize: 12));
   }
 }
 
@@ -541,34 +685,39 @@ class _UpdateCheckState extends State<_UpdateCheck> {
     final has = await AppConfig.instance.checkForUpdate();
     if (!mounted) return;
     setState(() => _busy = false);
-    if (!has) showToast(context, "Sizda eng söngi versiya — v${AppInfo.short}", kind: ToastKind.success);
+    if (!has) {
+      showToast(
+        context,
+        "Sizda eng söngi versiya — v${AppInfo.short}",
+        kind: ToastKind.success,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WebCard(
-      padding: const EdgeInsets.all(14),
+    return InkWell(
       onTap: _busy ? null : _check,
-      child: Row(children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
-          child: Center(
-            child: _busy
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)))
-                : const TIcon(TI.refresh_rounded, size: 20, color: Color(0xFF818CF8)),
-          ),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: _SettingRow(
+          icon: TI.refresh_rounded,
+          color: const Color(0xFF818CF8),
+          title: "Yangilanişlarni tekşiriş",
+          subtitle: "Hozirgi versiya: v${AppInfo.short}",
+          trailing: _busy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF818CF8),
+                  ),
+                )
+              : TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text("Yangilanişlarni tekşiriş", style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w600)),
-            Text("Hozirgi versiya: v${AppInfo.short}", style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
-          ]),
-        ),
-        TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
-      ]),
+      ),
     );
   }
 }

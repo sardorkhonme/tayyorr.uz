@@ -188,6 +188,10 @@ const _megaphone =
 const _family =
     '<circle cx="12" cy="8" r="3"/><circle cx="5.6" cy="10" r="2.2"/><circle cx="18.4" cy="10" r="2.2"/><path d="M7.4 19.5c.5-3 2.3-4.7 4.6-4.7s4.1 1.7 4.6 4.7z"/><path d="M2.5 18.5c.3-2 1.5-3.4 3.1-3.6M21.5 18.5c-.3-2-1.5-3.4-3.1-3.6" fill="none"/>';
 
+// filtr (slayderlar)
+const _sliders =
+    '<path d="M4 7h9M17 7h3M4 17h3M11 17h9" fill="none"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/>';
+
 const _lock = '<rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" fill="none"/><circle cx="12" cy="15.5" r="1.3" fill="#000" fill-opacity="1" stroke="none"/>';
 
 /// Ilovada ishlatiladigan nomlar — eski Material nomlari bilan bir xil (almashtirish oson bo'lishi uchun).
@@ -322,4 +326,5 @@ class TI {
   static const push_pin_outlined = TIData(_pin);
   static const lock_rounded = TIData(_lock);
   static const shield_rounded = TIData(_shield, duo: true);
+  static const tune_rounded = TIData(_sliders);
 }

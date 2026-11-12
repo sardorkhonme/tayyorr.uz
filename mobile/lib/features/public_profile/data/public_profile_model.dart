@@ -35,7 +35,11 @@ class MaskedEmailModel {
   final int hiddenLen;
   final bool full;
 
-  const MaskedEmailModel({required this.visible, required this.hiddenLen, required this.full});
+  const MaskedEmailModel({
+    required this.visible,
+    required this.hiddenLen,
+    required this.full,
+  });
 
   factory MaskedEmailModel.fromJson(Map<String, dynamic> json) {
     return MaskedEmailModel(
@@ -103,7 +107,9 @@ class PublicProfileModel {
       image: json['image'] as String?,
       rating: (json['rating'] as num?)?.toDouble(),
       ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
-      email: json['email'] != null ? MaskedEmailModel.fromJson(json['email'] as Map<String, dynamic>) : null,
+      email: json['email'] != null
+          ? MaskedEmailModel.fromJson(json['email'] as Map<String, dynamic>)
+          : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
       online: json['online'] as bool? ?? false,
       presenceText: json['presenceText'] as String? ?? 'oflayn',

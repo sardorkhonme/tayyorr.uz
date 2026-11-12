@@ -18,6 +18,7 @@ import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/data/user_model.dart';
 import '../../dashboard/data/order_model.dart';
+import '../../dashboard/presentation/order_list_widgets.dart';
 import '../../home/section_cubit.dart';
 import '../../messages/data/message_model.dart';
 import '../../messages/data/messages_repository.dart';
@@ -28,11 +29,13 @@ import '../cubit/order_detail_cubit.dart';
 import '../data/order_detail_model.dart';
 import '../data/order_detail_repository.dart';
 import 'contract_panel.dart';
+import 'detail_ui.dart';
 
 /// Ariza uchun minimal star — admin belgilaydi (server /mobile/config).
 int get _minOfferStars => AppConfig.instance.minOfferStars;
 
-/// Saytdagi /orders/[id] sahifasi bilan bir xil.
+/// Buyurtma sahifasi. Tartib: sarlavha va holat → asosiy faktlar (byudjet, muddat) →
+/// tavsif → fayllar → ishtirokchilar → takliflar / shartnoma / amallar → boshqaruv.
 class OrderDetailScreen extends StatelessWidget {
   const OrderDetailScreen({super.key, required this.orderId});
   final String orderId;
@@ -58,109 +61,264 @@ class _OrderDetailView extends StatelessWidget {
         if (order == null) {
           if (state.status == OrderDetailStatus.failure) {
             return WebPage(
-              gap: 24,
               children: [
-                const WebBackLink(),
-                WebCard(child: Text(state.error ?? 'Topilmadi', style: TextStyle(color: WebC.zinc500, fontSize: 14))),
+                ListMessage(
+                  icon: TI.search_off_rounded,
+                  title: 'Buyurtma topilmadi',
+                  subtitle: state.error ?? "U öçirilgan yoki sizga körinmaydi.",
+                ),
               ],
             );
           }
-          // haqiqiy [_sections] tuzilmasi: shaxs kartasi, tur·holat + sarlavha, tavsif, muddat/byudjet, amallar
+          // haqiqiy tuzilma: sarlavha kartasi, 2 ta fakt, tavsif, ishtirokchi
           return const WebPage(
-            gap: 24,
+            gap: 16,
             children: [
-              WebBackLink(),
               WebCard(
-                child: Row(children: [
-                  SCircle(size: 44),
+                padding: EdgeInsets.all(kDetailPad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SBar(width: 90, height: 24, borderRadius: 99),
+                        SizedBox(width: 8),
+                        SBar(width: 70, height: 24, borderRadius: 99),
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    SBar(height: 22),
+                    SizedBox(height: 6),
+                    SBar(width: 180, height: 22),
+                    SizedBox(height: 12),
+                    SBar(width: 120, height: 12),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(child: SBlock(height: 72)),
                   SizedBox(width: 12),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      SBar(width: 140, height: 15),
-                      SizedBox(height: 6),
-                      SBar(width: 80, height: 11),
-                    ]),
-                  ),
-                ]),
+                  Expanded(child: SBlock(height: 72)),
+                ],
               ),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SBar(width: 150, height: 12),
-                SizedBox(height: 10),
-                SBar(height: 24),
-                SizedBox(height: 6),
-                SBar(width: 180, height: 24),
-              ]),
               WebCard(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SBar(height: 13),
-                  SizedBox(height: 7),
-                  SBar(height: 13),
-                  SizedBox(height: 7),
-                  SBar(width: 200, height: 13),
-                ]),
+                padding: EdgeInsets.all(kDetailPad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SBar(width: 80, height: 16),
+                    SizedBox(height: 14),
+                    SBar(height: 13),
+                    SizedBox(height: 7),
+                    SBar(height: 13),
+                    SizedBox(height: 7),
+                    SBar(width: 200, height: 13),
+                  ],
+                ),
               ),
-              Row(children: [SBar(width: 150, height: 13), SizedBox(width: 16), SBar(width: 130, height: 13)]),
-              SBlock(height: 120),
+              WebCard(
+                padding: EdgeInsets.all(kDetailPad),
+                child: Row(
+                  children: [
+                    SCircle(size: 44),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SBar(width: 140, height: 15),
+                          SizedBox(height: 6),
+                          SBar(width: 80, height: 11),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           );
         }
         return WebPage(
           onRefresh: () => context.read<OrderDetailCubit>().load(),
-          gap: 24,
+          gap: 16,
           children: _sections(context, state, order, me),
         );
       },
     );
   }
 
-  List<Widget> _sections(BuildContext context, OrderDetailState state, OrderDetailModel o, UserModel? me) {
+  List<Widget> _sections(
+    BuildContext context,
+    OrderDetailState state,
+    OrderDetailModel o,
+    UserModel? me,
+  ) {
     final meId = me?.id ?? '';
     final isOrderer = o.orderer.id == meId;
     final isPreparer = me?.isPreparer ?? false;
     final isAssigned = o.preparer?.id == meId;
+    // boshqa buyurtmachi lentadan ochgan — faqat ko'rish
+    final viewOnly = !isOrderer && !isPreparer;
     // imzolangan faol shartnoma bor — buyurtmani o'chirib bo'lmaydi
-    final locked = (o.status == 'IN_PROGRESS' || o.status == 'DELIVERED') && o.contracts.any((c) => c.status == 'ACCEPTED');
+    final locked =
+        (o.status == 'IN_PROGRESS' || o.status == 'DELIVERED') &&
+        o.contracts.any((c) => c.status == 'ACCEPTED');
 
-    final meta = <String>[
-      if (o.deadline != null) 'Muddat: ${shortDateTime(o.deadline!)}',
-      if ((o.budget ?? 0) > 0) "Byudjet: ${groupDigits(o.budget!)} söm",
+    final people = <(OrderPartyModel, String)>[
+      if (!isOrderer) (o.orderer, 'Buyurtmaçi'),
+      if (o.preparer != null && !isAssigned) (o.preparer!, 'Tayyorlovçi'),
     ];
 
     return [
-      const WebBackLink(),
       if (o.deleted) _DeletedNotice(order: o),
-      if (!isOrderer) _PersonCard(person: o.orderer, role: 'Buyurtmaçi'),
-      if (o.preparer != null && !isAssigned) _PersonCard(person: o.preparer!, role: 'Tayyorlovçi'),
-      Column(
+      _TitleCard(order: o, isOrderer: isOrderer),
+      _Facts(order: o),
+      if (viewOnly && !o.deleted)
+        const InfoNote(
+          icon: TI.visibility_outlined,
+          title: 'Faqat köriş uçun',
+          text:
+              "Bu boşqa foydalanuvçining buyurtmasi. Taklifni faqat tayyorlovçilar yuboradi — "
+              "özingizga buyurtma kerak bölsa, «Buyurtmalarim» bölimida yarating.",
+        ),
+      DetailCard(
+        title: 'Tavsif',
+        icon: TI.description_outlined,
+        child: SelectableText(
+          o.description,
+          style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.5),
+        ),
+      ),
+      if (o.files.isNotEmpty) _Files(files: o.files),
+      if (people.isNotEmpty)
+        DetailCard(
+          title: people.length > 1 ? 'Iştirokçilar' : people.first.$2,
+          icon: TI.person_outline_rounded,
+          child: Column(
+            children: [
+              for (var i = 0; i < people.length; i++) ...[
+                if (i > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Container(height: 1, color: WebC.border),
+                  ),
+                _PersonRow(
+                  person: people[i].$1,
+                  role: people.length > 1 ? people[i].$2 : null,
+                ),
+              ],
+            ],
+          ),
+        ),
+      if (!o.deleted && !viewOnly)
+        _OrderActions(
+          order: o,
+          state: state,
+          meId: meId,
+          isOrderer: isOrderer,
+          isPreparer: isPreparer,
+          isAssigned: isAssigned,
+        ),
+      if (isOrderer && !o.deleted && (o.status == 'OPEN' || !locked))
+        _ManageCard(canCancel: o.status == 'OPEN', canDelete: !locked),
+    ];
+  }
+}
+
+/// Sarlavha kartasi: tur va holat yorliqlari, sarlavha, e'lon qilingan vaqt.
+class _TitleCard extends StatelessWidget {
+  const _TitleCard({required this.order, required this.isOrderer});
+  final OrderDetailModel order;
+  final bool isOrderer;
+
+  @override
+  Widget build(BuildContext context) {
+    final o = order;
+    return WebCard(
+      padding: const EdgeInsets.all(kDetailPad),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${kOrderTypeLabel[o.type] ?? o.type} · ${kOrderStatusLabel[o.status] ?? o.status}'.toUpperCase(),
-            style: TextStyle(color: WebC.indigo, fontSize: 12, letterSpacing: 0.6),
+          Row(
+            children: [
+              Container(
+                height: 24,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: WebC.indigoFill,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  kOrderTypeLabel[o.type] ?? o.type,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: WebC.indigo,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OrderStatusChip(status: o.status, deleted: o.deleted),
+            ],
+          ),
+          const SizedBox(height: kDetailGap),
+          SelectableText(
+            o.title,
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+              height: 1.25,
+            ),
           ),
           const SizedBox(height: 8),
-          Text(o.title,
-              style: TextStyle(color: WebC.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.4, height: 1.25)),
+          Text(
+            "${isOrderer ? 'Siz eʼlon qildingiz' : 'Eʼlon qilindi'} · ${timeAgo(o.createdAt)}",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: WebC.zinc500, fontSize: 13),
+          ),
         ],
       ),
-      WebCard(child: Text(o.description, style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45))),
-      if (meta.isNotEmpty)
-        Wrap(
-          spacing: 16,
-          runSpacing: 6,
-          children: [for (final m in meta) Text(m, style: TextStyle(color: WebC.zinc400, fontSize: 14))],
+    );
+  }
+}
+
+/// Asosiy faktlar: byudjet va muddat — yonma-yon, bir xil balandlikda.
+class _Facts extends StatelessWidget {
+  const _Facts({required this.order});
+  final OrderDetailModel order;
+
+  @override
+  Widget build(BuildContext context) {
+    final budget = order.budget ?? 0;
+    return Row(
+      children: [
+        Expanded(
+          child: FactTile(
+            icon: TI.payments_outlined,
+            label: 'Byudjet',
+            value: budget > 0 ? "${groupDigits(budget)} söm" : 'Kelişiladi',
+            muted: budget <= 0,
+          ),
         ),
-      if (o.files.isNotEmpty) _Files(files: o.files),
-      if (!o.deleted)
-        _OrderActions(order: o, state: state, meId: meId, isOrderer: isOrderer, isPreparer: isPreparer, isAssigned: isAssigned),
-      if (isOrderer && !o.deleted && !locked)
-        Container(
-          padding: const EdgeInsets.only(top: 16),
-          decoration: BoxDecoration(border: Border(top: BorderSide(color: WebC.border))),
-          alignment: Alignment.centerLeft,
-          child: _DeleteButton(),
+        const SizedBox(width: kDetailGap),
+        Expanded(
+          child: FactTile(
+            icon: TI.event_rounded,
+            label: 'Muddat',
+            value: order.deadline != null
+                ? shortDateTime(order.deadline!)
+                : 'Belgilanmagan',
+            muted: order.deadline == null,
+          ),
         ),
-    ];
+      ],
+    );
   }
 }
 
@@ -170,47 +328,40 @@ class _DeletedNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final by = order.deletedByRole == 'ADMIN' ? 'Administrator tomonidan' : 'Buyurtmaçi tomonidan';
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF87171).withValues(alpha: 0.30)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          IconLabel(TI.delete_outline_rounded, "Bu buyurtma öçirilgan",
-              style: TextStyle(color: WebC.redSoft, fontSize: 14, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Text('$by${order.deletedAt != null ? ' · ${shortDateTime(order.deletedAt!)}' : ''}',
-              style: TextStyle(color: WebC.zinc400, fontSize: 14)),
-          if ((order.deleteReason ?? '').isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text('Sabab: ${order.deleteReason}', style: TextStyle(color: WebC.zinc300, fontSize: 14)),
-          ],
-          const SizedBox(height: 4),
-          Text("U faqat sizga körinadi, boşqalarga emas.", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-        ],
-      ),
+    final by = order.deletedByRole == 'ADMIN'
+        ? 'Administrator tomonidan'
+        : 'Buyurtmaçi tomonidan';
+    final lines = [
+      '$by${order.deletedAt != null ? ' · ${shortDateTime(order.deletedAt!)}' : ''}.',
+      if ((order.deleteReason ?? '').isNotEmpty)
+        'Sabab: ${order.deleteReason}.',
+      "U faqat sizga körinadi, boşqalarga emas.",
+    ];
+    return InfoNote(
+      icon: TI.delete_outline_rounded,
+      color: WebC.red,
+      title: "Bu buyurtma öçirilgan",
+      text: lines.join('\n'),
     );
   }
 }
 
-/// Saytdagi PersonCard: avatar, ism, onlayn holat, "Buyurtmachi · profilga ›".
-class _PersonCard extends StatelessWidget {
-  const _PersonCard({required this.person, required this.role});
+/// Ishtirokchi qatori: avatar, ism, onlayn holat; bosilganda profil ochiladi.
+class _PersonRow extends StatelessWidget {
+  const _PersonRow({required this.person, this.role});
   final OrderPartyModel person;
-  final String role;
+  final String? role;
 
   @override
   Widget build(BuildContext context) {
     final img = person.image ?? '';
-    final name = (person.name ?? '').isNotEmpty ? person.name! : (person.login != null ? '@${person.login}' : role);
-    return WebCard(
+    final name = person.displayName;
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: person.id)),
+        MaterialPageRoute(
+          builder: (_) => PublicProfileScreen(userId: person.id),
+        ),
       ),
       child: Row(
         children: [
@@ -218,19 +369,47 @@ class _PersonCard extends StatelessWidget {
             width: 44,
             height: 44,
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: WebC.fill5, ),
-            foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
-            child: img.isEmpty ? null : Image.network(img, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox()),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: WebC.fill10,
+            ),
+            foregroundDecoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: WebC.border),
+            ),
+            alignment: Alignment.center,
+            child: img.isEmpty
+                ? Text(
+                    name.replaceAll('@', '').characters.first.toUpperCase(),
+                    style: TextStyle(
+                      color: WebC.zinc300,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : Image.network(
+                    img,
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox(),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w500)),
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: WebC.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Row(
                   children: [
@@ -239,19 +418,30 @@ class _PersonCard extends StatelessWidget {
                       height: 6,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: person.online ? const Color(0xFF34D399) : const Color(0xFF52525B),
+                        color: person.online
+                            ? const Color(0xFF34D399)
+                            : const Color(0xFF71717A),
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Text(person.presence ?? 'oflayn',
-                        style: TextStyle(color: person.online ? WebC.emerald : WebC.zinc500, fontSize: 12)),
+                    Expanded(
+                      child: Text(
+                        [?role, person.presence ?? 'oflayn'].join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: person.online ? WebC.emerald : WebC.zinc500,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text('$role · profilga ›', style: TextStyle(color: WebC.zinc600, fontSize: 12)),
+          TIcon(TI.chevron_right_rounded, size: 18, color: WebC.zinc500),
         ],
       ),
     );
@@ -264,65 +454,110 @@ class _Files extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Fayllar', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        for (final f in files)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: f.url != null
+    return DetailCard(
+      title: 'Fayllar',
+      icon: TI.attach_file_rounded,
+      trailing: Text(
+        '${files.length} ta',
+        style: TextStyle(color: WebC.zinc500, fontSize: 13),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < files.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            files[i].url != null
                 ? ChatAttachment(
                     file: ChatFileModel(
-                      name: '${f.kind}${_extFor(f.mimeType)}',
-                      type: f.mimeType ?? 'application/octet-stream',
-                      size: f.size,
-                      url: f.url!,
+                      name: '${files[i].kind}${_extFor(files[i].mimeType)}',
+                      type: files[i].mimeType ?? 'application/octet-stream',
+                      size: files[i].size,
+                      url: files[i].url!,
                     ),
-                    cacheKey: 'order-file-${f.id}',
+                    cacheKey: 'order-file-${files[i].id}',
                     mine: false,
                   )
-                : Text("${f.kind} (kiriş uçun ruxsat yöq)", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
-          ),
-      ],
-    );
-  }
-}
-
-class _DeleteButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final busy = context.select<OrderDetailCubit, bool>((c) => c.state.busy);
-    return GestureDetector(
-      onTap: busy
-          ? null
-          : () async {
-              final ok = await confirmDialog(
-                context,
-                title: "Buyurtma öçirilsinmi?",
-                message:
-                    "Boşqalarga körinmaydi, lekin sizda «öçirilgan» holatida qoladi. Faol şartnomadagi mablağ qaytariladi.",
-                confirmLabel: "Öçiriş",
-                cancelLabel: 'Bekor',
-              );
-              if (ok == true && context.mounted) context.read<OrderDetailCubit>().deleteOrder();
-            },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: busy
-            ? Text('...', style: TextStyle(color: WebC.redSoft, fontSize: 14))
-            : IconLabel(TI.delete_outline_rounded, "Buyurtmani öçiriş", style: TextStyle(color: WebC.redSoft, fontSize: 14)),
+                : Row(
+                    children: [
+                      TIcon(TI.lock_rounded, size: 16, color: WebC.zinc500),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "${files[i].kind} — faqat iştirokçilarga oçiq",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: WebC.zinc500, fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+          ],
+        ],
       ),
     );
   }
 }
 
-/// Saytdagi OrderActions: rol va holatga qarab tugmalar/formalar.
+/// Buyurtmachi: bekor qilish (ochiq bo'lsa) va o'chirish — sahifa oxirida, bir qatorda.
+class _ManageCard extends StatelessWidget {
+  const _ManageCard({required this.canCancel, required this.canDelete});
+  final bool canCancel;
+  final bool canDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final busy = context.select<OrderDetailCubit, bool>((c) => c.state.busy);
+    final cubit = context.read<OrderDetailCubit>();
+    return DetailCard(
+      title: 'Buyurtmani boşqariş',
+      icon: TI.edit_note_rounded,
+      child: ActionGroup(
+        children: [
+          if (canCancel)
+            ActionBtn(
+              label: 'Bekor qiliş',
+              icon: TI.highlight_off_rounded,
+              kind: ActionKind.ghost,
+              onPressed: busy
+                  ? null
+                  : () async {
+                      final ok = await confirmDialog(
+                        context,
+                        title: 'Buyurtma bekor qilinsinmi?',
+                        message:
+                            "Yuborilgan şartnoma bölsa, bloklangan mablağ sizga qaytadi.",
+                        confirmLabel: 'Ha',
+                        cancelLabel: "Yöq",
+                      );
+                      if (ok == true) cubit.setStatus('CANCELLED');
+                    },
+            ),
+          if (canDelete)
+            ActionBtn(
+              label: "Öçiriş",
+              icon: TI.delete_outline_rounded,
+              kind: ActionKind.danger,
+              onPressed: busy
+                  ? null
+                  : () async {
+                      final ok = await confirmDialog(
+                        context,
+                        title: "Buyurtma öçirilsinmi?",
+                        message:
+                            "Boşqalarga körinmaydi, lekin sizda «öçirilgan» holatida qoladi. Faol şartnomadagi mablağ qaytariladi.",
+                        confirmLabel: "Öçiriş",
+                        cancelLabel: 'Bekor',
+                      );
+                      if (ok == true && context.mounted) cubit.deleteOrder();
+                    },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rol va holatga qarab: shartnoma, taklif formasi, navbat, takliflar, baho, shartnoma paneli.
 class _OrderActions extends StatefulWidget {
   const _OrderActions({
     required this.order,
@@ -345,7 +580,9 @@ class _OrderActions extends StatefulWidget {
 }
 
 class _OrderActionsState extends State<_OrderActions> {
-  late final _price = TextEditingController(text: _myOffer?.price.toString() ?? '');
+  late final _price = TextEditingController(
+    text: _myOffer?.price.toString() ?? '',
+  );
   late final _message = TextEditingController(text: _myOffer?.message ?? '');
   final _offerStars = TextEditingController(text: '$_minOfferStars');
   final _boost = TextEditingController();
@@ -375,7 +612,15 @@ class _OrderActionsState extends State<_OrderActions> {
 
   @override
   void dispose() {
-    for (final c in [_price, _message, _offerStars, _boost, _cAmount, _cNote, _reviewComment]) {
+    for (final c in [
+      _price,
+      _message,
+      _offerStars,
+      _boost,
+      _cAmount,
+      _cNote,
+      _reviewComment,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -389,20 +634,27 @@ class _OrderActionsState extends State<_OrderActions> {
       _localErr = null;
     });
     try {
-      final id = await MessagesRepository().startConversation(user.id, orderId: o.id);
+      final id = await MessagesRepository().startConversation(
+        user.id,
+        orderId: o.id,
+      );
       if (!mounted) return;
-      await Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          conversationId: id,
-          other: ChatOtherUser(
-            id: user.id,
-            name: (user.name ?? '').isNotEmpty ? user.name! : (user.login ?? 'Foydalanuvçi'),
-            login: user.login,
-            image: user.image,
-            isSupport: false,
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            conversationId: id,
+            other: ChatOtherUser(
+              id: user.id,
+              name: (user.name ?? '').isNotEmpty
+                  ? user.name!
+                  : (user.login ?? 'Foydalanuvçi'),
+              login: user.login,
+              image: user.image,
+              isSupport: false,
+            ),
           ),
         ),
-      ));
+      );
     } on ApiException catch (e) {
       setState(() => _localErr = e.message);
     } finally {
@@ -411,7 +663,10 @@ class _OrderActionsState extends State<_OrderActions> {
   }
 
   void _report(String suspectId) {
-    showWebDialog(context, builder: (_) => _ReportForm(suspectId: suspectId, orderId: o.id));
+    showWebDialog(
+      context,
+      builder: (_) => _ReportForm(suspectId: suspectId, orderId: o.id),
+    );
   }
 
   @override
@@ -420,167 +675,161 @@ class _OrderActionsState extends State<_OrderActions> {
     final status = o.status;
     final sent = _contract('SENT');
     final accepted = _contract('ACCEPTED');
-    final incoming = widget.isPreparer && sent?.preparerId == widget.meId ? sent : null;
+    final incoming = widget.isPreparer && sent?.preparerId == widget.meId
+        ? sent
+        : null;
     final err = _localErr ?? widget.state.error;
     final myOffer = _myOffer;
 
     final children = <Widget>[
-      if (err != null) Text(err, style: TextStyle(color: WebC.red, fontSize: 14)),
+      if (err != null)
+        InfoNote(icon: TI.error_outline_rounded, color: WebC.red, text: err),
+
+      // Imzolangan shartnoma: topshirish / yakunlash / qayta ishlash / bekor qilish so'rovi
+      if (accepted != null &&
+          (widget.isOrderer || widget.isAssigned) &&
+          (status == 'IN_PROGRESS' || status == 'DELIVERED'))
+        ContractPanel(
+          order: o,
+          contract: accepted,
+          meId: widget.meId,
+          isOrderer: widget.isOrderer,
+          busy: busy,
+        ),
 
       if (widget.isAssigned)
-        Align(
-          alignment: Alignment.centerLeft,
-          child: WebButton(
-            label: 'Buyurtmaçi bilan yozişiş',
-            leading: TI.chat_bubble_outline_rounded,
-            variant: WebBtn.ghost,
-            onPressed: busy ? null : () => _startChat(o.orderer),
-          ),
+        ActionBtn(
+          label: 'Buyurtmaçiga yoziş',
+          icon: TI.chat_bubble_outline_rounded,
+          kind: ActionKind.ghost,
+          onPressed: busy ? null : () => _startChat(o.orderer),
         ),
 
       // Tayyorlovchiga kelgan shartnoma
       if (incoming != null)
-        _TintCard(
-          color: const Color(0xFF6366F1),
-          border: const Color(0xFF818CF8),
+        DetailCard(
+          title: 'Sizga şartnoma yuborildi',
+          icon: TI.description_outlined,
+          tint: const Color(0xFF6366F1),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              IconLabel(TI.description_outlined, 'Sizga şartnoma yuborildi',
-                  color: WebC.indigoSoft, size: 18,
-                  style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              _rich('Kelişilgan summa: ', "${groupDigits(incoming.amount)} söm"),
-              if (incoming.deadline != null) ...[
-                const SizedBox(height: 4),
-                _rich('Topşiriş muddati: ', shortDateTime(incoming.deadline!)),
-              ],
-              if ((incoming.note ?? '').isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text('Izoh: ${incoming.note}', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
-              ],
-              const SizedBox(height: 8),
-              Text(
-                "Qabul qilganingizdan keyin şartnomani faqat ikki tomon roziligi (yoki admin qarori) bilan bekor qiliş "
-                "mumkin. Muddatgaça iş topşirilmasa — şartnoma bekor böladi.",
-                style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
+              KeyValueRow(
+                label: 'Summa',
+                value: "${groupDigits(incoming.amount)} söm",
               ),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, runSpacing: 8, children: [
-                WebButton(
-                  label: 'Qabul qiliş va boşlaş',
-                  onPressed: busy ? null : () => _cubit.respondToContract(incoming.id, action: 'ACCEPT'),
+              if (incoming.deadline != null)
+                KeyValueRow(
+                  label: 'Topşiriş muddati',
+                  value: shortDateTime(incoming.deadline!),
                 ),
-                WebButton(
-                  label: 'Rad etiş',
-                  variant: WebBtn.ghost,
-                  onPressed: busy ? null : () => _cubit.respondToContract(incoming.id, action: 'DECLINE'),
-                ),
-              ]),
+              if ((incoming.note ?? '').isNotEmpty)
+                KeyValueRow(label: 'Izoh', value: incoming.note!),
+              const SizedBox(height: 8),
+              const InfoNote(
+                text:
+                    "Qabul qilgandan keyin şartnomani faqat ikki tomon roziligi (yoki admin qarori) bilan "
+                    "bekor qiliş mumkin. Muddatgaça iş topşirilmasa — şartnoma bekor böladi.",
+              ),
+              const SizedBox(height: kDetailGap),
+              ActionGroup(
+                children: [
+                  ActionBtn(
+                    label: 'Rad etiş',
+                    kind: ActionKind.ghost,
+                    onPressed: busy
+                        ? null
+                        : () => _cubit.respondToContract(
+                            incoming.id,
+                            action: 'DECLINE',
+                          ),
+                  ),
+                  ActionBtn(
+                    label: 'Qabul qiliş',
+                    icon: TI.check_rounded,
+                    onPressed: busy
+                        ? null
+                        : () => _cubit.respondToContract(
+                            incoming.id,
+                            action: 'ACCEPT',
+                          ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
 
       // Buyurtmachi: yuborilgan shartnoma holati
       if (widget.isOrderer && sent != null)
-        _TintCard(
-          color: const Color(0xFF6366F1),
-          border: const Color(0xFF818CF8),
+        DetailCard(
+          title: 'Şartnoma yuborildi',
+          icon: TI.description_outlined,
+          tint: const Color(0xFF6366F1),
+          trailing: Text(
+            'javob kutilmoqda',
+            style: TextStyle(color: WebC.zinc400, fontSize: 12),
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text.rich(
-                TextSpan(
-                  style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
-                  children: [
-                    iconSpan(TI.description_outlined, size: 16, color: WebC.indigoSoft),
-                    TextSpan(text: sent.preparerName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    TextSpan(text: " ga şartnoma yuborildi — ${groupDigits(sent.amount)} söm. Javob kutilmoqda."),
-                  ],
-                ),
+              KeyValueRow(label: 'Tayyorlovçi', value: sent.preparerName),
+              KeyValueRow(
+                label: 'Summa',
+                value: "${groupDigits(sent.amount)} söm",
               ),
-              const SizedBox(height: 8),
-              WebButton(
-                label: 'Bekor qiliş',
-                variant: WebBtn.ghost,
-                onPressed: busy ? null : () => _cubit.respondToContract(sent.id, action: 'CANCEL'),
+              if (sent.deadline != null)
+                KeyValueRow(
+                  label: 'Topşiriş muddati',
+                  value: shortDateTime(sent.deadline!),
+                ),
+              const SizedBox(height: kDetailGap),
+              ActionBtn(
+                label: 'Şartnomani bekor qiliş',
+                kind: ActionKind.ghost,
+                onPressed: busy
+                    ? null
+                    : () => _cubit.respondToContract(sent.id, action: 'CANCEL'),
               ),
             ],
           ),
         ),
 
       // Tayyorlovchi: taklif yuborish / yangilash
-      if (widget.isPreparer && !widget.isAssigned && status == 'OPEN') _offerForm(myOffer, busy),
+      if (widget.isPreparer && !widget.isAssigned && status == 'OPEN')
+        _offerForm(myOffer, busy),
 
       // Navbat
-      if (widget.isPreparer && !widget.isOrderer && status == 'OPEN' && o.queue.isNotEmpty) _queue(),
+      if (widget.isPreparer &&
+          !widget.isOrderer &&
+          status == 'OPEN' &&
+          o.queue.isNotEmpty)
+        _queue(),
 
       // Buyurtmachi: takliflar
-      if (widget.isOrderer) _offers(busy, status, sent),
+      if (widget.isOrderer) ..._offers(busy, status, sent),
 
       // Baholash (buyurtmachi)
       if (widget.isOrderer && status == 'DONE')
         o.review != null
-            ? WebCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Sizning bahoyingiz', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    WebStars(value: o.review!.stars.toDouble(), size: 16),
-                    if ((o.review!.comment ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text('«${o.review!.comment}»', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
-                    ],
-                  ],
-                ),
+            ? DetailCard(
+                title: 'Sizning bahoyingiz',
+                icon: TI.star_outline_rounded,
+                child: _reviewView(o.review!),
               )
             : _reviewForm(busy),
 
       // Tayyorlovchiga qo'yilgan baho
       if (widget.isAssigned && status == 'DONE')
-        WebCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Sizga qöyilgan baho", style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              if (o.review != null) ...[
-                WebStars(value: o.review!.stars.toDouble(), size: 16),
-                const SizedBox(height: 8),
-                Text(
-                  (o.review!.comment ?? '').isNotEmpty ? '«${o.review!.comment}»' : 'Şarh qoldirilmagan.',
-                  style: TextStyle(color: (o.review!.comment ?? '').isNotEmpty ? WebC.zinc400 : WebC.zinc500, fontSize: 14),
+        DetailCard(
+          title: "Sizga qöyilgan baho",
+          icon: TI.star_outline_rounded,
+          child: o.review != null
+              ? _reviewView(o.review!)
+              : Text(
+                  "Buyurtmaçi hali baho qöymagan.",
+                  style: TextStyle(color: WebC.zinc500, fontSize: 14),
                 ),
-              ] else
-                Text("Buyurtmaçi hali baho qöymagan.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
-            ],
-          ),
-        ),
-
-      // Imzolangan shartnoma: topshirish / yakunlash / qayta ishlash / bekor qilish so'rovi
-      if (accepted != null && (widget.isOrderer || widget.isAssigned) && (status == 'IN_PROGRESS' || status == 'DELIVERED'))
-        ContractPanel(order: o, contract: accepted, meId: widget.meId, isOrderer: widget.isOrderer, busy: busy),
-
-      if (widget.isOrderer && status == 'OPEN')
-        Align(
-          alignment: Alignment.centerLeft,
-          child: WebButton(
-            label: 'Buyurtmani bekor qiliş',
-            variant: WebBtn.ghost,
-            onPressed: busy
-                ? null
-                : () async {
-                    final ok = await confirmDialog(
-                      context,
-                      title: 'Buyurtma bekor qilinsinmi?',
-                      message: "Yuborilgan şartnoma bölsa, bloklangan mablağ sizga qaytadi.",
-                      confirmLabel: 'Ha',
-                      cancelLabel: "Yöq",
-                    );
-                    if (ok == true) _cubit.setStatus('CANCELLED');
-                  },
-          ),
         ),
     ];
 
@@ -595,56 +844,145 @@ class _OrderActionsState extends State<_OrderActions> {
     );
   }
 
-  Widget _rich(String a, String b) => Text.rich(TextSpan(
-        style: TextStyle(color: WebC.zinc300, fontSize: 14),
-        children: [TextSpan(text: a), TextSpan(text: b, style: const TextStyle(fontWeight: FontWeight.w700))],
-      ));
+  Widget _reviewView(OrderReviewModel r) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      WebStars(value: r.stars.toDouble(), size: 16),
+      const SizedBox(height: 8),
+      Text(
+        (r.comment ?? '').isNotEmpty ? '«${r.comment}»' : 'Şarh qoldirilmagan.',
+        style: TextStyle(
+          color: (r.comment ?? '').isNotEmpty ? WebC.zinc300 : WebC.zinc500,
+          fontSize: 14,
+          height: 1.45,
+        ),
+      ),
+    ],
+  );
 
-  Widget _link(String text, Color color) => GestureDetector(
-        onTap: () => goToSection(context, AppSection.wallet),
-        child: Text(text,
-            style: TextStyle(color: color, fontSize: 12, decoration: TextDecoration.underline, decorationColor: color)),
-      );
+  Widget _link(String text) => GestureDetector(
+    onTap: () => goToSection(context, AppSection.wallet),
+    child: Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: WebC.indigo,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  );
+
+  Widget _field(String label, Widget input) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: WebC.zinc400,
+            fontSize: 12.8,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      input,
+    ],
+  );
 
   Widget _offerForm(OrderOfferModel? myOffer, bool busy) {
     final stars = int.tryParse(_offerStars.text) ?? _minOfferStars;
-    return WebCard(
+    final sendStars = stars > 0 ? stars : _minOfferStars;
+    return DetailCard(
+      title: myOffer != null ? 'Mening taklifim' : 'Taklif yuboriş',
+      icon: TI.back_hand_outlined,
+      trailing: myOffer != null ? _OfferBadge(status: myOffer.status) : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(myOffer != null ? 'Taklifni yangilaş' : 'Taklif yuboriş',
-              style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          const WebLabel("Narx (söm)"),
-          WebInput(controller: _price, keyboardType: TextInputType.number),
-          const SizedBox(height: 12),
-          const WebLabel('Xabar'),
-          WebInput(controller: _message, maxLines: 3, minLines: 3),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _field(
+                  "Narx (söm)",
+                  WebInput(
+                    controller: _price,
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ),
+              if (myOffer == null) ...[
+                const SizedBox(width: kDetailGap),
+                Expanded(
+                  child: _field(
+                    'Star (kamida $_minOfferStars)',
+                    WebInput(
+                      controller: _offerStars,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: kDetailGap),
+          _field(
+            'Xabar (ixtiyoriy)',
+            WebInput(controller: _message, maxLines: 3, minLines: 3),
+          ),
           if (myOffer == null) ...[
-            const SizedBox(height: 12),
-            WebLabel("Star (navbatdagi boşlanğiç örningiz — kamida $_minOfferStars)"),
-            WebInput(controller: _offerStars, keyboardType: TextInputType.number, onChanged: (_) => setState(() {})),
-            const SizedBox(height: 4),
-            Text.rich(
-              TextSpan(children: [
-                const WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(padding: EdgeInsets.only(right: 4), child: StarGlyph(size: 13)),
-                ),
-                TextSpan(
-                  text: 'Kamida $_minOfferStars star talab qiladi — navbatda yuqoriroqda turiş uçun boşidanoq köproq '
-                      'yuborişingiz mumkin. Star balansingizdan sarflanadi.',
-                ),
-              ]),
-              style: TextStyle(color: WebC.amber, fontSize: 12, height: 1.4),
+            const SizedBox(height: kDetailGap),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 6),
+                            child: StarGlyph(size: 13),
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              'Navbatda köproq star sarflagan yuqorida turadi. Star balansingizdan '
+                              'sarflanadi (kamida $_minOfferStars).',
+                        ),
+                      ],
+                    ),
+                    style: TextStyle(
+                      color: WebC.zinc300,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  _link('Hamyondan star sotib oliş →'),
+                ],
+              ),
             ),
-            _link('Star yetarli emasmi? Hamyondan sotib oling →', WebC.amber),
           ],
-          const SizedBox(height: 12),
-          WebButton(
-            label: myOffer != null ? 'Yangilaş' : 'Yuboriş (${stars > 0 ? stars : _minOfferStars})',
-            icon: myOffer != null ? null : const StarGlyph(size: 16),
-            expand: true,
+          const SizedBox(height: kDetailGap),
+          ActionBtn(
+            label: myOffer != null
+                ? 'Taklifni yangilaş'
+                : 'Taklif yuboriş · $sendStars',
+            leadingWidget: myOffer != null ? null : const StarGlyph(size: 16),
             onPressed: busy
                 ? null
                 : () {
@@ -656,57 +994,76 @@ class _OrderActionsState extends State<_OrderActions> {
                     setState(() => _localErr = null);
                     _cubit.submitOffer(
                       price: price,
-                      message: _message.text.trim().isEmpty ? null : _message.text.trim(),
-                      stars: myOffer == null ? (stars > 0 ? stars : _minOfferStars) : null,
+                      message: _message.text.trim().isEmpty
+                          ? null
+                          : _message.text.trim(),
+                      stars: myOffer == null ? sendStars : null,
                     );
                   },
           ),
           if (myOffer != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Container(height: 1, color: WebC.border),
-            const SizedBox(height: 12),
-            Text.rich(TextSpan(
-              style: TextStyle(color: WebC.zinc500, fontSize: 12),
-              children: [
-                const TextSpan(text: 'Holat: '),
-                WidgetSpan(alignment: PlaceholderAlignment.middle, child: _OfferBadge(status: myOffer.status)),
-                const TextSpan(text: ' · Jami sarflangan: '),
-                TextSpan(text: '${myOffer.starsSpent} ', style: TextStyle(color: WebC.amber, fontWeight: FontWeight.w700)),
-                starSpan(size: 13),
-              ],
-            )),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Row(
               children: [
-                SizedBox(width: 112, child: WebInput(controller: _boost, hint: 'star', keyboardType: TextInputType.number)),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: WebButton(
-                    label: 'Navbatda yuqoriga çiqiş',
-                    leading: TI.rocket_launch_outlined,
-                    variant: WebBtn.ghost,
-                    onPressed: busy
-                        ? null
-                        : () {
-                            final n = int.tryParse(_boost.text.trim()) ?? 0;
-                            if (n <= 0) {
-                              setState(() => _localErr = 'Star sonini kiriting');
-                              return;
-                            }
-                            setState(() => _localErr = null);
-                            _cubit.boostOffer(n).then((ok) {
-                              if (ok) _boost.clear();
-                            });
-                          },
+                Expanded(
+                  child: Text(
+                    'Navbatda kötariliş',
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
+                Text(
+                  'sarflangan: ${myOffer.starsSpent} ',
+                  style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                ),
+                const StarGlyph(size: 12),
               ],
             ),
             const SizedBox(height: 8),
-            Wrap(children: [
-              Text("Navbatda köproq star sarflaganlar yuqorida turadi. ", style: TextStyle(color: WebC.zinc600, fontSize: 12)),
-              _link('Star sotib oliş →', WebC.zinc600),
-            ]),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: WebInput(
+                      controller: _boost,
+                      hint: 'Star soni',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ActionBtn(
+                      label: 'Kötariş',
+                      icon: TI.rocket_launch_outlined,
+                      kind: ActionKind.ghost,
+                      height: null,
+                      onPressed: busy
+                          ? null
+                          : () {
+                              final n = int.tryParse(_boost.text.trim()) ?? 0;
+                              if (n <= 0) {
+                                setState(
+                                  () => _localErr = 'Star sonini kiriting',
+                                );
+                                return;
+                              }
+                              setState(() => _localErr = null);
+                              _cubit.boostOffer(n).then((ok) {
+                                if (ok) _boost.clear();
+                              });
+                            },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _link('Star sotib oliş →'),
           ],
         ],
       ),
@@ -714,223 +1071,439 @@ class _OrderActionsState extends State<_OrderActions> {
   }
 
   Widget _queue() {
-    return WebCard(
+    return DetailCard(
+      title: 'Navbat',
+      icon: TI.people_alt_rounded,
+      trailing: Text(
+        '${o.queue.length} ta',
+        style: TextStyle(color: WebC.zinc500, fontSize: 13),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Navbat (${o.queue.length})', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Text("Köproq star sarflagan yuqorida turadi.",
-              style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4)),
-          const SizedBox(height: 8),
-          for (final q in o.queue)
-            Container(
-              margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: q.mine
-                    ? const Color(0xFF6366F1).withValues(alpha: 0.10)
-                    : (AppColors.isLight ? Colors.black.withValues(alpha: 0.03) : Colors.white.withValues(alpha: 0.03)),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: q.mine ? const Color(0xFF818CF8).withValues(alpha: 0.30) : Colors.transparent),
-              ),
-              child: Row(
-                children: [
-                  Text('#${q.position}', style: TextStyle(color: WebC.zinc500, fontSize: 14)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: Text(q.visible,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                        ),
-                        if (q.hiddenLen > 0)
-                          ImageFiltered(
-                            imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                            child: Text('•' * q.hiddenLen.clamp(0, 10),
-                                style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                          ),
-                        if (q.mine) ...[
-                          const SizedBox(width: 8),
-                          Text('(siz)', style: TextStyle(color: WebC.indigoSoft, fontSize: 12)),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('${q.starsSpent}', style: TextStyle(color: WebC.amber, fontSize: 12)),
-                  const SizedBox(width: 2),
-                  const StarGlyph(size: 12),
-                ],
-              ),
-            ),
+          Text(
+            "Köproq star sarflagan yuqorida turadi.",
+            style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: kDetailGap),
+          for (var i = 0; i < o.queue.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            _queueRow(o.queue[i]),
+          ],
         ],
       ),
     );
   }
 
-  Widget _offers(bool busy, String status, ContractModel? sent) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _queueRow(OfferQueueEntry q) => Container(
+    height: 44,
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: q.mine
+          ? const Color(0xFF6366F1).withValues(alpha: 0.10)
+          : AppColors.tint(0.03),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: q.mine
+            ? const Color(0xFF818CF8).withValues(alpha: 0.30)
+            : Colors.transparent,
+      ),
+    ),
+    child: Row(
       children: [
-        Text('Takliflar (${o.offers.length})', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 12),
-        if (o.offers.isEmpty) Text("Hozirça taklif yöq.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
-        for (final x in o.offers) ...[
-          _offerCard(x, busy, status, sent),
-          const SizedBox(height: 12),
-        ],
-      ],
-    );
-  }
-
-  Widget _offerCard(OrderOfferModel x, bool busy, String status, ContractModel? sent) {
-    void profile() => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: x.preparer.id)),
-        );
-    final name = (x.preparer.name ?? '').isNotEmpty ? x.preparer.name! : (x.preparer.login ?? '—');
-    final open = _contractFor == x.preparer.id;
-    return WebCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        SizedBox(
+          width: 32,
+          child: Text(
+            '#${q.position}',
+            style: TextStyle(
+              color: WebC.zinc500,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Row(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: profile,
-                  child: Text.rich(TextSpan(
-                    style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w500),
-                    children: [
-                      TextSpan(text: name),
-                      if (x.preparer.login != null)
-                        TextSpan(text: ' @${x.preparer.login}', style: TextStyle(color: WebC.zinc400, fontWeight: FontWeight.w400)),
-                    ],
-                  )),
+              Flexible(
+                child: Text(
+                  q.visible,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: WebC.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Text('${x.starsSpent}', style: TextStyle(color: WebC.amber, fontSize: 12)),
-              const SizedBox(width: 2),
-              const StarGlyph(size: 12),
+              if (q.hiddenLen > 0)
+                ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                  child: Text(
+                    '•' * q.hiddenLen.clamp(0, 10),
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              if (q.mine) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '(siz)',
+                  style: TextStyle(color: WebC.indigoSoft, fontSize: 12),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 8),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '${q.starsSpent}',
+          style: TextStyle(
+            color: WebC.amber,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 2),
+        const StarGlyph(size: 12),
+      ],
+    ),
+  );
+
+  List<Widget> _offers(bool busy, String status, ContractModel? sent) {
+    return [
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Takliflar',
+              style: TextStyle(
+                color: WebC.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            '${o.offers.length} ta',
+            style: TextStyle(color: WebC.zinc500, fontSize: 13),
+          ),
+        ],
+      ),
+      if (o.offers.isEmpty)
+        const ListMessage(
+          icon: TI.hourglass_empty_rounded,
+          title: "Hozirça taklif yöq",
+          subtitle:
+              "Tayyorlovçilar narx taklif qilişi bilan şu yerda körinadi.",
+        ),
+      for (final x in o.offers) _offerCard(x, busy, status, sent),
+    ];
+  }
+
+  Widget _offerCard(
+    OrderOfferModel x,
+    bool busy,
+    String status,
+    ContractModel? sent,
+  ) {
+    void profile() => Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PublicProfileScreen(userId: x.preparer.id),
+      ),
+    );
+    final name = (x.preparer.name ?? '').isNotEmpty
+        ? x.preparer.name!
+        : (x.preparer.login ?? '—');
+    final open = _contractFor == x.preparer.id;
+    final canContract =
+        status == 'OPEN' && x.status == 'PENDING' && sent == null;
+    final img = x.preparer.image ?? '';
+    return WebCard(
+      padding: const EdgeInsets.all(kDetailPad),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // tayyorlovchi: avatar, ism, reyting — o'ngda narx
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: profile,
             child: Row(
               children: [
-                WebStars(value: x.preparerRating ?? 0),
-                const SizedBox(width: 8),
-                Text(x.preparerRating != null ? x.preparerRating!.toStringAsFixed(1) : 'yangi',
-                    style: TextStyle(color: WebC.zinc300, fontSize: 14)),
-                const SizedBox(width: 8),
-                Text('(${x.preparerRatingCount} baho)', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                Container(
+                  width: 40,
+                  height: 40,
+                  clipBehavior: Clip.antiAlias,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: WebC.fill10,
+                  ),
+                  child: img.isEmpty
+                      ? Text(
+                          name.characters.first.toUpperCase(),
+                          style: TextStyle(
+                            color: WebC.zinc300,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      : Image.network(
+                          img,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox(),
+                        ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: WebC.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          WebStars(value: x.preparerRating ?? 0, size: 11),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              x.preparerRating != null
+                                  ? '${x.preparerRating!.toStringAsFixed(1)} (${x.preparerRatingCount})'
+                                  : 'yangi',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: WebC.zinc400,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "${groupDigits(x.price)} söm",
+                      style: TextStyle(
+                        color: WebC.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${x.starsSpent} ',
+                          style: TextStyle(color: WebC.amber, fontSize: 12),
+                        ),
+                        const StarGlyph(size: 11),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
+          if ((x.message ?? '').isNotEmpty) ...[
+            const SizedBox(height: kDetailGap),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.tint(0.04),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                x.message!,
+                style: TextStyle(
+                  color: WebC.zinc300,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+            ),
+          ],
           if ((x.preparerAbout ?? '').isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(x.preparerAbout!, style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4)),
+            Text(
+              x.preparerAbout!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
+            ),
           ],
-          const SizedBox(height: 8),
-          _rich('Narx: ', "${groupDigits(x.price)} söm"),
-          if ((x.message ?? '').isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(x.message!, style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45)),
-          ],
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              WebButton(label: 'Çat', leading: TI.chat_bubble_outline_rounded, variant: WebBtn.ghost, onPressed: busy ? null : () => _startChat(x.preparer)),
-              WebButton(label: 'Şikoyat', leading: TI.warning_amber_rounded, variant: WebBtn.ghost, onPressed: () => _report(x.preparer.id)),
-              if (status == 'OPEN' && x.status == 'PENDING' && sent == null) ...[
-                WebButton(
-                  label: 'Şartnoma tuziş',
-                  leading: TI.description_outlined,
+          const SizedBox(height: kDetailGap),
+          if (canContract) ...[
+            ActionGroup(
+              children: [
+                ActionBtn(
+                  label: 'Rad etiş',
+                  kind: ActionKind.ghost,
+                  onPressed: busy
+                      ? null
+                      : () => _cubit.respondToOffer(x.id, accept: false),
+                ),
+                ActionBtn(
+                  label: open ? 'Yopiş' : 'Şartnoma tuziş',
+                  icon: open ? TI.close_rounded : TI.description_outlined,
                   onPressed: busy
                       ? null
                       : () => setState(() {
-                            _contractFor = open ? null : x.preparer.id;
-                            _cAmount.text = '${x.price}';
-                            _cNote.clear();
-                            _cDeadline = o.deadline != null && o.deadline!.isAfter(DateTime.now()) ? o.deadline : null;
-                          }),
-                ),
-                WebButton(
-                  label: 'Rad etiş',
-                  variant: WebBtn.ghost,
-                  onPressed: busy ? null : () => _cubit.respondToOffer(x.id, accept: false),
+                          _contractFor = open ? null : x.preparer.id;
+                          _cAmount.text = '${x.price}';
+                          _cNote.clear();
+                          _cDeadline =
+                              o.deadline != null &&
+                                  o.deadline!.isAfter(DateTime.now())
+                              ? o.deadline
+                              : null;
+                        }),
                 ),
               ],
-              if (x.status != 'PENDING') _OfferBadge(status: x.status),
+            ),
+            const SizedBox(height: 8),
+          ] else if (x.status != 'PENDING') ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _OfferBadge(status: x.status),
+            ),
+            const SizedBox(height: 8),
+          ],
+          ActionGroup(
+            children: [
+              ActionBtn(
+                label: 'Yoziş',
+                icon: TI.chat_bubble_outline_rounded,
+                kind: ActionKind.ghost,
+                onPressed: busy ? null : () => _startChat(x.preparer),
+              ),
+              ActionBtn(
+                label: 'Şikoyat',
+                icon: TI.flag_outlined,
+                kind: ActionKind.ghost,
+                onPressed: () => _report(x.preparer.id),
+              ),
             ],
           ),
           if (open) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: kDetailGap),
             Container(
-              width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.isLight ? Colors.black.withValues(alpha: 0.03) : Colors.white.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.tint(0.03),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: WebC.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Kelişilgan şartnoma', style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 8),
-                  const WebLabel("Kelişilgan summa (söm)"),
-                  WebInput(controller: _cAmount, keyboardType: TextInputType.number),
-                  const SizedBox(height: 8),
-                  const WebLabel('Topşiriş muddati (sana va vaqt)'),
-                  WebInput(
-                    readOnly: true,
-                    hint: 'Sana va vaqtni tanlang',
-                    controller: TextEditingController(text: _cDeadline == null ? '' : shortDateTime(_cDeadline!)),
-                    onTap: () async {
-                      final d = await pickDateTime(context, initial: _cDeadline);
-                      if (d != null && mounted) setState(() => _cDeadline = d);
-                    },
-                    suffix: TIcon(TI.event_rounded, size: 16, color: WebC.zinc300),
-                  ),
-                  const SizedBox(height: 8),
-                  const WebLabel('Izoh / şartlar (ixtiyoriy)'),
-                  WebInput(controller: _cNote, maxLines: 2, minLines: 2),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: WebButton(
-                      label: 'Şartnoma yuboriş',
-                      onPressed: busy
-                          ? null
-                          : () async {
-                              final amount = int.tryParse(_cAmount.text.trim()) ?? 0;
-                              if (amount <= 0) {
-                                setState(() => _localErr = 'Summani kiriting');
-                                return;
-                              }
-                              if (_cDeadline == null || !_cDeadline!.isAfter(DateTime.now())) {
-                                setState(() => _localErr = 'Şartnoma muddatini (sana va vaqt) tanlang');
-                                return;
-                              }
-                              setState(() => _localErr = null);
-                              final ok = await _cubit.sendContract(
-                                preparerId: x.preparer.id,
-                                amount: amount,
-                                note: _cNote.text.trim().isEmpty ? null : _cNote.text.trim(),
-                                deadline: _cDeadline,
-                              );
-                              if (ok && mounted) setState(() => _contractFor = null);
-                            },
+                  Text(
+                    'Şartnoma',
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
+                  const SizedBox(height: kDetailGap),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _field(
+                          "Summa (söm)",
+                          WebInput(
+                            controller: _cAmount,
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _field(
+                          'Topşiriş muddati',
+                          WebInput(
+                            readOnly: true,
+                            hint: 'Tanlang',
+                            controller: TextEditingController(
+                              text: _cDeadline == null
+                                  ? ''
+                                  : shortDateTime(_cDeadline!),
+                            ),
+                            onTap: () async {
+                              final d = await pickDateTime(
+                                context,
+                                initial: _cDeadline,
+                              );
+                              if (d != null && mounted) {
+                                setState(() => _cDeadline = d);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: kDetailGap),
+                  _field(
+                    'Izoh / şartlar (ixtiyoriy)',
+                    WebInput(controller: _cNote, maxLines: 2, minLines: 2),
+                  ),
+                  const SizedBox(height: kDetailGap),
+                  ActionBtn(
+                    label: 'Şartnoma yuboriş',
+                    icon: TI.send_rounded,
+                    onPressed: busy
+                        ? null
+                        : () async {
+                            final amount =
+                                int.tryParse(_cAmount.text.trim()) ?? 0;
+                            if (amount <= 0) {
+                              setState(() => _localErr = 'Summani kiriting');
+                              return;
+                            }
+                            if (_cDeadline == null ||
+                                !_cDeadline!.isAfter(DateTime.now())) {
+                              setState(
+                                () => _localErr =
+                                    'Şartnoma muddatini (sana va vaqt) tanlang',
+                              );
+                              return;
+                            }
+                            setState(() => _localErr = null);
+                            final ok = await _cubit.sendContract(
+                              preparerId: x.preparer.id,
+                              amount: amount,
+                              note: _cNote.text.trim().isEmpty
+                                  ? null
+                                  : _cNote.text.trim(),
+                              deadline: _cDeadline,
+                            );
+                            if (ok && mounted) {
+                              setState(() => _contractFor = null);
+                            }
+                          },
                   ),
                 ],
               ),
@@ -942,21 +1515,33 @@ class _OrderActionsState extends State<_OrderActions> {
   }
 
   Widget _reviewForm(bool busy) {
-    return WebCard(
+    return DetailCard(
+      title: 'Tayyorlovçini baholang',
+      icon: TI.star_outline_rounded,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Tayyorlovçini baholang', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Text("Bahoyingiz tayyorlovçi profilida va örtaça reytingida körinadi.",
-              style: TextStyle(color: WebC.zinc400, fontSize: 14)),
-          const SizedBox(height: 12),
-          WebStarInput(value: _reviewStars, onChanged: (v) => setState(() => _reviewStars = v)),
-          const SizedBox(height: 12),
-          WebInput(controller: _reviewComment, hint: 'Izoh (ixtiyoriy)', maxLines: 3, minLines: 3),
-          const SizedBox(height: 12),
-          WebButton(
-            label: busy ? '...' : 'Bahoni yuboriş',
+          Text(
+            "Bahoyingiz tayyorlovçi profilida va örtaça reytingida körinadi.",
+            style: TextStyle(color: WebC.zinc400, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: kDetailGap),
+          Center(
+            child: WebStarInput(
+              value: _reviewStars,
+              onChanged: (v) => setState(() => _reviewStars = v),
+            ),
+          ),
+          const SizedBox(height: kDetailGap),
+          WebInput(
+            controller: _reviewComment,
+            hint: 'Izoh (ixtiyoriy)',
+            maxLines: 3,
+            minLines: 3,
+          ),
+          const SizedBox(height: kDetailGap),
+          ActionBtn(
+            label: 'Bahoni yuboriş',
             onPressed: busy
                 ? null
                 : () {
@@ -967,7 +1552,9 @@ class _OrderActionsState extends State<_OrderActions> {
                     setState(() => _localErr = null);
                     _cubit.submitReview(
                       stars: _reviewStars,
-                      comment: _reviewComment.text.trim().isEmpty ? null : _reviewComment.text.trim(),
+                      comment: _reviewComment.text.trim().isEmpty
+                          ? null
+                          : _reviewComment.text.trim(),
                     );
                   },
           ),
@@ -985,38 +1572,28 @@ class _OfferBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (status) {
-      'ACCEPTED' => const Color(0xFF34D399),
-      'REJECTED' => const Color(0xFFF87171),
-      'PENDING' => const Color(0xFFFBBF24),
-      _ => const Color(0xFFA1A1AA),
+      'ACCEPTED' => WebC.emerald,
+      'REJECTED' => WebC.red,
+      'PENDING' => WebC.amber,
+      _ => WebC.zinc400,
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(999)),
-      child: Text(kOfferStatusLabel[status] ?? status,
-          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
-    );
-  }
-}
-
-/// Rangli ramkali karta (`card border-indigo-400/30 bg-indigo-500/5` kabi).
-class _TintCard extends StatelessWidget {
-  const _TintCard({required this.child, required this.color, required this.border});
-  final Widget child;
-  final Color color;
-  final Color border;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      height: 24,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: AppColors.isLight ? 0.08 : 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border.withValues(alpha: 0.28)),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
       ),
-      child: child,
+      child: Text(
+        kOfferStatusLabel[status] ?? status,
+        maxLines: 1,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }
@@ -1053,7 +1630,11 @@ class _ReportFormState extends State<_ReportForm> {
       _err = null;
     });
     try {
-      await MessagesRepository().report(suspectId: widget.suspectId, orderId: widget.orderId, body: _body.text.trim());
+      await MessagesRepository().report(
+        suspectId: widget.suspectId,
+        orderId: widget.orderId,
+        body: _body.text.trim(),
+      );
       setState(() => _done = true);
     } on ApiException catch (e) {
       setState(() => _err = e.message);
@@ -1065,18 +1646,35 @@ class _ReportFormState extends State<_ReportForm> {
   @override
   Widget build(BuildContext context) {
     if (_done) {
-      return Text("Şikoyatingiz yuborildi. Administrator körib çiqadi.", style: TextStyle(color: WebC.emerald, fontSize: 14));
+      return Text(
+        "Şikoyatingiz yuborildi. Administrator körib çiqadi.",
+        style: TextStyle(color: WebC.emerald, fontSize: 14),
+      );
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Şikoyat', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(
+          'Şikoyat',
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 12),
-        Text("Nomaqbul xatti-harakatni batafsil yozing. Maʼlumot faqat administratorga boradi.",
-            style: TextStyle(color: WebC.zinc400, fontSize: 12)),
+        Text(
+          "Nomaqbul xatti-harakatni batafsil yozing. Maʼlumot faqat administratorga boradi.",
+          style: TextStyle(color: WebC.zinc400, fontSize: 12),
+        ),
         const SizedBox(height: 12),
-        WebInput(controller: _body, hint: "Nima böldi?", maxLines: 5, minLines: 5),
+        WebInput(
+          controller: _body,
+          hint: "Nima böldi?",
+          maxLines: 5,
+          minLines: 5,
+        ),
         if (_err != null) ...[
           const SizedBox(height: 12),
           Text(_err!, style: TextStyle(color: WebC.red, fontSize: 14)),
@@ -1085,9 +1683,16 @@ class _ReportFormState extends State<_ReportForm> {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            WebButton(label: 'Bekor', variant: WebBtn.ghost, onPressed: _busy ? null : () => Navigator.of(context).pop()),
+            WebButton(
+              label: 'Bekor',
+              variant: WebBtn.ghost,
+              onPressed: _busy ? null : () => Navigator.of(context).pop(),
+            ),
             const SizedBox(width: 8),
-            WebButton(label: _busy ? '...' : 'Yuboriş', onPressed: _busy ? null : _submit),
+            WebButton(
+              label: _busy ? '...' : 'Yuboriş',
+              onPressed: _busy ? null : _submit,
+            ),
           ],
         ),
       ],
@@ -1107,11 +1712,14 @@ String _extFor(String? mime) {
     'video/mp4': '.mp4',
     'text/plain': '.txt',
     'application/msword': '.doc',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        '.docx',
     'application/vnd.ms-powerpoint': '.ppt',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        '.pptx',
     'application/vnd.ms-excel': '.xls',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        '.xlsx',
     'application/zip': '.zip',
   };
   return map[m] ?? '';

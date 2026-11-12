@@ -68,16 +68,16 @@ class AuthOnboardingCompleted extends AuthEvent {
 
   @override
   List<Object?> get props => [
-        role,
-        firstName,
-        lastName,
-        login,
-        password,
-        about,
-        birthDate,
-        hearAboutUs,
-        hearAboutUsDetail,
-      ];
+    role,
+    firstName,
+    lastName,
+    login,
+    password,
+    about,
+    birthDate,
+    hearAboutUs,
+    hearAboutUsDetail,
+  ];
 }
 
 class AuthLoggedOut extends AuthEvent {

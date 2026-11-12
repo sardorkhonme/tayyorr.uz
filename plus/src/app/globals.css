@@ -117,19 +117,6 @@ body {
   box-shadow: 0 1px 2px rgba(16, 16, 40, 0.04), 0 8px 24px -16px rgba(16, 16, 40, 0.12);
 }
 
-/* fon: yumshoq rangli dog'lar + nozik nuqtalar */
-.hero-bg {
-  background:
-    radial-gradient(40% 50% at 15% 10%, rgba(129, 140, 248, 0.28), transparent 70%),
-    radial-gradient(35% 45% at 85% 5%, rgba(244, 114, 182, 0.22), transparent 70%),
-    radial-gradient(40% 40% at 60% 60%, rgba(251, 191, 36, 0.12), transparent 70%);
-}
-.dots {
-  background-image: radial-gradient(rgba(22, 22, 29, 0.07) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(to bottom, #000, transparent 85%);
-}
-
 @keyframes rise {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }

@@ -52,9 +52,6 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
     <div className="flex min-h-dvh flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
       {/* ---------- chap: brend panel ---------- */}
       <aside className="relative isolate flex flex-col overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 pb-8 pt-6 text-white sm:px-10 lg:px-14 lg:py-12">
-        <div aria-hidden className="absolute -left-24 -top-24 -z-10 h-80 w-80 rounded-full bg-sky-400/40 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-32 -right-20 -z-10 h-96 w-96 rounded-full bg-fuchsia-400/40 blur-3xl" />
-        <div aria-hidden className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:22px_22px]" />
 
         <div className="flex items-center justify-between gap-3">
           <a href={returnTo} className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur transition hover:bg-white/25">

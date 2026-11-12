@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { BackLink } from "@/components/back-link";
+
 import { auth } from "@/auth";
 import { Icon } from "@/components/icons";
 import { GuideVideoCard } from "@/components/guide-video-card";
@@ -35,20 +37,10 @@ export default async function GuidePage({
 
   return (
     <div className="flex flex-col gap-6">
+      <BackLink fallback="/profile" />
       {/* ——— hero ——— */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-7">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full opacity-40 blur-3xl"
-          style={{ background: "radial-gradient(circle, #6366f1, transparent 70%)" }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-32 -left-20 h-72 w-72 rounded-full opacity-30 blur-3xl"
-          style={{ background: "radial-gradient(circle, #a855f7, transparent 70%)" }}
-        />
-
-        <div className="relative">
+      <section className="card">
+        <div>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
             <Icon name="help" className="h-3.5 w-3.5" />
             Qöllanma
@@ -111,11 +103,11 @@ export default async function GuidePage({
       {videos.length > 0 && (
         <a
           href="#videos"
-          className="blur-in group flex items-center gap-4 rounded-3xl bg-gradient-to-br from-indigo-500/50 via-violet-500/25 to-white/5 p-px shadow-xl shadow-indigo-500/10"
+          className="card blur-in group flex items-center gap-4 border-indigo-400/25 transition hover:border-indigo-400/50"
         >
-          <span className="flex w-full items-center gap-4 rounded-[calc(1.5rem-1px)] bg-white/[0.03] p-4 backdrop-blur-sm sm:p-5">
+          <span className="flex w-full items-center gap-4">
             <span
-              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30 transition group-hover:scale-105"
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500 transition group-hover:scale-105"
               style={{ color: "#fff" }}
             >
               <span className="absolute inset-0 animate-ping rounded-2xl bg-indigo-500/30 [animation-duration:2.4s]" />
@@ -149,18 +141,18 @@ export default async function GuidePage({
                   {!last && (
                     <span
                       aria-hidden
-                      className="absolute left-1/2 top-11 -bottom-1 w-px -translate-x-1/2 bg-gradient-to-b from-indigo-400/50 to-white/5"
+                      className="absolute left-1/2 top-11 -bottom-1 w-px -translate-x-1/2 bg-indigo-400/30"
                     />
                   )}
                   <span
-                    className="relative z-[1] flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-sm font-semibold shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-500/10"
+                    className="relative z-[1] flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-sm font-semibold ring-4 ring-[var(--bg)]"
                     style={{ color: "#fff" }}
                   >
                     {i + 1}
                   </span>
                 </div>
 
-                <div className="group min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-indigo-400/30 hover:bg-white/[0.05] sm:p-5">
+                <div className="group card min-w-0 flex-1 transition hover:border-indigo-400/30">
                   <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300 transition group-hover:scale-105">
                       <Icon name={s.icon} className="h-[18px] w-[18px]" />
@@ -192,7 +184,7 @@ export default async function GuidePage({
       </section>
 
       {/* ——— yordam ——— */}
-      <section className="blur-in relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500/15 via-violet-500/10 to-transparent p-5 sm:p-6">
+      <section className="card blur-in">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-300">
             <Icon name="headset" className="h-6 w-6" />

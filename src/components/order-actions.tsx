@@ -36,7 +36,7 @@ function OfferBadge({ status, inline = false }: { status: string; inline?: boole
   return (
     <span
       className={`inline-flex items-center font-semibold ${s.cls} ${
-        inline ? "gap-1 rounded-full px-2 py-0.5 align-middle text-xs" : "gap-2 self-stretch rounded-xl border border-current/20 px-[1.1rem] py-[0.6rem] text-sm leading-[1.2]"
+        inline ? "gap-1 rounded-full px-2 py-0.5 align-middle text-xs" : "w-full justify-center gap-2 self-stretch rounded-xl border border-current/20 px-[1.1rem] py-[0.6rem] text-sm leading-[1.2] sm:w-auto"
       }`}
     >
       <Icon name={OFFER_ICON[status] ?? "clock"} className={inline ? "h-3.5 w-3.5" : "h-4 w-4"} />
@@ -211,7 +211,7 @@ export function OrderActions(props: Props) {
       {isAssigned && (
         <button
           type="button"
-          className="btn-ghost w-fit"
+          className="btn-ghost w-full sm:w-fit"
           disabled={busy}
           onClick={() => startChat(ordererId)}
         >
@@ -223,7 +223,7 @@ export function OrderActions(props: Props) {
       {/* Tayyorlovchiga kelgan shartnoma */}
       {myIncomingContract && (
         <div className="card border-indigo-400/30 bg-indigo-500/5">
-          <h2 className="flex items-center gap-2 font-semibold text-white">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
             <Icon name="file" className="h-[18px] w-[18px] text-indigo-300" />
             Sizga şartnoma yuborildi
           </h2>
@@ -247,7 +247,7 @@ export function OrderActions(props: Props) {
             (yoki admin qarori) bilan bekor qiliş mumkin. Muddatgaça iş
             topşirilmasa — şartnoma bekor böladi.
           </p>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:flex">
             <button
               className="btn-primary"
               disabled={busy}
@@ -307,19 +307,35 @@ export function OrderActions(props: Props) {
           }}
           className="card flex flex-col gap-3"
         >
-          <h2 className="font-semibold">
+          <h2 className="text-sm font-semibold text-white">
             {myOffer ? "Taklifni yangilaş" : "Taklif yuboriş"}
           </h2>
-          <div>
-            <label className="label">Narx (söm)</label>
-            <input
-              className="input"
-              type="number"
-              min={1}
-              required
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
+          <div className={`grid gap-3 ${myOffer ? "" : "grid-cols-2"}`}>
+            <div className="min-w-0">
+              <label className="label truncate">Narx (söm)</label>
+              <input
+                className="input"
+                type="number"
+                min={1}
+                required
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+            {!myOffer && (
+              <div className="min-w-0">
+                <label className="label truncate">Star (kamida {MIN_OFFER_STARS})</label>
+                <input
+                  className="input"
+                  type="number"
+                  min={MIN_OFFER_STARS}
+                  step={1}
+                  required
+                  value={offerStars}
+                  onChange={(e) => setOfferStars(e.target.value)}
+                />
+              </div>
+            )}
           </div>
           <div>
             <label className="label">Xabar</label>
@@ -332,22 +348,9 @@ export function OrderActions(props: Props) {
           </div>
           {!myOffer && (
             <div>
-              <label className="label">
-                Star (navbatdagi boşlanğiç örningiz — kamida{" "}
-                {MIN_OFFER_STARS})
-              </label>
-              <input
-                className="input"
-                type="number"
-                min={MIN_OFFER_STARS}
-                step={1}
-                required
-                value={offerStars}
-                onChange={(e) => setOfferStars(e.target.value)}
-              />
-              <p className="mt-1 text-xs text-amber-300">
+              <p className="text-xs leading-relaxed text-amber-300">
                 <StarIcon className="mr-1 h-3 w-3" />
-                Kamida {MIN_OFFER_STARS} star talab qiladi — navbatda
+                Star — navbatdagi boşlanğiç örningiz. Kamida {MIN_OFFER_STARS} star talab qiladi — navbatda
                 yuqoriroqda turiş uçun boşidanoq köproq yuborişingiz
                 mumkin. Star balansingizdan sarflanadi.{" "}
                 <Link href="/wallet" className="underline hover:text-amber-200">
@@ -374,9 +377,9 @@ export function OrderActions(props: Props) {
                   {myOffer.starsSpent} <StarIcon className="h-3 w-3" />
                 </b>
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-stretch gap-2">
                 <input
-                  className="input w-28"
+                  className="input h-10 w-24 shrink-0"
                   type="number"
                   min={1}
                   step={1}
@@ -386,12 +389,12 @@ export function OrderActions(props: Props) {
                 />
                 <button
                   type="button"
-                  className="btn-ghost"
+                  className="btn-ghost h-10 min-w-0 flex-1"
                   disabled={busy}
                   onClick={boost}
                 >
-                  <Icon name="rocket" className="h-4 w-4" />
-                  Navbatda yuqoriga çiqiş
+                  <Icon name="rocket" className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Yuqoriga çiqiş</span>
                 </button>
               </div>
               <p className="text-xs text-zinc-600">
@@ -409,7 +412,7 @@ export function OrderActions(props: Props) {
           star sarflashni tanlaydi (ismlar qisman yashirilgan) */}
       {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
         <div className="card flex flex-col gap-2">
-          <h2 className="font-semibold">Navbat ({queue.length})</h2>
+          <h2 className="text-sm font-semibold text-white">Navbat ({queue.length})</h2>
           <p className="text-xs text-zinc-500">Köproq star sarflagan yuqorida turadi.</p>
           <ul className="flex flex-col gap-1.5">
             {queue.map((q) => (
@@ -450,9 +453,9 @@ export function OrderActions(props: Props) {
       {/* Buyurtmachi: takliflar ro'yxati */}
       {isOrderer && (
         <div className="flex flex-col gap-3">
-          <h2 className="font-semibold">Takliflar ({offers.length})</h2>
+          <h2 className="px-1 text-sm font-semibold text-white">Takliflar ({offers.length})</h2>
           {offers.length === 0 && (
-            <p className="text-sm text-zinc-500">Hozirça taklif yöq.</p>
+            <p className="card text-sm text-zinc-500">Hozirça taklif yöq.</p>
           )}
           {offers.map((o) => (
             <div key={o.id} className="card flex flex-col gap-2">
@@ -485,12 +488,12 @@ export function OrderActions(props: Props) {
               {o.preparer.about && (
                 <p className="text-xs text-zinc-500">{o.preparer.about}</p>
               )}
-              <div className="text-sm">
-                Narx: <b>{o.price.toLocaleString()} söm</b>
+              <div className="text-sm text-zinc-300">
+                Narx: <b className="text-white">{o.price.toLocaleString("ru-RU")} söm</b>
               </div>
               {o.message && <p className="text-sm text-zinc-300">{o.message}</p>}
 
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2 border-t border-white/10 pt-3 sm:flex sm:flex-wrap [&>*]:h-10">
                 <button
                   type="button"
                   className="btn-ghost"
@@ -537,7 +540,11 @@ export function OrderActions(props: Props) {
                     </button>
                   </>
                 )}
-                {o.status !== "PENDING" && <OfferBadge status={o.status} />}
+                {o.status !== "PENDING" && (
+                  <span className="col-span-2 flex sm:col-span-1">
+                    <OfferBadge status={o.status} />
+                  </span>
+                )}
               </div>
 
               {contractFor === o.preparerId && (
@@ -592,7 +599,7 @@ export function OrderActions(props: Props) {
       {isOrderer && status === "DONE" &&
         (reviewed ? (
           <div className="card">
-            <h2 className="mb-1 font-semibold text-white">Sizning bahoyingiz</h2>
+            <h2 className="mb-2 text-sm font-semibold text-white">Sizning bahoyingiz</h2>
             <Stars value={myReview?.stars ?? 0} size="md" />
             {myReview?.comment && (
               <p className="mt-2 text-sm text-zinc-400">«{myReview.comment}»</p>
@@ -605,7 +612,7 @@ export function OrderActions(props: Props) {
       {/* Tayyorlovchiga qo'yilgan baho va sharh */}
       {isAssigned && status === "DONE" && (
         <div className="card">
-          <h2 className="mb-1 font-semibold text-white">Sizga qöyilgan baho</h2>
+          <h2 className="mb-2 text-sm font-semibold text-white">Sizga qöyilgan baho</h2>
           {reviewed ? (
             <>
               <Stars value={myReview?.stars ?? 0} size="md" />

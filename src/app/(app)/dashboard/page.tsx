@@ -7,6 +7,12 @@ import { RestrictionNotice } from "@/components/restriction-notice";
 import { AnnouncementCarousel } from "@/components/announcement-banner";
 import { OrdersBrowser, type OrderRow } from "@/components/orders-browser";
 
+/**
+ * Asosiy: header (qidiruv + filtr) · banner · buyurtmalar lentasi.
+ *  - tayyorlovchi: ochiq buyurtmalar + o'ziga biriktirilganlari
+ *  - buyurtmachi: BOSHQA foydalanuvchilarning ochiq buyurtmalari — faqat
+ *    ko'rish uchun (taklif yubora olmaydi). O'z buyurtmalari — /orders.
+ */
 export default async function DashboardPage() {
   const session = await auth();
   const restriction = await getRestriction(session!.user.id);
@@ -23,9 +29,18 @@ export default async function DashboardPage() {
   const orders = await db.order.findMany({
     where: isPreparer
       ? { deletedAt: null, OR: [{ status: "OPEN" }, { preparerId: me.id }] }
-      : { ordererId: me.id },
+      : { deletedAt: null, status: "OPEN", ordererId: { not: me.id } },
     orderBy: { createdAt: "desc" },
-    include: {
+    // faqat ro'yxat uchun kerakli maydonlar — tayyorlovchi taklifdan oldin
+    // ko'radiganidan ortiq hech narsa yuborilmaydi
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      type: true,
+      status: true,
+      budget: true,
+      createdAt: true,
       orderer: { select: { name: true, login: true } },
       _count: { select: { offers: true } },
     },
@@ -40,17 +55,13 @@ export default async function DashboardPage() {
     budget: o.budget,
     offers: o._count.offers,
     createdAt: o.createdAt.toISOString(),
-    ordererLabel: isPreparer ? o.orderer.login ?? o.orderer.name ?? null : null,
-    deleted: !!o.deletedAt,
-    deleteReason: o.deleteReason,
-    deletedByRole: o.deletedByRole,
+    ordererLabel: o.orderer.login ?? o.orderer.name ?? null,
   }));
 
   return (
     <OrdersBrowser
       orders={rows}
-      mine={!isPreparer}
-      newOrderHref={isPreparer ? undefined : "/orders/new"}
+      variant="feed"
       banner={
         announcements.length > 0 ? (
           <AnnouncementCarousel items={announcements} />

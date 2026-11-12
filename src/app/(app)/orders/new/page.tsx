@@ -18,7 +18,7 @@ export default async function NewOrderPage() {
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-4">
-        <BackLink fallback="/dashboard" />
+        <BackLink fallback="/orders" />
       </div>
       <NewOrderForm />
     </div>

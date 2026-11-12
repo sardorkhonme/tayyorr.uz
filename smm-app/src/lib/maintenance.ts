@@ -80,7 +80,7 @@ function page(site: Site, message: string) {
 <title>Texnik işlar — ${esc(s.name)}</title><meta name="robots" content="noindex">
 <style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-background:radial-gradient(700px circle at 50% 30%,${s.color}22,transparent 70%),#f7f7fb;color:#18181b}
+background:#f7f7fb;color:#18181b}
 .c{max-width:440px;width:100%;text-align:center;background:#fff;border:1px solid #ececf2;border-radius:28px;padding:36px 28px;box-shadow:0 24px 60px -24px ${s.color}55}
 .m{width:76px;height:76px;margin:0 auto 18px;border-radius:22px;display:grid;place-items:center;background:#fff;box-shadow:0 10px 30px -12px ${s.color}88,0 0 0 1px #ececf2;animation:f 3s ease-in-out infinite}
 .m img{width:50px;height:50px;object-fit:contain}
@@ -89,7 +89,7 @@ background:radial-gradient(700px circle at 50% 30%,${s.color}22,transparent 70%)
 h1{margin:16px 0 8px;font-size:24px;line-height:1.25}p{margin:0;color:#52525b;line-height:1.6}
 a{display:inline-block;margin-top:24px;padding:12px 20px;border-radius:14px;background:${s.color};color:#fff;text-decoration:none;font-weight:600}
 @keyframes f{50%{transform:translateY(-6px)}}@keyframes p{50%{opacity:.3}}
-@media (prefers-color-scheme:dark){body{background:radial-gradient(700px circle at 50% 30%,${s.color}33,transparent 70%),#08080d;color:#f4f4f5}.c{background:#121219;border-color:#ffffff14}.m{background:#1b1b24;box-shadow:0 0 0 1px #ffffff14}p{color:#a1a1aa}.g{background:#f9731622;color:#fdba74}}
+@media (prefers-color-scheme:dark){body{background:#08080d;color:#f4f4f5}.c{background:#121219;border-color:#ffffff14}.m{background:#1b1b24;box-shadow:0 0 0 1px #ffffff14}p{color:#a1a1aa}.g{background:#f9731622;color:#fdba74}}
 </style></head><body><main class="c">
 <div class="m"><img src="${s.mark}" alt=""></div>
 <span class="g"><i></i>Texnik işlar</span>

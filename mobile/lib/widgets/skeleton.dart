@@ -7,7 +7,13 @@ import 'glass_card.dart';
 /// o'ngga suzib o'tuvchi, o'ngga qiya ("/") yorug' chiziq, 1.7s, cheksiz;
 /// qutichada fondan bilinib turadigan ingichka chegara.
 class Skel extends StatefulWidget {
-  const Skel({super.key, this.width, required this.height, this.borderRadius = 10, this.shape = BoxShape.rectangle});
+  const Skel({
+    super.key,
+    this.width,
+    required this.height,
+    this.borderRadius = 10,
+    this.shape = BoxShape.rectangle,
+  });
 
   final double? width;
   final double height;
@@ -24,7 +30,10 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1700))..repeat();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat();
   }
 
   @override
@@ -35,55 +44,65 @@ class _SkelState extends State<Skel> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final radius = widget.shape == BoxShape.circle ? null : BorderRadius.circular(widget.borderRadius);
-    final borderColor = AppColors.isLight ? Colors.black.withValues(alpha: 0.09) : Colors.white.withValues(alpha: 0.10);
+    final radius = widget.shape == BoxShape.circle
+        ? null
+        : BorderRadius.circular(widget.borderRadius);
+    final borderColor = AppColors.isLight
+        ? Colors.black.withValues(alpha: 0.09)
+        : Colors.white.withValues(alpha: 0.10);
     return Container(
       foregroundDecoration: BoxDecoration(
         shape: widget.shape,
-        borderRadius: widget.shape == BoxShape.circle ? null : (radius ?? BorderRadius.circular(widget.height / 2)),
+        borderRadius: widget.shape == BoxShape.circle
+            ? null
+            : (radius ?? BorderRadius.circular(widget.height / 2)),
         border: Border.all(color: borderColor),
       ),
       child: ClipRRect(
-      borderRadius: radius ?? BorderRadius.circular(widget.height / 2),
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: DecoratedBox(
-          decoration: BoxDecoration(color: AppColors.tint(0.06)),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return ClipRect(
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, _) {
-                    final w = constraints.maxWidth.isFinite ? constraints.maxWidth : widget.width ?? 100;
-                    final h = widget.height;
-                    // qiya nur to'liq o'tishi uchun biroz kengroq yo'l
-                    final dx = -w - h + _controller.value * (2 * w + 2 * h);
-                    // Saytdagidek: qorong'ida oq, yorug'da indigo suzuvchi chiziq.
-                    final sweepColor = AppColors.isLight
-                        ? AppColors.indigo.withValues(alpha: 0.2)
-                        : Colors.white.withValues(alpha: 0.16);
-                    return Transform.translate(
-                      offset: Offset(dx, 0),
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        alignment: Alignment.centerLeft,
-                        child: SizedBox(
-                          width: w,
-                          height: h,
-                          child: CustomPaint(painter: _SlantedSweep(color: sweepColor)),
+        borderRadius: radius ?? BorderRadius.circular(widget.height / 2),
+        child: SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: AppColors.tint(0.06)),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return ClipRect(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) {
+                      final w = constraints.maxWidth.isFinite
+                          ? constraints.maxWidth
+                          : widget.width ?? 100;
+                      final h = widget.height;
+                      // qiya nur to'liq o'tishi uchun biroz kengroq yo'l
+                      final dx = -w - h + _controller.value * (2 * w + 2 * h);
+                      // Saytdagidek: qorong'ida oq, yorug'da indigo suzuvchi chiziq.
+                      final sweepColor = AppColors.isLight
+                          ? AppColors.indigo.withValues(alpha: 0.2)
+                          : Colors.white.withValues(alpha: 0.16);
+                      return Transform.translate(
+                        offset: Offset(dx, 0),
+                        child: OverflowBox(
+                          maxWidth: double.infinity,
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: w,
+                            height: h,
+                            child: CustomPaint(
+                              painter: _SlantedSweep(color: sweepColor),
+                            ),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }
@@ -97,7 +116,8 @@ class _SlantedSweep extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     const band = 40.0; // nur kengligi
     const angle = 0.42; // ~24° — yuqori uchi o'ngga og'gan
-    final len = size.height * 3 + 40; // aylantirilganda ham balandlikni to'liq qoplasin
+    final len =
+        size.height * 3 + 40; // aylantirilganda ham balandlikni to'liq qoplasin
     canvas.save();
     canvas.translate(size.width / 2, size.height / 2);
     canvas.rotate(angle);
@@ -146,7 +166,11 @@ class SBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Skel(width: width ?? double.infinity, height: height, borderRadius: 18);
+    return Skel(
+      width: width ?? double.infinity,
+      height: height,
+      borderRadius: 18,
+    );
   }
 }
 
@@ -161,14 +185,23 @@ class SRow extends StatelessWidget {
       blur: false,
       child: Row(
         children: [
-          if (withAvatar) ...[const SCircle(size: 40), const SizedBox(width: 12)],
+          if (withAvatar) ...[
+            const SCircle(size: 40),
+            const SizedBox(width: 12),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SBar(width: MediaQuery.of(context).size.width * 0.4, height: 14),
+                SBar(
+                  width: MediaQuery.of(context).size.width * 0.4,
+                  height: 14,
+                ),
                 const SizedBox(height: 6),
-                SBar(width: MediaQuery.of(context).size.width * 0.25, height: 11),
+                SBar(
+                  width: MediaQuery.of(context).size.width * 0.25,
+                  height: 11,
+                ),
               ],
             ),
           ),
@@ -193,7 +226,12 @@ class SCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: SBar(width: MediaQuery.of(context).size.width * 0.4, height: 15)),
+              Expanded(
+                child: SBar(
+                  width: MediaQuery.of(context).size.width * 0.4,
+                  height: 15,
+                ),
+              ),
               const SizedBox(width: 10),
               const SBar(width: 56, height: 18, borderRadius: 99),
             ],
@@ -252,7 +290,11 @@ class SBubble extends StatelessWidget {
 
 /// Umumiy o'ram — bo'limlar orasidagi joylashuv (gap) uchun.
 class SWrap extends StatelessWidget {
-  const SWrap({super.key, required this.children, this.padding = const EdgeInsets.fromLTRB(16, 8, 16, 32)});
+  const SWrap({
+    super.key,
+    required this.children,
+    this.padding = const EdgeInsets.fromLTRB(16, 8, 16, 32),
+  });
   final List<Widget> children;
   final EdgeInsets padding;
 

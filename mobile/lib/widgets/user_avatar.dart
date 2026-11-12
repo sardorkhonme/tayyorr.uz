@@ -29,8 +29,10 @@ class _UserAvatarState extends State<UserAvatar>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 7))
-      ..repeat();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 7),
+    )..repeat();
   }
 
   @override
@@ -52,7 +54,9 @@ class _UserAvatarState extends State<UserAvatar>
         padding: const EdgeInsets.all(1.4),
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(colors: [AppColors.indigo, AppColors.violet]),
+          gradient: LinearGradient(
+            colors: [AppColors.indigo, AppColors.violet],
+          ),
         ),
         child: ClipOval(
           child: Container(

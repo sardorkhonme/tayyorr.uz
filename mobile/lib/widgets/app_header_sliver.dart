@@ -15,7 +15,13 @@ import 'app_logo.dart';
 ///  · ichki (ochilgan) sahifalarda — orqaga tugmasi va xizmat logosi.
 /// Profil — pastki panelda (headerda emas).
 class AppHeaderSliver extends StatelessWidget {
-  const AppHeaderSliver({super.key});
+  const AppHeaderSliver({super.key, this.trailing, this.replace});
+
+  /// Öng tomonda — masalan [HeaderIconGroup] (qidiruv, filtr, qöllanma...).
+  final Widget? trailing;
+
+  /// Berilsa — butun qator (logo ham) şu widget bilan almaşadi (masalan qidiruv maydoni).
+  final Widget? replace;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +37,7 @@ class AppHeaderSliver extends StatelessWidget {
     }
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _HeaderDelegate(top, light),
+      delegate: _HeaderDelegate(top, light, trailing, replace),
     );
   }
 }
@@ -79,9 +85,11 @@ Widget _statusFade(double topInset) => IgnorePointer(
 );
 
 class _HeaderDelegate extends SliverPersistentHeaderDelegate {
-  _HeaderDelegate(this.topInset, this.light);
+  _HeaderDelegate(this.topInset, this.light, this.trailing, this.replace);
   final double topInset;
   final bool light;
+  final Widget? trailing;
+  final Widget? replace;
 
   static const double barHeight = 56;
   double get _extent => topInset + 12 + barHeight + 4;
@@ -109,7 +117,27 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(12, topInset + 12, 12, 4),
-          child: const WebHeaderBar(),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (c, a) => FadeTransition(
+              opacity: a,
+              child: SlideTransition(
+                position: Tween(
+                  begin: const Offset(0, -0.08),
+                  end: Offset.zero,
+                ).animate(a),
+                child: c,
+              ),
+            ),
+            child: replace != null
+                ? KeyedSubtree(
+                    key: const ValueKey('replace'),
+                    child: SizedBox(height: barHeight, child: replace),
+                  )
+                : WebHeaderBar(key: const ValueKey('bar'), trailing: trailing),
+          ),
         ),
       ],
     );
@@ -117,14 +145,20 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _HeaderDelegate old) =>
-      old.topInset != topInset || old.light != light;
+      old.topInset != topInset ||
+      old.light != light ||
+      old.trailing != trailing ||
+      old.replace != replace;
 }
 
 /// Headerning o'zi (sliver'siz) — iOS 26 navigatsiya qatori: alohida suzuvchi shisha kapsulalar
 /// (orqaga tugmasi — doira, xizmat logosi — kapsula). Bosilganda shisha yorishib ozgina kattalashadi,
 /// barmoq surilsa rezinadek cho'ziladi; orqadagi kontent qirralarda linzadek egilib ko'rinadi.
 class WebHeaderBar extends StatelessWidget {
-  const WebHeaderBar({super.key});
+  const WebHeaderBar({super.key, this.trailing});
+
+  /// Öng tomondagi amallar (logo çapda qoladi).
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +228,114 @@ class WebHeaderBar extends StatelessWidget {
               ),
             ),
           ),
+          if (trailing != null) ...[
+            const Spacer(),
+            const SizedBox(width: 8),
+            trailing!,
+          ],
         ],
+      ),
+    );
+  }
+}
+
+/// Header öngidagi ikonkalar — bitta şişa kapsula ičida, orasida ingiçka ajratgiç.
+/// Har bir ikonka 48×48 bosiş maydoni, ikonka 21px — barça headerlarda bir xil ölçam.
+class HeaderIconGroup extends StatelessWidget {
+  const HeaderIconGroup({super.key, required this.items});
+  final List<HeaderIconItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    const h = 48.0;
+    return LiquidGlass(
+      height: h,
+      borderRadius: BorderRadius.circular(h / 2),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0)
+                Container(width: 1, height: 20, color: AppColors.tint(0.10)),
+              _HeaderIconButton(
+                item: items[i],
+                first: i == 0,
+                last: i == items.length - 1,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HeaderIconItem {
+  const HeaderIconItem({
+    required this.icon,
+    required this.onTap,
+    required this.label,
+    this.active = false,
+    this.badge = false,
+  });
+  final TIData icon;
+  final VoidCallback onTap;
+  final String label;
+
+  /// Faol holat (masalan filtr qöllanilgan) — ikonka indigo rangda.
+  final bool active;
+
+  /// Kiçik nuqta (masalan filtr tanlangan).
+  final bool badge;
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.item,
+    required this.first,
+    required this.last,
+  });
+  final HeaderIconItem item;
+  final bool first;
+  final bool last;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: item.label,
+      child: InkWell(
+        onTap: item.onTap,
+        customBorder: const StadiumBorder(),
+        child: SizedBox(
+          width: first || last ? 50 : 46,
+          height: 48,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              TIcon(
+                item.icon,
+                size: 21,
+                color: item.active ? AppColors.indigo : AppColors.textPrimary,
+              ),
+              if (item.badge)
+                Positioned(
+                  top: 12,
+                  right: first || last ? 13 : 11,
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.indigo,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -19,6 +19,14 @@ export async function POST(
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
   }
+  // star bilan navbatda ko'tarilish — faqat tayyorlovchi (buyurtmachi
+  // boshqalarning buyurtmasini faqat ko'radi)
+  if (session.user.role !== "PREPARER") {
+    return NextResponse.json(
+      { error: "Faqat tayyorlovçilar taklif yubora oladi" },
+      { status: 403 },
+    );
+  }
   const restricted = await restrictionApiError(session.user.id);
   if (restricted) return restricted;
   const { id } = await params;

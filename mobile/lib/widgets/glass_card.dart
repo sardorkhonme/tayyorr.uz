@@ -24,7 +24,9 @@ class GlassCard extends StatelessWidget {
       decoration: BoxDecoration(
         // Saytdagi .card bilan bir xil: qorong'ida shaffof shisha,
         // yorug'da esa sahifa fonidan ajralib turadigan qattiq oq.
-        color: AppColors.isLight ? AppColors.surface : Colors.white.withValues(alpha: 0.04),
+        color: AppColors.isLight
+            ? AppColors.surface
+            : Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.cardBorder),
       ),

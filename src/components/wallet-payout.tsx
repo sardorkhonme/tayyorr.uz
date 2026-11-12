@@ -76,16 +76,17 @@ export function WalletPayout({ balance }: { balance: number }) {
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="label">Karta egasi (ixtiyoriy)</label>
+        <div className="min-w-0">
+          <label className="label truncate">Karta egasi</label>
           <input
             className="input"
+            placeholder="ixtiyoriy"
             value={cardName}
             onChange={(e) => setCardName(e.target.value)}
           />
         </div>
-        <div>
-          <label className="label">Summa (söm)</label>
+        <div className="min-w-0">
+          <label className="label truncate">Summa (söm)</label>
           <input
             className="input"
             type="number"
@@ -118,7 +119,7 @@ export function WalletPayout({ balance }: { balance: number }) {
           {msg.text}
         </p>
       )}
-      <button className="btn-primary w-fit" disabled={busy}>
+      <button className="btn-primary" disabled={busy}>
         {busy ? "..." : "Yeçib oliş"}
       </button>
     </form>

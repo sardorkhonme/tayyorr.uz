@@ -5,6 +5,7 @@ import { currentUser } from "@/auth";
 import { Icon } from "@/components/icons";
 import { PlatformIcon } from "@/components/platform-icon";
 import { TopupButton } from "@/components/topup-button";
+import { WelcomeGate } from "@/components/welcome-gate";
 import { AppDownloadBanner, AppDownloadSection } from "@/components/app-download";
 import { db } from "@/lib/db";
 import { MAIN_SITE_URL, SMM_URL } from "@/lib/hub-nav";
@@ -36,9 +37,9 @@ function OpenPill() {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ topup?: string; welcome?: string; p?: string; k?: string }>;
+  searchParams: Promise<{ topup?: string; welcome?: string; hi?: string; p?: string; k?: string }>;
 }) {
-  const { topup, welcome, p, k } = await searchParams;
+  const { topup, welcome, hi, p, k } = await searchParams;
   // eski havolalar (?p=instagram&k=followers) — Tayyorr SMM endi alohida saytda
   if (p) redirect(`${SMM_URL}/?p=${encodeURIComponent(p)}${k ? `&k=${encodeURIComponent(k)}` : ""}`);
 
@@ -50,6 +51,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-10">
+      {(hi || welcome) && user && <WelcomeGate name={greet || "döstim"} />}
       <AppDownloadBanner />
       {welcome && user && (
         <div className="animate-rise flex flex-col gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 text-indigo-900 sm:flex-row sm:items-center sm:justify-between">
@@ -85,7 +87,6 @@ export default async function DashboardPage({
           href={SMM_URL}
           className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
         >
-          <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">
             <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-violet-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -127,7 +128,6 @@ export default async function DashboardPage({
           style={{ "--glow": "#4f46e5" } as React.CSSProperties}
           className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
         >
-          <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo-200/50 blur-3xl" />
           <div className="flex items-start justify-between gap-4">
             <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-indigo-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}

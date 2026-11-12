@@ -7,6 +7,11 @@
 
 :root {
   color-scheme: dark;
+  /* tekis (solid) fon va sirtlar — sahifa foni bitta rang, kartalar undan
+     biroz ochroq (qorong'ida) / oq (yorug'da), o'qish oson bo'lsin */
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface-2: #1a1a23;
   /* auto -> auto o'lchamlar orasida silliq o'tish (qo'llab-quvvatlagan brauzerda) */
   interpolate-size: allow-keywords;
 }
@@ -29,16 +34,19 @@ html {
 }
 
 body {
-  background: #08080d;
+  background: var(--bg);
   color: #e4e4e7;
 }
 
 /* ================= yorug' rejim ================= */
 html.light {
   color-scheme: light;
+  --bg: #f2f2f5;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
 }
 html.light body {
-  background: #f3f3f5;
+  background: var(--bg);
   color: #1b1b1f;
 }
 /* asosiy sirtlar */
@@ -212,6 +220,9 @@ html.light .bg-grid {
 }
 
 /* ================= shared UI primitives (dark) ================= */
+/* @layer components — Tailwind utility klasslari (p-*, h-*, bg-*, w-*) bularni
+   ustidan yoza oladi; aks holda qatlamsiz CSS har doim utilitydan ustun bo'lardi. */
+@layer components {
 
 .btn,
 .btn-primary,
@@ -300,10 +311,14 @@ select.input option {
 .card {
   border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.035);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  padding: 1.25rem;
+  background: var(--surface);
+  padding: 1rem;
+}
+@media (min-width: 640px) {
+  .card {
+    padding: 1.25rem;
+  }
+}
 }
 
 /* ================= landing / decorative ================= */

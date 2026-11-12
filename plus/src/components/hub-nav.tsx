@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { signOutAction } from "@/app/(hub)/actions";
+import { SignOutButton } from "@/components/sign-out-button";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { TopupButton } from "@/components/topup-button";
@@ -102,16 +102,17 @@ function GuestCard() {
   );
 }
 
-function SignOut() {
+function SignOut({ name }: { name?: string | null }) {
   return (
-    <form action={signOutAction}>
-      <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-red-600 transition hover:bg-red-50">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-50">
-          <Icon name="logout" className="h-[18px] w-[18px]" />
-        </span>
-        Çiqiş
-      </button>
-    </form>
+    <SignOutButton
+      name={name}
+      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-red-600 transition hover:bg-red-50"
+    >
+      <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-50">
+        <Icon name="logout" className="h-[18px] w-[18px]" />
+      </span>
+      Çiqiş
+    </SignOutButton>
   );
 }
 
@@ -142,7 +143,7 @@ export function HubSidebar({ user }: { user: HubUser }) {
         <NavLinks user={user} />
       </div>
       <div className="space-y-2 border-t border-zinc-100 p-3">
-        {user && <SignOut />}
+        {user && <SignOut name={user.name} />}
       </div>
     </aside>
   );
@@ -215,7 +216,7 @@ export function HubMobileBar({ user }: { user: HubUser }) {
               )}
               <NavLinks user={user} mobile onNavigate={() => setOpen(false)} />
               <div className="space-y-2 border-t border-zinc-100 pt-3">
-                        {user && <SignOut />}
+                        {user && <SignOut name={user.name} />}
               </div>
             </div>
           </div>,

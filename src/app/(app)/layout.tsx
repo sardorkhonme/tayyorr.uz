@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { ensureWalletCode } from "@/lib/wallet";
-import { AuroraBackground } from "@/components/aurora-background";
 import { AppFooter } from "@/components/app-footer";
 import { AppHeader } from "@/components/app-header";
+import { HeaderProvider } from "@/components/page-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { PresencePing } from "@/components/presence-ping";
 import { PushSetup } from "@/components/push-setup";
@@ -72,8 +72,9 @@ export default async function AppLayout({
 
   return (
     <UnreadProvider initialTotal={unreadMsgs}>
-      <div className="relative min-h-screen">
-        <AuroraBackground compact />
+      <HeaderProvider>
+      {/* sahifa foni — bir xil tekis rang (gradient/blob yo'q), globals.css: --bg */}
+      <div className="relative min-h-screen bg-[var(--bg)]">
 
         <AppSidebar
           unread={unreadMsgs}
@@ -101,7 +102,7 @@ export default async function AppLayout({
         <RevealOnScroll />
         <ThemeSync serverTheme={u?.theme ?? null} />
 
-        <main className="relative z-10 px-3 py-6 sm:px-5 sm:py-8 lg:pl-[17rem] lg:pr-6">
+        <main className="relative z-10 px-3 pb-8 pt-4 sm:px-5 sm:pt-5 lg:pl-[17rem] lg:pr-6 lg:pt-6">
           <div className="mx-auto w-full max-w-5xl">
             {restriction && (
               <RestrictionBanner text={restrictionText(restriction)} />
@@ -111,6 +112,7 @@ export default async function AppLayout({
         </main>
         <AppFooter />
       </div>
+      </HeaderProvider>
     </UnreadProvider>
   );
 }

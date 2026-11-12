@@ -37,7 +37,11 @@ class _AppTextFieldState extends State<AppTextField> {
       children: [
         Text(
           widget.label,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 12.8, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12.8,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 5.6),
         TextField(
@@ -47,13 +51,19 @@ class _AppTextFieldState extends State<AppTextField> {
           textInputAction: widget.textInputAction,
           maxLines: widget.obscureText ? 1 : widget.maxLines,
           autofillHints: widget.autofillHints,
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.5),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            height: 1.5,
+          ),
           decoration: widget.obscureText
               ? InputDecoration(
                   suffixIcon: IconButton(
                     onPressed: () => setState(() => _hidden = !_hidden),
                     icon: TIcon(
-                      _hidden ? TI.visibility_off_rounded : TI.visibility_rounded,
+                      _hidden
+                          ? TI.visibility_off_rounded
+                          : TI.visibility_rounded,
                       size: 19,
                       color: AppColors.textFaint,
                     ),

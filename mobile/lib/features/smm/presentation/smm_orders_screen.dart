@@ -72,12 +72,27 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
       background: false,
       onRefresh: load,
       children: [
-        Text('Buyurtmalarim', style: TextStyle(color: WebC.white, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
+        Text(
+          'Buyurtmalarim',
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text('Holati öz-özidan yangilanib turadi.', style: TextStyle(color: WebC.zinc500, fontSize: 13.5)),
+        Text(
+          'Holati öz-özidan yangilanib turadi.',
+          style: TextStyle(color: WebC.zinc500, fontSize: 13),
+        ),
         const SizedBox(height: 16),
         if (_error != null && d == null)
-          SmmEmpty(icon: TI.wifi_off_rounded, title: _error!, action: WebButton(label: 'Qayta uriniş', onPressed: load))
+          SmmEmpty(
+            icon: TI.wifi_off_rounded,
+            title: _error!,
+            action: WebButton(label: 'Qayta uriniş', onPressed: load),
+          )
         else if (d == null) ...[
           // haqiqiy ko'rinish: 2×2 statistika + buyurtma qatorlari
           GridView.count(
@@ -90,9 +105,11 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
             children: [for (var i = 0; i < 4; i++) _statSkeleton()],
           ),
           const SizedBox(height: 16),
-          for (var i = 0; i < 4; i++) ...[_orderSkeleton(), const SizedBox(height: 10)],
-        ]
-        else ...[
+          for (var i = 0; i < 4; i++) ...[
+            _orderSkeleton(),
+            const SizedBox(height: 10),
+          ],
+        ] else ...[
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -101,10 +118,31 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
             crossAxisSpacing: 10,
             childAspectRatio: 1.75,
             children: [
-              _stat(TI.inventory_2_rounded, const Color(0xFF6366F1), 'Jami buyurtma', '${d.total}'),
-              _stat(TI.autorenew_rounded, const Color(0xFF0EA5E9), 'Bajarilmoqda', '${d.active}'),
-              _stat(TI.check_circle_rounded, const Color(0xFF10B981), 'Yetkazildi', groupDigitsSafe(d.delivered), sub: '${d.deliveredIn} ta buyurtmada'),
-              _stat(TI.payments_rounded, const Color(0xFFD946EF), 'Sarflandi', som(d.spent)),
+              _stat(
+                TI.inventory_2_rounded,
+                const Color(0xFF6366F1),
+                'Jami buyurtma',
+                '${d.total}',
+              ),
+              _stat(
+                TI.autorenew_rounded,
+                const Color(0xFF0EA5E9),
+                'Bajarilmoqda',
+                '${d.active}',
+              ),
+              _stat(
+                TI.check_circle_rounded,
+                const Color(0xFF10B981),
+                'Yetkazildi',
+                groupDigitsSafe(d.delivered),
+                sub: '${d.deliveredIn} ta buyurtmada',
+              ),
+              _stat(
+                TI.payments_rounded,
+                const Color(0xFFD946EF),
+                'Sarflandi',
+                som(d.spent),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -113,69 +151,127 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
               icon: TI.shopping_bag_outlined,
               title: 'Hali buyurtma yöq',
               text: 'Xizmatni tanlang — bir neça daqiqada boşlanadi.',
-              action: WebButton(label: 'Xizmat tanlaş', onPressed: widget.onCatalogTap),
+              action: WebButton(
+                label: 'Xizmat tanlaş',
+                onPressed: widget.onCatalogTap,
+              ),
             )
           else
-            for (final o in d.orders) ...[_OrderRow(o: o, onChanged: load), const SizedBox(height: 10)],
+            for (final o in d.orders) ...[
+              _OrderRow(o: o, onChanged: load),
+              const SizedBox(height: 10),
+            ],
         ],
       ],
     );
   }
 
-  Widget _stat(TIData icon, Color c, String label, String value, {String? sub}) => Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
+  Widget _stat(
+    TIData icon,
+    Color c,
+    String label,
+    String value, {
+    String? sub,
+  }) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: WebC.cardBg,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: WebC.cardBorder),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
             TIcon(icon, color: c, size: 16),
             const SizedBox(width: 6),
-            Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.zinc500, fontSize: 12))),
-          ]),
-          const Spacer(),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(value, style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: WebC.zinc500, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+        const Spacer(),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
           ),
-          if (sub != null) Text(sub, style: TextStyle(color: WebC.zinc500, fontSize: 11)),
-        ]),
-      );
+        ),
+        if (sub != null)
+          Text(sub, style: TextStyle(color: WebC.zinc500, fontSize: 11)),
+      ],
+    ),
+  );
 }
 
 Widget _statSkeleton() => Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
-      child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SBar(width: 90, height: 12),
-        Spacer(),
-        SBar(width: 70, height: 20),
-      ]),
-    );
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: WebC.cardBg,
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(color: WebC.cardBorder),
+  ),
+  child: const Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SBar(width: 90, height: 12),
+      Spacer(),
+      SBar(width: 70, height: 20),
+    ],
+  ),
+);
 
 /// [_OrderRow] skeleti.
 Widget _orderSkeleton() => Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
-      child: const Column(children: [
-        Row(children: [
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: WebC.cardBg,
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(color: WebC.cardBorder),
+  ),
+  child: const Column(
+    children: [
+      Row(
+        children: [
           Skel(width: 42, height: 42, borderRadius: 12),
           SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SBar(width: 170, height: 14),
-              SizedBox(height: 6),
-              SBar(width: 130, height: 11),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SBar(width: 170, height: 14),
+                SizedBox(height: 6),
+                SBar(width: 130, height: 11),
+              ],
+            ),
           ),
           SizedBox(width: 8),
           SBar(width: 64, height: 22, borderRadius: 99),
-        ]),
-        SizedBox(height: 12),
-        SBar(height: 6, borderRadius: 9),
-        SizedBox(height: 6),
-        Align(alignment: Alignment.centerRight, child: SBar(width: 60, height: 10)),
-      ]),
-    );
+        ],
+      ),
+      SizedBox(height: 12),
+      SBar(height: 6, borderRadius: 9),
+      SizedBox(height: 6),
+      Align(
+        alignment: Alignment.centerRight,
+        child: SBar(width: 60, height: 10),
+      ),
+    ],
+  ),
+);
 
 String groupDigitsSafe(int n) => som(n).replaceAll(' söm', '');
 
@@ -188,45 +284,72 @@ class _OrderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        await Navigator.of(context).push(MaterialPageRoute(builder: (_) => SmmOrderDetailScreen(id: o.id)));
+        await Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => SmmOrderDetailScreen(id: o.id)),
+        );
         onChanged();
       },
       child: Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: WebC.cardBorder)),
-        child: Column(children: [
-          Row(children: [
-            SmmPlatformSquare(platform: o.platform),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(o.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.white, fontSize: 14.5, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text('${groupDigitsSafe(o.quantity)} dona · ${som(o.charge)} · ${_date.format(o.createdAt)}',
-                    style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-              ]),
+        decoration: BoxDecoration(
+          color: WebC.cardBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: WebC.cardBorder),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                SmmPlatformSquare(platform: o.platform),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        o.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: WebC.white,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${groupDigitsSafe(o.quantity)} dona · ${som(o.charge)} · ${_date.format(o.createdAt)}',
+                        style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                StatusPill(o: o),
+              ],
             ),
-            const SizedBox(width: 8),
-            StatusPill(o: o),
-          ]),
-          if (!o.failed) ...[
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(9),
-              child: LinearProgressIndicator(
-                value: o.pct / 100,
-                minHeight: 6,
-                backgroundColor: WebC.fill10,
-                valueColor: AlwaysStoppedAnimation(o.statusColor),
+            if (!o.failed) ...[
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: LinearProgressIndicator(
+                  value: o.pct / 100,
+                  minHeight: 6,
+                  backgroundColor: WebC.fill10,
+                  valueColor: AlwaysStoppedAnimation(o.statusColor),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text('${groupDigitsSafe(o.delivered)} / ${groupDigitsSafe(o.quantity)}', style: TextStyle(color: WebC.zinc500, fontSize: 11.5)),
-            ),
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '${groupDigitsSafe(o.delivered)} / ${groupDigitsSafe(o.quantity)}',
+                  style: TextStyle(color: WebC.zinc500, fontSize: 11.5),
+                ),
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }
@@ -239,10 +362,20 @@ class StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        decoration: BoxDecoration(color: o.statusColor.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(99)),
-        child: Text(o.statusLabel, style: TextStyle(color: o.statusColor, fontSize: 11.5, fontWeight: FontWeight.w800)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(
+      color: o.statusColor.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: Text(
+      o.statusLabel,
+      style: TextStyle(
+        color: o.statusColor,
+        fontSize: 11.5,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
 }
 
 /// Platforma kvadrati (katalogsiz — ranglar ma'lum).
@@ -262,7 +395,8 @@ class SmmPlatformSquare extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = colors[platform] ?? (const Color(0xFF6366F1), const Color(0xFF4F46E5));
+    final c =
+        colors[platform] ?? (const Color(0xFF6366F1), const Color(0xFF4F46E5));
     return PlatformBadge(SmmPlatform(platform, '', c.$1, c.$2, ''), size: size);
   }
 }

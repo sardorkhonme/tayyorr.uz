@@ -15,7 +15,15 @@ class WebPage extends StatelessWidget {
     this.bottom,
     this.background = true,
     this.controller,
+    this.headerTrailing,
+    this.headerReplace,
   });
+
+  /// Header öngidagi amallar ([HeaderIconGroup]).
+  final Widget? headerTrailing;
+
+  /// Header qatorini butunlay almaştiradi (masalan qidiruv maydoni).
+  final Widget? headerReplace;
 
   /// Sahifa scroll'i (masalan "pastga — videolarga" tugmasi uchun).
   final ScrollController? controller;
@@ -36,10 +44,15 @@ class WebPage extends StatelessWidget {
       controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
-        const AppHeaderSliver(),
+        AppHeaderSliver(trailing: headerTrailing, replace: headerReplace),
         SliverPadding(
           // pastki panel (Scaffold.extendBody) balandligi MediaQuery orqali keladi
-          padding: EdgeInsets.fromLTRB(12, 20, 12, 40 + MediaQuery.paddingOf(context).bottom),
+          padding: EdgeInsets.fromLTRB(
+            12,
+            20,
+            12,
+            40 + MediaQuery.paddingOf(context).bottom,
+          ),
           sliver: SliverList.list(
             children: [
               for (var i = 0; i < children.length; i++) ...[
@@ -52,7 +65,12 @@ class WebPage extends StatelessWidget {
       ],
     );
     if (onRefresh != null) {
-      scroll = RefreshIndicator(onRefresh: onRefresh!, color: AppColors.indigo, edgeOffset: 80, child: scroll);
+      scroll = RefreshIndicator(
+        onRefresh: onRefresh!,
+        color: AppColors.indigo,
+        edgeOffset: 80,
+        child: scroll,
+      );
     }
     final page = Scaffold(
       backgroundColor: Colors.transparent,

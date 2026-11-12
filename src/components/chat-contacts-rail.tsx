@@ -34,7 +34,7 @@ export function ChatContactsRail({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex ${
+      className={`fixed left-0 top-0 z-40 hidden h-screen w-72 flex-col border-r border-white/10 bg-[var(--surface)] lg:flex ${
         asSupport ? "lg:left-60" : "lg:left-64"
       }`}
     >

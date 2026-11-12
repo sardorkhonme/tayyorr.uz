@@ -16,7 +16,8 @@ export async function loginAction(_prev: AuthState, form: FormData): Promise<Aut
     await signIn("credentials", {
       identifier,
       password: String(form.get("password") ?? ""),
-      redirectTo: "/",
+      // ?hi=1 — bosh sahifada salomlaşiş animatsiyasi
+      redirectTo: "/?hi=1",
     });
     return {};
   } catch (e) {
@@ -77,7 +78,7 @@ export async function verifyOtpAction(_prev: AuthState, form: FormData): Promise
   const code = String(form.get("code") ?? "").replace(/\D/g, "");
   if (code.length !== 4) return { error: "4 xonali kodni kiriting" };
   try {
-    await signIn("email-otp", { email, code, redirectTo: "/" });
+    await signIn("email-otp", { email, code, redirectTo: "/?hi=1" });
     return {};
   } catch (e) {
     if (e instanceof AuthError) {
@@ -117,5 +118,5 @@ export async function resetAction(_prev: AuthState, form: FormData): Promise<Aut
 
 export async function googleAction() {
   // yangi hisob bo'lsa kabinet /onboarding ga yo'naltiradi
-  await signIn("google", { redirectTo: "/" });
+  await signIn("google", { redirectTo: "/?hi=1" });
 }

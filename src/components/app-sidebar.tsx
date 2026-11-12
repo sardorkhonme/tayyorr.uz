@@ -47,7 +47,7 @@ export function AppSidebar({
         : "";
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[#0b0b12]/95 backdrop-blur-xl lg:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[var(--surface)] lg:flex">
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
         <Link href="/dashboard" className="px-1">
           <Logo className="text-2xl" markClassName="h-9" />
@@ -55,7 +55,7 @@ export function AppSidebar({
 
         <Link
           href="/profile"
-          className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 transition hover:bg-white/[0.06]"
+          className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]"
         >
           <span className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5">
             {user.image && (
@@ -112,7 +112,7 @@ export function AppSidebar({
               <Link
                 key={l.href}
                 href={l.href}
-                className={`backdrop-blur-sm flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
                   active
                     ? "bg-indigo-500/15 text-white"
                     : "text-zinc-400 hover:bg-white/5 hover:text-white"

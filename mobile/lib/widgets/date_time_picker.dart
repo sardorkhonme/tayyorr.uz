@@ -13,8 +13,16 @@ Widget _themed(BuildContext context, Widget? child) {
   return Theme(
     data: Theme.of(context).copyWith(
       colorScheme: light
-          ? const ColorScheme.light(primary: Color(0xFF6366F1), onPrimary: Colors.white, surface: Colors.white)
-          : ColorScheme.dark(primary: const Color(0xFF818CF8), onPrimary: Colors.white, surface: surface),
+          ? const ColorScheme.light(
+              primary: Color(0xFF6366F1),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            )
+          : ColorScheme.dark(
+              primary: const Color(0xFF818CF8),
+              onPrimary: Colors.white,
+              surface: surface,
+            ),
       dialogTheme: DialogThemeData(backgroundColor: surface, shape: shape),
       textButtonTheme: TextButtonThemeData(style: btn),
       datePickerTheme: DatePickerThemeData(
@@ -22,13 +30,17 @@ Widget _themed(BuildContext context, Widget? child) {
         shape: shape,
         headerBackgroundColor: const Color(0xFF6366F1),
         headerForegroundColor: Colors.white,
-        dayShape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        dayShape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
         todayBorder: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
       ),
       timePickerTheme: TimePickerThemeData(
         backgroundColor: surface,
         shape: shape,
-        hourMinuteShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        hourMinuteShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         dialBackgroundColor: AppColors.tint(0.06),
         dialHandColor: const Color(0xFF6366F1),
       ),
@@ -41,11 +53,16 @@ Widget _themed(BuildContext context, Widget? child) {
 }
 
 /// Muddat tanlash: avval sana, keyin vaqt (24 soatlik). Bekor qilinsa — null.
-Future<DateTime?> pickDateTime(BuildContext context, {DateTime? initial}) async {
+Future<DateTime?> pickDateTime(
+  BuildContext context, {
+  DateTime? initial,
+}) async {
   // serverdan UTC keladi — tanlagich telefonning mahalliy vaqtida ishlaydi
   initial = initial?.toLocal();
   final now = DateTime.now();
-  final init = initial != null && initial.isAfter(now) ? initial : now.add(const Duration(days: 3));
+  final init = initial != null && initial.isAfter(now)
+      ? initial
+      : now.add(const Duration(days: 3));
   final date = await showDatePicker(
     context: context,
     initialDate: init,

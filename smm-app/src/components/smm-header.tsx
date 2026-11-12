@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Icon, type IconName } from "@/components/icons";
+import { OPEN_SUPPORT_EVENT } from "@/components/support-widget";
 import { som } from "@/lib/format";
 
 export type HeaderUser = { name: string; image: string | null; balance: number } | null;
@@ -20,6 +21,48 @@ const LINKS: { href: string; label: string; icon: IconName; auth?: boolean }[] =
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
   { href: "/account", label: "Akkaunt", icon: "users", auth: true },
 ];
+
+type HeaderAction = { icon: IconName; label: string; href: string; support?: boolean };
+
+const GUIDE: HeaderAction = { icon: "book", label: "Qöllanma", href: "/qollanma" };
+const HELP: HeaderAction = { icon: "headset", label: "Yordam", href: "/support", support: true };
+
+/** Sahifaga xos header ikonkalari (ilovadagidek): Xizmatlar — qöllanma, Akkaunt — qöllanma va yordam. */
+function headerActions(pathname: string): HeaderAction[] {
+  if (pathname === "/") return [GUIDE];
+  if (pathname === "/account") return [GUIDE, HELP];
+  return [];
+}
+
+/** Bir nečta ikonka — bitta kapsula ičida, orasida ingiçka ajratgiç; har biri 40×40 (menyu tugmasi bilan bir xil). */
+function HeaderIconGroup({ items }: { items: HeaderAction[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="flex h-10 items-center rounded-full border border-zinc-200 bg-white shadow-sm">
+      {items.map((it, i) => (
+        <span key={it.href} className="flex items-center">
+          {i > 0 && <span aria-hidden className="h-5 w-px bg-zinc-200" />}
+          <Link
+            href={it.href}
+            title={it.label}
+            aria-label={it.label}
+            onClick={(e) => {
+              if (!it.support) return;
+              // kompyuterda — support popupi, telefonda — /support (vidjet özi hal qiladi)
+              e.preventDefault();
+              window.dispatchEvent(new Event(OPEN_SUPPORT_EVENT));
+            }}
+            className={`grid h-10 place-items-center text-zinc-700 transition hover:text-indigo-600 ${
+              items.length === 1 ? "w-10 rounded-full" : i === 0 ? "w-11 rounded-l-full pl-0.5" : i === items.length - 1 ? "w-11 rounded-r-full pr-0.5" : "w-10"
+            }`}
+          >
+            <Icon name={it.icon} className="h-5 w-5" />
+          </Link>
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
@@ -79,6 +122,7 @@ export function SmmHeader({ user }: { user: HeaderUser }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <HeaderIconGroup items={headerActions(pathname)} />
           {user ? (
             <Link
               href="/wallet"

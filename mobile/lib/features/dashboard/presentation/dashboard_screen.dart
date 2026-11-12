@@ -1,14 +1,10 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/ui/liquid_glass.dart';
-import '../../../core/utils/format.dart';
 import '../../../widgets/app_header_sliver.dart';
-import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_ui.dart';
 import '../../announcements/announcement_banner.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -16,16 +12,17 @@ import '../../order_detail/presentation/order_detail_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../data/order_model.dart';
 import '../data/orders_repository.dart';
-import 'create_order_screen.dart';
+import 'header_tools.dart';
+import 'order_list_widgets.dart';
 
 // Saytdagi OrdersBrowser bilan bir xil saralash va filtrlar.
 enum _Sort { newest, oldest, offers, budget }
 
 const _sortLabel = {
-  _Sort.newest: 'Yangi',
-  _Sort.oldest: 'Eski',
-  _Sort.offers: 'Takliflar',
-  _Sort.budget: 'Byudjet',
+  _Sort.newest: 'Eng yangi',
+  _Sort.oldest: 'Eng eski',
+  _Sort.offers: "Köp taklif",
+  _Sort.budget: 'Katta byudjet',
 };
 
 class _Bucket {
@@ -42,13 +39,16 @@ final _buckets = [
   _Bucket('gt50', "50 tadan köp", (n) => n > 50),
 ];
 
+/// Asosiy: ochiq buyurtmalar lentasi. Tayyorlovchi — taklif yuborish uchun; buyurtmachi —
+/// boshqalarning ochiq buyurtmalarini faqat ko'radi (o'zinikilari — «Buyurtmalarim» bo'limida).
+/// Headerda: qidiruv (butun ekran natijalari) va filtr (ikonka ostida ochiladigan menyu).
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => DashboardCubit(OrdersRepository())..load(),
+      create: (_) => DashboardCubit(OrdersRepository(), scope: 'feed')..load(),
       child: const _DashboardView(),
     );
   }
@@ -62,16 +62,28 @@ class _DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<_DashboardView> {
+  final _search = TextEditingController();
+  bool _searching = false;
   String _q = '';
   final Set<String> _types = {};
   final Set<String> _bucketKeys = {};
+  final Set<String> _statuses = {};
   _Sort _sort = _Sort.newest;
   List<Announcement> _announcements = const [];
+
+  /// Header ikonkalar guruhining konteksti — filtr menyusi uning ostida ochiladi.
+  BuildContext? _anchor;
 
   @override
   void initState() {
     super.initState();
     _loadAnnouncements();
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAnnouncements() async {
@@ -84,21 +96,37 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   Future<void> _refresh() async {
-    await Future.wait([context.read<DashboardCubit>().load(), _loadAnnouncements()]);
+    await Future.wait([
+      context.read<DashboardCubit>().load(),
+      _loadAnnouncements(),
+    ]);
   }
 
-  int get _activeCount => _types.length + _bucketKeys.length;
+  int get _filterCount => _types.length + _bucketKeys.length + _statuses.length;
+  bool get _filterActive => _filterCount > 0 || _sort != _Sort.newest;
+
+  void _clearFilters() {
+    _types.clear();
+    _bucketKeys.clear();
+    _statuses.clear();
+    _sort = _Sort.newest;
+  }
 
   List<OrderModel> _filtered(List<OrderModel> orders) {
-    final needle = _q.trim().toLowerCase();
+    final needle = _searching ? _q.trim().toLowerCase() : '';
     final list = orders.where((o) {
       if (_types.isNotEmpty && !_types.contains(o.type)) return false;
+      if (_statuses.isNotEmpty && !_statuses.contains(o.status)) return false;
       if (_bucketKeys.isNotEmpty &&
-          !_buckets.any((b) => _bucketKeys.contains(b.key) && b.test(o.offers))) {
+          !_buckets.any(
+            (b) => _bucketKeys.contains(b.key) && b.test(o.offers),
+          )) {
         return false;
       }
       if (needle.isNotEmpty) {
-        final hay = '${o.title} ${o.description} ${kOrderTypeLabel[o.type] ?? o.type}'.toLowerCase();
+        final hay =
+            '${o.title} ${o.description} ${kOrderTypeLabel[o.type] ?? o.type}'
+                .toLowerCase();
         if (!hay.contains(needle)) return false;
       }
       return true;
@@ -116,424 +144,277 @@ class _DashboardViewState extends State<_DashboardView> {
     return list;
   }
 
-  Future<void> _newOrder() async {
-    // yaratilgach buyurtma sahifasiga o'tiladi — qaytganda ro'yxat yangilanadi
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CreateOrderScreen()),
-    );
-    if (mounted) context.read<DashboardCubit>().load();
-  }
-
   Future<void> _openOrder(OrderModel o) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o.id)),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o.id)));
     if (mounted) context.read<DashboardCubit>().load();
   }
 
-  void _openFilter(List<OrderModel> orders) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: AppColors.isLight ? 0.22 : 0.5),
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setSheet) {
-          void update(VoidCallback fn) {
-            setState(fn);
-            setSheet(() {});
-          }
+  void _openSearch() => setState(() => _searching = true);
 
-          final count = _filtered(orders).length;
-          Widget section(String title, List<Widget> chips) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title.toUpperCase(),
-                      style: TextStyle(color: WebC.zinc500, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.6)),
-                  const SizedBox(height: 8),
-                  Wrap(spacing: 8, runSpacing: 8, children: chips),
-                ],
-              );
-          return GlassSheetPanel(
-            child: SafeArea(
-              top: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(border: Border(bottom: BorderSide(color: WebC.border))),
-                    child: Row(
-                      children: [
-                        Text('Filtr', style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => Navigator.of(sheetContext).pop(),
-                          child: TIcon(TI.close_rounded, size: 18, color: WebC.zinc500),
-                        ),
-                      ],
-                    ),
+  void _closeSearch() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _searching = false;
+      _q = '';
+      _search.clear();
+    });
+  }
+
+  void _openFilter() {
+    final anchor = _anchor;
+    if (anchor == null || !anchor.mounted) return;
+    final orders = context.read<DashboardCubit>().state.orders;
+    // holat filtri — lentada bir nechta holat bo'lsagina (tayyorlovchida o'zi bajarayotganlari ham bor)
+    final statuses = {for (final o in orders) o.status};
+    showHeaderDropdown(
+      anchor,
+      builder: (menuContext, setMenu) {
+        void update(VoidCallback fn) {
+          setState(fn);
+          setMenu(() {});
+        }
+
+        Widget toggle(Set<String> set, String key, String label) =>
+            DropdownChip(
+              label: label,
+              active: set.contains(key),
+              onTap: () => update(
+                () => set.contains(key) ? set.remove(key) : set.add(key),
+              ),
+            );
+
+        return DropdownPanel(
+          title: 'Filtr va saralaş',
+          resultLabel: 'Körsatiş (${_filtered(orders).length})',
+          onReset: _filterActive ? () => update(_clearFilters) : null,
+          sections: [
+            DropdownSection(
+              title: 'Saralaş',
+              chips: [
+                for (final s in _Sort.values)
+                  DropdownChip(
+                    label: _sortLabel[s]!,
+                    active: _sort == s,
+                    onTap: () => update(() => _sort = s),
                   ),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
+              ],
+            ),
+            if (statuses.length > 1)
+              DropdownSection(
+                title: 'Holat',
+                chips: [
+                  for (final e in kOrderStatusLabel.entries)
+                    if (statuses.contains(e.key))
+                      toggle(_statuses, e.key, e.value),
+                ],
+              ),
+            DropdownSection(
+              title: 'Işning turi',
+              chips: [
+                for (final e in kOrderTypeLabel.entries)
+                  toggle(_types, e.key, e.value),
+              ],
+            ),
+            DropdownSection(
+              title: 'Takliflar soni',
+              chips: [
+                for (final b in _buckets) toggle(_bucketKeys, b.key, b.label),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isPreparer = context.select<AuthBloc, bool>(
+      (b) => b.state.user?.isPreparer ?? false,
+    );
+    final bottom = MediaQuery.paddingOf(context).bottom;
+
+    return PopScope(
+      // qidiruv ochiq bo'lsa — «orqaga» avval qidiruvni yopadi
+      canPop: !_searching,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _searching) _closeSearch();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
+            final loading =
+                (state.status == DashboardStatus.loading ||
+                    state.status == DashboardStatus.initial) &&
+                state.orders.isEmpty;
+            final filtered = _filtered(state.orders);
+            final showBanner = !_searching && _announcements.isNotEmpty;
+            final chips = <(String, VoidCallback)>[
+              if (_sort != _Sort.newest)
+                (
+                  _sortLabel[_sort]!,
+                  () => setState(() => _sort = _Sort.newest),
+                ),
+              for (final s in _statuses)
+                (
+                  kOrderStatusLabel[s] ?? s,
+                  () => setState(() => _statuses.remove(s)),
+                ),
+              for (final t in _types)
+                (
+                  kOrderTypeLabel[t] ?? t,
+                  () => setState(() => _types.remove(t)),
+                ),
+              for (final b in _bucketKeys)
+                (
+                  'Takliflar: ${_buckets.firstWhere((x) => x.key == b).label}',
+                  () => setState(() => _bucketKeys.remove(b)),
+                ),
+            ];
+
+            final String title;
+            if (_searching) {
+              title = _q.trim().isEmpty ? 'Qidiriş' : 'Qidiruv natijalari';
+            } else {
+              title = isPreparer ? 'Buyurtmalar' : 'Oçiq buyurtmalar';
+            }
+
+            return RefreshIndicator(
+              onRefresh: _refresh,
+              color: AppColors.indigo,
+              edgeOffset: 80,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  AppHeaderSliver(
+                    trailing: Builder(
+                      builder: (ctx) {
+                        _anchor = ctx;
+                        return HeaderIconGroup(
+                          items: [
+                            HeaderIconItem(
+                              icon: TI.search_rounded,
+                              label: 'Qidiriş',
+                              onTap: _openSearch,
+                            ),
+                            HeaderIconItem(
+                              icon: TI.tune_rounded,
+                              label: 'Filtr',
+                              onTap: _openFilter,
+                              active: _filterActive,
+                              badge: _filterActive,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    replace: _searching
+                        ? HeaderSearchField(
+                            controller: _search,
+                            hint: 'Sarlavha, tavsif yoki tur…',
+                            onChanged: (v) => setState(() => _q = v),
+                            onClose: _closeSearch,
+                          )
+                        : null,
+                  ),
+                  if (showBanner)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: AnnouncementCarousel(items: _announcements),
+                      ),
+                    ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      12,
+                      showBanner ? 24 : 16,
+                      12,
+                      0,
+                    ),
+                    sliver: SliverToBoxAdapter(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          section('Işning turi', [
-                            for (final e in kOrderTypeLabel.entries)
-                              WebPill(
-                                bordered: true,
-                                label: e.value,
-                                active: _types.contains(e.key),
-                                onTap: () => update(() => _types.contains(e.key) ? _types.remove(e.key) : _types.add(e.key)),
+                          ListHeading(
+                            title: title,
+                            count: loading ? null : '${filtered.length} ta',
+                          ),
+                          if (!isPreparer && !_searching) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              "Boşqa foydalanuvçilarning buyurtmalari — faqat köriş uçun. "
+                              "Özingizniki «Buyurtmalarim» bölimida.",
+                              style: TextStyle(
+                                color: WebC.zinc500,
+                                fontSize: 13,
+                                height: 1.4,
                               ),
-                          ]),
-                          const SizedBox(height: 20),
-                          section('Topşirganlar soni', [
-                            for (final b in _buckets)
-                              WebPill(
-                                bordered: true,
-                                label: b.label,
-                                active: _bucketKeys.contains(b.key),
-                                onTap: () => update(
-                                    () => _bucketKeys.contains(b.key) ? _bucketKeys.remove(b.key) : _bucketKeys.add(b.key)),
-                              ),
-                          ]),
+                            ),
+                          ],
+                          if (chips.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            ActiveFilterChips(
+                              items: chips,
+                              onClearAll: () => setState(_clearFilters),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(border: Border(top: BorderSide(color: WebC.border))),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => update(() {
-                            _types.clear();
-                            _bucketKeys.clear();
-                          }),
-                          child: Text('Hammasini tozalaş', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
-                        ),
-                        const Spacer(),
-                        WebButton(label: "Körsatiş ($count)", onPressed: () => Navigator.of(sheetContext).pop()),
-                      ],
-                    ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(12, 12, 12, 32 + bottom),
+                    sliver: loading
+                        ? SliverList.separated(
+                            itemCount: 4,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (_, _) =>
+                                const OrderListTileSkeleton(),
+                          )
+                        : filtered.isEmpty
+                        ? SliverToBoxAdapter(
+                            child: state.status == DashboardStatus.failure
+                                ? ListMessage(
+                                    icon: TI.wifi_off_rounded,
+                                    title: "Yuklab bölmadi",
+                                    subtitle:
+                                        state.error ??
+                                        'Pastga tortib qayta uriniş mumkin.',
+                                  )
+                                : state.orders.isEmpty
+                                ? const ListMessage(
+                                    icon: TI.inventory_2_outlined,
+                                    title: "Hozirça oçiq buyurtma yöq",
+                                    subtitle:
+                                        "Yangi buyurtmalar şu yerda paydo böladi.",
+                                  )
+                                : ListMessage(
+                                    icon: TI.search_off_rounded,
+                                    title: 'Mos buyurtma topilmadi',
+                                    subtitle: _filterActive
+                                        ? "Filtrni özgartirib köring."
+                                        : "Boşqa söz bilan qidirib köring.",
+                                  ),
+                          )
+                        : SliverList.separated(
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (_, i) => OrderListTile(
+                              order: filtered[i],
+                              onTap: () => _openOrder(filtered[i]),
+                            ),
+                          ),
                   ),
                 ],
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final user = context.watch<AuthBloc>().state.user;
-    final mine = !(user?.isPreparer ?? false);
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: BlocBuilder<DashboardCubit, DashboardState>(
-        builder: (context, state) {
-          final loading = (state.status == DashboardStatus.loading || state.status == DashboardStatus.initial) && state.orders.isEmpty;
-          final filtered = _filtered(state.orders);
-          return RefreshIndicator(
-            onRefresh: _refresh,
-            color: AppColors.indigo,
-            edgeOffset: 80,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                const AppHeaderSliver(),
-                if (_announcements.isNotEmpty)
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(12, 20, 12, 0),
-                    sliver: SliverToBoxAdapter(child: AnnouncementCarousel(items: _announcements)),
-                  ),
-                SliverPadding(
-                  padding: EdgeInsets.only(top: _announcements.isNotEmpty ? 12 : 20),
-                  sliver: SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _ControlsDelegate(
-                      mine: mine,
-                      count: filtered.length,
-                      sort: _sort,
-                      activeCount: _activeCount,
-                      onSearch: (v) => setState(() => _q = v),
-                      onSort: (s) => setState(() => _sort = s),
-                      onFilter: () => _openFilter(state.orders),
-                      onNew: mine ? _newOrder : null,
-                    ),
-                  ),
-                ),
-                if (_activeCount > 0)
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                    sliver: SliverToBoxAdapter(child: _activeChips()),
-                  ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(12, 12, 12, 32 + MediaQuery.paddingOf(context).bottom),
-                  sliver: loading
-                      ? SliverList.separated(
-                          itemCount: 4,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (_, __) => const _OrderRowSkeleton(),
-                        )
-                      : filtered.isEmpty
-                          ? SliverToBoxAdapter(
-                              child: WebCard(
-                                child: Text(
-                                  state.status == DashboardStatus.failure
-                                      ? (state.error ?? 'Yuklab bölmadi')
-                                      : state.orders.isEmpty
-                                          ? "Hali buyurtma yöq."
-                                          : 'Mos buyurtma topilmadi.',
-                                  style: TextStyle(color: WebC.zinc500, fontSize: 14),
-                                ),
-                              ),
-                            )
-                          : SliverList.separated(
-                              itemCount: filtered.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 12),
-                              itemBuilder: (_, i) => _OrderRow(order: filtered[i], onTap: () => _openOrder(filtered[i])),
-                            ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _activeChips() {
-    Widget chip(String label, VoidCallback onRemove) => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: WebC.fill10, borderRadius: BorderRadius.circular(999)),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(label, style: TextStyle(color: WebC.zinc300, fontSize: 12)),
-              const SizedBox(width: 4),
-              GestureDetector(onTap: onRemove, child: TIcon(TI.close_rounded, size: 14, color: WebC.zinc500)),
-            ],
-          ),
-        );
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        for (final t in _types) chip(kOrderTypeLabel[t] ?? t, () => setState(() => _types.remove(t))),
-        for (final b in _bucketKeys)
-          chip(_buckets.firstWhere((x) => x.key == b).label, () => setState(() => _bucketKeys.remove(b))),
-        GestureDetector(
-          onTap: () => setState(() {
-            _types.clear();
-            _bucketKeys.clear();
-          }),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            child: Text('Tozalaş', style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-          ),
+            );
+          },
         ),
-      ],
-    );
-  }
-}
-
-/// Saytdagi yopishqoq boshqaruv paneli (sarlavha, qidiruv, filtr, saralash).
-class _ControlsDelegate extends SliverPersistentHeaderDelegate {
-  _ControlsDelegate({
-    required this.mine,
-    required this.count,
-    required this.sort,
-    required this.activeCount,
-    required this.onSearch,
-    required this.onSort,
-    required this.onFilter,
-    required this.onNew,
-  });
-
-  final bool mine;
-  final int count;
-  final _Sort sort;
-  final int activeCount;
-  final ValueChanged<String> onSearch;
-  final ValueChanged<_Sort> onSort;
-  final VoidCallback onFilter;
-  final VoidCallback? onNew;
-
-  static const double _extent = 12 + 38 + 8 + 42 + 8 + 24 + 12 + 2;
-
-  @override
-  double get minExtent => _extent;
-  @override
-  double get maxExtent => _extent;
-
-  @override
-  bool shouldRebuild(covariant _ControlsDelegate old) =>
-      old.count != count || old.sort != sort || old.activeCount != activeCount || old.mine != mine;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.isLight ? Colors.white.withValues(alpha: 0.88) : const Color(0xFF0B0B12).withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: WebC.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(
-                  height: 38,
-                  child: Row(
-                    children: [
-                      Text(mine ? 'Buyurtmalarim' : 'Buyurtmalar',
-                          style: TextStyle(color: WebC.white, fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: -0.3)),
-                      const Spacer(),
-                      if (onNew != null) WebButton(label: '+ Yangi buyurtma', onPressed: onNew),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 42,
-                  child: Row(
-                    children: [
-                      Expanded(child: WebInput(hint: "Sarlavha, tavsif yoki tur böyiça qidiriş…", onChanged: onSearch)),
-                      const SizedBox(width: 8),
-                      WebButton(
-                        label: activeCount > 0 ? 'Filtr · $activeCount' : 'Filtr',
-                        variant: WebBtn.ghost,
-                        onPressed: onFilter,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 24,
-                  child: Row(
-                    children: [
-                      for (final s in _Sort.values) ...[
-                        WebPill(label: _sortLabel[s]!, active: sort == s, onTap: () => onSort(s)),
-                        const SizedBox(width: 6),
-                      ],
-                      const Spacer(),
-                      Text('$count ta', style: TextStyle(color: WebC.zinc600, fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Saytdagi buyurtma qatori (`.card` ichida chapda matn, o'ngda "N taklif").
-/// [_OrderRow] skeleti: sarlavha, meta qatori, vaqt va o'ngda «taklif» belgisi.
-class _OrderRowSkeleton extends StatelessWidget {
-  const _OrderRowSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const WebCard(
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SBar(width: 200, height: 16),
-            SizedBox(height: 8),
-            SBar(width: 170, height: 11),
-            SizedBox(height: 7),
-            SBar(width: 110, height: 10),
-          ]),
-        ),
-        SizedBox(width: 16),
-        SBar(width: 62, height: 22, borderRadius: 99),
-      ]),
-    );
-  }
-}
-
-class _OrderRow extends StatelessWidget {
-  const _OrderRow({required this.order, required this.onTap});
-  final OrderModel order;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final o = order;
-    final meta = [
-      kOrderTypeLabel[o.type] ?? o.type,
-      o.deleted ? "öçirilgan" : (kOrderStatusLabel[o.status] ?? o.status),
-      if (o.ordererLabel != null) '@${o.ordererLabel}',
-      if ((o.budget ?? 0) > 0) "${groupDigits(o.budget!)} söm",
-    ].join(' · ');
-    return WebCard(
-      onTap: onTap,
-      opacity: o.deleted ? 0.6 : 1,
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    if (o.deleted) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text("ÖÇIRILGAN",
-                            style: TextStyle(color: WebC.redSoft, fontSize: 10, fontWeight: FontWeight.w600)),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: Text(o.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w500)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(meta, style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-                const SizedBox(height: 4),
-                if (o.deleted && (o.deleteReason ?? '').isNotEmpty)
-                  Text('Sabab: ${o.deleteReason}',
-                      style: TextStyle(color: WebC.redSoft.withValues(alpha: 0.8), fontSize: 11))
-                else
-                  Text('${timeAgo(o.createdAt)} · ${o.offers} taklif',
-                      style: TextStyle(color: WebC.zinc600, fontSize: 11)),
-              ],
-            ),
-          ),
-          if (!o.deleted) ...[
-            const SizedBox(width: 16),
-            WebBadge('${o.offers} taklif'),
-          ],
-        ],
       ),
     );
   }

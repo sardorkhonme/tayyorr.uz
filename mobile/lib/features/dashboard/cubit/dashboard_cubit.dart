@@ -35,15 +35,19 @@ class DashboardState extends Equatable {
   List<Object?> get props => [status, orders, error];
 }
 
-class DashboardCubit extends Cubit<DashboardState> with SafeEmit<DashboardState> {
-  DashboardCubit(this._repo) : super(const DashboardState());
+class DashboardCubit extends Cubit<DashboardState>
+    with SafeEmit<DashboardState> {
+  DashboardCubit(this._repo, {this.scope}) : super(const DashboardState());
 
   final OrdersRepository _repo;
+
+  /// `feed` (Asosiy) yoki `mine` (Buyurtmalarim).
+  final String? scope;
 
   Future<void> load() async {
     emit(state.copyWith(status: DashboardStatus.loading));
     try {
-      final orders = await _repo.fetchOrders();
+      final orders = await _repo.fetchOrders(scope: scope);
       emit(state.copyWith(status: DashboardStatus.success, orders: orders));
     } on ApiException catch (e) {
       emit(state.copyWith(status: DashboardStatus.failure, error: e.message));

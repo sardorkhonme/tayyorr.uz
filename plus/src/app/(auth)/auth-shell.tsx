@@ -34,11 +34,10 @@ export function AuthShell({ mode, children }: { mode: "login" | "register" | "no
           </ul>
         </div>
         <p className="text-sm text-indigo-100/80">Tayyorr oilasi</p>
-        <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
       </aside>
 
       {/* o'ng — forma (faqat shu qism aylanadi) */}
-      <section className="hero-bg relative flex min-h-dvh flex-col items-center justify-center px-5 py-10 sm:px-8 lg:ml-[46%]">
+      <section className="relative flex min-h-dvh flex-col items-center justify-center px-5 py-10 sm:px-8 lg:ml-[46%]">
         <div className="animate-rise w-full max-w-md">
           <Link href="/" className="mb-8 flex justify-center lg:hidden">
             <Logo className="text-3xl" />

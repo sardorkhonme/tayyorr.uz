@@ -76,10 +76,10 @@ export function NavMenu({
         onClick={() => (open ? close() : openMenu())}
         aria-label="Menyu"
         aria-expanded={open}
-        className="backdrop-blur-sm relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-200 transition hover:bg-white/10"
       >
         {hasBadge && !open && (
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-[#0b0b12]" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-[var(--surface)]" />
         )}
         <span className="relative flex h-3.5 w-4 flex-col justify-between">
           <span
@@ -109,7 +109,7 @@ export function NavMenu({
               onClick={close}
             />
             <div
-              className={`menu-panel fixed z-[71] w-60 overflow-hidden rounded-2xl border border-white/10 bg-[#0e0e16]/95 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-2xl ${
+              className={`menu-panel fixed z-[71] w-60 overflow-hidden rounded-2xl border border-white/10 bg-[var(--surface-2)] p-1.5 shadow-2xl shadow-black/50 ${
                 closing ? "closing" : ""
               }`}
               style={{ top: anchor.top, right: anchor.right }}

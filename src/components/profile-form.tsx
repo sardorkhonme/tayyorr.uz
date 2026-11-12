@@ -52,6 +52,7 @@ export function ProfileForm({
 
   return (
     <form onSubmit={submit} className="card flex flex-col gap-3">
+      <h2 className="font-semibold text-white">Şaxsiy maʼlumotlar</h2>
       <div>
         <label className="label">Glavniy rasm</label>
         <AvatarUpload

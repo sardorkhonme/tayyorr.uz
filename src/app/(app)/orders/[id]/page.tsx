@@ -14,24 +14,9 @@ import { shortDateTime } from "@/lib/date";
 import { sweepContracts } from "@/lib/contract-flow";
 import { contractView } from "@/lib/contract-view";
 import { maskName } from "@/lib/mask-name";
-import { Icon } from "@/components/icons";
+import { Icon, type IconName } from "@/components/icons";
+import { STATUS_CLS, STATUS_LABEL, TYPE_LABEL } from "@/lib/order-labels";
 import { getMinOfferStars } from "@/lib/stars";
-
-const TYPE_LABEL: Record<string, string> = {
-  PRESENTATION: "Prezentatsiya",
-  COURSE_WORK: "Kurs işi",
-  REFERAT: "Referat",
-  ESSAY: "Esse",
-  DIPLOMA: "Diplom işi",
-  OTHER: "Boşqa",
-};
-const STATUS_LABEL: Record<string, string> = {
-  OPEN: "Oçiq",
-  IN_PROGRESS: "Jarayonda",
-  DELIVERED: "Topşirilgan",
-  DONE: "Yakunlangan",
-  CANCELLED: "Bekor qilingan",
-};
 
 export default async function OrderDetailPage({
   params,
@@ -154,12 +139,34 @@ export default async function OrderDetailPage({
     })),
   );
 
+  const isViewer = !isOrderer && !isPreparer; // boshqa buyurtmachi — faqat ko'radi
+  const facts: { icon: IconName; label: string; value: string }[] = [
+    {
+      icon: "coins",
+      label: "Byudjet",
+      value: order.budget ? `${order.budget.toLocaleString("ru-RU")} söm` : "Kelişiladi",
+    },
+    {
+      icon: "calendar",
+      label: "Muddat",
+      value: order.deadline ? shortDateTime(order.deadline) : "Belgilanmagan",
+    },
+    { icon: "hand", label: "Takliflar", value: `${order.offers.length} ta` },
+    { icon: "clock", label: "Yaratilgan", value: shortDateTime(order.createdAt) },
+  ];
+  const people = [
+    !isOrderer ? { person: order.orderer, role: "Buyurtmaçi" } : null,
+    order.preparer && !isAssigned
+      ? { person: order.preparer, role: "Tayyorlovçi" }
+      : null,
+  ].filter((x): x is { person: Person; role: string } => !!x);
+
   return (
-    <div className="flex flex-col gap-6">
-      <BackLink fallback="/dashboard" />
+    <div className="flex flex-col gap-4">
+      <BackLink fallback={isOrderer ? "/orders" : "/dashboard"} />
 
       {deleted && (
-        <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-sm">
+        <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm">
           <div className="flex items-center gap-1.5 font-semibold text-red-300">
             <Icon name="trash" className="h-4 w-4" />
             Bu buyurtma öçirilgan
@@ -168,13 +175,10 @@ export default async function OrderDetailPage({
             {order.deletedByRole === "ADMIN"
               ? "Administrator tomonidan"
               : "Buyurtmaçi tomonidan"}
-            {order.deletedAt &&
-              ` · ${shortDateTime(order.deletedAt)}`}
+            {order.deletedAt && ` · ${shortDateTime(order.deletedAt)}`}
           </div>
           {order.deleteReason && (
-            <div className="mt-1 text-zinc-300">
-              Sabab: {order.deleteReason}
-            </div>
+            <div className="mt-1 text-zinc-300">Sabab: {order.deleteReason}</div>
           )}
           <div className="mt-1 text-xs text-zinc-500">
             U faqat sizga körinadi, boşqalarga emas.
@@ -182,109 +186,164 @@ export default async function OrderDetailPage({
         </div>
       )}
 
-      {!isOrderer && (
-        <PersonCard person={order.orderer} role="Buyurtmachi" />
-      )}
-      {order.preparer && !isAssigned && (
-        <PersonCard person={order.preparer} role="Tayyorlovchi" />
-      )}
-
-      <div>
-        <div className="text-xs uppercase tracking-wide text-indigo-400">
-          {TYPE_LABEL[order.type]} · {STATUS_LABEL[order.status]}
+      {/* 1. sarlavha va holat */}
+      <section className="card">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-indigo-500/15 px-2.5 py-1 text-xs font-medium text-indigo-300">
+            {TYPE_LABEL[order.type] ?? order.type}
+          </span>
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+              STATUS_CLS[order.status] ?? "bg-white/10 text-zinc-300"
+            }`}
+          >
+            {STATUS_LABEL[order.status] ?? order.status}
+          </span>
         </div>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+        <h1 className="mt-3 break-words text-xl font-semibold tracking-tight text-white sm:text-2xl">
           {order.title}
         </h1>
-      </div>
+      </section>
 
-      <div className="card whitespace-pre-wrap text-sm text-zinc-300">
-        {order.description}
-      </div>
+      {/* 2. asosiy faktlar — bir xil o'lchamdagi kataklar */}
+      <section className="grid auto-rows-fr grid-cols-2 gap-2.5 sm:grid-cols-4">
+        {facts.map((f) => (
+          <div key={f.label} className="card flex min-w-0 flex-col justify-between gap-2 p-3.5 sm:p-4">
+            <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+              <Icon name={f.icon} className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{f.label}</span>
+            </span>
+            <span className="truncate text-sm font-semibold text-white">{f.value}</span>
+          </div>
+        ))}
+      </section>
 
-      <div className="flex flex-wrap gap-4 text-sm text-zinc-400">
-        {order.deadline && (
-          <span>Muddat: {shortDateTime(order.deadline)}</span>
-        )}
-        {order.budget && <span>Byudjet: {order.budget.toLocaleString()} söm</span>}
-      </div>
+      {/* ishtirokchilar */}
+      {people.length > 0 && (
+        <section
+          className={`grid auto-rows-fr gap-2.5 ${people.length > 1 ? "sm:grid-cols-2" : ""}`}
+        >
+          {people.map((p) => (
+            <PersonCard key={p.role} person={p.person} role={p.role} />
+          ))}
+        </section>
+      )}
 
+      {/* 3. tavsif */}
+      <section className="card">
+        <h2 className="mb-2 text-sm font-semibold text-white">Tavsif</h2>
+        <div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-300">
+          {order.description}
+        </div>
+      </section>
+
+      {/* 4. fayllar */}
       {files.length > 0 && (
-        <div>
-          <h2 className="mb-2 font-semibold text-white">Fayllar</h2>
-          <ul className="flex flex-col gap-2 text-sm">
-            {files.map((f) => (
-              <li key={f.id}>
-                {f.url ? (
-                  <a
-                    href={f.url}
-                    className="text-indigo-400 hover:text-indigo-300 hover:underline"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {f.kind} · {(f.size / 1024).toFixed(0)} KB
-                  </a>
-                ) : (
-                  <span className="text-zinc-500">
-                    {f.kind} (kiriş uçun ruxsat yöq)
+        <section className="card">
+          <h2 className="mb-3 text-sm font-semibold text-white">
+            Fayllar ({files.length})
+          </h2>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {files.map((f) => {
+              const inner = (
+                <>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-300">
+                    <Icon name="paperclip" className="h-4 w-4" />
                   </span>
-                )}
-              </li>
-            ))}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm text-white">{f.kind}</span>
+                    <span className="block truncate text-xs text-zinc-500">
+                      {f.url ? `${(f.size / 1024).toFixed(0)} KB` : "Faqat iştirokçilarga oçiq"}
+                    </span>
+                  </span>
+                  {f.url && <Icon name="download" className="h-4 w-4 shrink-0 text-zinc-500" />}
+                </>
+              );
+              return (
+                <li key={f.id}>
+                  {f.url ? (
+                    <a
+                      href={f.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex h-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 transition hover:bg-white/[0.06]"
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    <div className="flex h-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 opacity-70">
+                      {inner}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+        </section>
+      )}
+
+      {/* buyurtmachi boshqaning buyurtmasini ko'rmoqda — faqat ko'rish */}
+      {isViewer && !deleted && (
+        <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-zinc-400">
+          <Icon name="eye" className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
+          <span>
+            Bu boşqa foydalanuvçining buyurtmasi — siz uni faqat köra olasiz.
+            Taklif yuboriş faqat tayyorlovçilar uçun.
+          </span>
         </div>
       )}
 
-      {!deleted && (
-      <OrderActions
-        orderId={order.id}
-        status={order.status}
-        isOrderer={isOrderer}
-        isPreparer={isPreparer}
-        isAssigned={isAssigned}
-        ordererId={order.ordererId}
-        meId={me.id}
-        orderDeadline={order.deadline?.toISOString() ?? null}
-        contracts={order.contracts.map((c) => contractView(c, order))}
-        minOfferStars={await getMinOfferStars()}
-        reviewed={!!order.review}
-        myReview={
-          order.review
-            ? { stars: order.review.stars, comment: order.review.comment }
-            : null
-        }
-        myOffer={
-          myOffer && {
-            id: myOffer.id,
-            price: myOffer.price,
-            message: myOffer.message,
-            status: myOffer.status,
-            starsSpent: myOffer.starsSpent,
+      {/* 5. takliflar / şartnoma / amallar */}
+      {!deleted && !isViewer && (
+        <OrderActions
+          orderId={order.id}
+          status={order.status}
+          isOrderer={isOrderer}
+          isPreparer={isPreparer}
+          isAssigned={isAssigned}
+          ordererId={order.ordererId}
+          meId={me.id}
+          orderDeadline={order.deadline?.toISOString() ?? null}
+          contracts={order.contracts.map((c) => contractView(c, order))}
+          minOfferStars={await getMinOfferStars()}
+          reviewed={!!order.review}
+          myReview={
+            order.review
+              ? { stars: order.review.stars, comment: order.review.comment }
+              : null
           }
-        }
-        offers={visibleOffers.map((o) => ({
-          id: o.id,
-          price: o.price,
-          message: o.message,
-          status: o.status,
-          preparerId: o.preparerId,
-          starsSpent: o.starsSpent,
-          preparer: {
-            name: o.preparer.name ?? o.preparer.login ?? "—",
-            login: o.preparer.login,
-            about: o.preparer.about,
-            rating: o.preparer.ratingCount
-              ? o.preparer.ratingSum / o.preparer.ratingCount
-              : null,
-            ratingCount: o.preparer.ratingCount,
-          },
-        }))}
-        queue={queue}
-      />
+          myOffer={
+            myOffer && {
+              id: myOffer.id,
+              price: myOffer.price,
+              message: myOffer.message,
+              status: myOffer.status,
+              starsSpent: myOffer.starsSpent,
+            }
+          }
+          offers={visibleOffers.map((o) => ({
+            id: o.id,
+            price: o.price,
+            message: o.message,
+            status: o.status,
+            preparerId: o.preparerId,
+            starsSpent: o.starsSpent,
+            preparer: {
+              name: o.preparer.name ?? o.preparer.login ?? "—",
+              login: o.preparer.login,
+              about: o.preparer.about,
+              rating: o.preparer.ratingCount
+                ? o.preparer.ratingSum / o.preparer.ratingCount
+                : null,
+              ratingCount: o.preparer.ratingCount,
+            },
+          }))}
+          queue={queue}
+        />
       )}
 
       {isOrderer && !deleted && !locked && (
-        <div className="border-t border-white/10 pt-4">
+        <div className="flex justify-end border-t border-white/10 pt-4">
           <OrderDeleteButton orderId={order.id} />
         </div>
       )}
@@ -292,26 +351,22 @@ export default async function OrderDetailPage({
   );
 }
 
-function PersonCard({
-  person,
-  role,
-}: {
-  person: {
-    id: string;
-    name: string | null;
-    login: string | null;
-    avatarUrl: string | null;
-    image: string | null;
-    lastSeenAt: Date | null;
-  };
-  role: string;
-}) {
+type Person = {
+  id: string;
+  name: string | null;
+  login: string | null;
+  avatarUrl: string | null;
+  image: string | null;
+  lastSeenAt: Date | null;
+};
+
+function PersonCard({ person, role }: { person: Person; role: string }) {
   const p = presenceText(person.lastSeenAt);
   const img = person.avatarUrl ?? person.image;
   return (
     <Link
       href={`/u/${person.id}`}
-      className="card flex items-center gap-3 transition hover:border-white/15 hover:bg-white/[0.06]"
+      className="card flex h-full items-center gap-3 p-3.5 transition hover:border-white/15 hover:bg-white/[0.06] sm:p-4"
     >
       <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
         {img && (
@@ -319,24 +374,25 @@ function PersonCard({
           <img src={img} alt="" className="h-full w-full object-cover" />
         )}
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+          {role}
+        </span>
         <span className="block truncate font-medium text-white">
           {person.name ?? (person.login ? `@${person.login}` : role)}
         </span>
         <span className="mt-0.5 flex items-center gap-1.5 text-xs">
           <span
-            className={`inline-block h-1.5 w-1.5 rounded-full ${
+            className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
               p.online ? "bg-emerald-400" : "bg-zinc-600"
             }`}
           />
-          <span className={p.online ? "text-emerald-400" : "text-zinc-500"}>
+          <span className={`truncate ${p.online ? "text-emerald-400" : "text-zinc-500"}`}>
             {p.text}
           </span>
         </span>
       </span>
-      <span className="ml-auto shrink-0 text-xs text-zinc-600">
-        {role} · profilga ›
-      </span>
+      <span aria-hidden className="shrink-0 text-lg text-zinc-600">›</span>
     </Link>
   );
 }

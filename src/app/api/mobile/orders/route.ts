@@ -12,7 +12,13 @@ import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
-/** Bosh sahifa uchun buyurtmalar ro'yxati — web dashboard bilan bir xil mantiq. */
+/**
+ * Buyurtmalar ro'yxati.
+ *  · tayyorlovchi — ochiq buyurtmalar + o'zi bajarayotganlari (web dashboard bilan bir xil);
+ *  · buyurtmachi, `?scope=feed` — BOSHQALARNING ochiq buyurtmalari (faqat ko'rish uchun,
+ *    tayyorlovchi taklif yuborishdan oldin ko'radigan ma'lumotdan ortiq emas);
+ *  · buyurtmachi, `?scope=mine` yoki scope'siz (eski ilova versiyalari) — o'z buyurtmalari.
+ */
 export async function GET(req: Request) {
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
@@ -24,11 +30,15 @@ export async function GET(req: Request) {
   if (!me) return mobileJson({ error: "Topilmadi" }, { status: 404 });
 
   const isPreparer = me.role === "PREPARER";
+  const scope = new URL(req.url).searchParams.get("scope");
+  const feed = !isPreparer && scope === "feed";
 
   const orders = await db.order.findMany({
     where: isPreparer
       ? { deletedAt: null, OR: [{ status: "OPEN" }, { preparerId: auth.userId }] }
-      : { ordererId: auth.userId },
+      : feed
+        ? { deletedAt: null, status: "OPEN", ordererId: { not: auth.userId } }
+        : { ordererId: auth.userId },
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {
@@ -47,9 +57,10 @@ export async function GET(req: Request) {
       budget: o.budget,
       offers: o._count.offers,
       createdAt: o.createdAt.toISOString(),
-      ordererLabel: isPreparer ? o.orderer.login ?? o.orderer.name ?? null : null,
+      ordererLabel: isPreparer || feed ? o.orderer.login ?? o.orderer.name ?? null : null,
       deleted: !!o.deletedAt,
-      deleteReason: o.deleteReason,
+      // o'chirish sababi — faqat egasiga (feed'da o'chirilganlar umuman yo'q)
+      deleteReason: feed ? null : o.deleteReason,
     })),
   });
 }

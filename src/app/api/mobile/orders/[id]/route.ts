@@ -136,7 +136,12 @@ export async function GET(
       preparer: order.preparer ? party(order.preparer) : null,
       files,
       queue,
-      contracts: order.contracts.map((c) => contractView(c, order)),
+      // şartnomalar (summa, izoh, bekor qiliş sabablari) — faqat buyurtmaçiga va şartnoma
+      // yuborilgan tayyorlovçiga; boşqalar (feed'dan körayotgan buyurtmaçi yoki boşqa
+      // tayyorlovçilar) ularni körmaydi
+      contracts: order.contracts
+        .filter((c) => isOrderer || c.preparerId === auth.userId)
+        .map((c) => contractView(c, order)),
       review: order.review
         ? { stars: order.review.stars, comment: order.review.comment }
         : null,

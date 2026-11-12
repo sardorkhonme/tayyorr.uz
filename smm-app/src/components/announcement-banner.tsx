@@ -35,7 +35,7 @@ export function AnnouncementCarousel({ items }: { items: SmmAnn[] }) {
         go(e.clientX < s ? i + 1 : i - 1);
       }}
       style={{ touchAction: "pan-y" }}
-      className="animate-rise select-none overflow-hidden rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50 p-5 shadow-sm"
+      className="animate-rise select-none overflow-hidden rounded-3xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm"
     >
       <div key={a.id} className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
         <div className="min-w-0 flex-1">

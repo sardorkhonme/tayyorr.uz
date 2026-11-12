@@ -128,7 +128,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <div className="flex flex-col items-center gap-5 px-4 py-5 sm:flex-row sm:gap-6 sm:px-7 sm:py-6">
           <div className="relative h-32 w-32 shrink-0 sm:h-36 sm:w-36">
             <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="#f1f1f6" strokeWidth="10" />
+              <circle cx="60" cy="60" r="52" fill="none" className="stroke-zinc-100" strokeWidth="10" />
               <circle
                 cx="60"
                 cy="60"

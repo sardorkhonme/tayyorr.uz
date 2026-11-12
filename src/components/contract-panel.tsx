@@ -97,7 +97,7 @@ export function ContractPanel({
   return (
     <div className="card flex flex-col gap-3 border-emerald-400/25 bg-emerald-500/5">
       <div>
-        <h2 className="flex items-center gap-2 font-semibold text-white">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
           <Icon name="file" className="h-[18px] w-[18px] text-emerald-300" />
           Şartnoma imzolangan
         </h2>
@@ -142,7 +142,7 @@ export function ContractPanel({
               qaytariladi.
             </div>
           )}
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
             {otherRequested && (
               <>
                 <button
@@ -201,7 +201,7 @@ export function ContractPanel({
             )}
           </div>
           {iRequested && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
               <button
                 className="btn-primary"
                 disabled={busy}
@@ -243,7 +243,7 @@ export function ContractPanel({
 
       {/* asosiy amallar */}
       {!disputed && (
-        <div className="flex flex-wrap gap-2">
+        <div className="grid gap-2 sm:flex sm:flex-wrap">
           {isOrderer && (
             <button
               className="btn-primary"
@@ -323,7 +323,7 @@ export function ContractPanel({
             </div>
           )}
           {localErr && <p className="text-sm text-red-400">{localErr}</p>}
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex">
             <button className="btn-primary" disabled={busy} onClick={submit}>
               Yuboriş
             </button>

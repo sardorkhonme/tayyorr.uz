@@ -15,9 +15,19 @@ class ComingSoon extends StatelessWidget {
         children: [
           Text(emoji, style: const TextStyle(fontSize: 44)),
           const SizedBox(height: 14),
-          Text(title, style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(
+            title,
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 6),
-          const Text('Tez orada şu yerda böladi', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          const Text(
+            'Tez orada şu yerda böladi',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          ),
         ],
       ),
     );

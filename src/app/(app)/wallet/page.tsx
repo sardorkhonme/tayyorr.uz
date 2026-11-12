@@ -72,7 +72,7 @@ export default async function WalletPage({
   const balance = user?.balance ?? 0;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {fromClick && (
         <p className="rounded-xl border border-indigo-400/30 bg-indigo-500/10 p-3 text-sm text-indigo-200">
           Tölovingiz qayta işlanmoqda. Bir neça soniyadan söng balansingiz
@@ -87,20 +87,8 @@ export default async function WalletPage({
       </div>
 
       {/* balans karta */}
-      <div className="relative overflow-hidden rounded-2xl glass-strong p-6">
-        <div
-          aria-hidden
-          className="blob"
-          style={{
-            top: "-8rem",
-            right: "-6rem",
-            width: "22rem",
-            height: "22rem",
-            background: "radial-gradient(circle, #6366f1, transparent 70%)",
-            opacity: 0.35,
-          }}
-        />
-        <div className="relative">
+      <div className="card">
+        <div>
           <div className="text-sm text-zinc-400">{t("wallet.current")}</div>
           <BalanceAmount
             value={balance}
@@ -133,14 +121,14 @@ export default async function WalletPage({
 
       {payouts.length > 0 && (
         <div>
-          <h2 className="mb-3 font-semibold text-white">{t("wallet.withdrawals")}</h2>
+          <h2 className="mb-3 px-1 text-base font-semibold text-white">{t("wallet.withdrawals")}</h2>
           <ul className="flex flex-col gap-2">
             {payouts.map((p) => (
               <li
                 key={p.id}
                 className="card flex items-center justify-between gap-3 py-3"
               >
-                <div>
+                <div className="min-w-0">
                   <div className="text-sm font-medium text-white">
                     {formatSom(p.amount)}
                     <span
@@ -169,7 +157,7 @@ export default async function WalletPage({
 
       {/* tarix */}
       <div>
-        <h2 className="mb-3 font-semibold text-white">Amallar tarixi</h2>
+        <h2 className="mb-3 px-1 text-base font-semibold text-white">Amallar tarixi</h2>
         {txns.length === 0 ? (
           <div className="card text-sm text-zinc-500">Hozirça amallar yöq.</div>
         ) : (
@@ -182,9 +170,9 @@ export default async function WalletPage({
                 <li key={tx.id}>
                 <Link
                   href={`/wallet/${tx.id}`}
-                  className="card flex items-center justify-between py-3 transition hover:bg-white/[0.06]"
+                  className="card flex items-center justify-between gap-3 py-3 transition hover:bg-white/[0.06]"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-sm font-medium text-white">
                       {TXN_LABEL[tx.type] ?? tx.type}
                       {tx.method === "DEMO" && (
@@ -203,13 +191,13 @@ export default async function WalletPage({
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 text-xs text-zinc-500">
+                    <div className="mt-0.5 truncate text-xs text-zinc-500">
                       {shortDateTime(tx.createdAt)}
                       {tx.note ? ` · ${tx.note}` : ""}
                     </div>
                   </div>
                   <div
-                    className={`text-sm font-semibold ${
+                    className={`shrink-0 whitespace-nowrap text-sm font-semibold ${
                       reversed || failed
                         ? "text-red-400 line-through"
                         : out

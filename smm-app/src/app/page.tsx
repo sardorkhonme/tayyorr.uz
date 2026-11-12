@@ -45,10 +45,10 @@ export default async function SmmPage({
 
   return (
     <div className="space-y-8">
-      {/* sarlavhadagi logo yetarli — tepada e'lon banneri, ostida qo'llanma banneri */}
+      {/* tepada e'lon banneri; qöllanma — headerdagi ikonkada (öqilmagan bölsa — ogohlantiriş banneri) */}
       {announcements.length > 0 && <AnnouncementCarousel items={announcements} />}
 
-      <GuideBanner />
+      <GuideBanner hideWhenRead />
 
       {sale.length > 0 && <SaleBanner count={sale.length} max={maxSale} />}
 

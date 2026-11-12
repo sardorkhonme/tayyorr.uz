@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
+
+import { WelcomeOverlay } from "@/components/session-overlay";
 
 import { AuthShell } from "@/components/auth-shell";
 import { PasswordInput } from "@/components/password-input";
@@ -12,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [welcome, setWelcome] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,16 +25,20 @@ export default function LoginPage() {
       password,
       redirect: false,
     });
-    setBusy(false);
     if (res?.error) {
+      setBusy(false);
       setErr("Login yoki parol xato");
       return;
     }
-    window.location.assign("/dashboard");
+    // salomlaşiş animatsiyasi (öqiş uçun ~3 s), so'ng ilovaga
+    const session = await getSession().catch(() => null);
+    const name = session?.user?.name?.trim().split(/\s+/)[0] || login.trim() || "döstim";
+    setWelcome(name);
   }
 
   return (
     <AuthShell width="max-w-sm">
+      {welcome && <WelcomeOverlay name={welcome} onDone={() => window.location.assign("/dashboard")} />}
       <div className="card p-7">
         <h1 className="text-xl font-semibold text-white">Kiriş</h1>
 

@@ -13,7 +13,7 @@ import { Logo } from "@/components/logo";
 export function AccountNotFound() {
   const [pending, start] = useTransition();
   return (
-    <main className="hero-bg grid min-h-dvh place-items-center px-5 py-10">
+    <main className="grid min-h-dvh place-items-center px-5 py-10">
       <div className="w-full max-w-md text-center">
         <Logo className="text-3xl" />
         <div className="card mt-8 !rounded-3xl p-8">

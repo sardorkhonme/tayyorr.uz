@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 
 import { saveAccountAction } from "@/app/account/actions";
 import { AccountEditor } from "@/components/account-editor";
-import { Icon } from "@/components/icons";
+import { SignOutLink } from "@/components/sign-out-link";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { getAccount } from "@/lib/account";
 import { loginUrl, PLUS_URL, sessionUserId } from "@/lib/session";
 
@@ -25,13 +26,19 @@ export default async function AccountPage() {
 
       <AccountEditor initial={account} save={saveAccountAction} />
 
-      <a
+      <section className="card flex flex-col gap-4 !rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-display text-lg font-bold text-zinc-900">Köriniş</h2>
+          <p className="mt-1 text-sm text-zinc-500">Yoruğ yoki qoronği mavzu — şu qurilmada saqlanadi.</p>
+        </div>
+        <ThemeSwitcher />
+      </section>
+
+      <SignOutLink
         href={`${PLUS_URL}/logout`}
+        name={account.firstName || null}
         className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100"
-      >
-        <Icon name="logout" className="h-4 w-4" />
-        Barça platformalardan çiqiş
-      </a>
+      />
     </div>
   );
 }

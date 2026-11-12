@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { saveAccountAction } from "@/app/(hub)/account/actions";
-import { signOutAction } from "@/app/(hub)/actions";
 import { currentUser } from "@/auth";
 import { AccountEditor } from "@/components/account-editor";
 import { Icon } from "@/components/icons";
+import { SignOutButton } from "@/components/sign-out-button";
 import { getAccount } from "@/lib/account";
 import { db } from "@/lib/db";
 import { SMM_URL } from "@/lib/hub-nav";
@@ -68,12 +68,13 @@ export default async function AccountPage() {
         </div>
       </section>
 
-      <form action={signOutAction}>
-        <button className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100">
-          <Icon name="logout" className="h-4 w-4" />
-          Barça platformalardan çiqiş
-        </button>
-      </form>
+      <SignOutButton
+        name={user.firstName || user.name || user.login}
+        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+      >
+        <Icon name="logout" className="h-4 w-4" />
+        Barça platformalardan çiqiş
+      </SignOutButton>
     </div>
   );
 }

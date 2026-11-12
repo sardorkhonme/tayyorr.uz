@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/ui/platform_icon.dart';
+import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -61,36 +62,64 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
     }
   }
 
-  void _scrollTo(GlobalKey k) => WidgetsBinding.instance.addPostFrameCallback((_) {
+  void _scrollTo(GlobalKey k) =>
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         final ctx = k.currentContext;
-        if (ctx != null) Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 450), curve: Curves.easeOutCubic, alignment: 0.05);
+        if (ctx != null) {
+          Scrollable.ensureVisible(
+            ctx,
+            duration: const Duration(milliseconds: 450),
+            curve: Curves.easeOutCubic,
+            alignment: 0.05,
+          );
+        }
       });
+
+  Future<void> _openGuide() async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SmmGuideScreen()));
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = _cat;
+    final guideRead = LocalStorage.instance.smmGuideRead;
     return WebPage(
       background: false,
+      headerTrailing: HeaderIconGroup(
+        items: [
+          HeaderIconItem(icon: TI.book, label: 'Qöllanma', onTap: _openGuide),
+        ],
+      ),
       onRefresh: () => Future.wait([_load(force: true), _loadAnn()]),
-      children: [
-        // sarlavhadagi logo yetarli: tepada e'lon banneri, ostida qo'llanma banneri
+      children: _trimLeadingGap([
+        // tepada e'lon banneri; qöllanma — headerdagi ikonkada, öqilmagan bölsa ogohlantiriş banneri
         if (_ann.isNotEmpty) ...[
           AnnouncementCarousel(items: _ann),
-          const SizedBox(height: 12),
+          if (!guideRead) const SizedBox(height: 12),
         ],
-        _GuideBanner(onOpen: () async {
-          await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SmmGuideScreen()));
-          if (mounted) setState(() {});
-        }),
+        if (!guideRead)
+          _GuideBanner(
+            onOpen: _openGuide,
+            onDismiss: () async {
+              await LocalStorage.instance.setSmmGuideRead();
+              if (mounted) setState(() {});
+            },
+          ),
         if (_error != null && c == null) ...[
           const SizedBox(height: 14),
           SmmEmpty(
             icon: TI.wifi_off_rounded,
             title: _error!,
-            action: WebButton(label: 'Qayta uriniş', onPressed: () {
-              setState(() => _error = null);
-              _load(force: true);
-            }),
+            action: WebButton(
+              label: 'Qayta uriniş',
+              onPressed: () {
+                setState(() => _error = null);
+                _load(force: true);
+              },
+            ),
           ),
         ] else if (c == null) ...[
           // haqiqiy ko'rinish: 1-qadam sarlavhasi + 3 ustunli platforma plitkalari
@@ -107,63 +136,99 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
             // Skel cheklangan balandlik talab qiladi (nur animatsiyasi) — katakning o'lchamini beramiz
             children: [
               for (var i = 0; i < 6; i++)
-                LayoutBuilder(builder: (_, box) => Skel(width: box.maxWidth, height: box.maxHeight, borderRadius: 20)),
+                LayoutBuilder(
+                  builder: (_, box) => Skel(
+                    width: box.maxWidth,
+                    height: box.maxHeight,
+                    borderRadius: 20,
+                  ),
+                ),
             ],
           ),
         ] else
           ..._content(c),
-      ],
+      ]),
     );
   }
 
+  /// Tepada banner bölmasa — birinçi oraliq keraksiz (sahifa öz yuqori çekkasiga ega).
+  static List<Widget> _trimLeadingGap(List<Widget> w) =>
+      w.isNotEmpty && w.first is SizedBox && (w.first as SizedBox).child == null
+      ? w.sublist(1)
+      : w;
+
   List<Widget> _content(SmmCatalog c) {
     if (c.services.isEmpty) {
-      return const [SizedBox(height: 14), SmmEmpty(icon: TI.hourglass_empty_rounded, title: 'Xizmatlar tez orada qöşiladi')];
+      return const [
+        SizedBox(height: 14),
+        SmmEmpty(
+          icon: TI.hourglass_empty_rounded,
+          title: 'Xizmatlar tez orada qöşiladi',
+        ),
+      ];
     }
-    final maxDisc = c.services.fold<int>(0, (m, s) => s.discount > m ? s.discount : m);
+    final maxDisc = c.services.fold<int>(
+      0,
+      (m, s) => s.discount > m ? s.discount : m,
+    );
     final discCount = c.services.where((s) => s.discount > 0).length;
     final byPlatform = <String, List<SmmService>>{};
     for (final s in c.services) {
       (byPlatform[s.platform] ??= []).add(s);
     }
-    final platforms = c.platforms.where((p) => p.key != 'other' || (byPlatform['other']?.isNotEmpty ?? false)).toList();
+    final platforms = c.platforms
+        .where(
+          (p) => p.key != 'other' || (byPlatform['other']?.isNotEmpty ?? false),
+        )
+        .toList();
 
     final out = <Widget>[];
     if (maxDisc > 0) {
       out
         ..add(const SizedBox(height: 12))
-        ..add(_SaleBanner(max: maxDisc, count: discCount, onTap: widget.onDiscountsTap));
+        ..add(
+          _SaleBanner(
+            max: maxDisc,
+            count: discCount,
+            onTap: widget.onDiscountsTap,
+          ),
+        );
     }
     out
       ..add(const SizedBox(height: 22))
       ..add(const SmmStepTitle(1, 'Platformani tanlang'))
       ..add(const SizedBox(height: 12))
-      ..add(GridView.count(
-        crossAxisCount: 3,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 0.92,
-        children: [
-          for (final p in platforms)
-            _PlatformTile(
-              p: p,
-              count: byPlatform[p.key]?.length ?? 0,
-              maxDiscount: (byPlatform[p.key] ?? const []).fold<int>(0, (m, s) => s.discount > m ? s.discount : m),
-              selected: _platform == p.key,
-              onTap: () {
-                setState(() {
-                  _platform = p.key;
-                  _kind = null;
-                  _q = '';
-                  _shown = 12;
-                });
-                _scrollTo(_kindKey);
-              },
-            ),
-        ],
-      ));
+      ..add(
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 0.92,
+          children: [
+            for (final p in platforms)
+              _PlatformTile(
+                p: p,
+                count: byPlatform[p.key]?.length ?? 0,
+                maxDiscount: (byPlatform[p.key] ?? const []).fold<int>(
+                  0,
+                  (m, s) => s.discount > m ? s.discount : m,
+                ),
+                selected: _platform == p.key,
+                onTap: () {
+                  setState(() {
+                    _platform = p.key;
+                    _kind = null;
+                    _q = '';
+                    _shown = 12;
+                  });
+                  _scrollTo(_kindKey);
+                },
+              ),
+          ],
+        ),
+      );
 
     final pl = _platform;
     if (pl != null) {
@@ -180,60 +245,93 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
         final ks = kinds[k.key]!;
         final kd = ks.fold<int>(0, (m, s) => s.discount > m ? s.discount : m);
         out
-          ..add(_KindTile(
-            k: k,
-            count: ks.length,
-            maxDiscount: kd,
-            selected: _kind == k.key,
-            onTap: () {
-              setState(() {
-                _kind = k.key;
-                _q = '';
-                _shown = 12;
-              });
-              _scrollTo(_listKey);
-            },
-          ))
+          ..add(
+            _KindTile(
+              k: k,
+              count: ks.length,
+              maxDiscount: kd,
+              selected: _kind == k.key,
+              onTap: () {
+                setState(() {
+                  _kind = k.key;
+                  _q = '';
+                  _shown = 12;
+                });
+                _scrollTo(_listKey);
+              },
+            ),
+          )
           ..add(const SizedBox(height: 8));
       }
 
       final kd = _kind;
       if (kd != null) {
-        var items = (kinds[kd] ?? const []).toList()..sort((a, b) => a.rate.compareTo(b.rate));
+        var items = (kinds[kd] ?? const []).toList()
+          ..sort((a, b) => a.rate.compareTo(b.rate));
         if (_q.trim().isNotEmpty) {
           final q = _q.trim().toLowerCase();
-          items = items.where((s) => s.title.toLowerCase().contains(q) || s.category.toLowerCase().contains(q)).toList();
+          items = items
+              .where(
+                (s) =>
+                    s.title.toLowerCase().contains(q) ||
+                    s.category.toLowerCase().contains(q),
+              )
+              .toList();
         }
         out
           ..add(SizedBox(key: _listKey, height: 20))
           ..add(const SmmStepTitle(3, 'Xizmatni tanlang'))
           ..add(const SizedBox(height: 4))
-          ..add(Text('Eng arzonidan boşlab. Kafolat yorliğiga qarang.', style: TextStyle(color: WebC.zinc500, fontSize: 13)))
+          ..add(
+            Text(
+              'Eng arzonidan boşlab. Kafolat yorliğiga qarang.',
+              style: TextStyle(color: WebC.zinc500, fontSize: 13),
+            ),
+          )
           ..add(const SizedBox(height: 10))
-          ..add(WebInput(
-            hint: 'Röyxatdan qidiriş…',
-            onChanged: (v) => setState(() {
-              _q = v;
-              _shown = 12;
-            }),
-            suffix: TIcon(TI.search_rounded, size: 18, color: WebC.zinc500),
-          ))
+          ..add(
+            WebInput(
+              hint: 'Röyxatdan qidiriş…',
+              onChanged: (v) => setState(() {
+                _q = v;
+                _shown = 12;
+              }),
+              suffix: TIcon(TI.search_rounded, size: 18, color: WebC.zinc500),
+            ),
+          )
           ..add(const SizedBox(height: 12));
         if (items.isEmpty) {
-          out.add(const SmmEmpty(icon: TI.search_off_rounded, title: 'Hec nima topilmadi'));
+          out.add(
+            const SmmEmpty(
+              icon: TI.search_off_rounded,
+              title: 'Hec nima topilmadi',
+            ),
+          );
         }
         for (final s in items.take(_shown)) {
           out
-            ..add(SmmServiceTile(s: s, onTap: () => showSmmOrderSheet(context, s, c, onOrdersTap: widget.onOrdersTap)))
+            ..add(
+              SmmServiceTile(
+                s: s,
+                onTap: () => showSmmOrderSheet(
+                  context,
+                  s,
+                  c,
+                  onOrdersTap: widget.onOrdersTap,
+                ),
+              ),
+            )
             ..add(const SizedBox(height: 10));
         }
         if (items.length > _shown) {
-          out.add(WebButton(
-            label: 'Yana körsatiş (${items.length - _shown})',
-            variant: WebBtn.ghost,
-            expand: true,
-            onPressed: () => setState(() => _shown += 12),
-          ));
+          out.add(
+            WebButton(
+              label: 'Yana körsatiş (${items.length - _shown})',
+              variant: WebBtn.ghost,
+              expand: true,
+              onPressed: () => setState(() => _shown += 12),
+            ),
+          );
         }
       }
     }
@@ -242,7 +340,13 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
 }
 
 class _PlatformTile extends StatelessWidget {
-  const _PlatformTile({required this.p, required this.count, required this.maxDiscount, required this.selected, required this.onTap});
+  const _PlatformTile({
+    required this.p,
+    required this.count,
+    required this.maxDiscount,
+    required this.selected,
+    required this.onTap,
+  });
   final SmmPlatform p;
   final int count;
   final int maxDiscount;
@@ -259,31 +363,81 @@ class _PlatformTile extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: p.gradient,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? Colors.white : Colors.transparent, width: 2.5),
-          boxShadow: selected ? [BoxShadow(color: p.to.withValues(alpha: 0.5), blurRadius: 20, offset: const Offset(0, 8), spreadRadius: -6)] : null,
-        ),
-        foregroundDecoration: disabled ? BoxDecoration(color: Colors.white.withValues(alpha: 0.55), borderRadius: BorderRadius.circular(20)) : null,
-        child: Stack(children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              PlatformIconBox(p.key),
-              const Spacer(),
-              Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800)),
-              Text(disabled ? 'Tez orada' : '$count ta xizmat', style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 11.5)),
-            ]),
+          border: Border.all(
+            color: selected ? Colors.white : Colors.transparent,
+            width: 2.5,
           ),
-          if (maxDiscount > 0)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(99)),
-                child: Text('−$maxDiscount%', style: const TextStyle(color: Color(0xFFE11D48), fontSize: 10.5, fontWeight: FontWeight.w800)),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: p.to.withValues(alpha: 0.5),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                    spreadRadius: -6,
+                  ),
+                ]
+              : null,
+        ),
+        foregroundDecoration: disabled
+            ? BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(20),
+              )
+            : null,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PlatformIconBox(p.key),
+                  const Spacer(),
+                  Text(
+                    p.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    disabled ? 'Tez orada' : '$count ta xizmat',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
               ),
             ),
-        ]),
+            if (maxDiscount > 0)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    '−$maxDiscount%',
+                    style: const TextStyle(
+                      color: Color(0xFFE11D48),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -296,15 +450,24 @@ class PlatformIconBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(12)),
-        child: Center(child: PlatformIcon(platform, size: 20)),
-      );
+    width: 38,
+    height: 38,
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.22),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Center(child: PlatformIcon(platform, size: 20)),
+  );
 }
 
 class _KindTile extends StatelessWidget {
-  const _KindTile({required this.k, required this.count, required this.maxDiscount, required this.selected, required this.onTap});
+  const _KindTile({
+    required this.k,
+    required this.count,
+    required this.maxDiscount,
+    required this.selected,
+    required this.onTap,
+  });
   final SmmKind k;
   final int count;
   final int maxDiscount;
@@ -321,92 +484,121 @@ class _KindTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? k.color.withValues(alpha: 0.12) : WebC.cardBg,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: selected ? k.color : WebC.cardBorder, width: selected ? 1.6 : 1),
+          border: Border.all(
+            color: selected ? k.color : WebC.cardBorder,
+            width: selected ? 1.6 : 1,
+          ),
         ),
-        child: Row(children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(color: k.color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(11)),
-            child: TIcon(k.icon, color: k.color, size: 17),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(k.label, style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w700)),
-              Text(k.hint, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
-            ]),
-          ),
-          if (maxDiscount > 0) ...[DiscountBadge(maxDiscount), const SizedBox(width: 6)],
-          Text('$count', style: TextStyle(color: WebC.zinc400, fontSize: 13, fontWeight: FontWeight.w700)),
-          TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
-        ]),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: k.color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: TIcon(k.icon, color: k.color, size: 17),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    k.label,
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    k.hint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: WebC.zinc500, fontSize: 12.5),
+                  ),
+                ],
+              ),
+            ),
+            if (maxDiscount > 0) ...[
+              DiscountBadge(maxDiscount),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              '$count',
+              style: TextStyle(
+                color: WebC.zinc400,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _GuideBanner extends StatefulWidget {
-  const _GuideBanner({required this.onOpen});
+/// Qöllanma hali öqilmagan bölsa — ogohlantiriş. Öqilgandan keyin yöqoladi (qöllanma headerdagi ikonkada).
+class _GuideBanner extends StatelessWidget {
+  const _GuideBanner({required this.onOpen, required this.onDismiss});
   final VoidCallback onOpen;
-
-  @override
-  State<_GuideBanner> createState() => _GuideBannerState();
-}
-
-class _GuideBannerState extends State<_GuideBanner> {
-  VoidCallback get onOpen => widget.onOpen;
+  final VoidCallback onDismiss;
 
   @override
   Widget build(BuildContext context) {
-    final read = LocalStorage.instance.smmGuideRead;
-    if (read) {
-      return GestureDetector(
-        onTap: onOpen,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-          decoration: BoxDecoration(color: WebC.fill5, borderRadius: BorderRadius.circular(14), border: Border.all(color: WebC.border)),
-          child: Row(children: [
-            const TIcon(TI.menu_book_rounded, size: 18, color: Color(0xFF818CF8)),
-            const SizedBox(width: 10),
-            Expanded(child: Text("Qöllanma — qaysi xizmatni oliş kerak?", style: TextStyle(color: WebC.zinc300, fontSize: 13.5))),
-            TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
-          ]),
-        ),
-      );
-    }
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(colors: [const Color(0xFFF59E0B).withValues(alpha: 0.18), const Color(0xFFF97316).withValues(alpha: 0.12)]),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+        color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+        ),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Text('📖', style: TextStyle(fontSize: 22)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text('Qöllanmani öqimasdan buyurtma bermang!', style: TextStyle(color: WebC.white, fontSize: 15.5, fontWeight: FontWeight.w800)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const TIcon(TI.book, size: 20, color: Color(0xFFF59E0B)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Qöllanmani öqimasdan buyurtma bermang!',
+                  style: TextStyle(
+                    color: WebC.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ]),
-        const SizedBox(height: 6),
-        Text('1 daqiqada: kafolat yorliği, 3 ta qoida va qaysi xizmatni oliş kerakligi.',
-            style: TextStyle(color: WebC.zinc400, fontSize: 13, height: 1.4)),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: WebButton(label: 'Qöllanmani öqiş', onPressed: onOpen)),
-          const SizedBox(width: 8),
-          WebButton(
-            label: 'Öqidim',
-            variant: WebBtn.ghost,
-            onPressed: () async {
-              await LocalStorage.instance.setSmmGuideRead();
-              if (mounted) setState(() {});
-            },
+          const SizedBox(height: 6),
+          Text(
+            '1 daqiqada: kafolat yorliği, 3 ta qoida va qaysi xizmatni oliş kerakligi.',
+            style: TextStyle(color: WebC.zinc400, fontSize: 13, height: 1.4),
           ),
-        ]),
-      ]),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: WebButton(label: 'Qöllanmani öqiş', onPressed: onOpen),
+              ),
+              const SizedBox(width: 8),
+              WebButton(
+                label: 'Öqidim',
+                variant: WebBtn.ghost,
+                onPressed: onDismiss,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -425,20 +617,47 @@ class _SaleBanner extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(colors: [Color(0xFFF43F5E), Color(0xFFD946EF), Color(0xFF8B5CF6)]),
-          boxShadow: [BoxShadow(color: const Color(0xFFF43F5E).withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 10), spreadRadius: -10)],
-        ),
-        child: Row(children: [
-          const TIcon(TI.local_offer_rounded, color: Colors.white, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('−$max% gaça çegirmalar!', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-              Text('$count ta xizmat arzonlaşdi — ulgurib qoling', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12.5)),
-            ]),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFF43F5E), Color(0xFFD946EF), Color(0xFF8B5CF6)],
           ),
-          const TIcon(TI.arrow_forward_rounded, color: Colors.white),
-        ]),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFF43F5E).withValues(alpha: 0.35),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+              spreadRadius: -10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const TIcon(TI.local_offer_rounded, color: Colors.white, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '−$max% gaça çegirmalar!',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    '$count ta xizmat arzonlaşdi — ulgurib qoling',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const TIcon(TI.arrow_forward_rounded, color: Colors.white),
+          ],
+        ),
       ),
     );
   }

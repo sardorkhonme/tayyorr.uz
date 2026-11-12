@@ -14,7 +14,12 @@ Future<bool?> confirmDialog(
   TIData? icon,
   bool? danger,
 }) {
-  final isDanger = danger ?? RegExp(r'öçir|çiq|blok|bekor|rad|örtaga', caseSensitive: false).hasMatch('$confirmLabel $title');
+  final isDanger =
+      danger ??
+      RegExp(
+        r'öçir|çiq|blok|bekor|rad|örtaga',
+        caseSensitive: false,
+      ).hasMatch('$confirmLabel $title');
   return showAppConfirm(
     context,
     title: title,

@@ -20,20 +20,20 @@ const OPTS: [Mode, IconName, string][] = [
   ["dark", "moon", "Qoronği"],
 ];
 
-/** Yorug'/qorong'i rejim tanlagichi. */
-export function ThemeToggle({
-  className = "",
-  bare = false,
-}: {
-  className?: string;
-  bare?: boolean;
-}) {
+/** Joriy rejim + doira bo'lib yoyiladigan almashtirish (ikkala tanlagich uchun umumiy). */
+function useThemeMode() {
   const [mode, setMode] = useState<Mode>("dark");
 
   useEffect(() => {
-    setMode(
-      document.documentElement.classList.contains("light") ? "light" : "dark",
-    );
+    const read = () =>
+      setMode(
+        document.documentElement.classList.contains("light") ? "light" : "dark",
+      );
+    read();
+    // boshqa tanlagich (sidebar / profil) yoki ThemeSync o'zgartirsa — sinxron
+    const mo = new MutationObserver(read);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => mo.disconnect();
   }, []);
 
   /**
@@ -67,6 +67,19 @@ export function ThemeToggle({
       .catch(() => {});
   }
 
+  return { mode, pick };
+}
+
+/** Yorug'/qorong'i rejim tanlagichi (menyu / sidebar uchun ixcham). */
+export function ThemeToggle({
+  className = "",
+  bare = false,
+}: {
+  className?: string;
+  bare?: boolean;
+}) {
+  const { mode, pick } = useThemeMode();
+
   return (
     <div
       className={`flex gap-1 ${
@@ -79,7 +92,7 @@ export function ThemeToggle({
           type="button"
           onClick={(e) => pick(m, e)}
           aria-pressed={mode === m}
-          className={`backdrop-blur-sm flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs transition ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs transition ${
             mode === m
               ? "bg-white/10 text-white"
               : "text-zinc-400 hover:text-white"
@@ -89,6 +102,47 @@ export function ThemeToggle({
           <span>{label}</span>
         </button>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Profil uchun katta segmentli tanlagich: ikki katta tugma, orasida
+ * siljiydigan "thumb" — har bir variantda kichik ko'rinish namunasi.
+ */
+export function ThemeSegmented() {
+  const { mode, pick } = useThemeMode();
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Mavzu"
+      className="relative grid grid-cols-2 gap-1 rounded-2xl border border-white/10 bg-white/5 p-1"
+    >
+      <span
+        aria-hidden
+        className="absolute bottom-1 top-1 w-[calc(50%-0.375rem)] rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/25 transition-transform duration-300 ease-out"
+        style={{
+          left: "0.25rem",
+          transform: mode === "dark" ? "translateX(calc(100% + 0.25rem))" : "translateX(0)",
+        }}
+      />
+      {OPTS.map(([m, icon, label]) => {
+        const on = mode === m;
+        return (
+          <button
+            key={m}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={(e) => pick(m, e)}
+            className="relative z-[1] flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors"
+            style={{ color: on ? "#fff" : undefined }}
+          >
+            <Icon name={icon} className={`h-4 w-4 ${on ? "" : "text-zinc-400"}`} />
+            <span className={on ? "" : "text-zinc-400"}>{label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

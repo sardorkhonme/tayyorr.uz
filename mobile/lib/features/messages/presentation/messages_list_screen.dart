@@ -55,8 +55,8 @@ class _MessagesListView extends StatelessWidget {
             UnreadCounter.instance.refresh();
           },
           children: [
-            Text('Xabarlar', style: TextStyle(color: WebC.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
-            const SizedBox(height: 20),
+            const WebPageTitle('Xabarlar', size: 20),
+            const SizedBox(height: 16),
             // «Tayyorr's Family» — umumiy guruh, doim tepada
             const FamilyListRow(),
             const SizedBox(height: 8),
@@ -90,7 +90,7 @@ class _MessagesListView extends StatelessWidget {
                 child: Text(
                   state.status == ConversationsStatus.failure
                       ? (state.error ?? "Yuklab bölmadi")
-                      : "Hozirça suhbat yöq. Buyurtma sahifasida tayyorlovçi yonidagi «Çat» tugmasidan suhbat boşlaşingiz mumkin.",
+                      : "Hozirça suhbat yöq. Buyurtma sahifasida taklif ostidagi «Yoziş» tugmasidan suhbat boşlaşingiz mumkin.",
                   style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
                 ),
               )

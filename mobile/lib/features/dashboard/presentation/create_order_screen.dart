@@ -60,7 +60,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         title: _title.text.trim(),
         type: _type,
         description: _description.text.trim(),
-        budget: _budget.text.trim().isEmpty ? null : int.tryParse(_budget.text.trim()),
+        budget: _budget.text.trim().isEmpty
+            ? null
+            : int.tryParse(_budget.text.trim()),
         deadline: _deadline,
       );
       if (!mounted) return;
@@ -75,17 +77,18 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return WebPage(
       children: [
-        const WebBackLink(),
+        const WebPageTitle(
+          'Yangi buyurtma',
+          size: 20,
+          subtitle: "Vazifani aniq yozing — tayyorlovçilar narx taklif qiladi.",
+        ),
         const SizedBox(height: 16),
-        Text('Yangi buyurtma',
-            style: TextStyle(color: WebC.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
-        const SizedBox(height: 20),
         WebCard(
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -96,18 +99,29 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _type,
                 isExpanded: true,
-                dropdownColor: AppColors.isLight ? Colors.white : const Color(0xFF141419),
-                icon: TIcon(TI.keyboard_arrow_down_rounded, color: WebC.zinc300),
+                dropdownColor: AppColors.isLight
+                    ? Colors.white
+                    : const Color(0xFF141419),
+                icon: TIcon(
+                  TI.keyboard_arrow_down_rounded,
+                  color: WebC.zinc300,
+                ),
                 style: TextStyle(color: WebC.zinc200, fontSize: 14),
                 decoration: webInputDecoration(),
                 items: [
-                  for (final e in kOrderTypeLabel.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  for (final e in kOrderTypeLabel.entries)
+                    DropdownMenuItem(value: e.key, child: Text(e.value)),
                 ],
                 onChanged: (v) => setState(() => _type = v ?? _type),
               ),
               const SizedBox(height: 12),
               const WebLabel('Tavsif'),
-              WebInput(controller: _description, hint: 'Mavzu, talablar, hajm, formatlaş...', maxLines: 5, minLines: 5),
+              WebInput(
+                controller: _description,
+                hint: 'Mavzu, talablar, hajm, formatlaş...',
+                maxLines: 5,
+                minLines: 5,
+              ),
               const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,13 +130,21 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const WebLabel('Muddat (sana va vaqt)'),
+                        const WebLabel('Muddat'),
                         WebInput(
                           readOnly: true,
                           onTap: _pickDeadline,
                           hint: 'Sana va vaqt',
-                          controller: TextEditingController(text: _deadline == null ? '' : shortDateTime(_deadline!)),
-                          suffix: TIcon(TI.calendar_today_rounded, size: 16, color: WebC.zinc300),
+                          controller: TextEditingController(
+                            text: _deadline == null
+                                ? ''
+                                : shortDateTime(_deadline!),
+                          ),
+                          suffix: TIcon(
+                            TI.calendar_today_rounded,
+                            size: 16,
+                            color: WebC.zinc300,
+                          ),
                         ),
                       ],
                     ),
@@ -133,7 +155,10 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const WebLabel("Byudjet (söm)"),
-                        WebInput(controller: _budget, keyboardType: TextInputType.number),
+                        WebInput(
+                          controller: _budget,
+                          keyboardType: TextInputType.number,
+                        ),
                       ],
                     ),
                   ),
@@ -144,7 +169,13 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
               ],
               const SizedBox(height: 12),
-              WebButton(label: _busy ? '...' : "Buyurtmani eʼlon qiliş", expand: true, onPressed: _busy ? null : _submit),
+              const SizedBox(height: 4),
+              WebButton(
+                label: "Buyurtmani eʼlon qiliş",
+                busy: _busy,
+                expand: true,
+                onPressed: _busy ? null : _submit,
+              ),
             ],
           ),
         ),
