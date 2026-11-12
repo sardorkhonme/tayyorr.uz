@@ -61,8 +61,8 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
           _error = null;
         });
       }
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
     }
   }
 
@@ -89,7 +89,7 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
         ),
         const SizedBox(height: 16),
         if (_error != null && d == null)
-          ErrorState.from(_error, load, card: true)
+          ErrorState.from(_error, load)
         else if (d == null) ...[
           // haqiqiy ko'rinish: 2×2 statistika + buyurtma qatorlari
           GridView.count(

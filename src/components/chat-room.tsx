@@ -539,7 +539,7 @@ export function ChatRoom({
     const el = document.getElementById(`msg-${id}`);
     if (!el) {
       setJumpMiss(true);
-      setTimeout(() => setJumpMiss(false), 2500);
+      setTimeout(() => setJumpMiss(false), 3500);
       return;
     }
     // Telegramdagidek ikki marta "lip-lip" yonadigan nur (mobil ilova bilan bir xil)

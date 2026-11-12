@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { writeThemeCookie } from "@/lib/theme";
+
 /**
  * DB'dagi mavzu har doim ustuvor — foydalanuvchi qaysi qurilmadan kirsa
  * ham bir xil rejim ko'rinishi uchun, shu qurilmaning eski cookie'sini
@@ -21,7 +23,8 @@ export function ThemeSync({ serverTheme }: { serverTheme: string | null }) {
         serverTheme === "light",
       );
     }
-    document.cookie = `tyr_theme=${serverTheme}; path=/; max-age=31536000; samesite=lax`;
+    // umumiy cookie (.tayyorr.uz) — tayyorr+ va Tayyorr SMM ham bazadagi rejimda oçiladi
+    writeThemeCookie(serverTheme);
   }, [serverTheme]);
   return null;
 }

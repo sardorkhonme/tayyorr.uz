@@ -21,7 +21,8 @@ export function MarkGuideRead() {
 /**
  * Buyurtma sahifalari tepasida: qo'llanmani o'qimagan foydalanuvchiga "avval qo'llanma" maslahati.
  * Qo'llanma ochilsa yoki "O'qidim" bosilsa — katta banner o'rniga ixcham havola qoladi
- * ([hideWhenRead] — headerda qöllanma ikonkasi bor sahifalarda butunlay yöqoladi).
+ * ([hideWhenRead] — telefon/planşetda headerda qöllanma ikonkasi bor sahifalarda ixcham havola ham yöq;
+ * kompyuterda header ikonkasiz — ixcham havola qoladi).
  */
 export function GuideBanner({ hideWhenRead = false }: { hideWhenRead?: boolean }) {
   const [show, setShow] = useState<boolean | null>(null);
@@ -36,12 +37,11 @@ export function GuideBanner({ hideWhenRead = false }: { hideWhenRead?: boolean }
 
   if (show === null) return null;
   // o'qigan bo'lsa — qo'llanma havolasi ixcham qatorda doim turadi
-  if (!show && hideWhenRead) return null;
   if (!show)
     return (
       <Link
         href="/qollanma"
-        className="group flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600 transition hover:border-indigo-200"
+        className={`group items-center ${hideWhenRead ? "hidden lg:flex" : "flex"} gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600 transition hover:border-indigo-200`}
       >
         <Icon name="book" className="h-5 w-5 shrink-0 text-indigo-500" />
         <span className="min-w-0 flex-1">

@@ -57,7 +57,8 @@ export default async function ProfilePage() {
   const versionLabel = await getVersionLabel();
   const isPreparer = user.role === "PREPARER";
 
-  // header ikonkalari: tayyorlovchi — Qöllanma + Referal; buyurtmachi — Qöllanma + Yordam
+  // header ikonkalari (faqat telefon/planşet — kompyuterda ular sidebar menyusida):
+  // tayyorlovchi — Qöllanma + Referal; buyurtmachi — Qöllanma + Yordam
   const actions: HeaderAction[] = [
     { key: "guide", icon: "help", label: "Qöllanma", href: "/guide" },
     isPreparer
@@ -75,8 +76,7 @@ export default async function ProfilePage() {
       <HeaderSetter title="Profil" actions={actions} />
 
       <div className="px-1">
-        {/* kompyuterda sarlavha yuqori panelda turadi */}
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-white lg:hidden">
+        <h1 className="mb-1 text-2xl font-semibold tracking-tight text-white">
           Profil
         </h1>
         <p className="truncate text-sm text-zinc-500">

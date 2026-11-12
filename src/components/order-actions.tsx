@@ -16,6 +16,7 @@ import { shortDateTime } from "@/lib/date";
 import type { ContractView } from "@/lib/contract-view";
 import { Icon, StarIcon } from "@/components/icons";
 import { MascotState } from "@/components/mascot";
+import { errorText, fetchJson } from "@/components/fetch-json";
 
 export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Körib çiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
@@ -121,7 +122,19 @@ export function OrderActions(props: Props) {
   const [boostStars, setBoostStars] = useState("");
   const [offerStars, setOfferStars] = useState(String(MIN_OFFER_STARS));
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErrState] = useState<string | null>(null);
+  // xato qaysi bölim yonida körinsin (taklif formasi, navbat/boost yoki umumiy)
+  const [errAt, setErrAt] = useState<"offer" | "boost" | "contract" | "general">("general");
+  const setErr = (m: string | null, at: "offer" | "boost" | "contract" | "general" = "general") => {
+    setErrState(m);
+    setErrAt(at);
+  };
+  const errFor = (at: "offer" | "boost" | "contract" | "general") =>
+    err && errAt === at ? (
+      <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+        {err}
+      </p>
+    ) : null;
 
   // shartnoma yuborish formasi (qaysi tayyorlovchiga)
   const [contractFor, setContractFor] = useState<string | null>(null);
@@ -136,12 +149,12 @@ export function OrderActions(props: Props) {
 
   async function sendContract(preparerId: string) {
     if (!cAmount || Number(cAmount) <= 0) {
-      setErr("Summani kiriting");
+      setErr("Summani kiriting", "contract");
       return;
     }
     const deadline = localInputToIso(cDeadline);
     if (!deadline || new Date(deadline).getTime() <= Date.now()) {
-      setErr("Şartnoma muddatini (sana va vaqt) tanlang");
+      setErr("Şartnoma muddatini (sana va vaqt) tanlang", "contract");
       return;
     }
     const ok = await call(`/api/orders/${orderId}/contract`, "POST", {
@@ -149,7 +162,7 @@ export function OrderActions(props: Props) {
       amount: Number(cAmount),
       note: cNote || undefined,
       deadline,
-    });
+    }, "contract");
     if (!ok) return;
     setContractFor(null);
     setCAmount("");
@@ -159,46 +172,44 @@ export function OrderActions(props: Props) {
   async function boost() {
     const stars = Number(boostStars);
     if (!stars || stars <= 0) {
-      setErr("Star sonini kiriting");
+      setErr("Star sonini kiriting", "boost");
       return;
     }
-    await call(`/api/orders/${orderId}/offers/boost`, "POST", { stars });
-    setBoostStars("");
+    const ok = await call(`/api/orders/${orderId}/offers/boost`, "POST", { stars }, "boost");
+    if (ok) setBoostStars("");
   }
 
   async function startChat(userId: string) {
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch("/api/chat/start", {
+      const data = await fetchJson<{ conversationId: string }>("/api/chat/start", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, orderId }),
+        json: { userId, orderId },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Çat oçilmadi");
       router.push(`/messages/${data.conversationId}`);
+      // sahifa almaşmasa (masalan tarmoq sekin) — tugma abadiy bloklanib qolmasin
+      setTimeout(() => setBusy(false), 8000);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Xatolik");
+      setErr(errorText(e));
       setBusy(false);
     }
   }
 
-  async function call(url: string, method: string, body?: unknown): Promise<boolean> {
+  async function call(
+    url: string,
+    method: string,
+    body?: unknown,
+    at: "offer" | "boost" | "contract" | "general" = "general",
+  ): Promise<boolean> {
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Xatolik");
+      await fetchJson(url, { method, json: body });
       router.refresh();
       return true;
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Xatolik");
+      setErr(errorText(e), at);
       return false;
     } finally {
       setBusy(false);
@@ -207,7 +218,7 @@ export function OrderActions(props: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {errFor("general")}
 
       {isAssigned && (
         <button
@@ -300,17 +311,25 @@ export function OrderActions(props: Props) {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            call(`/api/orders/${orderId}/offers`, "POST", {
-              price: Number(price),
-              message: message || undefined,
-              ...(myOffer ? {} : { stars: Number(offerStars) || MIN_OFFER_STARS }),
-            });
+            call(
+              `/api/orders/${orderId}/offers`,
+              "POST",
+              {
+                price: Number(price),
+                message: message || undefined,
+                ...(myOffer ? {} : { stars: Number(offerStars) || MIN_OFFER_STARS }),
+              },
+              "offer",
+            );
           }}
           className="card flex flex-col gap-3"
         >
-          <h2 className="text-sm font-semibold text-white">
-            {myOffer ? "Taklifni yangilaş" : "Taklif yuboriş"}
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-white">
+              {myOffer ? "Taklifni yangilaş" : "Taklif yuboriş"}
+            </h2>
+            {myOffer && <OfferBadge status={myOffer.status} inline />}
+          </div>
           <div className={`grid gap-3 ${myOffer ? "" : "grid-cols-2"}`}>
             <div className="min-w-0">
               <label className="label truncate">Narx (söm)</label>
@@ -360,8 +379,14 @@ export function OrderActions(props: Props) {
               </p>
             </div>
           )}
+          {errFor("offer")}
           <button className="btn-primary" disabled={busy}>
-            {myOffer ? (
+            {busy ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="spin-ring" aria-hidden />
+                Yuborilmoqda…
+              </span>
+            ) : myOffer ? (
               "Yangilaş"
             ) : (
               <span>
@@ -370,42 +395,6 @@ export function OrderActions(props: Props) {
               </span>
             )}
           </button>
-          {myOffer && (
-            <div className="flex flex-col gap-2 border-t border-white/10 pt-3">
-              <p className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-500">
-                Holat: <OfferBadge status={myOffer.status} inline /> · Jami sarflangan:{" "}
-                <b className="inline-flex items-center gap-0.5 text-amber-300">
-                  {myOffer.starsSpent} <StarIcon className="h-3 w-3" />
-                </b>
-              </p>
-              <div className="flex items-stretch gap-2">
-                <input
-                  className="input h-10 w-24 shrink-0"
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="star"
-                  value={boostStars}
-                  onChange={(e) => setBoostStars(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn-ghost h-10 min-w-0 flex-1"
-                  disabled={busy}
-                  onClick={boost}
-                >
-                  <Icon name="rocket" className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Yuqoriga çiqiş</span>
-                </button>
-              </div>
-              <p className="text-xs text-zinc-600">
-                Navbatda köproq star sarflaganlar yuqorida turadi.{" "}
-                <Link href="/wallet" className="underline hover:text-zinc-400">
-                  Star sotib oliş →
-                </Link>
-              </p>
-            </div>
-          )}
         </form>
       )}
 
@@ -413,7 +402,17 @@ export function OrderActions(props: Props) {
           star sarflashni tanlaydi (ismlar qisman yashirilgan) */}
       {isPreparer && !isOrderer && status === "OPEN" && queue.length > 0 && (
         <div className="card flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-white">Navbat ({queue.length})</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-white">Navbat ({queue.length})</h2>
+            {myOffer && (
+              <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-zinc-500">
+                Siz sarflagan:
+                <b className="inline-flex items-center gap-0.5 text-amber-300">
+                  {myOffer.starsSpent} <StarIcon className="h-3 w-3" />
+                </b>
+              </span>
+            )}
+          </div>
           <p className="text-xs text-zinc-500">Köproq star sarflagan yuqorida turadi.</p>
           <ul className="flex flex-col gap-1.5">
             {queue.map((q) => (
@@ -448,6 +447,42 @@ export function OrderActions(props: Props) {
               </li>
             ))}
           </ul>
+
+          {/* star bilan navbatda yuqoriga çiqiş — navbatning özida */}
+          {myOffer && myOffer.status === "PENDING" && (
+            <div className="mt-1 flex flex-col gap-2 border-t border-white/10 pt-3">
+              <div className="text-sm font-medium text-white">Navbatda yuqoriga çiqiş</div>
+              <div className="flex items-stretch gap-2">
+                <input
+                  className="input h-10 w-24 shrink-0"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  placeholder="star"
+                  aria-label="Star soni"
+                  value={boostStars}
+                  onChange={(e) => setBoostStars(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn-primary h-10 min-w-0 flex-1"
+                  disabled={busy}
+                  onClick={boost}
+                >
+                  <Icon name="rocket" className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{busy ? "Kutilmoqda…" : "Yuqoriga çiqiş"}</span>
+                </button>
+              </div>
+              {errFor("boost")}
+              <p className="text-xs text-zinc-500">
+                Qöşimça star navbatdagi örningizni kötaradi.{" "}
+                <Link href="/wallet" className="underline hover:text-zinc-300">
+                  Star sotib oliş →
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -456,14 +491,13 @@ export function OrderActions(props: Props) {
         <div className="flex flex-col gap-3">
           <h2 className="px-1 text-sm font-semibold text-white">Takliflar ({offers.length})</h2>
           {offers.length === 0 && (
-            <div className="card">
-              <MascotState
-                pose="empty-offers"
-                size={120}
-                title="Hozirça taklif yöq"
-                message="Tayyorlovçilar takliflarini yuborişi bilan ular şu yerda paydo böladi."
-              />
-            </div>
+            <MascotState
+              pose="empty-offers"
+              size={220}
+              className="mascot-xl"
+              title="Hozirça taklif yöq"
+              message="Tayyorlovçilar takliflarini yuborişi bilan ular şu yerda paydo böladi."
+            />
           )}
           {offers.map((o) => (
             <div key={o.id} className="card flex flex-col gap-2">
@@ -589,12 +623,13 @@ export function OrderActions(props: Props) {
                       onChange={(e) => setCNote(e.target.value)}
                     />
                   </div>
+                  {errFor("contract")}
                   <button
                     className="btn-primary w-fit"
                     disabled={busy}
                     onClick={() => sendContract(o.preparerId)}
                   >
-                    Şartnoma yuboriş
+                    {busy ? "Yuborilmoqda…" : "Şartnoma yuboriş"}
                   </button>
                 </div>
               )}

@@ -1,4 +1,5 @@
 import { cookies, headers } from "next/headers";
+import { cache } from "react";
 
 import { db } from "@/lib/db";
 import { SSO_COOKIE, verifySso } from "@/lib/sso";
@@ -14,8 +15,8 @@ export async function sessionUserId(): Promise<string | null> {
   return verifySso((await cookies()).get(SSO_COOKIE)?.value);
 }
 
-/** Joriy foydalanuvchi (bazadan yangi holatda) yoki null. */
-export async function currentUser() {
+/** Joriy foydalanuvçi (bazadan yangi holatda) yoki null; bitta sörov davomida bir marta öqiladi (layout va sahifa uçun umumiy). */
+export const currentUser = cache(async () => {
   const id = await sessionUserId();
   if (!id) return null;
   return db.user.findUnique({
@@ -32,9 +33,10 @@ export async function currentUser() {
       balance: true,
       walletCode: true,
       bannedUntil: true,
+      theme: true,
     },
   });
-}
+});
 
 /** tayyorr+ dagi kirish sahifasi — kirgach shu sahifaga qaytadi. */
 export async function loginUrl(path = "/") {

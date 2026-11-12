@@ -378,7 +378,7 @@ class SmmStepTitle extends StatelessWidget {
   );
 }
 
-/// Böş / topilmadi holati — karta içida Tayyor-Man maskoti (140), sarlavha, izoh va (ixtiyoriy) tugma.
+/// Böş / topilmadi holati — katta Tayyor-Man maskoti (ramkasiz), sarlavha, izoh va (ixtiyoriy) tugma.
 class SmmEmpty extends StatelessWidget {
   const SmmEmpty({
     super.key,
@@ -393,31 +393,6 @@ class SmmEmpty extends StatelessWidget {
   final Widget? action;
 
   @override
-  Widget build(BuildContext context) => WebCard(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-    child: Column(
-      children: [
-        Mascot(pose, size: 140),
-        const SizedBox(height: 12),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: WebC.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (text != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            text!,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: WebC.zinc500, fontSize: 13.5, height: 1.4),
-          ),
-        ],
-        if (action != null) ...[const SizedBox(height: 16), action!],
-      ],
-    ),
-  );
+  Widget build(BuildContext context) =>
+      MascotState(pose: pose, title: title, message: text, action: action);
 }

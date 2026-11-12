@@ -20,11 +20,24 @@ class MessagesRepository {
     return list.map(ConversationModel.fromJson).toList();
   }
 
-  Future<ChatConversationData> fetchConversation(String id, {int? since}) async {
-    final res = await _api.get('/mobile/messages/$id', query: {if (since != null) 'since': since, if (scope != 'uz') 'scope': scope});
-    final other = res['other'] != null ? ChatOtherUser.fromJson(res['other'] as Map<String, dynamic>) : null;
-    final messages =
-        (res['messages'] as List).cast<Map<String, dynamic>>().map(ChatMessageModel.fromJson).toList();
+  Future<ChatConversationData> fetchConversation(
+    String id, {
+    int? since,
+  }) async {
+    final res = await _api.get(
+      '/mobile/messages/$id',
+      query: {
+        if (since != null) 'since': since,
+        if (scope != 'uz') 'scope': scope,
+      },
+    );
+    final other = res['other'] != null
+        ? ChatOtherUser.fromJson(res['other'] as Map<String, dynamic>)
+        : null;
+    final messages = (res['messages'] as List)
+        .cast<Map<String, dynamic>>()
+        .map(ChatMessageModel.fromJson)
+        .toList();
     final contracts = (res['activeContracts'] as List? ?? [])
         .cast<Map<String, dynamic>>()
         .map(ChatContractOrderRef.fromJson)
@@ -44,16 +57,26 @@ class MessagesRepository {
     String? replyToId,
     Map<String, dynamic>? file,
   }) async {
-    final res = await _api.post('/mobile/messages/$conversationId$_q', data: {
-      if (body != null && body.isNotEmpty) 'body': body,
-      if (replyToId != null) 'replyToId': replyToId,
-      if (file != null) 'file': file,
-    });
+    final res = await _api.post(
+      '/mobile/messages/$conversationId$_q',
+      data: {
+        if (body != null && body.isNotEmpty) 'body': body,
+        if (replyToId != null) 'replyToId': replyToId,
+        if (file != null) 'file': file,
+      },
+    );
     return ChatMessageModel.fromJson(res['message'] as Map<String, dynamic>);
   }
 
-  Future<ChatMessageModel> editMessage(String conversationId, String msgId, String body) async {
-    final res = await _api.patch('/mobile/messages/$conversationId/$msgId', data: {'body': body});
+  Future<ChatMessageModel> editMessage(
+    String conversationId,
+    String msgId,
+    String body,
+  ) async {
+    final res = await _api.patch(
+      '/mobile/messages/$conversationId/$msgId',
+      data: {'body': body},
+    );
     return ChatMessageModel.fromJson(res['message'] as Map<String, dynamic>);
   }
 
@@ -62,13 +85,23 @@ class MessagesRepository {
   }
 
   /// Emoji reaksiya (o'sha emoji qayta bosilsa — server olib tashlaydi). Natija — xabarning yangi reaksiyalari.
-  Future<List<MessageReaction>> react(String conversationId, String msgId, String emoji) async {
-    final res = await _api.post('/mobile/messages/$conversationId/$msgId/react', data: {'emoji': emoji});
+  Future<List<MessageReaction>> react(
+    String conversationId,
+    String msgId,
+    String emoji,
+  ) async {
+    final res = await _api.post(
+      '/mobile/messages/$conversationId/$msgId/react',
+      data: {'emoji': emoji},
+    );
     return MessageReaction.listFromJson(Map<String, dynamic>.from(res as Map));
   }
 
   Future<void> block(String conversationId, {required bool block}) async {
-    await _api.post('/mobile/messages/$conversationId/block', data: {'action': block ? 'BLOCK' : 'UNBLOCK'});
+    await _api.post(
+      '/mobile/messages/$conversationId/block',
+      data: {'action': block ? 'BLOCK' : 'UNBLOCK'},
+    );
   }
 
   Future<void> deleteConversation(String conversationId) async {
@@ -76,20 +109,28 @@ class MessagesRepository {
   }
 
   Future<String> startConversation(String userId, {String? orderId}) async {
-    final res = await _api.post('/mobile/messages/start', data: {
-      'userId': userId,
-      if (orderId != null) 'orderId': orderId,
-    });
+    final res = await _api.post(
+      '/mobile/messages/start',
+      data: {'userId': userId, if (orderId != null) 'orderId': orderId},
+    );
     return res['conversationId'] as String;
   }
 
-  Future<void> report({String? suspectId, String? orderId, String? messageId, required String body}) async {
-    await _api.post('/mobile/complaints', data: {
-      if (suspectId != null) 'suspectId': suspectId,
-      if (orderId != null) 'orderId': orderId,
-      if (messageId != null) 'messageId': messageId,
-      'body': body,
-    });
+  Future<void> report({
+    String? suspectId,
+    String? orderId,
+    String? messageId,
+    required String body,
+  }) async {
+    await _api.post(
+      '/mobile/complaints',
+      data: {
+        if (suspectId != null) 'suspectId': suspectId,
+        if (orderId != null) 'orderId': orderId,
+        if (messageId != null) 'messageId': messageId,
+        'body': body,
+      },
+    );
   }
 
   Future<void> markRead(String conversationId) async {
@@ -107,20 +148,30 @@ class MessagesRepository {
     void Function(double)? onProgress,
     CancelToken? cancelToken,
   }) async {
-    final presign = await _api.post('/mobile/messages/$conversationId/upload-presign', data: {
-      'filename': filename,
-      'contentType': contentType,
-    });
-    await Dio().put(
+    final presign = await _api.post(
+      '/mobile/messages/$conversationId/upload-presign',
+      data: {'filename': filename, 'contentType': contentType},
+    );
+    await Dio(kUploadOptions).put(
       presign['uploadUrl'] as String,
       data: Stream.fromIterable([bytes]),
       cancelToken: cancelToken,
-      options: Options(headers: {'Content-Type': contentType, Headers.contentLengthHeader: bytes.length}),
+      options: Options(
+        headers: {
+          'Content-Type': contentType,
+          Headers.contentLengthHeader: bytes.length,
+        },
+      ),
       onSendProgress: (sent, total) {
         if (total > 0) onProgress?.call(sent / total);
       },
     );
-    return {'key': presign['key'] as String, 'name': filename, 'type': contentType, 'size': bytes.length};
+    return {
+      'key': presign['key'] as String,
+      'name': filename,
+      'type': contentType,
+      'size': bytes.length,
+    };
   }
 
   Future<ChatMessageModel> sendFile(
@@ -131,14 +182,14 @@ class MessagesRepository {
     String? body,
     String? replyToId,
   }) async {
-    final presign = await _api.post('/mobile/messages/$conversationId/upload-presign', data: {
-      'filename': filename,
-      'contentType': contentType,
-    });
+    final presign = await _api.post(
+      '/mobile/messages/$conversationId/upload-presign',
+      data: {'filename': filename, 'contentType': contentType},
+    );
     final uploadUrl = presign['uploadUrl'] as String;
     final key = presign['key'] as String;
 
-    await Dio().put(
+    await Dio(kUploadOptions).put(
       uploadUrl,
       data: bytes,
       options: Options(headers: {'Content-Type': contentType}),
@@ -148,7 +199,12 @@ class MessagesRepository {
       conversationId,
       body: body,
       replyToId: replyToId,
-      file: {'key': key, 'name': filename, 'type': contentType, 'size': bytes.length},
+      file: {
+        'key': key,
+        'name': filename,
+        'type': contentType,
+        'size': bytes.length,
+      },
     );
   }
 }

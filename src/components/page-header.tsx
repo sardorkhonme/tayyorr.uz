@@ -16,12 +16,14 @@ import { Icon, type IconName } from "@/components/icons";
 import { useDismiss } from "@/components/use-dismiss";
 
 /**
- * Sahifaga xos header amallari (qidiruv, filtr, "+", qo'llanma va h.k.).
+ * Sahifaga xos header amallari (qidiruv, filtr, "+", qo'llanma va h.k.) — FAQAT
+ * telefon/planşetda (lg dan kichik): kompyuterda header yo'q, qidiruv va filtr
+ * sahifaning o'zida turadi.
  * Header layout'da turadi, sahifa esa o'z amallarini shu kontekst orqali
  * "ro'yxatdan o'tkazadi" — mobil ilovadagi AppBar actions bilan bir xil.
  */
 export interface HeaderConfig {
-  /** kompyuterda (sidebar bor, logo yo'q) chap tomonda chiqadigan sarlavha */
+  /** sahifa nomi (qidiruv maydoni va ekran o'quvchilar uchun) */
   title?: string;
   /** qidiruv ikonkasi — bosilganda header qidiruv maydoniga aylanadi */
   search?: { placeholder: string };
@@ -111,10 +113,24 @@ export function HeaderSetter({
 /* Header ichidagi UI                                                  */
 /* ------------------------------------------------------------------ */
 
+/** Mobil ilovadagi kabi: har bir ikonka 48×48 bosiş maydoni, ikonka 21px. */
 const ICON_BTN =
-  "relative flex h-8 w-8 items-center justify-center rounded-lg text-zinc-300 transition hover:bg-white/10 hover:text-white";
+  "relative flex h-12 w-12 items-center justify-center rounded-full text-zinc-200 transition hover:bg-white/10 hover:text-white active:scale-95";
 
-/** Barcha ikonkalar bitta yumaloq quti ichida (segmentli guruh). */
+/** Header kapsulasi (logo, ikonkalar guruhi, qidiruv maydoni) — tekis sirt + ingiçka çegara. */
+export const HEADER_CAPSULE =
+  "border border-white/10 bg-[var(--surface)] shadow-lg shadow-black/15";
+
+/** Çapga strelka (iOS uslubidagi «orqaga»). */
+export function BackChevron({ className = "h-[18px] w-[18px]" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  );
+}
+
+/** Barcha ikonkalar bitta kapsula ichida, orasida ingichka ajratgich (ilovadagi HeaderIconGroup). */
 export function HeaderIconGroup({ config }: { config: HeaderConfig }) {
   const { setOpen } = useHeaderSearch();
   const items: React.ReactNode[] = [];
@@ -122,7 +138,7 @@ export function HeaderIconGroup({ config }: { config: HeaderConfig }) {
   for (const a of config.actions ?? []) {
     items.push(
       <Link key={a.key} href={a.href} aria-label={a.label} title={a.label} className={ICON_BTN}>
-        <Icon name={a.icon} className="h-[18px] w-[18px]" />
+        <Icon name={a.icon} className="h-[21px] w-[21px]" />
       </Link>,
     );
   }
@@ -136,7 +152,7 @@ export function HeaderIconGroup({ config }: { config: HeaderConfig }) {
         onClick={() => setOpen(true)}
         className={ICON_BTN}
       >
-        <Icon name="search" className="h-[18px] w-[18px]" />
+        <Icon name="search" className="h-[21px] w-[21px]" />
       </button>,
     );
   }
@@ -146,10 +162,10 @@ export function HeaderIconGroup({ config }: { config: HeaderConfig }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="flex h-9 shrink-0 items-center gap-0.5 rounded-xl border border-white/10 bg-white/5 p-0.5">
+    <div data-header-group className={`flex h-12 shrink-0 items-center rounded-full ${HEADER_CAPSULE}`}>
       {items.map((node, i) => (
-        <span key={i} className="flex items-center gap-0.5">
-          {i > 0 && <span aria-hidden className="h-4 w-px bg-white/10" />}
+        <span key={i} className="flex items-center">
+          {i > 0 && <span aria-hidden className="h-5 w-px bg-white/10" />}
           {node}
         </span>
       ))}
@@ -165,18 +181,22 @@ function FilterButton({
   standalone?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const [pos, setPos] = useState({ top: 0, right: 0, maxH: 480 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useDismiss(open, () => setOpen(false), [btnRef, panelRef]);
 
   function toggle() {
     if (open) return setOpen(false);
-    const r = btnRef.current?.getBoundingClientRect();
+    // menyu ikonkalar guruhining öng çetiga tekislanib, 8px pastda çiqadi
+    const group = btnRef.current?.closest("[data-header-group]") ?? btnRef.current;
+    const r = group?.getBoundingClientRect();
     if (r) {
+      const top = r.bottom + 8;
       setPos({
-        top: r.bottom + 8,
+        top,
         right: Math.max(12, window.innerWidth - r.right),
+        maxH: Math.max(240, window.innerHeight - top - 110),
       });
     }
     setOpen(true);
@@ -191,72 +211,91 @@ function FilterButton({
         title="Filtr"
         aria-expanded={open}
         onClick={toggle}
-        className={`${ICON_BTN} ${open ? "bg-white/10 text-white" : ""} ${
-          standalone ? "h-9 w-9 rounded-xl border border-white/10 bg-white/5" : ""
+        className={`${ICON_BTN} ${open || filter.active ? "text-indigo-300" : ""} ${
+          standalone ? `shrink-0 ${HEADER_CAPSULE}` : ""
         }`}
       >
-        <Icon name="sliders" className="h-[18px] w-[18px]" />
+        <Icon name="sliders" className="h-[21px] w-[21px]" />
         {filter.active && (
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-[var(--surface)]" />
+          <span className="absolute right-3 top-3 h-[7px] w-[7px] rounded-full bg-indigo-500" />
         )}
       </button>
       {open &&
         typeof document !== "undefined" &&
         createPortal(
-          <div
-            ref={panelRef}
-            className="pop-in fixed z-[75] w-[min(21rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-white/10 bg-[var(--surface-2)] shadow-2xl shadow-black/40"
-            style={{ top: pos.top, right: pos.right }}
-          >
-            <div className="max-h-[70vh] overflow-y-auto p-4">{filter.panel}</div>
-          </div>,
+          <>
+            <div
+              className="menu-backdrop fixed inset-0 z-[74] bg-black/35"
+              onClick={() => setOpen(false)}
+            />
+            <div
+              ref={panelRef}
+              className="pop-in fixed z-[75] w-[min(340px,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-white/10 bg-[var(--surface-2)] shadow-2xl shadow-black/40"
+              style={{ top: pos.top, right: pos.right }}
+            >
+              <div className="overflow-y-auto p-4" style={{ maxHeight: pos.maxH }}>
+                {filter.panel}
+              </div>
+            </div>
+          </>,
           document.body,
         )}
     </>
   );
 }
 
-/** Qidiruv rejimi: header to'liq qidiruv maydoniga aylanadi. */
+/** Qidiruv rejimi: header to'liq qidiruv maydoniga aylanadi (ilovadagi HeaderSearchField). */
 export function HeaderSearchBar({ config }: { config: HeaderConfig }) {
   const { query, setQuery, setOpen } = useHeaderSearch();
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+  };
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2">
+    <div className="pop-in flex min-w-0 flex-1 items-center gap-2" data-header-group>
       <button
         type="button"
         aria-label="Qidiruvni yopiş"
-        onClick={() => {
-          setOpen(false);
-          setQuery("");
-        }}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:bg-white/10 hover:text-white"
+        onClick={close}
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-zinc-200 transition hover:text-white active:scale-95 ${HEADER_CAPSULE}`}
       >
-        <Icon name="close" className="h-4 w-4" />
+        <BackChevron className="h-[19px] w-[19px]" />
       </button>
-      <div className="relative min-w-0 flex-1">
-        <Icon
-          name="search"
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500"
-        />
+      <label className={`flex h-12 min-w-0 flex-1 items-center gap-2 rounded-full pl-4 pr-1 ${HEADER_CAPSULE}`}>
+        <Icon name="search" className="h-[19px] w-[19px] shrink-0 text-zinc-500" />
         <input
           ref={inputRef}
           type="search"
+          enterKeyHint="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setOpen(false);
-              setQuery("");
-            }
+            if (e.key === "Escape") close();
           }}
           placeholder={config.search?.placeholder ?? "Qidiriş…"}
-          className="input h-9 py-0 pl-9"
+          className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-white outline-none placeholder:text-zinc-500 [&::-webkit-search-cancel-button]:hidden"
         />
-      </div>
+        {query ? (
+          <button
+            type="button"
+            aria-label="Tozalaş"
+            onClick={() => {
+              setQuery("");
+              inputRef.current?.focus();
+            }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:text-white"
+          >
+            <Icon name="close" className="h-[18px] w-[18px]" />
+          </button>
+        ) : (
+          <span className="w-3" />
+        )}
+      </label>
       {config.filter && <FilterButton filter={config.filter} standalone />}
     </div>
   );

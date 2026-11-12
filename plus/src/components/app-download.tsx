@@ -25,11 +25,11 @@ export function AppDownloadBanner() {
   );
 }
 
-/** Landingdagi «Mobil ilova» bo'limi — tayyorr+ bosh sahifasining eng ostida. */
+/** Landingdagi «Mobil ilova» bo'limi — tayyorr+ bosh sahifasining eng ostida (ikkala mavzuda ham qorong'i blok — ranglar qat'iy). */
 export function AppDownloadSection() {
   return (
     <section id="ilova" className="relative scroll-mt-24 pt-36 sm:pt-48 lg:pt-6">
-      <div className="relative overflow-visible rounded-3xl bg-zinc-950 p-7 pt-32 text-white sm:p-10 sm:pt-44 lg:min-h-[20rem] lg:pt-10">
+      <div className="relative overflow-visible rounded-3xl bg-[#0b0b12] p-7 pt-32 text-white sm:p-10 sm:pt-44 lg:min-h-[20rem] lg:pt-10">
         <div className="pointer-events-none absolute -top-36 left-1/2 w-[19rem] max-w-[88vw] -translate-x-1/2 sm:-top-44 sm:w-[26rem] lg:left-auto lg:right-2 lg:top-1/2 lg:w-[28rem] lg:-translate-y-1/2 lg:translate-x-0">
           <div className="animate-float">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -44,9 +44,9 @@ export function AppDownloadSection() {
           </div>
         </div>
         <div className="relative text-center lg:max-w-[55%] lg:text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">Mobil ilova</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a5b4fc]">Mobil ilova</p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">Hammasi çöntagingizda</h2>
-          <p className="mx-auto mt-4 max-w-md leading-relaxed text-zinc-400 lg:mx-0">
+          <p className="mx-auto mt-4 max-w-md leading-relaxed text-[#a1a1aa] lg:mx-0">
             tayyorr+, Tayyorr.uz va Tayyorr SMM — bitta ilovada. Buyurtmalar, xabarlar va hamyon; yangi xabar kelsa, darhol bilasiz.
           </p>
           <AppBenefits />

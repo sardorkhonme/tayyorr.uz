@@ -203,8 +203,8 @@ class OrderListTileSkeleton extends StatelessWidget {
   }
 }
 
-/// Röyxat böş / topilmadi holati — karta içida Tayyor-Man maskoti (140) va matn.
-/// Yuklaş xatosi uçun [ErrorState] (`card: true`).
+/// Röyxat böş / topilmadi holati — katta Tayyor-Man maskoti (ramkasiz), bösh joy örtasida.
+/// Yuklaş xatosi uçun [ErrorState]. [fill] `false` — bölim içida (ixçamroq).
 class ListMessage extends StatelessWidget {
   const ListMessage({
     super.key,
@@ -214,7 +214,9 @@ class ListMessage extends StatelessWidget {
     this.actionLabel,
     this.actionIcon,
     this.onAction,
+    this.fill = true,
   });
+  final bool fill;
   final MascotPose pose;
   final String title;
   final String? subtitle;
@@ -232,7 +234,6 @@ class ListMessage extends StatelessWidget {
       actionIcon: actionIcon,
       onAction: onAction,
       size: 140,
-      card: true,
     );
   }
 }

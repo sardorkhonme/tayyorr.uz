@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_exception.dart';
 import '../../widgets/mascot.dart';
-import '../../widgets/skeleton.dart';
+import '../../widgets/session_transitions.dart';
 import '../../widgets/web_page.dart';
 import '../../widgets/web_ui.dart';
 
@@ -43,8 +43,8 @@ class _LegalScreenState extends State<LegalScreen> {
           _error = null;
         });
       }
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
     }
   }
 
@@ -61,37 +61,9 @@ class _LegalScreenState extends State<LegalScreen> {
             setState(() => _error = null);
             _load();
           })
-        else if (d == null) ...[
-          // sarlavha, sana, kirish matni va bo'lim kartalari — haqiqiy tuzilma
-          const SBar(width: 240, height: 26),
-          const SizedBox(height: 10),
-          const SBar(width: 150, height: 12),
-          const SizedBox(height: 18),
-          const SBar(height: 13),
-          const SizedBox(height: 7),
-          const SBar(height: 13),
-          const SizedBox(height: 7),
-          const SBar(width: 220, height: 13),
-          const SizedBox(height: 20),
-          for (var i = 0; i < 4; i++) ...[
-            const WebCard(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SBar(width: 190, height: 16),
-                  SizedBox(height: 12),
-                  SBar(height: 12),
-                  SizedBox(height: 7),
-                  SBar(height: 12),
-                  SizedBox(height: 7),
-                  SBar(width: 160, height: 12),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
-        ] else ...[
+        else if (d == null)
+          const BrandLoaderBlock()
+        else ...[
           WebPageTitle('${d['title']}', size: 23),
           const SizedBox(height: 6),
           Text(

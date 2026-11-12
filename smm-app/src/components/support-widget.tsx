@@ -9,10 +9,13 @@ import { SupportChat } from "@/components/support-chat";
 import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 
 export const OPEN_SUPPORT_EVENT = "tayyorr:open-support";
+/** O'qilmagan javoblar soni (telefondagi pastki panel belgisi uçun) — `detail: number`. */
+export const SUPPORT_UNREAD_EVENT = "tayyorr:support-unread";
 
 /**
- * Pastki o'ng burchakdagi support tugmasi. Kompyuterda — chat oynasi (popup,
- * fon xiralashtirilmaydi), telefon va planshetda — alohida /support sahifasi.
+ * Pastki o'ng burchakdagi support tugmasi — faqat kompyuterda: chat oynasi (popup,
+ * fon xiralashtirilmaydi). Telefon va planşetda tugma yöq (ilovadagidek — pastki panel / header orqali
+ * alohida /support sahifasi), yangi javob kelsa — panel ustida qisqa bildirişnoma.
  */
 export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   const [open, setOpen] = useState(false);
@@ -73,6 +76,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
     }
     prevUnread.current = n;
     setUnread(n);
+    window.dispatchEvent(new CustomEvent(SUPPORT_UNREAD_EVENT, { detail: n }));
   }, [loggedIn, router]);
 
   // real-time: yangi javob yoki hamyon o'zgarsa — darhol; ulangan bo'lsa tez-tez so'rash shart emas
@@ -161,7 +165,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
             setToast(null);
             toggle();
           }}
-          className="animate-pop fixed bottom-[5.5rem] right-5 z-[45] flex w-[min(320px,calc(100vw-2.5rem))] items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 text-left shadow-2xl shadow-zinc-900/15"
+          className="animate-pop fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] right-3 z-[45] lg:bottom-[5.5rem] lg:right-5 flex w-[min(320px,calc(100vw-2.5rem))] items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 text-left shadow-2xl shadow-zinc-900/15"
         >
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white">
             <Icon name="headset" className="h-4 w-4" />
@@ -178,14 +182,14 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
         type="button"
         onClick={toggle}
         aria-label="Yordam (support)"
-        className="fixed bottom-5 right-5 z-[45] h-14 w-14 rounded-full shadow-xl shadow-violet-500/40 transition hover:shadow-2xl hover:shadow-fuchsia-500/40"
+        className="fixed bottom-5 right-5 z-[45] hidden h-14 w-14 rounded-full lg:block shadow-xl shadow-violet-500/40 transition hover:shadow-2xl hover:shadow-fuchsia-500/40"
       >
         {/* nur effekti ichki doirada — o'qilmaganlar soni tashqarida to'liq ko'rinsin */}
         <span className="shine grid h-full w-full place-items-center rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white">
           <Icon name={open ? "close" : "headset"} className="h-6 w-6" />
         </span>
         {!open && unread > 0 && (
-          <span className="absolute -right-1 -top-1 z-[3] grid h-6 min-w-6 place-items-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white ring-2 ring-white">
+          <span className="absolute -right-1 -top-1 z-[3] grid h-6 min-w-6 place-items-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white ring-2 ring-[var(--surface)]">
             {unread > 9 ? "9+" : unread}
           </span>
         )}

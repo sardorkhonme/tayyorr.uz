@@ -26,7 +26,7 @@ export function OrderRefreshButton({ orderId }: { orderId: string }) {
       setMsg({ ok: false, text: "Yangilab bölmadi" });
     } finally {
       setBusy(false);
-      setTimeout(() => setMsg(null), 2500);
+      setTimeout(() => setMsg(null), 4000);
     }
   }
 

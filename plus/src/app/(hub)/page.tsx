@@ -11,7 +11,7 @@ import { db } from "@/lib/db";
 import { MAIN_SITE_URL, SMM_URL } from "@/lib/hub-nav";
 import { num } from "@/lib/format";
 import { platformOf } from "@/lib/platforms";
-import { Mascot } from "@/components/mascot";
+import { FlashNotice } from "@/components/flash-notice";
 
 export const dynamic = "force-dynamic";
 const SMM_PLATFORMS = ["instagram", "telegram", "tiktok", "youtube", "facebook", "twitter"];
@@ -66,16 +66,11 @@ export default async function DashboardPage({
         </div>
       )}
       {topup && user && (
-        <div className="animate-rise flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-          <Mascot pose="success" size={110} priority className="shrink-0" />
-          <div className="min-w-0">
-            <p className="font-semibold text-emerald-900">Rahmat! Tölov qabul qilinmoqda</p>
-            <p className="mt-1 text-sm">
-              Click tölovi tekşirilmoqda. Tölov ötgan bölsa, balans bir neça soniyada
-              yangilanadi — sahifani yangilang.
-            </p>
-          </div>
-        </div>
+        <FlashNotice
+          clearParam="topup"
+          title="Rahmat! Tölov qabul qilinmoqda"
+          message="Click tölovi tekşirilmoqda — ötgan bölsa, balans bir neça soniyada yangilanadi."
+        />
       )}
 
       <header className="animate-rise">
@@ -95,7 +90,7 @@ export default async function DashboardPage({
           className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
         >
           <div className="flex items-start justify-between gap-4">
-            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-violet-500/20">
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-black/5 bg-[#ffffff] shadow-lg shadow-violet-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/smm-mark.png" alt="Tayyorr SMM" className="h-10 w-10 object-contain" />
             </span>
@@ -136,7 +131,7 @@ export default async function DashboardPage({
           className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
         >
           <div className="flex items-start justify-between gap-4">
-            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-indigo-500/20">
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-black/5 bg-[#ffffff] shadow-lg shadow-indigo-500/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-mark.png" alt="Tayyorr.uz" className="h-10 w-10 object-contain" />
             </span>
@@ -176,7 +171,7 @@ export default async function DashboardPage({
             Röyxatdan öting yoki tayyorr hisobingiz bilan kiring — hamyon umumiy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/register" className="btn-dark !bg-white !px-6 !py-3.5 !text-zinc-900">
+            <Link href="/register" className="btn-dark !bg-[#ffffff] !px-6 !py-3.5 !text-[#16161d]">
               Röyxatdan ötiş
             </Link>
             <Link href="/login" className="rounded-[0.9rem] border border-white/40 px-6 py-3.5 text-center font-semibold hover:bg-white/10">

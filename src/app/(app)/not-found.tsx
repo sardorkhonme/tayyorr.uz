@@ -5,7 +5,7 @@ import { Mascot } from "@/components/mascot";
 export default function AppNotFound() {
   return (
     <div className="flex min-h-[55vh] flex-col items-center justify-center gap-4 text-center">
-      <Mascot pose="not-found" size={200} priority />
+      <Mascot pose="not-found" size={260} priority className="mascot-big" />
       <h1 className="text-xl font-semibold text-white">
         Sahifa topilmadi
       </h1>

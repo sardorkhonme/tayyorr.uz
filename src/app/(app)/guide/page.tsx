@@ -37,7 +37,11 @@ export default async function GuidePage({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink fallback="/profile" />
+      {/* kompyuterda Qöllanma/Referal sidebar menyusida — «orqaga» kerak emas */}
+      <BackLink
+        fallback="/profile"
+        className="inline-flex w-fit items-center gap-1 text-sm text-zinc-500 hover:text-white lg:hidden"
+      />
       {/* ——— hero ——— */}
       <section className="card">
         <div>

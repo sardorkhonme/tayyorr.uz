@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchJson } from "@/components/fetch-json";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -41,13 +42,7 @@ export function AccountForm({ initial }: { initial: { login: string } }) {
 
     setBusy(true);
     try {
-      const res = await fetch("/api/me/account", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Xatolik");
+      await fetchJson("/api/me/account", { method: "PATCH", json: payload });
       setPw("");
       setPw2("");
       setMsg({ ok: true, text: "Saqlandi" });

@@ -6,6 +6,27 @@ export interface UploadResult {
   publicUrl?: string;
 }
 
+const NET_ERR = "Internet aloqasi yöq yoki server javob bermadi. Qayta urinib köring.";
+
+/** fetch — vaqt chegarasi bilan (yuklash hech qachon abadiy "aylanib" qolmasin). */
+async function timedFetch(url: string, init: RequestInit, ms: number): Promise<Response> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") {
+      throw new Error("Yuklaş juda uzoq davom etdi (vaqt tugadi). Qayta urinib köring.");
+    }
+    throw new Error(NET_ERR);
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/** Katta fayl uchun yetarli vaqt: kamida 60 s, har 1 MB ga +20 s. */
+const putTimeout = (size: number) => 60_000 + Math.ceil(size / (1024 * 1024)) * 20_000;
+
 /**
  * 1) backend'dan presigned URL oladi
  * 2) faylni to'g'ridan R2 ga PUT qiladi
@@ -16,7 +37,7 @@ export async function uploadFile(
   kind: UploadKind,
   opts: { orderId?: string; conversationId?: string; register?: boolean } = {},
 ): Promise<UploadResult> {
-  const presignRes = await fetch("/api/upload/presign", {
+  const presignRes = await timedFetch("/api/upload/presign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -26,22 +47,22 @@ export async function uploadFile(
       orderId: opts.orderId,
       conversationId: opts.conversationId,
     }),
-  });
+  }, 25_000);
   if (!presignRes.ok) {
     const { error } = await presignRes.json().catch(() => ({}));
     throw new Error(error || "Yuklaşni boşlab bölmadi");
   }
   const { uploadUrl, key, bucket, publicUrl } = await presignRes.json();
 
-  const put = await fetch(uploadUrl, {
+  const put = await timedFetch(uploadUrl, {
     method: "PUT",
     headers: { "Content-Type": file.type || "application/octet-stream" },
     body: file,
-  });
-  if (!put.ok) throw new Error("Fayl R2 ga yuklanmadi");
+  }, putTimeout(file.size));
+  if (!put.ok) throw new Error("Fayl yuklanmadi. Qayta urinib köring.");
 
   if (opts.register) {
-    await fetch("/api/upload/complete", {
+    const done = await timedFetch("/api/upload/complete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -52,7 +73,11 @@ export async function uploadFile(
         size: file.size,
         orderId: opts.orderId,
       }),
-    });
+    }, 25_000);
+    if (!done.ok) {
+      const { error } = await done.json().catch(() => ({}));
+      throw new Error(error || "Fayl saqlanmadi. Qayta urinib köring.");
+    }
   }
 
   return { key, bucket, publicUrl };
@@ -74,7 +99,11 @@ function xhrPut(url: string, file: File, onProgress: (pct: number) => void) {
       xhr.status >= 200 && xhr.status < 300
         ? resolve()
         : reject(new Error("Fayl yuklanmadi"));
-    xhr.onerror = () => reject(new Error("Tarmoq xatosi"));
+    xhr.onerror = () => reject(new Error(NET_ERR));
+    xhr.onabort = () => reject(new Error("Yuklaş bekor qilindi"));
+    xhr.timeout = putTimeout(file.size);
+    xhr.ontimeout = () =>
+      reject(new Error("Yuklaş juda uzoq davom etdi (vaqt tugadi). Qayta urinib köring."));
     xhr.send(file);
   });
 }
@@ -92,7 +121,7 @@ async function prepareVia(
   file: File,
   onProgress: (pct: number) => void,
 ): Promise<PreparedChatFile> {
-  const res = await fetch(presignUrl, {
+  const res = await timedFetch(presignUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -100,9 +129,9 @@ async function prepareVia(
       filename: file.name,
       contentType: file.type || "application/octet-stream",
     }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Yuklaşni boşlab bölmadi");
+  }, 25_000);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.uploadUrl) throw new Error(data.error || "Yuklaşni boşlab bölmadi");
 
   onProgress(0);
   await xhrPut(data.uploadUrl, file, onProgress);

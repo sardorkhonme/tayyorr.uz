@@ -325,7 +325,7 @@ class _FamilyScreenState extends State<FamilyScreen>
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e.message;
+        _error = friendlyError(e);
       });
     } catch (_) {
       if (!mounted) return;
@@ -1256,7 +1256,7 @@ class _FamilyScreenState extends State<FamilyScreen>
         kind: ToastKind.success,
       );
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message, kind: ToastKind.error);
+      if (mounted) showToast(context, friendlyError(e), kind: ToastKind.error);
     } catch (_) {
       if (mounted) showToast(context, "Bajarib bölmadi", kind: ToastKind.error);
     }
@@ -1277,7 +1277,7 @@ class _FamilyScreenState extends State<FamilyScreen>
       await _repo.delete(m.id);
       if (mounted) setState(() => _remove(m.id));
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message, kind: ToastKind.error);
+      if (mounted) showToast(context, friendlyError(e), kind: ToastKind.error);
     } catch (_) {
       if (mounted) showToast(context, "Öçirib bölmadi", kind: ToastKind.error);
     }

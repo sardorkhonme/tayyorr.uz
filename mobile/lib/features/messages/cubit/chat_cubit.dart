@@ -65,14 +65,26 @@ class ChatState extends Equatable {
   @override
   // `messages` — ro'yxatning o'zi: reaksiya/tahrirda soni o'zgarmasa ham
   // yangi ro'yxat emit qilinadi va ekran darhol yangilanadi.
-  List<Object?> get props =>
-      [status, other, messages, error, sending, blockedMe, blockedByMe, activeContracts, replyTo?.id];
+  List<Object?> get props => [
+    status,
+    other,
+    messages,
+    error,
+    sending,
+    blockedMe,
+    blockedByMe,
+    activeContracts,
+    replyTo?.id,
+  ];
 }
 
 class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   ChatCubit(this._repo, this.conversationId)
-      // xotiradagi kesh — suhbatga qayta kirganda xabarlar darhol (shimmersiz)
-      : super(_cache[conversationId]?.copyWith(status: ChatStatus.success) ?? const ChatState());
+    // xotiradagi kesh — suhbatga qayta kirganda xabarlar darhol (shimmersiz)
+    : super(
+        _cache[conversationId]?.copyWith(status: ChatStatus.success) ??
+            const ChatState(),
+      );
 
   /// Suhbatlar keshi (faqat ilova ishlab turgan paytda) — faqat yuborilgan xabarlar.
   static final _cache = <String, ChatState>{};
@@ -82,14 +94,21 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   Timer? _pollTimer;
 
   /// Optimistik yuborilayotganlar: clientId → ma'lumot (qayta yuborish uchun).
-  final _outbox = <String, ({String? body, String? replyToId, Map<String, Object>? file})>{};
+  final _outbox =
+      <
+        String,
+        ({String? body, String? replyToId, Map<String, Object>? file})
+      >{};
 
   @override
   void onChange(Change<ChatState> change) {
     super.onChange(change);
     final n = change.nextState;
     if (n.status == ChatStatus.success) {
-      _cache[conversationId] = n.copyWith(messages: n.messages.where((m) => !m.isLocal).toList(), clearReply: true);
+      _cache[conversationId] = n.copyWith(
+        messages: n.messages.where((m) => !m.isLocal).toList(),
+        clearReply: true,
+      );
     }
   }
 
@@ -100,17 +119,29 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     for (final m in incoming) {
       var i = list.indexWhere((x) => x.id == m.id);
       if (i < 0 && m.mine) {
-        i = list.indexWhere((x) => x.status == ChatSendStatus.pending && x.body == m.body && x.file?.name == m.file?.name);
+        i = list.indexWhere(
+          (x) =>
+              x.status == ChatSendStatus.pending &&
+              x.body == m.body &&
+              x.file?.name == m.file?.name,
+        );
         if (i >= 0) _outbox.remove(list[i].clientId);
       }
       if (i >= 0) {
-        list[i] = m.copyWith(clientId: list[i].clientId, status: ChatSendStatus.sent);
+        list[i] = m.copyWith(
+          clientId: list[i].clientId,
+          status: ChatSendStatus.sent,
+        );
       } else {
         list.add(m);
       }
     }
     // yuborilayotganlar — oxirida
-    list.sort((a, b) => a.isLocal == b.isLocal ? a.createdAt.compareTo(b.createdAt) : (a.isLocal ? 1 : -1));
+    list.sort(
+      (a, b) => a.isLocal == b.isLocal
+          ? a.createdAt.compareTo(b.createdAt)
+          : (a.isLocal ? 1 : -1),
+    );
     return list;
   }
 
@@ -119,21 +150,25 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     if (!cached) emit(state.copyWith(status: ChatStatus.loading));
     try {
       final data = await _repo.fetchConversation(conversationId);
-      emit(state.copyWith(
-        status: ChatStatus.success,
-        other: data.other,
-        messages: cached ? _merge(data.messages) : data.messages,
-        blockedMe: data.blockedMe,
-        blockedByMe: data.blockedByMe,
-        activeContracts: data.activeContracts,
-      ));
+      emit(
+        state.copyWith(
+          status: ChatStatus.success,
+          other: data.other,
+          messages: cached ? _merge(data.messages) : data.messages,
+          blockedMe: data.blockedMe,
+          blockedByMe: data.blockedByMe,
+          activeContracts: data.activeContracts,
+        ),
+      );
       unawaited(_repo.markRead(conversationId).catchError((_) {}));
       _startPolling();
-    } on ApiException catch (e) {
+    } catch (e) {
       if (cached) {
         _startPolling();
       } else {
-        emit(state.copyWith(status: ChatStatus.failure, error: e.message));
+        emit(
+          state.copyWith(status: ChatStatus.failure, error: friendlyError(e)),
+        );
       }
     }
   }
@@ -149,12 +184,17 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     _rtSub?.cancel();
     _lastPoll = DateTime.now();
     _rtSub = RealtimeService.instance.events.listen((e) {
-      if (e.name == 'chat' && (e.data['c'] == null || e.data['c'] == conversationId)) _poll();
+      if (e.name == 'chat' &&
+          (e.data['c'] == null || e.data['c'] == conversationId)) {
+        _poll();
+      }
     });
     _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       final state = WidgetsBinding.instance.lifecycleState;
       if (state != null && state != AppLifecycleState.resumed) return;
-      final every = RealtimeService.instance.connected.value ? RealtimeService.safetyPoll : const Duration(seconds: 4);
+      final every = RealtimeService.instance.connected.value
+          ? RealtimeService.safetyPoll
+          : const Duration(seconds: 4);
       if (DateTime.now().difference(_lastPoll) >= every) _poll();
     });
   }
@@ -173,19 +213,25 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   Future<void> _pollOnce() async {
     try {
       final sent = state.messages.where((m) => !m.isLocal);
-      final since = sent.isEmpty ? null : sent.map((m) => m.updatedAt).reduce((a, b) => a > b ? a : b);
+      final since = sent.isEmpty
+          ? null
+          : sent.map((m) => m.updatedAt).reduce((a, b) => a > b ? a : b);
       final data = await _repo.fetchConversation(conversationId, since: since);
       final known = state.messages.map((m) => m.id).toSet();
       // boshqa tomondan yangi xabar keldi — Telegramdagidek qisqa "tin"
-      if (data.messages.any((m) => !m.mine && !m.system && !known.contains(m.id))) {
+      if (data.messages.any(
+        (m) => !m.mine && !m.system && !known.contains(m.id),
+      )) {
         MessageNotifier.instance.playTin();
       }
-      emit(state.copyWith(
-        messages: _merge(data.messages),
-        blockedMe: data.blockedMe,
-        blockedByMe: data.blockedByMe,
-        activeContracts: data.activeContracts,
-      ));
+      emit(
+        state.copyWith(
+          messages: _merge(data.messages),
+          blockedMe: data.blockedMe,
+          blockedByMe: data.blockedByMe,
+          activeContracts: data.activeContracts,
+        ),
+      );
       if (data.messages.any((m) => !m.mine)) {
         unawaited(_repo.markRead(conversationId).catchError((_) {}));
       }
@@ -229,15 +275,27 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
           : ReplyPreviewModel(
               id: reply.id,
               authorId: reply.senderId,
-              text: reply.body.isNotEmpty ? reply.body : (reply.file?.name ?? 'xabar'),
+              text: reply.body.isNotEmpty
+                  ? reply.body
+                  : (reply.file?.name ?? 'xabar'),
               deleted: reply.deleted,
             ),
       file: fileModel,
       clientId: clientId,
       status: ChatSendStatus.pending,
     );
-    _outbox[clientId] = (body: text.isEmpty ? null : text, replyToId: reply?.id, file: file);
-    emit(state.copyWith(messages: [...state.messages, local], clearReply: true, error: null));
+    _outbox[clientId] = (
+      body: text.isEmpty ? null : text,
+      replyToId: reply?.id,
+      file: file,
+    );
+    emit(
+      state.copyWith(
+        messages: [...state.messages, local],
+        clearReply: true,
+        error: null,
+      ),
+    );
     await _deliver(clientId);
   }
 
@@ -246,53 +304,85 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     if (o == null) return;
     _setStatus(clientId, ChatSendStatus.pending);
     try {
-      final msg = await _repo.sendMessage(conversationId, body: o.body, replyToId: o.replyToId, file: o.file);
+      final msg = await _repo.sendMessage(
+        conversationId,
+        body: o.body,
+        replyToId: o.replyToId,
+        file: o.file,
+      );
       _outbox.remove(clientId);
       MessageNotifier.instance.playSent();
       final list = List.of(state.messages);
       var i = list.indexWhere((x) => x.clientId == clientId);
       if (i < 0) i = list.indexWhere((x) => x.id == msg.id);
       if (i >= 0) {
-        list[i] = msg.copyWith(clientId: list[i].clientId ?? clientId, status: ChatSendStatus.sent);
+        list[i] = msg.copyWith(
+          clientId: list[i].clientId ?? clientId,
+          status: ChatSendStatus.sent,
+        );
       } else {
         list.add(msg.copyWith(clientId: clientId));
       }
       emit(state.copyWith(messages: list));
     } on ApiException catch (e) {
       // so'rov paytida xabar boshqa yo'l bilan (so'rab turish) yetib kelgan bo'lsa — xato emas
-      if (state.messages.any((x) => x.clientId == clientId && !x.isLocal)) return;
+      if (state.messages.any((x) => x.clientId == clientId && !x.isLocal)) {
+        return;
+      }
       if (e.restricted) {
         // cheklangan — qayta yuborishning ma'nosi yo'q: xabar olib tashlanadi, sababi ko'rsatiladi
         discard(clientId);
-        emit(state.copyWith(error: e.message));
+        emit(state.copyWith(error: friendlyError(e)));
         return;
       }
       _setStatus(clientId, ChatSendStatus.failed);
-      emit(state.copyWith(error: e.message));
+      emit(state.copyWith(error: friendlyError(e)));
     } catch (_) {
-      if (state.messages.any((x) => x.clientId == clientId && !x.isLocal)) return;
+      if (state.messages.any((x) => x.clientId == clientId && !x.isLocal)) {
+        return;
+      }
       _setStatus(clientId, ChatSendStatus.failed);
     }
   }
 
   void _setStatus(String clientId, ChatSendStatus st) {
-    emit(state.copyWith(messages: [
-      for (final m in state.messages)
-        if (m.clientId == clientId && m.isLocal) m.copyWith(status: st) else m,
-    ]));
+    emit(
+      state.copyWith(
+        messages: [
+          for (final m in state.messages)
+            if (m.clientId == clientId && m.isLocal)
+              m.copyWith(status: st)
+            else
+              m,
+        ],
+      ),
+    );
   }
 
   Future<void> retry(String clientId) => _deliver(clientId);
 
   void discard(String clientId) {
     _outbox.remove(clientId);
-    emit(state.copyWith(messages: state.messages.where((m) => !(m.clientId == clientId && m.isLocal)).toList()));
+    emit(
+      state.copyWith(
+        messages: state.messages
+            .where((m) => !(m.clientId == clientId && m.isLocal))
+            .toList(),
+      ),
+    );
   }
 
   /// Eski usul (matn) — endi optimistik.
-  Future<void> send(String body) => sendOptimistic(clientId: 'c${DateTime.now().microsecondsSinceEpoch}', body: body);
+  Future<void> send(String body) => sendOptimistic(
+    clientId: 'c${DateTime.now().microsecondsSinceEpoch}',
+    body: body,
+  );
 
-  Future<void> sendFile({required Uint8List bytes, required String filename, required String contentType}) async {
+  Future<void> sendFile({
+    required Uint8List bytes,
+    required String filename,
+    required String contentType,
+  }) async {
     final replyId = state.replyTo?.id;
     emit(state.copyWith(sending: true, error: null, clearReply: true));
     try {
@@ -304,36 +394,49 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
         replyToId: replyId,
       );
       emit(state.copyWith(sending: false, messages: _merge([msg])));
-    } on ApiException catch (e) {
-      emit(state.copyWith(sending: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(sending: false, error: friendlyError(e)));
     }
   }
 
   Future<void> editMessage(String msgId, String body) async {
     try {
       final updated = await _repo.editMessage(conversationId, msgId, body);
-      emit(state.copyWith(messages: [
-        for (final m in state.messages) if (m.id == msgId) updated.copyWith(clientId: m.clientId) else m,
-      ]));
-    } on ApiException catch (e) {
-      emit(state.copyWith(error: e.message));
+      emit(
+        state.copyWith(
+          messages: [
+            for (final m in state.messages)
+              if (m.id == msgId) updated.copyWith(clientId: m.clientId) else m,
+          ],
+        ),
+      );
+    } catch (e) {
+      emit(state.copyWith(error: friendlyError(e)));
     }
   }
 
   Future<void> deleteMessage(String msgId) async {
     // optimistik: xabar darhol "o'chirilgan" ko'rinadi, butun suhbat qayta yuklanmaydi
     final prev = state.messages;
-    emit(state.copyWith(messages: [
-      for (final m in prev)
-        if (m.id == msgId)
-          m.copyWith(body: '', deleted: true, updatedAt: DateTime.now().millisecondsSinceEpoch)
-        else
-          m,
-    ]));
+    emit(
+      state.copyWith(
+        messages: [
+          for (final m in prev)
+            if (m.id == msgId)
+              m.copyWith(
+                body: '',
+                deleted: true,
+                updatedAt: DateTime.now().millisecondsSinceEpoch,
+              )
+            else
+              m,
+        ],
+      ),
+    );
     try {
       await _repo.deleteMessage(conversationId, msgId);
-    } on ApiException catch (e) {
-      emit(state.copyWith(messages: prev, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(messages: prev, error: friendlyError(e)));
     }
   }
 
@@ -341,17 +444,28 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   Future<void> react(String msgId, String emoji) async {
     // optimistik yangilash
     final prevMessages = state.messages;
-    emit(state.copyWith(messages: [
-      for (final m in state.messages)
-        if (m.id == msgId) m.copyWith(reactions: MessageReaction.toggle(m.reactions, emoji)) else m,
-    ]));
+    emit(
+      state.copyWith(
+        messages: [
+          for (final m in state.messages)
+            if (m.id == msgId)
+              m.copyWith(reactions: MessageReaction.toggle(m.reactions, emoji))
+            else
+              m,
+        ],
+      ),
+    );
     try {
       final next = await _repo.react(conversationId, msgId, emoji);
       if (isClosed) return;
-      emit(state.copyWith(messages: [
-        for (final m in state.messages)
-          if (m.id == msgId) m.copyWith(reactions: next) else m,
-      ]));
+      emit(
+        state.copyWith(
+          messages: [
+            for (final m in state.messages)
+              if (m.id == msgId) m.copyWith(reactions: next) else m,
+          ],
+        ),
+      );
     } catch (_) {
       if (!isClosed) emit(state.copyWith(messages: prevMessages));
     }
@@ -362,8 +476,8 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
       await _repo.block(conversationId, block: !state.blockedByMe);
       emit(state.copyWith(blockedByMe: !state.blockedByMe));
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(error: e.message));
+    } catch (e) {
+      emit(state.copyWith(error: friendlyError(e)));
       return false;
     }
   }
@@ -372,18 +486,22 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     try {
       await _repo.deleteConversation(conversationId);
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(error: e.message));
+    } catch (e) {
+      emit(state.copyWith(error: friendlyError(e)));
       return false;
     }
   }
 
   Future<bool> report(String body, {String? messageId}) async {
     try {
-      await _repo.report(suspectId: state.other?.id, messageId: messageId, body: body);
+      await _repo.report(
+        suspectId: state.other?.id,
+        messageId: messageId,
+        body: body,
+      );
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(error: e.message));
+    } catch (e) {
+      emit(state.copyWith(error: friendlyError(e)));
       return false;
     }
   }

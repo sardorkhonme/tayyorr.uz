@@ -15,8 +15,8 @@ export function AccountNotFound() {
 
   return (
     <AuthShell width="max-w-md">
-      <div className="card p-7 text-center">
-        <Mascot pose="not-found" size={140} priority className="mx-auto mb-3" />
+      <div className="text-center">
+        <Mascot pose="not-found" size={240} priority className="mx-auto mb-3" />
         <h1 className="text-xl font-semibold text-white">
           Bunday hisob mavjud emas
         </h1>

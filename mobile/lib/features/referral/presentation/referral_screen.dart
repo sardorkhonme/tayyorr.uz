@@ -46,7 +46,7 @@ class _ReferralViewState extends State<_ReferralView> {
   Future<void> _copy(String link) async {
     await Clipboard.setData(ClipboardData(text: link));
     setState(() => _copied = true);
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(milliseconds: 3500), () {
       if (mounted) setState(() => _copied = false);
     });
   }
@@ -112,7 +112,6 @@ class _ReferralViewState extends State<_ReferralView> {
                   ErrorState.from(
                     state.error,
                     () => context.read<ReferralCubit>().load(),
-                    card: true,
                   )
                 else if (referred.isEmpty)
                   WebCard(

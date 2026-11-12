@@ -20,10 +20,10 @@ export default function AppError({
     <div className="grid min-h-[70dvh] place-items-center px-4 py-10">
       <MascotState
         pose="error"
-        size={210}
+        size={240}
         title="Nimadir notöğri ketdi"
         message="Vaqtinçalik xatolik — Tayyor-Man allaqaçon tuzatişga kirişdi. Qaytadan urinib köring."
-        className="text-zinc-900"
+        className="mascot-page text-zinc-900"
       >
         <button type="button" onClick={reset} className="btn-primary">
           Qaytadan urinib köriş

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchJson } from "@/components/fetch-json";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -28,19 +29,18 @@ export function ProfileForm({
     setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/me", {
+      await fetchJson("/api/me", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           firstName: form.firstName,
           lastName: form.lastName,
           about: form.about || undefined,
           avatarUrl: form.avatarUrl || undefined,
           birthDate: birthPartsToIso(birth) ?? undefined,
-        }),
+        },
       });
-      if (!res.ok) throw new Error((await res.json()).error || "Xatolik");
-      await update();
+      // sessiya yangilanişi osilib qolsa ham saqlangan deb hisoblaymiz
+      await Promise.race([update(), new Promise((r) => setTimeout(r, 5000))]);
       setMsg("Saqlandi");
       router.refresh();
     } catch (e) {

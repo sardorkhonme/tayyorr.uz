@@ -35,7 +35,8 @@ class ConversationsState extends Equatable {
   List<Object?> get props => [status, conversations, error];
 }
 
-class ConversationsCubit extends Cubit<ConversationsState> with SafeEmit<ConversationsState> {
+class ConversationsCubit extends Cubit<ConversationsState>
+    with SafeEmit<ConversationsState> {
   ConversationsCubit(this._repo) : super(const ConversationsState());
 
   final MessagesRepository _repo;
@@ -44,9 +45,19 @@ class ConversationsCubit extends Cubit<ConversationsState> with SafeEmit<Convers
     emit(state.copyWith(status: ConversationsStatus.loading));
     try {
       final list = await _repo.fetchConversations();
-      emit(state.copyWith(status: ConversationsStatus.success, conversations: list));
-    } on ApiException catch (e) {
-      emit(state.copyWith(status: ConversationsStatus.failure, error: e.message));
+      emit(
+        state.copyWith(
+          status: ConversationsStatus.success,
+          conversations: list,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: ConversationsStatus.failure,
+          error: friendlyError(e),
+        ),
+      );
     }
   }
 }

@@ -6,7 +6,7 @@ import '../../../core/navigation/support.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../widgets/aurora_background.dart';
-import '../../../widgets/skeleton.dart';
+import '../../../widgets/session_transitions.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
@@ -38,8 +38,8 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
     try {
       final g = await SmmApi.instance.guide();
       if (mounted) setState(() => _g = g);
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
     }
   }
 
@@ -117,62 +117,10 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
               ErrorState.from(_error, () {
                 setState(() => _error = null);
                 _load();
-              }, card: true)
-            else if (g == null) ...[
-              // qoidalar kartasi + 2 ustunli tavsiyalar — haqiqiy tuzilma
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: WebCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SBar(width: 110, height: 17),
-                      const SizedBox(height: 14),
-                      for (var i = 0; i < 4; i++)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              SBar(width: 20, height: 20),
-                              SizedBox(width: 10),
-                              Expanded(child: SBar(height: 13)),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 1.9,
-                children: [
-                  for (var i = 0; i < 4; i++)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: WebC.cardBg,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: WebC.cardBorder),
-                      ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SBar(width: 90, height: 14),
-                          SizedBox(height: 8),
-                          SBar(height: 11),
-                          SizedBox(height: 5),
-                          SBar(width: 80, height: 11),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ] else ...[
+              })
+            else if (g == null)
+              const BrandLoaderBlock()
+            else ...[
               _card(
                 '${g.rules.length} ta qoida',
                 child: Column(

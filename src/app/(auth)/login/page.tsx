@@ -7,6 +7,8 @@ import { getSession, signIn } from "next-auth/react";
 import { WelcomeOverlay } from "@/components/session-overlay";
 
 import { AuthShell } from "@/components/auth-shell";
+import { BrandLoaderOverlay } from "@/components/brand-loader";
+import { useGoogleSignIn } from "@/components/use-google-sign-in";
 import { PasswordInput } from "@/components/password-input";
 
 export default function LoginPage() {
@@ -15,19 +17,27 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [welcome, setWelcome] = useState<string | null>(null);
+  const google = useGoogleSignIn();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setErr(null);
-    const res = await signIn("credentials", {
-      login,
-      password,
-      redirect: false,
-    });
-    if (res?.error) {
+    let res: Awaited<ReturnType<typeof signIn>> | undefined;
+    try {
+      res = await signIn("credentials", {
+        login,
+        password,
+        redirect: false,
+      });
+    } catch {
       setBusy(false);
-      setErr("Login yoki parol xato");
+      setErr("Server bilan bog'lanib bölmadi. Internetni tekşirib, qayta urinib köring.");
+      return;
+    }
+    if (!res || res.error) {
+      setBusy(false);
+      setErr(res ? "Login yoki parol xato" : "Server javob bermadi. Qayta urinib köring.");
       return;
     }
     // salomlaşiş animatsiyasi (öqiş uçun ~3 s), so'ng ilovaga
@@ -38,6 +48,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell width="max-w-sm">
+      {google.busy && <BrandLoaderOverlay label="Google'ga yönaltirilmoqda…" />}
       {welcome && <WelcomeOverlay name={welcome} onDone={() => window.location.assign("/dashboard")} />}
       <div className="card p-7">
         <h1 className="text-xl font-semibold text-white">Kiriş</h1>
@@ -62,7 +73,14 @@ export default function LoginPage() {
           </div>
           {err && <p className="text-sm text-red-400">{err}</p>}
           <button className="btn-primary mt-1" disabled={busy}>
-            {busy ? "..." : "Kiriş"}
+            {busy ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="spin-ring" aria-hidden />
+                Tekşirilmoqda…
+              </span>
+            ) : (
+              "Kiriş"
+            )}
           </button>
         </form>
 
@@ -76,11 +94,17 @@ export default function LoginPage() {
         <button
           type="button"
           className="btn-white w-full"
-          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+          disabled={google.busy}
+          onClick={() => google.start("/dashboard")}
         >
           <GoogleGlyph />
-          Google orqali kiriş
+          {google.busy ? "Yönaltirilmoqda…" : "Google orqali kiriş"}
         </button>
+        {google.error && (
+          <p role="alert" className="mt-3 text-center text-sm text-red-400">
+            {google.error}
+          </p>
+        )}
       </div>
 
       <p className="mt-5 text-center text-sm text-zinc-500">

@@ -208,9 +208,7 @@ export default async function PublicProfile({
             {doneTitle} ({doneOrders.length})
           </h2>
           {doneOrders.length === 0 ? (
-            <div className="card">
-              <MascotState pose="empty-orders" size={120} title="Hozirça yöq" />
-            </div>
+            <MascotState pose="empty-orders" size={220} className="mascot-xl" title="Hozirça yöq" />
           ) : (
             <ul className="flex flex-col gap-2">
               {doneOrders.map((o) => (

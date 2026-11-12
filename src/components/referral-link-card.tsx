@@ -14,7 +14,7 @@ export function ReferralLinkCard({ userId }: { userId: string }) {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 3500);
     } catch {
       /* clipboard yo'q bo'lsa jim o'tamiz */
     }

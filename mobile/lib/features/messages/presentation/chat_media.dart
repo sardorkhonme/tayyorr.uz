@@ -39,11 +39,13 @@ String mimeForExt(String ext) => switch (ext) {
   'flac' => 'audio/flac',
   'pdf' => 'application/pdf',
   'doc' => 'application/msword',
-  'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'docx' =>
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'xls' => 'application/vnd.ms-excel',
   'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'ppt' => 'application/vnd.ms-powerpoint',
-  'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'pptx' =>
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'txt' => 'text/plain',
   'zip' => 'application/zip',
   'rar' => 'application/vnd.rar',
@@ -68,7 +70,11 @@ void _toast(BuildContext context, String text) {
 
 /// Faylni qurilmaga saqlash: rasm/video — galereyaga, qolganlari — foydalanuvchi
 /// tanlagan joyga. Fayl avval ilova keshiga yuklanadi.
-Future<void> saveChatFile(BuildContext context, ChatFileModel file, String key) async {
+Future<void> saveChatFile(
+  BuildContext context,
+  ChatFileModel file,
+  String key,
+) async {
   if (kIsWeb) {
     await launchUrl(Uri.parse(file.url), mode: LaunchMode.externalApplication);
     return;
@@ -76,10 +82,14 @@ Future<void> saveChatFile(BuildContext context, ChatFileModel file, String key) 
   try {
     final local = await MediaCache.instance.get(key, file.url, file.name);
     if (file.isImage || file.isVideo) {
-      if (!await Gal.hasAccess(toAlbum: true)) await Gal.requestAccess(toAlbum: true);
+      if (!await Gal.hasAccess(toAlbum: true)) {
+        await Gal.requestAccess(toAlbum: true);
+      }
       // galereyada asl nomi bilan ko'rinsin (keshdagi nom oldida xabar id'si bor)
       final tmpDir = await getTemporaryDirectory();
-      final named = await local.copy('${tmpDir.path}/${file.name.replaceAll(RegExp(r'[\\/]'), '_')}');
+      final named = await local.copy(
+        '${tmpDir.path}/${file.name.replaceAll(RegExp(r'[\\/]'), '_')}',
+      );
       try {
         if (file.isImage) {
           await Gal.putImage(named.path, album: 'Tayyorr');
@@ -89,20 +99,37 @@ Future<void> saveChatFile(BuildContext context, ChatFileModel file, String key) 
       } finally {
         if (await named.exists()) await named.delete();
       }
-      if (context.mounted) _toast(context, file.isImage ? 'Rasm galereyaga saqlandi' : 'Video galereyaga saqlandi');
+      if (context.mounted) {
+        _toast(
+          context,
+          file.isImage
+              ? 'Rasm galereyaga saqlandi'
+              : 'Video galereyaga saqlandi',
+        );
+      }
       return;
     }
-    final saved = await FilePicker.platform.saveFile(fileName: file.name, bytes: await local.readAsBytes());
+    final saved = await FilePicker.platform.saveFile(
+      fileName: file.name,
+      bytes: await local.readAsBytes(),
+    );
     if (saved != null && context.mounted) _toast(context, 'Fayl saqlandi');
   } catch (e) {
     debugPrint('fayl saqlanmadi: $e');
-    if (context.mounted) _toast(context, "Saqlab bölmadi — qayta urinib köring");
+    if (context.mounted) {
+      _toast(context, "Saqlab bölmadi — qayta urinib köring");
+    }
   }
 }
 
 /// Xabardagi faylni turiga qarab ko'rsatadi.
 class ChatAttachment extends StatelessWidget {
-  const ChatAttachment({super.key, required this.file, required this.cacheKey, required this.mine});
+  const ChatAttachment({
+    super.key,
+    required this.file,
+    required this.cacheKey,
+    required this.mine,
+  });
   final ChatFileModel file;
   final String cacheKey;
   final bool mine;
@@ -113,7 +140,9 @@ class ChatAttachment extends StatelessWidget {
   Widget build(BuildContext context) {
     if (file.isImage) return _ImageAttachment(file: file, cacheKey: cacheKey);
     if (file.isVideo) return _VideoAttachment(file: file, cacheKey: cacheKey);
-    if (file.isAudio) return AudioAttachment(file: file, cacheKey: cacheKey, mine: mine);
+    if (file.isAudio) {
+      return AudioAttachment(file: file, cacheKey: cacheKey, mine: mine);
+    }
     return _DocAttachment(file: file, cacheKey: cacheKey, mine: mine);
   }
 }
@@ -156,14 +185,18 @@ class _ImageAttachmentState extends State<_ImageAttachment> {
                     color: Colors.black.withValues(alpha: 0.15),
                     alignment: Alignment.center,
                     child: ProgressRing(
-                      value: p.expectedTotalBytes == null ? null : p.cumulativeBytesLoaded / p.expectedTotalBytes!,
+                      value: p.expectedTotalBytes == null
+                          ? null
+                          : p.cumulativeBytesLoaded / p.expectedTotalBytes!,
                       size: 46,
                     ),
                   ),
             errorBuilder: (_, __, ___) => SizedBox(
               width: ChatAttachment.width,
               height: 120,
-              child: Center(child: TIcon(TI.broken_image_outlined, color: WebC.zinc500)),
+              child: Center(
+                child: TIcon(TI.broken_image_outlined, color: WebC.zinc500),
+              ),
             ),
           );
     return GestureDetector(
@@ -172,15 +205,23 @@ class _ImageAttachmentState extends State<_ImageAttachment> {
           opaque: false,
           barrierColor: Colors.black,
           transitionDuration: const Duration(milliseconds: 220),
-          pageBuilder: (_, __, ___) => ImageViewerScreen(file: widget.file, cacheKey: widget.cacheKey, local: _local),
-          transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
+          pageBuilder: (_, __, ___) => ImageViewerScreen(
+            file: widget.file,
+            cacheKey: widget.cacheKey,
+            local: _local,
+          ),
+          transitionsBuilder: (_, a, __, child) =>
+              FadeTransition(opacity: a, child: child),
         ),
       ),
       child: Hero(
         tag: 'img-${widget.cacheKey}',
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: ConstrainedBox(constraints: const BoxConstraints(maxHeight: 300, minHeight: 80), child: img),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300, minHeight: 80),
+            child: img,
+          ),
         ),
       ),
     );
@@ -189,7 +230,12 @@ class _ImageAttachmentState extends State<_ImageAttachment> {
 
 /// To'liq ekranda rasm — kattalashtirish, yuklab olish.
 class ImageViewerScreen extends StatefulWidget {
-  const ImageViewerScreen({super.key, required this.file, required this.cacheKey, this.local});
+  const ImageViewerScreen({
+    super.key,
+    required this.file,
+    required this.cacheKey,
+    this.local,
+  });
   final ChatFileModel file;
   final String cacheKey;
   final File? local;
@@ -198,7 +244,8 @@ class ImageViewerScreen extends StatefulWidget {
   State<ImageViewerScreen> createState() => _ImageViewerScreenState();
 }
 
-class _ImageViewerScreenState extends State<ImageViewerScreen> with SingleTickerProviderStateMixin {
+class _ImageViewerScreenState extends State<ImageViewerScreen>
+    with SingleTickerProviderStateMixin {
   final _tc = TransformationController();
   late final AnimationController _zoomAnim = AnimationController(
     vsync: this,
@@ -228,7 +275,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> with SingleTicker
     ).animate(CurvedAnimation(parent: _zoomAnim, curve: Curves.easeOut));
     void listener() => _tc.value = anim.value;
     anim.addListener(listener);
-    _zoomAnim.forward(from: 0).whenComplete(() => anim.removeListener(listener));
+    _zoomAnim
+        .forward(from: 0)
+        .whenComplete(() => anim.removeListener(listener));
   }
 
   @override
@@ -244,11 +293,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> with SingleTicker
               onDoubleTapDown: (d) => _tap = d,
               onDoubleTap: _toggleZoom,
               // pastga/yuqoriga surib yopish (kattalashtirilmagan holatda)
-              onVerticalDragUpdate: zoomed ? null : (d) => setState(() => _drag += d.delta.dy),
+              onVerticalDragUpdate: zoomed
+                  ? null
+                  : (d) => setState(() => _drag += d.delta.dy),
               onVerticalDragEnd: zoomed
                   ? null
                   : (d) {
-                      if (_drag.abs() > 120 || d.velocity.pixelsPerSecond.dy.abs() > 900) {
+                      if (_drag.abs() > 120 ||
+                          d.velocity.pixelsPerSecond.dy.abs() > 900) {
                         Navigator.of(context).pop();
                       } else {
                         setState(() => _drag = 0);
@@ -292,7 +344,12 @@ class _ViewerTopBar extends StatelessWidget {
       left: 0,
       right: 0,
       child: Container(
-        padding: EdgeInsets.fromLTRB(4, MediaQuery.of(context).padding.top + 4, 4, 12),
+        padding: EdgeInsets.fromLTRB(
+          4,
+          MediaQuery.of(context).padding.top + 4,
+          4,
+          12,
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -314,9 +371,16 @@ class _ViewerTopBar extends StatelessWidget {
                     file.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  Text(formatBytes(file.size), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                  Text(
+                    formatBytes(file.size),
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -403,7 +467,11 @@ class _VideoAttachment extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.45),
                     border: Border.all(color: Colors.white24),
                   ),
-                  child: const TIcon(TI.play_arrow_rounded, color: Colors.white, size: 26),
+                  child: const TIcon(
+                    TI.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
                 ),
               ),
               Positioned(
@@ -412,18 +480,31 @@ class _VideoAttachment extends StatelessWidget {
                 bottom: 8,
                 child: Row(
                   children: [
-                    const TIcon(TI.videocam_rounded, size: 14, color: Colors.white70),
+                    const TIcon(
+                      TI.videocam_rounded,
+                      size: 14,
+                      color: Colors.white70,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         file.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Text(formatBytes(file.size), style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                    Text(
+                      formatBytes(file.size),
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -437,7 +518,11 @@ class _VideoAttachment extends StatelessWidget {
 
 /// Ilova ichida video ijro etish.
 class VideoPlayerScreen extends StatefulWidget {
-  const VideoPlayerScreen({super.key, required this.file, required this.cacheKey});
+  const VideoPlayerScreen({
+    super.key,
+    required this.file,
+    required this.cacheKey,
+  });
   final ChatFileModel file;
   final String cacheKey;
 
@@ -460,7 +545,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   Future<void> _init() async {
     // audio pleer ijro etayotgan bo'lsa — to'xtatamiz
     ChatAudio.pause();
-    final local = await MediaCache.instance.cached(widget.cacheKey, widget.file.name);
+    final local = await MediaCache.instance.cached(
+      widget.cacheKey,
+      widget.file.name,
+    );
     final c = local != null
         ? VideoPlayerController.file(local)
         : VideoPlayerController.networkUrl(Uri.parse(widget.file.url));
@@ -485,7 +573,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void _scheduleHide() {
     _hide?.cancel();
     _hide = Timer(const Duration(seconds: 3), () {
-      if (mounted && (_c?.value.isPlaying ?? false)) setState(() => _controls = false);
+      if (mounted && (_c?.value.isPlaying ?? false)) {
+        setState(() => _controls = false);
+      }
     });
   }
 
@@ -528,12 +618,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   ? const SizedBox(
                       width: 34,
                       height: 34,
-                      child: CircularProgressIndicator(strokeWidth: 2.6, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.6,
+                        color: Colors.white,
+                      ),
                     )
-                  : AspectRatio(aspectRatio: c.value.aspectRatio, child: VideoPlayer(c)),
+                  : AspectRatio(
+                      aspectRatio: c.value.aspectRatio,
+                      child: VideoPlayer(c),
+                    ),
             ),
             if (c != null && c.value.isBuffering)
-              const Center(child: CircularProgressIndicator(strokeWidth: 2.6, color: Colors.white)),
+              const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.6,
+                  color: Colors.white,
+                ),
+              ),
             AnimatedOpacity(
               opacity: _controls ? 1 : 0,
               duration: const Duration(milliseconds: 200),
@@ -554,7 +655,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                               color: Colors.black.withValues(alpha: 0.5),
                             ),
                             child: TIcon(
-                              c.value.isPlaying ? TI.pause_rounded : TI.play_arrow_rounded,
+                              c.value.isPlaying
+                                  ? TI.pause_rounded
+                                  : TI.play_arrow_rounded,
                               color: Colors.white,
                               size: 34,
                             ),
@@ -567,23 +670,39 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                         right: 0,
                         bottom: 0,
                         child: Container(
-                          padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).padding.bottom + 16),
+                          padding: EdgeInsets.fromLTRB(
+                            16,
+                            24,
+                            16,
+                            MediaQuery.of(context).padding.bottom + 16,
+                          ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
-                              colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
+                              colors: [
+                                Colors.black.withValues(alpha: 0.7),
+                                Colors.transparent,
+                              ],
                             ),
                           ),
                           child: Row(
                             children: [
-                              Text(_mmss(c.value.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                              Text(
+                                _mmss(c.value.position),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: VideoProgressIndicator(
                                   c,
                                   allowScrubbing: true,
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                   colors: const VideoProgressColors(
                                     playedColor: Color(0xFF818CF8),
                                     bufferedColor: Colors.white38,
@@ -592,7 +711,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Text(_mmss(c.value.duration), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                              Text(
+                                _mmss(c.value.duration),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -624,7 +749,12 @@ class ChatAudio {
 }
 
 class AudioAttachment extends StatefulWidget {
-  const AudioAttachment({super.key, required this.file, required this.cacheKey, required this.mine});
+  const AudioAttachment({
+    super.key,
+    required this.file,
+    required this.cacheKey,
+    required this.mine,
+  });
   final ChatFileModel file;
   final String cacheKey;
   final bool mine;
@@ -654,7 +784,9 @@ class _AudioAttachmentState extends State<AudioAttachment> {
       if (p.playing) {
         await p.pause();
       } else {
-        if (p.processingState == ProcessingState.completed) await p.seek(Duration.zero);
+        if (p.processingState == ProcessingState.completed) {
+          await p.seek(Duration.zero);
+        }
         unawaited(p.play());
       }
       return;
@@ -666,7 +798,11 @@ class _AudioAttachmentState extends State<AudioAttachment> {
       if (kIsWeb) {
         d = await p.setUrl(widget.file.url);
       } else {
-        final f = await MediaCache.instance.get(widget.cacheKey, widget.file.url, widget.file.name);
+        final f = await MediaCache.instance.get(
+          widget.cacheKey,
+          widget.file.url,
+          widget.file.name,
+        );
         d = await p.setFilePath(f.path);
       }
       ChatAudio.current.value = widget.cacheKey;
@@ -702,18 +838,30 @@ class _AudioAttachmentState extends State<AudioAttachment> {
         builder: (context, cur, _) {
           final active = cur == widget.cacheKey;
           return StreamBuilder<PlayerState>(
-            stream: active ? ChatAudio.player.playerStateStream : const Stream.empty(),
+            stream: active
+                ? ChatAudio.player.playerStateStream
+                : const Stream.empty(),
             builder: (context, ps) {
               final playing =
-                  active && (ps.data?.playing ?? false) && ps.data?.processingState != ProcessingState.completed;
+                  active &&
+                  (ps.data?.playing ?? false) &&
+                  ps.data?.processingState != ProcessingState.completed;
               return StreamBuilder<Duration>(
-                stream: active ? ChatAudio.player.positionStream : const Stream.empty(),
+                stream: active
+                    ? ChatAudio.player.positionStream
+                    : const Stream.empty(),
                 builder: (context, pos) {
-                  final total = (active ? ChatAudio.player.duration : null) ?? _duration;
-                  final position = active ? (pos.data ?? Duration.zero) : Duration.zero;
+                  final total =
+                      (active ? ChatAudio.player.duration : null) ?? _duration;
+                  final position = active
+                      ? (pos.data ?? Duration.zero)
+                      : Duration.zero;
                   final frac = total == null || total.inMilliseconds == 0
                       ? 0.0
-                      : (position.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
+                      : (position.inMilliseconds / total.inMilliseconds).clamp(
+                          0.0,
+                          1.0,
+                        );
                   return Row(
                     children: [
                       GestureDetector(
@@ -721,16 +869,31 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                         child: Container(
                           width: 42,
                           height: 42,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: accent),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: accent,
+                          ),
                           child: _loading
                               ? ValueListenableBuilder<double?>(
-                                  valueListenable: MediaCache.instance.progressOf(widget.cacheKey),
+                                  valueListenable: MediaCache.instance
+                                      .progressOf(widget.cacheKey),
                                   builder: (_, p, __) => Padding(
                                     padding: const EdgeInsets.all(3),
-                                    child: ProgressRing(value: p, size: 36, stroke: 2.6, color: fg),
+                                    child: ProgressRing(
+                                      value: p,
+                                      size: 36,
+                                      stroke: 2.6,
+                                      color: fg,
+                                    ),
                                   ),
                                 )
-                              : TIcon(playing ? TI.pause_rounded : TI.play_arrow_rounded, color: fg, size: 22),
+                              : TIcon(
+                                  playing
+                                      ? TI.pause_rounded
+                                      : TI.play_arrow_rounded,
+                                  color: fg,
+                                  size: 22,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -742,8 +905,10 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                             // kenglik qat'iy (pufakcha IntrinsicWidth ichida — LayoutBuilder ishlatib bo'lmaydi)
                             GestureDetector(
                               behavior: HitTestBehavior.opaque,
-                              onTapDown: (d) => _seek(d.localPosition.dx / _waveWidth),
-                              onHorizontalDragUpdate: (d) => _seek(d.localPosition.dx / _waveWidth),
+                              onTapDown: (d) =>
+                                  _seek(d.localPosition.dx / _waveWidth),
+                              onHorizontalDragUpdate: (d) =>
+                                  _seek(d.localPosition.dx / _waveWidth),
                               child: SizedBox(
                                 width: _waveWidth,
                                 height: 26,
@@ -757,8 +922,13 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                                             width: 2.4,
                                             height: 4 + 20 * _bars[i],
                                             decoration: BoxDecoration(
-                                              color: (i + 0.5) / _bars.length <= frac ? accent : dim,
-                                              borderRadius: BorderRadius.circular(2),
+                                              color:
+                                                  (i + 0.5) / _bars.length <=
+                                                      frac
+                                                  ? accent
+                                                  : dim,
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
                                             ),
                                           ),
                                         ),
@@ -777,7 +947,9 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                               style: TextStyle(
                                 color: sub,
                                 fontSize: 11,
-                                fontFeatures: const [FontFeature.tabularFigures()],
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
                               ),
                             ),
                           ],
@@ -798,7 +970,11 @@ class _AudioAttachmentState extends State<AudioAttachment> {
 // ── Hujjat va boshqa fayllar ────────────────────────────────────────
 
 class _DocAttachment extends StatefulWidget {
-  const _DocAttachment({required this.file, required this.cacheKey, required this.mine});
+  const _DocAttachment({
+    required this.file,
+    required this.cacheKey,
+    required this.mine,
+  });
   final ChatFileModel file;
   final String cacheKey;
   final bool mine;
@@ -823,27 +999,49 @@ class _DocAttachmentState extends State<_DocAttachment> {
 
   Future<void> _open() async {
     if (kIsWeb) {
-      await launchUrl(Uri.parse(widget.file.url), mode: LaunchMode.externalApplication);
+      await launchUrl(
+        Uri.parse(widget.file.url),
+        mode: LaunchMode.externalApplication,
+      );
       return;
     }
     try {
-      final f = await MediaCache.instance.get(widget.cacheKey, widget.file.url, widget.file.name);
+      final f = await MediaCache.instance.get(
+        widget.cacheKey,
+        widget.file.url,
+        widget.file.name,
+      );
       if (!mounted) return;
       setState(() => _cached = true);
       // PDF va matn — ilovaning o'zida; qolgan turlar (Word, Excel, arxiv) — telefondagi mos ilovada
       final ext = widget.file.ext;
       if (ext == 'pdf' || ext == 'txt') {
-        await Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => ext == 'pdf'
-              ? PdfViewerScreen(file: widget.file, cacheKey: widget.cacheKey, local: f)
-              : TextViewerScreen(file: widget.file, cacheKey: widget.cacheKey, local: f),
-        ));
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ext == 'pdf'
+                ? PdfViewerScreen(
+                    file: widget.file,
+                    cacheKey: widget.cacheKey,
+                    local: f,
+                  )
+                : TextViewerScreen(
+                    file: widget.file,
+                    cacheKey: widget.cacheKey,
+                    local: f,
+                  ),
+          ),
+        );
         return;
       }
-      final res = await OpenFilex.open(f.path, type: mimeForExt(widget.file.ext))
-          .timeout(const Duration(seconds: 15));
+      final res = await OpenFilex.open(
+        f.path,
+        type: mimeForExt(widget.file.ext),
+      ).timeout(const Duration(seconds: 15));
       if (res.type != ResultType.done && mounted) {
-        _toast(context, "Bu faylni oçadigan ilova topilmadi — ⋮ menyudan saqlab oling");
+        _toast(
+          context,
+          "Bu faylni oçadigan ilova topilmadi — xabarni bosib, «Saqlaş» orqali yuklab oling",
+        );
       }
     } catch (e) {
       debugPrint('çat fayl oçilmadi: $e');
@@ -868,12 +1066,20 @@ class _DocAttachmentState extends State<_DocAttachment> {
               builder: (_, p, __) => Container(
                 width: 44,
                 height: 44,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: accent),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent,
+                ),
                 alignment: Alignment.center,
                 child: p != null
                     ? Padding(
                         padding: const EdgeInsets.all(3),
-                        child: ProgressRing(value: p, size: 38, stroke: 2.6, color: fg),
+                        child: ProgressRing(
+                          value: p,
+                          size: 38,
+                          stroke: 2.6,
+                          color: fg,
+                        ),
                       )
                     : _cached
                     ? TIcon(TI.insert_drive_file_rounded, color: fg, size: 22)
@@ -898,7 +1104,10 @@ class _DocAttachmentState extends State<_DocAttachment> {
                   const SizedBox(height: 2),
                   Text(
                     '${formatBytes(widget.file.size)}${ext.isNotEmpty ? ' · $ext' : ''}',
-                    style: TextStyle(color: mine ? const Color(0xFFC7D2FE) : WebC.zinc500, fontSize: 12),
+                    style: TextStyle(
+                      color: mine ? const Color(0xFFC7D2FE) : WebC.zinc500,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -913,7 +1122,12 @@ class _DocAttachmentState extends State<_DocAttachment> {
 // ── Ilova ichidagi PDF va matn ko'ruvchi ────────────────────────────
 
 class PdfViewerScreen extends StatefulWidget {
-  const PdfViewerScreen({super.key, required this.file, required this.cacheKey, required this.local});
+  const PdfViewerScreen({
+    super.key,
+    required this.file,
+    required this.cacheKey,
+    required this.local,
+  });
   final ChatFileModel file;
   final String cacheKey;
   final File local;
@@ -923,7 +1137,9 @@ class PdfViewerScreen extends StatefulWidget {
 }
 
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
-  late final PdfControllerPinch _c = PdfControllerPinch(document: PdfDocument.openFile(widget.local.path));
+  late final PdfControllerPinch _c = PdfControllerPinch(
+    document: PdfDocument.openFile(widget.local.path),
+  );
   int _page = 1;
   int _pages = 0;
 
@@ -947,20 +1163,31 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             child: PdfViewPinch(
               controller: _c,
               padding: 12,
-              backgroundDecoration: const BoxDecoration(color: Color(0xFF111116)),
+              backgroundDecoration: const BoxDecoration(
+                color: Color(0xFF111116),
+              ),
               onDocumentLoaded: (d) => setState(() => _pages = d.pagesCount),
               onPageChanged: (p) => setState(() => _page = p),
               onDocumentError: (_) => setState(() => _pages = -1),
               builders: PdfViewPinchBuilders<DefaultBuilderOptions>(
                 options: const DefaultBuilderOptions(),
                 documentLoaderBuilder: (_) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2.6, color: Colors.white),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.6,
+                    color: Colors.white,
+                  ),
                 ),
                 pageLoaderBuilder: (_) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white38),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white38,
+                  ),
                 ),
                 errorBuilder: (_, __) => const Center(
-                  child: Text("PDFʼni oçib bölmadi", style: TextStyle(color: Colors.white70)),
+                  child: Text(
+                    "PDFʼni oçib bölmadi",
+                    style: TextStyle(color: Colors.white70),
+                  ),
                 ),
               ),
             ),
@@ -973,12 +1200,18 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(99),
                   ),
-                  child: Text('$_page / $_pages', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                  child: Text(
+                    '$_page / $_pages',
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
                 ),
               ),
             ),
@@ -989,7 +1222,12 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 }
 
 class TextViewerScreen extends StatelessWidget {
-  const TextViewerScreen({super.key, required this.file, required this.cacheKey, required this.local});
+  const TextViewerScreen({
+    super.key,
+    required this.file,
+    required this.cacheKey,
+    required this.local,
+  });
   final ChatFileModel file;
   final String cacheKey;
   final File local;
@@ -1006,12 +1244,34 @@ class TextViewerScreen extends StatelessWidget {
               builder: (context, snap) {
                 if (!snap.hasData) {
                   return snap.hasError
-                      ? const Center(child: Text("Faylni öqib bölmadi", style: TextStyle(color: Colors.white70)))
-                      : const Center(child: CircularProgressIndicator(strokeWidth: 2.6, color: Colors.white));
+                      ? const Center(
+                          child: Text(
+                            "Faylni öqib bölmadi",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        )
+                      : const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.6,
+                            color: Colors.white,
+                          ),
+                        );
                 }
                 return SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 76, 16, 32),
-                  child: SelectableText(snap.data!, style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.5)),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    MediaQuery.of(context).padding.top + 76,
+                    16,
+                    32,
+                  ),
+                  child: SelectableText(
+                    snap.data!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
+                  ),
                 );
               },
             ),

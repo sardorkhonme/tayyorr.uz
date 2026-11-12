@@ -8,6 +8,7 @@ import { AppFooter } from "@/components/app-footer";
 import { AppHeader } from "@/components/app-header";
 import { HeaderProvider } from "@/components/page-header";
 import { AppSidebar } from "@/components/app-sidebar";
+import { BottomTabBar } from "@/components/bottom-tab-bar";
 import { PresencePing } from "@/components/presence-ping";
 import { PushSetup } from "@/components/push-setup";
 import { VisitPing } from "@/components/visit-ping";
@@ -88,12 +89,8 @@ export default async function AppLayout({
             walletCode,
           }}
         />
-        <AppHeader
-          image={session.user.image ?? null}
-          unread={unreadMsgs}
-          starBalance={u?.role === "PREPARER" ? (u?.starBalance ?? 0) : null}
-          role={u?.role ?? null}
-        />
+        {/* telefon/planşet: mobil ilovadagi suzuvçi header (kompyuterda yöq) */}
+        <AppHeader />
         <PresencePing />
         {/* bildirishnomaga ruxsat — sayt yopiq bo'lsa ham xabar kelsin */}
         <PushSetup />
@@ -102,7 +99,7 @@ export default async function AppLayout({
         <RevealOnScroll />
         <ThemeSync serverTheme={u?.theme ?? null} />
 
-        <main className="relative z-10 px-3 pb-8 pt-4 sm:px-5 sm:pt-5 lg:pl-[17rem] lg:pr-6 lg:pt-6">
+        <main className="relative z-10 px-3 pb-8 pt-3 sm:px-5 sm:pt-4 lg:pl-[17rem] lg:pr-6 lg:pt-8">
           <div className="mx-auto w-full max-w-5xl">
             {restriction && (
               <RestrictionBanner text={restrictionText(restriction)} />
@@ -111,6 +108,13 @@ export default async function AppLayout({
           </div>
         </main>
         <AppFooter />
+        {/* telefon/planşet: mobil ilovadagi pastki panel (kompyuterda yöq) */}
+        <BottomTabBar
+          role={u?.role ?? null}
+          unread={unreadMsgs}
+          image={u?.avatarUrl ?? u?.image ?? session.user.image ?? null}
+          name={u?.firstName || u?.name || u?.login || ""}
+        />
       </div>
       </HeaderProvider>
     </UnreadProvider>

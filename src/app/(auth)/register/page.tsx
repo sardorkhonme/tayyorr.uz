@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 
 import { AuthShell } from "@/components/auth-shell";
 import { TermsGate } from "@/components/terms-gate";
+import { BrandLoaderOverlay } from "@/components/brand-loader";
+import { useGoogleSignIn } from "@/components/use-google-sign-in";
 
 type Role = "ORDERER" | "PREPARER";
 
@@ -17,7 +18,7 @@ const ROLES: { id: Role; title: string; desc: string }[] = [
 export default function RegisterPage() {
   const [role, setRole] = useState<Role | null>(null);
   const [agree, setAgree] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const google = useGoogleSignIn();
 
   // tayyorr+ (plus.tayyorr.uz) dan kelgan — onboarding'da manba sifatida qayd
   // qilinadi va tugagach foydalanuvchi SMM saytiga qaytariladi
@@ -29,6 +30,7 @@ export default function RegisterPage() {
 
   return (
     <AuthShell>
+      {google.busy && <BrandLoaderOverlay label="Google'ga yönaltirilmoqda…" />}
       <div className="card p-7">
         <h1 className="text-xl font-semibold text-white">Röyxatdan ötiş</h1>
         <p className="mt-1 text-sm text-zinc-400">
@@ -73,18 +75,22 @@ export default function RegisterPage() {
         <button
           type="button"
           className="btn-white mt-4 w-full"
-          disabled={!role || !agree || busy}
-          onClick={() => {
-            setBusy(true);
-            signIn("google", { callbackUrl: `/onboarding?role=${role}` });
-          }}
+          disabled={!role || !agree || google.busy}
+          onClick={() => google.start(`/onboarding?role=${role}`)}
         >
           {!role
             ? "Avval rolni tanlang"
             : !agree
               ? "Şartlarga rozilik bering"
-              : "Google bilan davom etiş"}
+              : google.busy
+                ? "Yönaltirilmoqda…"
+                : "Google bilan davom etiş"}
         </button>
+        {google.error && (
+          <p role="alert" className="mt-3 text-center text-sm text-red-400">
+            {google.error}
+          </p>
+        )}
       </div>
 
       <p className="mt-5 text-center text-sm text-zinc-500">

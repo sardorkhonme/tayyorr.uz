@@ -6,10 +6,11 @@ import "./globals.css";
 import { GlowPointer } from "@/components/glow-pointer";
 import { PlatformTransition } from "@/components/platform-transition";
 import { SiteFooter } from "@/components/site-footer";
+import { MobileHeader, MobileTabBar } from "@/components/mobile-shell";
 import { SmmHeader, type HeaderUser } from "@/components/smm-header";
 import { SupportWidget } from "@/components/support-widget";
 import { currentUser } from "@/lib/session";
-import { THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme";
+import { resolveTheme, THEME_BG, THEME_COOKIE, themeInitScript } from "@/lib/theme";
 import { PushPrompt } from "@/components/push-prompt";
 import { OfflineOverlay } from "@/components/offline-overlay";
 import { ActivityTracker } from "@/components/activity-tracker";
@@ -33,13 +34,15 @@ export const metadata: Metadata = {
 };
 
 export async function generateViewport(): Promise<Viewport> {
-  const t = (await cookies()).get(THEME_COOKIE)?.value;
-  if (t === "dark") return { themeColor: "#0c0c11" };
-  if (t === "light") return { themeColor: "#f5f5f9" };
+  const [u, jar] = await Promise.all([currentUser(), cookies()]);
+  const t = resolveTheme(u?.theme, jar.get(THEME_COOKIE)?.value);
+  // viewportFit — iPhone'da pastki panel xavfsiz hudud (home indicator) ustida tursin
+  if (t) return { themeColor: THEME_BG[t], viewportFit: "cover" };
   return {
+    viewportFit: "cover",
     themeColor: [
-      { media: "(prefers-color-scheme: dark)", color: "#0c0c11" },
-      { media: "(prefers-color-scheme: light)", color: "#f5f5f9" },
+      { media: "(prefers-color-scheme: dark)", color: THEME_BG.dark },
+      { media: "(prefers-color-scheme: light)", color: THEME_BG.light },
     ],
   };
 }
@@ -47,23 +50,26 @@ export async function generateViewport(): Promise<Viewport> {
 /** smm.tayyorr.uz — Tayyorr SMM xizmati (alohida loyiha; hisob va hamyon tayyorr+ bilan umumiy). */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [u, jar] = await Promise.all([currentUser(), cookies()]);
-  const theme = jar.get(THEME_COOKIE)?.value;
+  // mavzu: kirgan bölsa — bazadagi tanlov, aks holda umumiy cookie (.tayyorr.uz); ikkalasi ham bölmasa — qurilma mavzusi
+  const theme = resolveTheme(u?.theme, jar.get(THEME_COOKIE)?.value);
   const user: HeaderUser = u
     ? { name: u.firstName || u.name || u.login || "Foydalanuvçi", image: u.avatarUrl || u.image, balance: u.balance }
     : null;
   return (
     <html lang="uz" className={[headingFont.variable, theme === "dark" ? "dark" : ""].filter(Boolean).join(" ")} suppressHydrationWarning>
       <head>
-        {/* tanlov bölmasa — qurilma mavzusi (birinçi çiziliştan oldin, miltillamasin) */}
-        {!theme && <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />}
+        {/* birinçi çiziliştan oldin (miltillamasin): tanlov bölmasa — qurilma mavzusi; cookie — umumiy domenga */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript(theme) }} />
       </head>
       <body className="min-h-dvh antialiased">
         <GlowPointer />
         <SmmHeader user={user} />
-        <main className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-10">
+        <MobileHeader />
+        <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-3 sm:px-6 sm:pt-4 lg:pb-0 lg:pt-10">
           {children}
           <SiteFooter />
         </main>
+        <MobileTabBar user={user} />
         <SupportWidget loggedIn={!!u} />
         {u && <PushPrompt />}
         <PlatformTransition />

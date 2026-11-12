@@ -16,6 +16,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_text_field.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/confirm_dialog.dart';
+import '../../../widgets/reaction_emoji.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/user_avatar.dart';
 import '../../../core/media/media_cache.dart';
@@ -645,60 +646,60 @@ class _ChatHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (!other.isSupport)
-                    GestureDetector(
-                      onTap: () async {
-                        final v = await showAppSheet<String>(
-                          context,
-                          builder: (ctx) => Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AppSheetAction(
-                                icon: TI.flag_outlined,
-                                label: 'Şikoyat qiliş',
-                                onTap: () => Navigator.of(ctx).pop('report'),
-                              ),
-                              AppSheetAction(
-                                icon: blockedByMe
-                                    ? TI.lock_open_rounded
-                                    : TI.block_rounded,
-                                label: blockedByMe
-                                    ? 'Blokdan çiqariş'
-                                    : 'Bloklaş',
-                                onTap: () => Navigator.of(ctx).pop('block'),
-                              ),
-                              AppSheetAction(
-                                icon: TI.delete_outline_rounded,
-                                label: 'Suhbatni öçiriş',
-                                danger: true,
-                                onTap: () => Navigator.of(ctx).pop('delete'),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (v != null && context.mounted) {
-                          _onMenuSelect(context, v);
-                        }
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.tint(0.07),
-                        ),
-                        child: TIcon(
-                          TI.more_horiz_rounded,
-                          size: 20,
-                          color: WebC.zinc300,
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
           ),
+          // ⋮ — alohida şişa tugma (header ikonkalari bilan bir uslubda); bosilganda yonida popup
+          if (!other.isSupport) ...[
+            const SizedBox(width: 8),
+            Builder(
+              builder: (btnCtx) => GlassTap(
+                width: 48,
+                height: 48,
+                strong: true,
+                semanticLabel: 'Amallar',
+                onTap: () async {
+                  final v = await showAnchoredMenu(
+                    btnCtx,
+                    items: [
+                      const AnchoredMenuItem(
+                        id: 'profile',
+                        icon: TI.person_outline_rounded,
+                        label: 'Profilni köriş',
+                      ),
+                      const AnchoredMenuItem(
+                        id: 'report',
+                        icon: TI.flag_outlined,
+                        label: 'Şikoyat qiliş',
+                      ),
+                      AnchoredMenuItem(
+                        id: 'block',
+                        icon: blockedByMe
+                            ? TI.lock_open_rounded
+                            : TI.block_rounded,
+                        label: blockedByMe ? 'Blokdan çiqariş' : 'Bloklaş',
+                      ),
+                      const AnchoredMenuItem(
+                        id: 'delete',
+                        icon: TI.delete_outline_rounded,
+                        label: 'Suhbatni öçiriş',
+                        danger: true,
+                      ),
+                    ],
+                  );
+                  if (v != null && context.mounted) {
+                    _onMenuSelect(context, v);
+                  }
+                },
+                child: TIcon(
+                  TI.more_horiz_rounded,
+                  size: 21,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -707,6 +708,13 @@ class _ChatHeader extends StatelessWidget {
   Future<void> _onMenuSelect(BuildContext context, String value) async {
     final cubit = context.read<ChatCubit>();
     switch (value) {
+      case 'profile':
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PublicProfileScreen(userId: other.id),
+          ),
+        );
+        break;
       case 'report':
         await _showReportDialog(context);
         break;
@@ -1222,8 +1230,8 @@ class _MessageBubbleState extends State<_MessageBubble> {
       );
     }
 
-    // Saytdagidek: pufakcha eni 86% gacha, 16px burchak; yonida 28x28 ⋮
-    // tugma (meniki — chapda, boshqaniki — o'ngda), vaqt o'ng tomonda.
+    // Pufakcha eni 86% gacha, 16px burchak, vaqt öng tomonda. Amallar (reaksiya, javob, nusxa...)
+    // — pufakçani bosganda / bosib turganda çiqadigan popupda; öngga surilsa — javob.
     final timeColor = mine ? const Color(0xFFC7D2FE) : WebC.zinc500;
     final bubbleBody = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1353,29 +1361,6 @@ class _MessageBubbleState extends State<_MessageBubble> {
       onLongPress: () => _openMenu(context, bubbleBody),
       child: KeyedSubtree(key: _bubbleKey, child: bubbleBody),
     );
-    final menuBtn = message.deleted
-        ? const SizedBox(width: 28)
-        : GestureDetector(
-            onTap: () => _openMenu(context, bubbleBody),
-            child: Container(
-              width: 28,
-              height: 28,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppColors.isLight
-                      ? Colors.black.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.15),
-                ),
-                color: WebC.fill10,
-              ),
-              child: Text(
-                '⋮',
-                style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1),
-              ),
-            ),
-          );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
@@ -1391,21 +1376,17 @@ class _MessageBubbleState extends State<_MessageBubble> {
                     : MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (mine) ...[menuBtn, const SizedBox(width: 6)],
                   ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: c.maxWidth * 0.86 - 34,
-                    ),
+                    constraints: BoxConstraints(maxWidth: c.maxWidth * 0.86),
                     child: IntrinsicWidth(child: bubble),
                   ),
-                  if (!mine) ...[const SizedBox(width: 6), menuBtn],
                 ],
               );
             },
           ),
           if (message.status == ChatSendStatus.failed)
             Padding(
-              padding: const EdgeInsets.only(top: 5, right: 34),
+              padding: const EdgeInsets.only(top: 5),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1446,7 +1427,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
               padding: EdgeInsets.only(
                 top: 4,
                 left: mine ? 0 : 4,
-                right: mine ? 34 : 0,
+                right: mine ? 4 : 0,
               ),
               child: _ReactionChips(
                 reactions: message.reactions,
@@ -1543,10 +1524,7 @@ class _ReactionChips extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    r.emoji,
-                    style: const TextStyle(fontSize: 14, height: 1.2),
-                  ),
+                  ReactionEmoji(r.emoji, size: 15),
                   const SizedBox(width: 4),
                   Text(
                     '${r.count}',

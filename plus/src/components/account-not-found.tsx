@@ -16,9 +16,9 @@ export function AccountNotFound() {
     <main className="grid min-h-dvh place-items-center px-5 py-10">
       <div className="w-full max-w-md text-center">
         <Logo className="text-3xl" />
-        <div className="card mt-8 !rounded-3xl p-8">
-          <Mascot pose="not-found" size={140} priority className="mx-auto" />
-          <h1 className="mt-3 font-display text-2xl font-bold text-zinc-900">Bunday hisob mavjud emas</h1>
+        <div className="mt-6">
+          <Mascot pose="not-found" size={260} priority className="mx-auto" />
+          <h1 className="mt-2 font-display text-2xl font-bold text-zinc-900">Bunday hisob mavjud emas</h1>
           <p className="mt-2 leading-relaxed text-zinc-500">
             Hisobingiz tizimdan öçirilgan yoki topilmadi. Qaytadan kiriş yoki röyxatdan ötiş
             uçun quyidagi tugmani bosing.

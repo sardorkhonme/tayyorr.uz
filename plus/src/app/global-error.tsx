@@ -22,7 +22,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           padding: "1.5rem",
         }}
       >
-        <Mascot pose="error" size={200} priority />
+        <Mascot pose="error" size={260} priority />
         <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>Xatolik yuz berdi</h1>
         <p style={{ margin: 0, fontSize: "0.875rem", color: "#6b6b78", maxWidth: "20rem" }}>
           Sahifani qaytadan yuklaşga urinib köring.

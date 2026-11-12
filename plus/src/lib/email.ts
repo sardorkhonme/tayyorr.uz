@@ -44,6 +44,11 @@ export async function sendEmail(opts: { to: string; subject: string; html: strin
 const LOGO_URL = "https://tayyorr.uz/logo-mark.png";
 const PLUS_URL = (process.env.NEXT_PUBLIC_PLUS_URL || "https://plus.tayyorr.uz").replace(/\/+$/, "");
 const COPY_ICON_URL = `${PLUS_URL}/email/copy.png`;
+/** Tayyor-Man rasmlari (asl rasmlarning email uçun kiçik nusxalari, 2x — retina). */
+const MASCOT_CODE_URL = `${PLUS_URL}/email/mascot-code.png`; // 768x384: taxtaning tepa qirrasini uşlab turibdi
+const MASCOT_RESET_URL = `${PLUS_URL}/email/mascot-reset.png`; // 480x530: kalit bilan pastga — tugmaga işora
+/** Rasmdagi taxta çegarasi rangi — HTML dagi davomi şu rangda. */
+const BOARD = "#5F63F4";
 
 /** Barcha xatlar uchun umumiy oddiy ramka: logo + oq karta. */
 function layout(inner: string) {
@@ -73,25 +78,33 @@ export function otpEmail(code: string, email: string) {
     )
     .join('<td style="width:10px"></td>');
   const copyCell = `<td style="width:10px"></td><td style="${cell};background:#6d28d9;border:1px solid #6d28d9"><a href="${fillUrl}" title="Nusxa oliş" style="display:block;line-height:60px;text-decoration:none"><img src="${COPY_ICON_URL}" width="24" height="24" alt="Nusxa" style="display:inline-block;vertical-align:middle;border:0;width:24px;height:24px"></a></td>`;
+  // Tayyor-Man rasmdagi taxtaning tepa qirrasini uşlab turadi; taxtaning davomi (kod yozilgan qismi) — HTML:
+  // xuddi şu kenglik, çegara rangi va oq fon. Kod — haqiqiy matn (rasm öçirilgan bölsa ham körinadi, nusxalanadi).
   const html = layout(`
-<tr><td style="padding-top:18px;font-size:16px;color:#3f3f46;line-height:1.5">Röyxatdan ötiş uçun tasdiqlaş kodingiz:</td></tr>
-<tr><td style="padding:22px 0" align="center"><table role="presentation" cellspacing="0" cellpadding="0"><tr>${digits}${copyCell}</tr></table></td></tr>
-<tr><td style="font-size:14px;color:#71717a;line-height:1.5">Kod 10 daqiqa amal qiladi. Uni heç kimga aytmang — Tayyorr xodimlari heç qaçon kodni söraşmaydi.</td></tr>
-<tr><td style="padding-top:18px;font-size:13px;color:#a1a1aa;line-height:1.5">Agar siz söramagan bölsangiz, bu xatni şunçaki öçirib taşlang.</td></tr>`);
+<tr><td style="padding-top:18px;font-size:20px;font-weight:700;color:#18181b;line-height:1.3" align="center">Tasdiqlaş kodingiz tayyor!</td></tr>
+<tr><td style="padding-top:6px;font-size:15px;color:#52525b;line-height:1.5" align="center">Röyxatdan ötişni yakunlaş uçun quyidagi kodni kiriting:</td></tr>
+<tr><td style="padding-top:18px;line-height:0;font-size:0"><img src="${MASCOT_CODE_URL}" width="384" alt="Tayyor-Man" style="display:block;width:100%;max-width:384px;height:auto;border:0;margin:0 auto"></td></tr>
+<tr><td style="background:#fdfdfd;border:2px solid ${BOARD};border-top:0;border-radius:0 0 16px 16px;padding:4px 10px 22px" align="center">
+<table role="presentation" cellspacing="0" cellpadding="0"><tr>${digits}${copyCell}</tr></table>
+</td></tr>
+<tr><td style="padding-top:20px;font-size:14px;color:#71717a;line-height:1.5">Kod 10 daqiqa amal qiladi. Uni heç kimga aytmang — Tayyorr xodimlari heç qaçon kodni söraşmaydi.</td></tr>
+<tr><td style="padding-top:14px;font-size:13px;color:#a1a1aa;line-height:1.5">Agar siz söramagan bölsangiz, bu xatni şunçaki öçirib taşlang.</td></tr>`);
   const text = `Tayyorr — tasdiqlaş kodingiz: ${code}\n\nKod 10 daqiqa amal qiladi. Uni heç kimga aytmang.\nAgar siz söramagan bölsangiz, bu xatni öçirib taşlang.`;
   return { subject: `${code} — Tayyorr tasdiqlaş kodi`, html, text };
 }
 
 /** Parolni tiklash xati — "Parolni yangilaş" tugmasi plus'dagi yangi parol sahifasiga olib boradi. */
 export function resetEmail(url: string) {
+  // Tayyor-Man kalitni yelkasida kötarib, pastdagi tugmaga barmoq bilan işora qiladi.
   const html = layout(`
-<tr><td style="padding-top:20px;font-size:20px;font-weight:700;color:#18181b;line-height:1.3">Parolingizni unutdingizmi?</td></tr>
-<tr><td style="padding-top:10px;font-size:15px;color:#3f3f46;line-height:1.6">Heç qisi yöq — quyidagi tugmani bosing va yangi parol öylab toping.</td></tr>
-<tr><td style="padding:24px 0" align="center">
-<a href="${url}" style="display:inline-block;background:#6d28d9;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:14px 30px;border-radius:12px">Parolni yangilaş</a>
+<tr><td style="padding-top:20px;font-size:20px;font-weight:700;color:#18181b;line-height:1.3" align="center">Parolingizni unutdingizmi?</td></tr>
+<tr><td style="padding-top:8px;font-size:15px;color:#3f3f46;line-height:1.6" align="center">Heç qisi yöq — kalit bizda! Pastdagi tugmani bosing va yangi parol öylab toping.</td></tr>
+<tr><td style="padding-top:14px;line-height:0;font-size:0" align="center"><img src="${MASCOT_RESET_URL}" width="240" alt="Tayyor-Man" style="display:block;width:240px;max-width:70%;height:auto;border:0;margin:0 auto"></td></tr>
+<tr><td style="padding:10px 0 24px" align="center">
+<a href="${url}" style="display:inline-block;background:#6d28d9;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:15px 34px;border-radius:14px">🔑 Parolni yangilaş</a>
 </td></tr>
 <tr><td style="font-size:14px;color:#71717a;line-height:1.5">Havola 30 daqiqa amal qiladi va faqat bir marta işlaydi.</td></tr>
-<tr><td style="padding-top:18px;font-size:13px;color:#a1a1aa;line-height:1.5">Agar parolni tiklaşni siz söramagan bölsangiz, bu xatni şunçaki öçirib taşlang — parolingiz özgarmaydi.</td></tr>`);
+<tr><td style="padding-top:14px;font-size:13px;color:#a1a1aa;line-height:1.5">Agar parolni tiklaşni siz söramagan bölsangiz, bu xatni şunçaki öçirib taşlang — parolingiz özgarmaydi.</td></tr>`);
   const text = `Tayyorr — parolingizni unutdingizmi?\n\nYangi parol öylab topiş uçun havola (30 daqiqa amal qiladi):\n${url}\n\nAgar siz söramagan bölsangiz, bu xatni öçirib taşlang — parolingiz özgarmaydi.`;
   return { subject: "Parolni yangilaş — Tayyorr", html, text };
 }

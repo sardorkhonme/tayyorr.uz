@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchJson } from "@/components/fetch-json";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "@/components/icons";
@@ -35,15 +36,12 @@ export function ReportDialog({
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch("/api/complaints", {
+      await fetchJson("/api/complaints", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ suspectId, orderId, messageId, body }),
+        json: { suspectId, orderId, messageId, body },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Yuborilmadi");
       setDone(true);
-      setTimeout(onClose, 1300);
+      setTimeout(onClose, 3500);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");
     } finally {

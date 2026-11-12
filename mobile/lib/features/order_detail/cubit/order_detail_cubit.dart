@@ -57,12 +57,12 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
     try {
       final order = await _repo.fetchOrder(orderId);
       emit(state.copyWith(status: OrderDetailStatus.success, order: order));
-    } on ApiException catch (e) {
+    } catch (e) {
       emit(
         state.copyWith(
           status: OrderDetailStatus.failure,
-          error: e.message,
-          errorCode: e.statusCode,
+          error: friendlyError(e),
+          errorCode: (e is ApiException ? e.statusCode : null),
         ),
       );
     }
@@ -83,8 +83,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       );
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -95,8 +95,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.boostOffer(orderId, stars: stars);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -107,8 +107,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.respondToOffer(offerId, accept: accept);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -119,8 +119,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.setOrderStatus(orderId, status);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -131,8 +131,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.deleteOrder(orderId);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -154,8 +154,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       );
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -170,8 +170,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.respondToContract(contractId, action: action, reason: reason);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -185,8 +185,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.requestRevision(orderId, reason: reason, deadline: deadline);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -197,8 +197,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.finalizeOrder(orderId);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }
@@ -209,8 +209,8 @@ class OrderDetailCubit extends Cubit<OrderDetailState>
       await _repo.submitReview(orderId, stars: stars, comment: comment);
       await load();
       return true;
-    } on ApiException catch (e) {
-      emit(state.copyWith(busy: false, error: e.message));
+    } catch (e) {
+      emit(state.copyWith(busy: false, error: friendlyError(e)));
       return false;
     }
   }

@@ -186,7 +186,7 @@ class _UpdateCardState extends State<_UpdateCard> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Tayyor-Man yangilaniş bilan; yuklanayotganda pastida foiz çizig'i
-          const Mascot(MascotPose.update, size: 180),
+          const Mascot(MascotPose.update, size: 210),
           if (downloading || _apkPath != null) ...[
             const SizedBox(height: 10),
             Row(
@@ -382,17 +382,13 @@ class _MaintenanceCardState extends State<_MaintenanceCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      // ramkasiz: qorong'i fon ustida katta maskot va matn
       constraints: const BoxConstraints(maxWidth: 380),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF14141F),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
+      padding: const EdgeInsets.all(8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Mascot(MascotPose.maintenance, size: 190),
+          const Mascot(MascotPose.maintenance, size: 260),
           const SizedBox(height: 12),
           const Text(
             'Texnik işlar',
@@ -422,7 +418,7 @@ class _MaintenanceCardState extends State<_MaintenanceCard> {
                     if (mounted) setState(() => _busy = false);
                   },
             child: Text(
-              _busy ? '...' : 'Qayta urinib köriş',
+              _busy ? 'Tekşirilmoqda…' : 'Qayta urinib köriş',
               style: const TextStyle(color: Color(0xFFA5B4FC), fontSize: 15),
             ),
           ),

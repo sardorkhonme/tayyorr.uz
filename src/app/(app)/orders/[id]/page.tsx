@@ -166,7 +166,7 @@ export default async function OrderDetailPage({
     <div className="flex flex-col gap-4">
       <BackLink fallback={isOrderer ? "/orders" : "/dashboard"} />
 
-      {isOrderer && !deleted && <OrderCreatedBanner />}
+      {isOrderer && !deleted && <OrderCreatedBanner orderId={order.id} />}
 
       {deleted && (
         <div className="rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-sm">

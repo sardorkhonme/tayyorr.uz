@@ -13,7 +13,7 @@ import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/date_time_picker.dart';
 import '../../../widgets/mascot.dart';
-import '../../../widgets/skeleton.dart';
+import '../../../widgets/session_transitions.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -75,74 +75,7 @@ class _OrderDetailView extends StatelessWidget {
               ],
             );
           }
-          // haqiqiy tuzilma: sarlavha kartasi, 2 ta fakt, tavsif, ishtirokchi
-          return const WebPage(
-            gap: 16,
-            children: [
-              WebCard(
-                padding: EdgeInsets.all(kDetailPad),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        SBar(width: 90, height: 24, borderRadius: 99),
-                        SizedBox(width: 8),
-                        SBar(width: 70, height: 24, borderRadius: 99),
-                      ],
-                    ),
-                    SizedBox(height: 12),
-                    SBar(height: 22),
-                    SizedBox(height: 6),
-                    SBar(width: 180, height: 22),
-                    SizedBox(height: 12),
-                    SBar(width: 120, height: 12),
-                  ],
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(child: SBlock(height: 72)),
-                  SizedBox(width: 12),
-                  Expanded(child: SBlock(height: 72)),
-                ],
-              ),
-              WebCard(
-                padding: EdgeInsets.all(kDetailPad),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SBar(width: 80, height: 16),
-                    SizedBox(height: 14),
-                    SBar(height: 13),
-                    SizedBox(height: 7),
-                    SBar(height: 13),
-                    SizedBox(height: 7),
-                    SBar(width: 200, height: 13),
-                  ],
-                ),
-              ),
-              WebCard(
-                padding: EdgeInsets.all(kDetailPad),
-                child: Row(
-                  children: [
-                    SCircle(size: 44),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SBar(width: 140, height: 15),
-                          SizedBox(height: 6),
-                          SBar(width: 80, height: 11),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
+          return const WebPage(children: [BrandLoaderBlock()]);
         }
         return WebPage(
           onRefresh: () => context.read<OrderDetailCubit>().load(),
@@ -660,8 +593,8 @@ class _OrderActionsState extends State<_OrderActions> {
           ),
         ),
       );
-    } on ApiException catch (e) {
-      setState(() => _localErr = e.message);
+    } catch (e) {
+      setState(() => _localErr = friendlyError(e));
     } finally {
       if (mounted) setState(() => _chatBusy = false);
     }
@@ -804,12 +737,12 @@ class _OrderActionsState extends State<_OrderActions> {
       if (widget.isPreparer && !widget.isAssigned && status == 'OPEN')
         _offerForm(myOffer, busy),
 
-      // Navbat
+      // Navbat (va uning ostida — öz taklifini star bilan navbatda kötariş)
       if (widget.isPreparer &&
           !widget.isOrderer &&
           status == 'OPEN' &&
-          o.queue.isNotEmpty)
-        _queue(),
+          (o.queue.isNotEmpty || (myOffer != null && !widget.isAssigned)))
+        _queue(widget.isAssigned ? null : myOffer, busy),
 
       // Buyurtmachi: takliflar
       if (widget.isOrderer) ..._offers(busy, status, sent),
@@ -1006,6 +939,31 @@ class _OrderActionsState extends State<_OrderActions> {
                     );
                   },
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _queue(OrderOfferModel? myOffer, bool busy) {
+    return DetailCard(
+      title: 'Navbat',
+      icon: TI.people_alt_rounded,
+      trailing: Text(
+        '${o.queue.length} ta',
+        style: TextStyle(color: WebC.zinc500, fontSize: 13),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "Köproq star sarflagan yuqorida turadi.",
+            style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: kDetailGap),
+          for (var i = 0; i < o.queue.length; i++) ...[
+            if (i > 0) const SizedBox(height: 8),
+            _queueRow(o.queue[i]),
+          ],
           if (myOffer != null) ...[
             const SizedBox(height: 16),
             Container(height: 1, color: WebC.border),
@@ -1069,31 +1027,6 @@ class _OrderActionsState extends State<_OrderActions> {
               ),
             ),
             _link('Star sotib oliş →'),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _queue() {
-    return DetailCard(
-      title: 'Navbat',
-      icon: TI.people_alt_rounded,
-      trailing: Text(
-        '${o.queue.length} ta',
-        style: TextStyle(color: WebC.zinc500, fontSize: 13),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            "Köproq star sarflagan yuqorida turadi.",
-            style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.4),
-          ),
-          const SizedBox(height: kDetailGap),
-          for (var i = 0; i < o.queue.length; i++) ...[
-            if (i > 0) const SizedBox(height: 8),
-            _queueRow(o.queue[i]),
           ],
         ],
       ),
@@ -1205,6 +1138,7 @@ class _OrderActionsState extends State<_OrderActions> {
           title: "Hozirça taklif yöq",
           subtitle:
               "Tayyorlovçilar narx taklif qilişi bilan şu yerda körinadi.",
+          fill: false,
         ),
       for (final x in o.offers) _offerCard(x, busy, status, sent),
     ];
@@ -1641,8 +1575,8 @@ class _ReportFormState extends State<_ReportForm> {
         body: _body.text.trim(),
       );
       setState(() => _done = true);
-    } on ApiException catch (e) {
-      setState(() => _err = e.message);
+    } catch (e) {
+      setState(() => _err = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1695,7 +1629,8 @@ class _ReportFormState extends State<_ReportForm> {
             ),
             const SizedBox(width: 8),
             WebButton(
-              label: _busy ? '...' : 'Yuboriş',
+              label: 'Yuboriş',
+              busy: _busy,
               onPressed: _busy ? null : _submit,
             ),
           ],

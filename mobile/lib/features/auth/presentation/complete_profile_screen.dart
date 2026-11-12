@@ -14,6 +14,7 @@ import '../../../core/ui/liquid_glass.dart';
 import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/google_logo.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
 import '../data/auth_repository.dart';
@@ -52,32 +53,55 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     // Google'dan kelgan ism-familiyani oldindan to'ldiramiz
     final user = context.read<AuthBloc>().state.user;
     final parts = (user?.name ?? '').trim().split(RegExp(r'\s+'));
-    _firstName = TextEditingController(text: user?.firstName ?? (parts.isNotEmpty ? parts.first : ''));
-    _lastName = TextEditingController(text: user?.lastName ?? (parts.length > 1 ? parts.sublist(1).join(' ') : ''));
+    _firstName = TextEditingController(
+      text: user?.firstName ?? (parts.isNotEmpty ? parts.first : ''),
+    );
+    _lastName = TextEditingController(
+      text:
+          user?.lastName ??
+          (parts.length > 1 ? parts.sublist(1).join(' ') : ''),
+    );
   }
 
   @override
   void dispose() {
-    for (final c in [_firstName, _lastName, _login, _password, _about, _hearAboutUsDetail]) {
+    for (final c in [
+      _firstName,
+      _lastName,
+      _login,
+      _password,
+      _about,
+      _hearAboutUsDetail,
+    ]) {
       c.dispose();
     }
     super.dispose();
   }
 
   Future<void> _pickAvatar() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 800, imageQuality: 85);
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
     if (file == null) return;
     setState(() => _uploading = true);
     try {
       final bytes = await file.readAsBytes();
       if (mounted) setState(() => _preview = bytes);
-      final ext = file.name.contains('.') ? file.name.split('.').last.toLowerCase() : 'jpg';
+      final ext = file.name.contains('.')
+          ? file.name.split('.').last.toLowerCase()
+          : 'jpg';
       final contentType = switch (ext) {
         'png' => 'image/png',
         'webp' => 'image/webp',
         _ => 'image/jpeg',
       };
-      final user = await AuthRepository().uploadAvatar(bytes: bytes, filename: file.name, contentType: contentType);
+      final user = await AuthRepository().uploadAvatar(
+        bytes: bytes,
+        filename: file.name,
+        contentType: contentType,
+      );
       if (mounted) context.read<AuthBloc>().add(AuthUserUpdated(user));
     } catch (_) {
       if (mounted) setState(() => _err = "Rasmni yuklab bölmadi");
@@ -141,7 +165,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
     if (_about.text.trim().length < 5) {
-      setState(() => _err = "Qöşimça maʼlumot kamida 5 ta belgidan iborat bölişi kerak");
+      setState(
+        () =>
+            _err = "Qöşimça maʼlumot kamida 5 ta belgidan iborat bölişi kerak",
+      );
       return;
     }
     final image = context.read<AuthBloc>().state.user?.image;
@@ -165,14 +192,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         birthDate:
             '${_birth!.year}-${_birth!.month.toString().padLeft(2, '0')}-${_birth!.day.toString().padLeft(2, '0')}',
         hearAboutUs: _hearAboutUs,
-        hearAboutUsDetail:
-            _hearAboutUs == 'other' ? _hearAboutUsDetail.text.trim() : null,
+        hearAboutUsDetail: _hearAboutUs == 'other'
+            ? _hearAboutUsDetail.text.trim()
+            : null,
       ),
     );
   }
 
-  Widget _field(String label, Widget input) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [WebLabel(label), input]);
+  Widget _field(String label, Widget input) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [WebLabel(label), input],
+  );
 
   Widget _buildStepIndicator() {
     return Row(
@@ -193,7 +223,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               width: 28,
               height: 6,
               decoration: BoxDecoration(
-                color: _step == 1 ? const Color(0xFF6366F1) : const Color(0xFF10B981),
+                color: _step == 1
+                    ? const Color(0xFF6366F1)
+                    : const Color(0xFF10B981),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -263,8 +295,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          name != null && name.isNotEmpty ? 'Xuş kelibsiz, $name!' : 'Xuş kelibsiz!',
-          style: TextStyle(color: WebC.white, fontSize: 20, fontWeight: FontWeight.w600),
+          name != null && name.isNotEmpty
+              ? 'Xuş kelibsiz, $name!'
+              : 'Xuş kelibsiz!',
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -285,14 +323,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         if (error != null) ...[
           const SizedBox(height: 14),
-          Text(error, style: const TextStyle(color: Color(0xFFF87171), fontSize: 13)),
+          Text(
+            error,
+            style: const TextStyle(color: Color(0xFFF87171), fontSize: 13),
+          ),
         ],
         const SizedBox(height: 20),
         WebButton(
           label: 'Davom etiş →',
           expand: true,
           busy: busy,
-          onPressed: busy ? null : () => context.read<AuthBloc>().add(AuthRoleChosen(_role)),
+          onPressed: busy
+              ? null
+              : () => context.read<AuthBloc>().add(AuthRoleChosen(_role)),
         ),
       ],
     );
@@ -301,295 +344,428 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final image = context.select((AuthBloc b) => b.state.user?.image);
-    return Scaffold(
-      body: AuroraBackground(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Center(child: AppLogo(height: 30)),
-                    const SizedBox(height: 32),
-                    WebCard(
-                      padding: const EdgeInsets.all(28),
-                      child: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          final busy = state.status == AuthStatus.authenticating;
-                          final error = _err ?? state.error;
+    // saqlaş muvaffaqiyatsiz — Tayyor-Man bilan tuşunarli xato oynasi (forma saqlanib qoladi)
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (p, c) =>
+          p.status == AuthStatus.authenticating &&
+          c.status == AuthStatus.onboarding &&
+          c.error != null,
+      listener: (context, state) => showMascotError(
+        context,
+        title: 'Saqlab bölmadi',
+        message: state.error,
+        pose: errorKindOf(state.error) == ErrorKind.network
+            ? MascotPose.noInternet
+            : MascotPose.error,
+      ),
+      child: Scaffold(
+        body: AuroraBackground(
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Center(child: AppLogo(height: 30)),
+                      const SizedBox(height: 32),
+                      WebCard(
+                        padding: const EdgeInsets.all(28),
+                        child: BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                            final busy =
+                                state.status == AuthStatus.authenticating;
+                            final error = _err ?? state.error;
 
-                          // tayyorr+ da ro'yxatdan o'tgan (login bor, rol yo'q) — faqat rol, saytdagidek
-                          final u = state.user;
-                          if (u != null && u.login != null && u.role == null) {
-                            return _buildRoleOnly(busy: busy, error: error);
-                          }
+                            // tayyorr+ da ro'yxatdan o'tgan (login bor, rol yo'q) — faqat rol, saytdagidek
+                            final u = state.user;
+                            if (u != null &&
+                                u.login != null &&
+                                u.role == null) {
+                              return _buildRoleOnly(busy: busy, error: error);
+                            }
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildStepIndicator(),
-                              const SizedBox(height: 18),
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildStepIndicator(),
+                                const SizedBox(height: 18),
 
-                              // ================= 1-QADAM =================
-                              if (_step == 1) ...[
-                                Text(
-                                  'Bizni qayerdan eşitdingiz?',
-                                  style: TextStyle(
-                                    color: WebC.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
+                                // ================= 1-QADAM =================
+                                if (_step == 1) ...[
+                                  Text(
+                                    'Bizni qayerdan eşitdingiz?',
+                                    style: TextStyle(
+                                      color: WebC.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  "Tayyorr.uz haqida maʼlumotni qayerdan oldingiz? Mos variantni tanlang.",
-                                  style: TextStyle(
-                                    color: WebC.zinc400,
-                                    fontSize: 13.5,
-                                    height: 1.4,
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "Tayyorr.uz haqida maʼlumotni qayerdan oldingiz? Mos variantni tanlang.",
+                                    style: TextStyle(
+                                      color: WebC.zinc400,
+                                      fontSize: 13.5,
+                                      height: 1.4,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 22),
-                                for (int i = 0; i < _sourceOptions.length; i += 2) ...[
-                                  if (i > 0) const SizedBox(height: 10),
+                                  const SizedBox(height: 22),
+                                  for (
+                                    int i = 0;
+                                    i < _sourceOptions.length;
+                                    i += 2
+                                  ) ...[
+                                    if (i > 0) const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _buildSourceCard(
+                                            _sourceOptions[i],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: i + 1 < _sourceOptions.length
+                                              ? _buildSourceCard(
+                                                  _sourceOptions[i + 1],
+                                                )
+                                              : const SizedBox.shrink(),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  if (_hearAboutUs == 'other') ...[
+                                    const SizedBox(height: 14),
+                                    WebInput(
+                                      controller: _hearAboutUsDetail,
+                                      hint:
+                                          "Qayerdan eşitganingizni yozing (YouTube, TikTok...)",
+                                    ),
+                                  ],
+                                  if (error != null) ...[
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      error,
+                                      style: TextStyle(
+                                        color: WebC.red,
+                                        fontSize: 13.5,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 22),
+                                  WebButton(
+                                    label: 'Davom etiş →',
+                                    expand: true,
+                                    onPressed: _continueStep1,
+                                  ),
+                                ],
+
+                                // ================= 2-QADAM =================
+                                if (_step == 2) ...[
+                                  Text(
+                                    "Profilni töldiring",
+                                    style: TextStyle(
+                                      color: WebC.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Barça maydonlar majburiy.',
+                                    style: TextStyle(
+                                      color: WebC.zinc400,
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
                                   Row(
                                     children: [
-                                      Expanded(child: _buildSourceCard(_sourceOptions[i])),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: i + 1 < _sourceOptions.length
-                                            ? _buildSourceCard(_sourceOptions[i + 1])
-                                            : const SizedBox.shrink(),
-                                      ),
+                                      for (final r in const [
+                                        ('ORDERER', 'Buyurtma beruvçi'),
+                                        ('PREPARER', 'Tayyorlovçi'),
+                                      ]) ...[
+                                        if (r.$1 == 'PREPARER')
+                                          const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _RoleButton(
+                                            label: r.$2,
+                                            selected: _role == r.$1,
+                                            onTap: () =>
+                                                setState(() => _role = r.$1),
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
-                                ],
-                                if (_hearAboutUs == 'other') ...[
-                                  const SizedBox(height: 14),
-                                  WebInput(
-                                    controller: _hearAboutUsDetail,
-                                    hint: "Qayerdan eşitganingizni yozing (YouTube, TikTok...)",
-                                  ),
-                                ],
-                                if (error != null) ...[
                                   const SizedBox(height: 16),
-                                  Text(error, style: TextStyle(color: WebC.red, fontSize: 13.5)),
-                                ],
-                                const SizedBox(height: 22),
-                                WebButton(
-                                  label: 'Davom etiş →',
-                                  expand: true,
-                                  onPressed: _continueStep1,
-                                ),
-                              ],
-
-                              // ================= 2-QADAM =================
-                              if (_step == 2) ...[
-                                Text(
-                                  "Profilni töldiring",
-                                  style: TextStyle(
-                                    color: WebC.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Barça maydonlar majburiy.',
-                                  style: TextStyle(color: WebC.zinc400, fontSize: 13.5),
-                                ),
-                                const SizedBox(height: 24),
-                                Row(
-                                  children: [
-                                    for (final r in const [
-                                      ('ORDERER', 'Buyurtma beruvçi'),
-                                      ('PREPARER', 'Tayyorlovçi'),
-                                    ]) ...[
-                                      if (r.$1 == 'PREPARER') const SizedBox(width: 12),
-                                      Expanded(
-                                        child: _RoleButton(
-                                          label: r.$2,
-                                          selected: _role == r.$1,
-                                          onTap: () => setState(() => _role = r.$1),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(child: _field('Ism', WebInput(controller: _firstName))),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: _field('Familiya', WebInput(controller: _lastName))),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                const WebLabel("Tuğilgan sana"),
-                                BirthDateField(value: _birth, onChanged: (d) => setState(() => _birth = d)),
-                                const SizedBox(height: 16),
-                                _field('Login', WebInput(controller: _login)),
-                                const SizedBox(height: 16),
-                                _field(
-                                  'Parol',
-                                  WebInput(
-                                    controller: _password,
-                                    obscure: !_showPw,
-                                    suffix: GestureDetector(
-                                      onTap: () => setState(() => _showPw = !_showPw),
-                                      child: TIcon(
-                                        _showPw ? TI.visibility_off_outlined : TI.visibility_outlined,
-                                        size: 18,
-                                        color: WebC.zinc500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Keyinçalik login + parol bilan ham kira olasiz.',
-                                  style: TextStyle(color: WebC.zinc500, fontSize: 12),
-                                ),
-                                const SizedBox(height: 16),
-                                _field("Qöşimça maʼlumot", WebInput(controller: _about, maxLines: 3, minLines: 3)),
-                                const SizedBox(height: 16),
-                                const WebLabel('Glavniy rasm'),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      clipBehavior: Clip.antiAlias,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: WebC.fill5,
-                                        ),
-                                      foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
-                                      child: _preview != null
-                                          ? Image.memory(_preview!, width: 80, height: 80, fit: BoxFit.cover)
-                                          : (image ?? '').isNotEmpty
-                                          ? Image.network(image!, width: 80, height: 80, fit: BoxFit.cover)
-                                          : Text("rasm yöq", style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    WebButton(
-                                      label: _uploading ? 'Yuklanmoqda...' : 'Rasm tanlaş',
-                                      variant: WebBtn.ghost,
-                                      onPressed: _uploading ? null : _pickAvatar,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Container(height: 1, color: WebC.border),
-                                const SizedBox(height: 16),
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => setState(() => _agree = !_agree),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 2),
-                                        child: SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: Checkbox(
-                                            value: _agree,
-                                            onChanged: (v) => setState(() => _agree = v ?? false),
-                                            activeColor: const Color(0xFF6366F1),
-                                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                            visualDensity: VisualDensity.compact,
-                                          ),
+                                      Expanded(
+                                        child: _field(
+                                          'Ism',
+                                          WebInput(controller: _firstName),
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 12),
                                       Expanded(
-                                        child: Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              const TextSpan(text: 'Men '),
-                                              TextSpan(
-                                                text: 'ommaviy oferta va foydalaniş şartlari',
-                                                style: TextStyle(
-                                                  color: WebC.indigo,
-                                                  decoration: TextDecoration.underline,
-                                                  decorationColor: WebC.indigo,
-                                                ),
-                                                recognizer: TapGestureRecognizer()
-                                                  ..onTap = () => LegalScreen.open(context),
-                                              ),
-                                              const TextSpan(
-                                                text:
-                                                    " bilan tanişdim, ularga roziman va maʼlumotlarni öz ixtiyorim bilan beraman.",
-                                              ),
-                                            ],
-                                          ),
-                                          style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1.45),
+                                        child: _field(
+                                          'Familiya',
+                                          WebInput(controller: _lastName),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                                if (error != null) ...[
                                   const SizedBox(height: 16),
-                                  Text(error, style: TextStyle(color: WebC.red, fontSize: 13.5)),
-                                ],
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    WebButton(
-                                      label: '← Orqaga',
-                                      variant: WebBtn.ghost,
-                                      onPressed: busy
-                                          ? null
-                                          : () => setState(() {
+                                  const WebLabel("Tuğilgan sana"),
+                                  BirthDateField(
+                                    value: _birth,
+                                    onChanged: (d) =>
+                                        setState(() => _birth = d),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _field('Login', WebInput(controller: _login)),
+                                  const SizedBox(height: 16),
+                                  _field(
+                                    'Parol',
+                                    WebInput(
+                                      controller: _password,
+                                      obscure: !_showPw,
+                                      suffix: GestureDetector(
+                                        onTap: () =>
+                                            setState(() => _showPw = !_showPw),
+                                        child: TIcon(
+                                          _showPw
+                                              ? TI.visibility_off_outlined
+                                              : TI.visibility_outlined,
+                                          size: 18,
+                                          color: WebC.zinc500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Keyinçalik login + parol bilan ham kira olasiz.',
+                                    style: TextStyle(
+                                      color: WebC.zinc500,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _field(
+                                    "Qöşimça maʼlumot",
+                                    WebInput(
+                                      controller: _about,
+                                      maxLines: 3,
+                                      minLines: 3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const WebLabel('Glavniy rasm'),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        clipBehavior: Clip.antiAlias,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: WebC.fill5,
+                                        ),
+                                        foregroundDecoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: WebC.border,
+                                          ),
+                                        ),
+                                        child: _preview != null
+                                            ? Image.memory(
+                                                _preview!,
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : (image ?? '').isNotEmpty
+                                            ? Image.network(
+                                                image!,
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Text(
+                                                "rasm yöq",
+                                                style: TextStyle(
+                                                  color: WebC.zinc500,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      WebButton(
+                                        label: _uploading
+                                            ? 'Yuklanmoqda...'
+                                            : 'Rasm tanlaş',
+                                        variant: WebBtn.ghost,
+                                        onPressed: _uploading
+                                            ? null
+                                            : _pickAvatar,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Container(height: 1, color: WebC.border),
+                                  const SizedBox(height: 16),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () =>
+                                        setState(() => _agree = !_agree),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 2,
+                                          ),
+                                          child: SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: Checkbox(
+                                              value: _agree,
+                                              onChanged: (v) => setState(
+                                                () => _agree = v ?? false,
+                                              ),
+                                              activeColor: const Color(
+                                                0xFF6366F1,
+                                              ),
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                const TextSpan(text: 'Men '),
+                                                TextSpan(
+                                                  text:
+                                                      'ommaviy oferta va foydalaniş şartlari',
+                                                  style: TextStyle(
+                                                    color: WebC.indigo,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    decorationColor:
+                                                        WebC.indigo,
+                                                  ),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () =>
+                                                            LegalScreen.open(
+                                                              context,
+                                                            ),
+                                                ),
+                                                const TextSpan(
+                                                  text:
+                                                      " bilan tanişdim, ularga roziman va maʼlumotlarni öz ixtiyorim bilan beraman.",
+                                                ),
+                                              ],
+                                            ),
+                                            style: TextStyle(
+                                              color: WebC.zinc300,
+                                              fontSize: 14,
+                                              height: 1.45,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (error != null) ...[
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      error,
+                                      style: TextStyle(
+                                        color: WebC.red,
+                                        fontSize: 13.5,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      WebButton(
+                                        label: '← Orqaga',
+                                        variant: WebBtn.ghost,
+                                        onPressed: busy
+                                            ? null
+                                            : () => setState(() {
                                                 _err = null;
                                                 _step = 1;
                                               }),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: WebButton(
-                                        label: busy ? 'Saqlanmoqda...' : 'Saqlaş va davom etiş',
-                                        expand: true,
-                                        onPressed: busy || !_agree ? null : _submit,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: WebButton(
+                                          label: busy
+                                              ? 'Saqlanmoqda...'
+                                              : 'Saqlaş va davom etiş',
+                                          expand: true,
+                                          onPressed: busy || !_agree
+                                              ? null
+                                              : _submit,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => context.read<AuthBloc>().add(
+                            const AuthLoggedOut(),
+                          ),
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Hisobingiz bormi? ',
+                              style: TextStyle(
+                                color: WebC.zinc500,
+                                fontSize: 14,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'Kiriş',
+                                  style: TextStyle(
+                                    color: WebC.indigo,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ],
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => context.read<AuthBloc>().add(const AuthLoggedOut()),
-                        child: Text.rich(
-                          TextSpan(
-                            text: 'Hisobingiz bormi? ',
-                            style: TextStyle(color: WebC.zinc500, fontSize: 14),
-                            children: [
-                              TextSpan(
-                                text: 'Kiriş',
-                                style: TextStyle(
-                                  color: WebC.indigo,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -703,14 +879,22 @@ final _sourceOptions = [
         color: const Color(0xFF6366F1),
       ),
       child: const Center(
-        child: TIcon(TI.chat_bubble_outline_rounded, color: Colors.white, size: 15),
+        child: TIcon(
+          TI.chat_bubble_outline_rounded,
+          color: Colors.white,
+          size: 15,
+        ),
       ),
     ),
   ),
 ];
 
 class _RoleButton extends StatelessWidget {
-  const _RoleButton({required this.label, required this.selected, required this.onTap});
+  const _RoleButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -723,13 +907,23 @@ class _RoleButton extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF6366F1).withValues(alpha: 0.10) : WebC.fill5.withValues(alpha: 0.03),
+          color: selected
+              ? const Color(0xFF6366F1).withValues(alpha: 0.10)
+              : WebC.fill5.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? const Color(0xFF818CF8).withValues(alpha: 0.7) : WebC.border),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF818CF8).withValues(alpha: 0.7)
+                : WebC.border,
+          ),
         ),
         child: Text(
           label,
-          style: TextStyle(color: selected ? WebC.white : WebC.zinc300, fontSize: 14, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            color: selected ? WebC.white : WebC.zinc300,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -752,10 +946,14 @@ const _monthNames = [
 ];
 
 /// "15-mart 2004"
-String formatBirthDate(DateTime d) => '${d.day}-${_monthNames[d.month - 1]} ${d.year}';
+String formatBirthDate(DateTime d) =>
+    '${d.day}-${_monthNames[d.month - 1]} ${d.year}';
 
 /// Pastdan chiqadigan aylanma tanlagich: Kun / Oy / Yil (10–100 yosh).
-Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial}) {
+Future<DateTime?> showBirthDatePicker(
+  BuildContext context, {
+  DateTime? initial,
+}) {
   final now = DateTime.now();
   final maxYear = now.year - 10;
   final minYear = now.year - 100;
@@ -788,28 +986,48 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
           child: CupertinoPicker(
             scrollController: c,
             itemExtent: 40,
-            selectionOverlay: const CupertinoPickerDefaultSelectionOverlay(background: Color(0x1A818CF8)),
+            selectionOverlay: const CupertinoPickerDefaultSelectionOverlay(
+              background: Color(0x1A818CF8),
+            ),
             onSelectedItemChanged: onChanged,
-            children: [for (var i = 0; i < count; i++) Center(child: Text(label(i), style: text))],
+            children: [
+              for (var i = 0; i < count; i++)
+                Center(child: Text(label(i), style: text)),
+            ],
           ),
         );
         return GlassSheetPanel(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).padding.bottom + 8),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            MediaQuery.of(ctx).padding.bottom + 8,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 36,
                 height: 4,
-                decoration: BoxDecoration(color: WebC.fill10, borderRadius: BorderRadius.circular(99)),
+                decoration: BoxDecoration(
+                  color: WebC.fill10,
+                  borderRadius: BorderRadius.circular(99),
+                ),
               ),
               const SizedBox(height: 14),
               Text(
                 "Tuğilgan sanangiz",
-                style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: WebC.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
-              Text(formatBirthDate(DateTime(year, month, day)), style: TextStyle(color: WebC.indigoSoft, fontSize: 14)),
+              Text(
+                formatBirthDate(DateTime(year, month, day)),
+                style: TextStyle(color: WebC.indigoSoft, fontSize: 14),
+              ),
               const SizedBox(height: 8),
               SizedBox(
                 height: 200,
@@ -825,7 +1043,9 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
                       c: monthCtl,
                       count: 12,
                       flex: 2,
-                      label: (i) => _monthNames[i][0].toUpperCase() + _monthNames[i].substring(1),
+                      label: (i) =>
+                          _monthNames[i][0].toUpperCase() +
+                          _monthNames[i].substring(1),
                       onChanged: (i) => setSheet(() => month = i + 1),
                     ),
                     wheel(
@@ -843,7 +1063,8 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
                 child: WebButton(
                   label: 'Tanlaş',
                   expand: true,
-                  onPressed: () => Navigator.of(sheetCtx).pop(DateTime(year, month, day)),
+                  onPressed: () =>
+                      Navigator.of(sheetCtx).pop(DateTime(year, month, day)),
                 ),
               ),
             ],
@@ -856,7 +1077,11 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
 
 /// Bosilganda aylanma tanlagich ochiladigan "Tug'ilgan sana" maydoni.
 class BirthDateField extends StatelessWidget {
-  const BirthDateField({super.key, required this.value, required this.onChanged});
+  const BirthDateField({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
   final DateTime? value;
   final ValueChanged<DateTime> onChanged;
 
@@ -871,10 +1096,14 @@ class BirthDateField extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 11),
         decoration: BoxDecoration(
-          color: AppColors.isLight ? Colors.white : Colors.white.withValues(alpha: 0.04),
+          color: AppColors.isLight
+              ? Colors.white
+              : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(11.2),
           border: Border.all(
-            color: AppColors.isLight ? Colors.black.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.10),
+            color: AppColors.isLight
+                ? Colors.black.withValues(alpha: 0.14)
+                : Colors.white.withValues(alpha: 0.10),
           ),
         ),
         child: Row(
@@ -882,7 +1111,10 @@ class BirthDateField extends StatelessWidget {
             Expanded(
               child: Text(
                 value == null ? 'Kun / Oy / Yil' : formatBirthDate(value!),
-                style: TextStyle(color: value == null ? WebC.zinc500 : WebC.white, fontSize: 14),
+                style: TextStyle(
+                  color: value == null ? WebC.zinc500 : WebC.white,
+                  fontSize: 14,
+                ),
               ),
             ),
             TIcon(TI.cake_outlined, size: 18, color: WebC.zinc500),

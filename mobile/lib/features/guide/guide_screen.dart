@@ -100,10 +100,10 @@ class _GuideScreenState extends State<GuideScreen> {
         _videos = videos;
         _loading = false;
       });
-    } on ApiException catch (e) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.message;
+        _error = friendlyError(e);
         _loading = false;
       });
     }
@@ -156,7 +156,7 @@ class _GuideScreenState extends State<GuideScreen> {
         if (_loading) ...[
           for (var i = 0; i < 4; i++) _stepSkeleton(last: i == 3),
         ] else if (_error != null)
-          ErrorState.from(_error, _load, card: true)
+          ErrorState.from(_error, _load)
         else ...[
           for (var i = 0; i < _steps.length; i++)
             _stepTile(i, _steps[i], last: i == _steps.length - 1),

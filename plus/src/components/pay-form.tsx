@@ -58,7 +58,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
             <Icon name="arrow-left" className="h-4 w-4" /> Orqaga
           </a>
           <span className="inline-flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-white shadow-lg shadow-black/10">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#ffffff] shadow-lg shadow-black/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/plus-mark.png" alt="" className="h-7 w-7 object-contain" />
             </span>
@@ -77,7 +77,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
               {num(value)} <span className="text-2xl font-semibold text-indigo-100">söm</span>
             </p>
             <div className="mt-4 flex items-center gap-3 border-t border-white/15 pt-4 text-sm">
-              <span className="grid h-9 w-14 place-items-center rounded-lg bg-white px-2">
+              <span className="grid h-9 w-14 place-items-center rounded-lg bg-[#ffffff] px-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={chosen.logo} alt={chosen.name} className="max-h-6 w-auto object-contain" />
               </span>
@@ -146,7 +146,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
                   type="button"
                   disabled={!m.ready}
                   onClick={() => setMethod(m.key)}
-                  className={`relative flex h-28 flex-col items-center justify-center gap-2.5 rounded-2xl border-2 bg-white px-2 transition ${
+                  className={`relative flex h-28 flex-col items-center justify-center gap-2.5 rounded-2xl border-2 bg-[#ffffff] px-2 transition ${
                     active
                       ? "border-indigo-500 shadow-lg shadow-indigo-500/15"
                       : "border-zinc-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md"
@@ -158,9 +158,9 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
                     alt={m.name}
                     className={`w-auto max-w-[85%] object-contain ${m.logoClass} ${m.ready ? "" : "opacity-40 grayscale"}`}
                   />
-                  {m.showName && <span className="text-xs font-semibold text-zinc-500">{m.name}</span>}
+                  {m.showName && <span className="text-xs font-semibold text-[#71717b]">{m.name}</span>}
                   {!m.ready && (
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">Tez orada</span>
+                    <span className="rounded-full bg-[#f4f4f5] px-2 py-0.5 text-[11px] font-semibold text-[#71717b]">Tez orada</span>
                   )}
                   {active && (
                     <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-indigo-500 text-white">

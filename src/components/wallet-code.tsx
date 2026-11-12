@@ -12,7 +12,7 @@ export function WalletCode({ code }: { code: string }) {
     try {
       await navigator.clipboard.writeText(code);
       setDone(true);
-      setTimeout(() => setDone(false), 1500);
+      setTimeout(() => setDone(false), 3500);
     } catch {
       /* ignore */
     }

@@ -5,6 +5,7 @@ import { currentUser } from "@/auth";
 import { AccountEditor } from "@/components/account-editor";
 import { Icon } from "@/components/icons";
 import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { getAccount } from "@/lib/account";
 import { db } from "@/lib/db";
 import { SMM_URL } from "@/lib/hub-nav";
@@ -55,17 +56,25 @@ export default async function AccountPage() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {platforms.map((p) => (
             <a key={p.title} href={p.href} className="card glow-card group flex items-center gap-4 !rounded-2xl p-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-zinc-100 bg-white shadow-sm">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-black/5 bg-[#ffffff] shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={p.mark} alt="" className="h-8 w-8 object-contain" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-zinc-900">{p.title}</span>
               </span>
-              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{p.status}</span>
+              <span className="shrink-0 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{p.status}</span>
             </a>
           ))}
         </div>
+      </section>
+
+      <section className="card flex flex-col gap-4 !rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-display text-lg font-bold text-zinc-900">Köriniş</h2>
+          <p className="mt-1 text-sm text-zinc-500">Yoruğ yoki qoronği mavzu — tayyorr+, Tayyorr.uz va Tayyorr SMM da bir xil.</p>
+        </div>
+        <ThemeSwitcher />
       </section>
 
       <SignOutButton

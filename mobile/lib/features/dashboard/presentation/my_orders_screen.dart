@@ -170,7 +170,6 @@ class _MyOrdersViewState extends State<_MyOrdersView> {
                                 ? ErrorState.from(
                                     state.error,
                                     () => context.read<DashboardCubit>().load(),
-                                    card: true,
                                   )
                                 : const ListMessage(
                                     pose: MascotPose.noResults,
@@ -214,8 +213,6 @@ class _EmptyOrders extends StatelessWidget {
       actionLabel: 'Buyurtma yaratiş',
       actionIcon: TI.add_rounded,
       onAction: onCreate,
-      size: 180,
-      card: true,
     );
   }
 }

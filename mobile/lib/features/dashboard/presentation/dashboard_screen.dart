@@ -382,7 +382,6 @@ class _DashboardViewState extends State<_DashboardView> {
                                 ? ErrorState.from(
                                     state.error,
                                     () => context.read<DashboardCubit>().load(),
-                                    card: true,
                                   )
                                 : state.orders.isEmpty
                                 ? const ListMessage(

@@ -39,6 +39,7 @@ export type IconName =
   | "play"
   | "pause"
   | "file"
+  | "user"
   | "tag"
   | "refresh"
   | "book"
@@ -46,6 +47,12 @@ export type IconName =
   | "moon";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  user: (
+    <>
+      <circle cx="12" cy="8" r="3.8" />
+      <path d="M4.5 20c.9-3.6 3.9-5.5 7.5-5.5s6.6 1.9 7.5 5.5" />
+    </>
+  ),
   sun: (
     <>
       <circle cx="12" cy="12" r="3.5" />

@@ -17,7 +17,7 @@ export function Logo({
     >
       {light ? (
         // rangli fonda belgi oq kartochka ichida turadi — ranglari yo'qolib ketmaydi
-        <span className="grid h-[1.6em] w-[1.6em] shrink-0 place-items-center rounded-[0.45em] bg-white shadow-sm">
+        <span className="grid h-[1.6em] w-[1.6em] shrink-0 place-items-center rounded-[0.45em] bg-[#ffffff] shadow-sm">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/plus-mark.png" alt="" aria-hidden className="h-[1.3em] w-auto" draggable={false} />
         </span>

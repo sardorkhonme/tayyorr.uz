@@ -29,7 +29,7 @@ export default async function AccountPage() {
       <section className="card flex flex-col gap-4 !rounded-3xl p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-lg font-bold text-zinc-900">Köriniş</h2>
-          <p className="mt-1 text-sm text-zinc-500">Yoruğ yoki qoronği mavzu — şu qurilmada saqlanadi.</p>
+          <p className="mt-1 text-sm text-zinc-500">Yoruğ yoki qoronği mavzu — Tayyorr SMM, tayyorr+ va Tayyorr.uz da bir xil.</p>
         </div>
         <ThemeSwitcher />
       </section>

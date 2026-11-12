@@ -4,17 +4,14 @@ import { SupportChat } from "@/components/support-chat";
 
 export const metadata = { title: "Support" };
 
-/** Support — telefon va planshet uchun butun ekran (kompyuterda popup ishlatiladi). */
+/** Support — telefon va planşet uçun butun ekran (kompyuterda popup işlatiladi). */
 export default async function SupportPage() {
   const user = await currentUser();
   return (
-    <div className="-mx-4 -mb-24 -mt-6 sm:mx-0 sm:mb-0 sm:mt-0">
+    // telefon/planşet — butun ekran (header va pastki panel yaşiriladi, çatda yopiş tugmasi bor)
+    <div className="fixed inset-0 z-50 flex flex-col bg-[var(--bg)] pb-[env(safe-area-inset-bottom)]">
       <DesktopRedirect />
-      <SupportChat
-        loggedIn={!!user}
-        closable
-        className="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-8rem)] sm:rounded-3xl sm:border sm:border-zinc-200 sm:shadow-xl lg:h-[calc(100dvh-5rem)]"
-      />
+      <SupportChat loggedIn={!!user} closable className="min-h-0 flex-1" />
     </div>
   );
 }

@@ -18,7 +18,7 @@ import '../../legal/legal_screen.dart';
 import '../../referral/presentation/referral_screen.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../widgets/confirm_dialog.dart';
-import '../../../widgets/skeleton.dart';
+import '../../../widgets/session_transitions.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -180,35 +180,7 @@ class ProfileScreen extends StatelessWidget {
       background: false,
       headerTrailing: _headerActions(context, user?.isPreparer ?? false),
       children: user == null
-          ? [
-              // haqiqiy tuzilma: sarlavha, login qatori, profil formasi (80px rasm + maydonlar)
-              WebPageTitle('Profil', size: 20),
-              const SizedBox(height: 4),
-              const SBar(width: 220, height: 13),
-              const SizedBox(height: 24),
-              const WebCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SBar(width: 120, height: 17),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        SCircle(size: 80),
-                        SizedBox(width: 16),
-                        SBar(width: 120, height: 36, borderRadius: 10),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    SField(),
-                    SizedBox(height: 12),
-                    SField(),
-                    SizedBox(height: 12),
-                    SField(),
-                  ],
-                ),
-              ),
-            ]
+          ? const [BrandLoaderBlock()]
           : [
               WebPageTitle('Profil', size: 20),
               const SizedBox(height: 4),
@@ -355,8 +327,8 @@ class _ProfileFormState extends State<_ProfileForm> {
       if (!mounted) return;
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
       setState(() => _msg = 'Saqlandi');
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _msg = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _msg = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -467,7 +439,8 @@ class _ProfileFormState extends State<_ProfileForm> {
           ],
           const SizedBox(height: 12),
           WebButton(
-            label: _busy ? '...' : 'Saqlaş',
+            label: 'Saqlaş',
+            busy: _busy,
             onPressed: _busy ? null : _submit,
             expand: true,
           ),
@@ -532,8 +505,8 @@ class _AccountFormState extends State<_AccountForm> {
       _pw.clear();
       _pw2.clear();
       setState(() => _msg = (true, 'Saqlandi'));
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _msg = (false, e.message));
+    } catch (e) {
+      if (mounted) setState(() => _msg = (false, friendlyError(e)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -592,7 +565,8 @@ class _AccountFormState extends State<_AccountForm> {
           ],
           const SizedBox(height: 12),
           WebButton(
-            label: _busy ? '...' : 'Saqlaş',
+            label: 'Saqlaş',
+            busy: _busy,
             onPressed: _busy ? null : _save,
             expand: true,
           ),

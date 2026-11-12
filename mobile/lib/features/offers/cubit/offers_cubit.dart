@@ -45,8 +45,10 @@ class OffersCubit extends Cubit<OffersState> with SafeEmit<OffersState> {
     try {
       final offers = await _repo.fetchMyOffers();
       emit(state.copyWith(status: OffersStatus.success, offers: offers));
-    } on ApiException catch (e) {
-      emit(state.copyWith(status: OffersStatus.failure, error: e.message));
+    } catch (e) {
+      emit(
+        state.copyWith(status: OffersStatus.failure, error: friendlyError(e)),
+      );
     }
   }
 }

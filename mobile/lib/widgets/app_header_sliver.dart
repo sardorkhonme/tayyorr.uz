@@ -210,29 +210,32 @@ class WebHeaderBar extends StatelessWidget {
       child: Row(
         children: [
           if (lead != null) ...[lead, const SizedBox(width: 8)],
-          Flexible(
-            child: GlassTap(
-              height: h,
-              onTap: () => switch (service) {
-                ServiceKind.uz => openUzSection(AppSection.dashboard),
-                ServiceKind.smm => openSmm(0),
-                ServiceKind.plus => openHub(),
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: switch (service) {
-                  ServiceKind.uz => const AppLogo(height: 20),
-                  ServiceKind.smm => const BrandLogo.smm(),
-                  ServiceKind.plus => const BrandLogo.plus(),
+          // logo (belgi + nom) hamişa töliq: joy tor bölsa kiçrayadi, lekin nom tuşib qolmaydi
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: GlassTap(
+                height: h,
+                onTap: () => switch (service) {
+                  ServiceKind.uz => openUzSection(AppSection.dashboard),
+                  ServiceKind.smm => openSmm(0),
+                  ServiceKind.plus => openHub(),
                 },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: switch (service) {
+                      ServiceKind.uz => const AppLogo(height: 20),
+                      ServiceKind.smm => const BrandLogo.smm(),
+                      ServiceKind.plus => const BrandLogo.plus(),
+                    },
+                  ),
+                ),
               ),
             ),
           ),
-          if (trailing != null) ...[
-            const Spacer(),
-            const SizedBox(width: 8),
-            trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 8), trailing!],
         ],
       ),
     );
@@ -369,31 +372,29 @@ class BrandLogo extends StatelessWidget {
           filterQuality: FilterQuality.high,
         ),
         const SizedBox(width: 7),
-        Flexible(
-          child: Text.rich(
-            smm
-                ? const TextSpan(
-                    text: 'Tayyorr ',
-                    children: [
-                      TextSpan(
-                        text: 'SMM',
-                        style: TextStyle(color: Color(0xFFD946EF)),
-                      ),
-                    ],
-                  )
-                : const TextSpan(
-                    text: 'tayyorr',
-                    children: [
-                      TextSpan(
-                        text: '+',
-                        style: TextStyle(color: Color(0xFFD946EF)),
-                      ),
-                    ],
-                  ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: style,
-          ),
+        Text.rich(
+          smm
+              ? const TextSpan(
+                  text: 'Tayyorr ',
+                  children: [
+                    TextSpan(
+                      text: 'SMM',
+                      style: TextStyle(color: Color(0xFFD946EF)),
+                    ),
+                  ],
+                )
+              : const TextSpan(
+                  text: 'tayyorr',
+                  children: [
+                    TextSpan(
+                      text: '+',
+                      style: TextStyle(color: Color(0xFFD946EF)),
+                    ),
+                  ],
+                ),
+          maxLines: 1,
+          softWrap: false,
+          style: style,
         ),
       ],
     );

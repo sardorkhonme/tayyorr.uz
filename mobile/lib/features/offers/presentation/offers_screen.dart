@@ -238,7 +238,6 @@ class _OffersViewState extends State<_OffersView> {
                     ? ErrorState.from(
                         state.error,
                         () => context.read<OffersCubit>().load(),
-                        card: true,
                       )
                     : state.offers.isEmpty
                     ? const ListMessage(

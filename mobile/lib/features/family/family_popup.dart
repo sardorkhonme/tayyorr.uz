@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/ui/app_dialogs.dart';
 import '../../core/ui/liquid_glass.dart';
 import '../../core/utils/format.dart';
+import '../../widgets/reaction_emoji.dart';
 import '../../widgets/skeleton.dart';
 import '../../widgets/user_avatar.dart';
 import '../../widgets/web_ui.dart';
@@ -18,7 +19,12 @@ import 'family_repository.dart';
 
 /// Popupdagi amal.
 class FamilyPopupAction {
-  const FamilyPopupAction(this.id, this.icon, this.label, {this.danger = false});
+  const FamilyPopupAction(
+    this.id,
+    this.icon,
+    this.label, {
+    this.danger = false,
+  });
   final String id;
   final TIData icon;
   final String label;
@@ -41,25 +47,27 @@ Future<String?> showFamilyPopup(
   bool showInfo = true,
 }) {
   HapticFeedback.selectionClick();
-  return Navigator.of(context, rootNavigator: true).push<String>(PageRouteBuilder(
-    opaque: false,
-    barrierDismissible: true,
-    barrierColor: Colors.transparent,
-    transitionDuration: const Duration(milliseconds: 240),
-    reverseTransitionDuration: const Duration(milliseconds: 180),
-    pageBuilder: (ctx, a, _) => _FamilyPopup(
-      animation: a,
-      rect: rect,
-      preview: preview,
-      alignRight: alignRight,
-      myReaction: myReaction,
-      actions: actions,
-      seen: seen,
-      reactionsCount: reactionsCount,
-      canReact: canReact,
-      showInfo: showInfo,
+  return Navigator.of(context, rootNavigator: true).push<String>(
+    PageRouteBuilder(
+      opaque: false,
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 240),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
+      pageBuilder: (ctx, a, _) => _FamilyPopup(
+        animation: a,
+        rect: rect,
+        preview: preview,
+        alignRight: alignRight,
+        myReaction: myReaction,
+        actions: actions,
+        seen: seen,
+        reactionsCount: reactionsCount,
+        canReact: canReact,
+        showInfo: showInfo,
+      ),
     ),
-  ));
+  );
 }
 
 class _FamilyPopup extends StatelessWidget {
@@ -88,7 +96,8 @@ class _FamilyPopup extends StatelessWidget {
 
   static const _barH = 52.0;
   static const _cell = 36.0;
-  static double barWidth(double screenW) => math.min(kFamilyEmojis.length * _cell + 12, screenW - 24);
+  static double barWidth(double screenW) =>
+      math.min(kFamilyEmojis.length * _cell + 12, screenW - 24);
   static const _menuW = 236.0;
   static const _gap = 8.0;
 
@@ -109,90 +118,132 @@ class _FamilyPopup extends StatelessWidget {
     top = top.clamp(minTop, math.max(minTop, maxBottom - total));
     final previewTop = top + barH + _gap;
 
-    double sidePad(double desired, double w) => desired.clamp(0.0, math.max(0.0, size.width - 24 - w));
+    double sidePad(double desired, double w) =>
+        desired.clamp(0.0, math.max(0.0, size.width - 24 - w));
     final barW = barWidth(size.width);
     final leftPad = sidePad(rect.left - 12, barW);
     final rightPad = sidePad(size.width - rect.right - 12, barW);
     final leftPadMenu = sidePad(rect.left - 12, _menuW);
     final rightPadMenu = sidePad(size.width - rect.right - 12, _menuW);
 
-    final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-    final pop = CurvedAnimation(parent: animation, curve: Curves.easeOutBack, reverseCurve: Curves.easeInCubic);
+    final curve = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final pop = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeInCubic,
+    );
 
     return Material(
       type: MaterialType.transparency,
-      child: Stack(children: [
-        // xiralashgan fon — bosilsa yopiladi
-        Positioned.fill(
-          child: GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: AnimatedBuilder(
-              animation: curve,
-              builder: (_, __) => BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 14 * curve.value, sigmaY: 14 * curve.value),
-                child: Container(color: Colors.black.withValues(alpha: (AppColors.isLight ? 0.18 : 0.42) * curve.value)),
-              ),
-            ),
-          ),
-        ),
-        // ko'tarilgan xabar
-        AnimatedBuilder(
-          animation: curve,
-          builder: (_, child) => Positioned(
-            left: rect.left,
-            width: rect.width,
-            top: lerpDouble(rect.top, previewTop, curve.value),
-            height: previewH,
-            child: Transform.scale(scale: 1 + 0.02 * curve.value, child: child),
-          ),
-          child: IgnorePointer(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: OverflowBox(alignment: Alignment.topCenter, maxHeight: double.infinity, child: preview),
-            ),
-          ),
-        ),
-        if (canReact)
-          Positioned(
-            left: 12,
-            right: 12,
-            top: top,
-            height: _barH,
-            child: Align(
-              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(left: alignRight ? 0 : leftPad, right: alignRight ? rightPad : 0),
-                child: FadeTransition(
-                  opacity: curve,
-                  child: ScaleTransition(
-                    scale: pop,
-                    alignment: alignRight ? Alignment.bottomRight : Alignment.bottomLeft,
-                    child: _EmojiBar(mine: myReaction, width: barW),
+      child: Stack(
+        children: [
+          // xiralashgan fon — bosilsa yopiladi
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: AnimatedBuilder(
+                animation: curve,
+                builder: (_, __) => BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 14 * curve.value,
+                    sigmaY: 14 * curve.value,
+                  ),
+                  child: Container(
+                    color: Colors.black.withValues(
+                      alpha: (AppColors.isLight ? 0.18 : 0.42) * curve.value,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        Positioned(
-          left: 12,
-          right: 12,
-          top: previewTop + previewH + _gap,
-          child: Align(
-            alignment: alignRight ? Alignment.topRight : Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.only(left: alignRight ? 0 : leftPadMenu, right: alignRight ? rightPadMenu : 0),
-              child: FadeTransition(
-                opacity: curve,
-                child: ScaleTransition(
-                  scale: pop,
-                  alignment: alignRight ? Alignment.topRight : Alignment.topLeft,
-                  child: _Menu(actions: actions, seen: seen, reactionsCount: reactionsCount, showInfo: showInfo),
+          // ko'tarilgan xabar
+          AnimatedBuilder(
+            animation: curve,
+            builder: (_, child) => Positioned(
+              left: rect.left,
+              width: rect.width,
+              top: lerpDouble(rect.top, previewTop, curve.value),
+              height: previewH,
+              child: Transform.scale(
+                scale: 1 + 0.02 * curve.value,
+                child: child,
+              ),
+            ),
+            child: IgnorePointer(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: OverflowBox(
+                  alignment: Alignment.topCenter,
+                  maxHeight: double.infinity,
+                  child: preview,
                 ),
               ),
             ),
           ),
-        ),
-      ]),
+          if (canReact)
+            Positioned(
+              left: 12,
+              right: 12,
+              top: top,
+              height: _barH,
+              child: Align(
+                alignment: alignRight
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: alignRight ? 0 : leftPad,
+                    right: alignRight ? rightPad : 0,
+                  ),
+                  child: FadeTransition(
+                    opacity: curve,
+                    child: ScaleTransition(
+                      scale: pop,
+                      alignment: alignRight
+                          ? Alignment.bottomRight
+                          : Alignment.bottomLeft,
+                      child: _EmojiBar(mine: myReaction, width: barW),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            left: 12,
+            right: 12,
+            top: previewTop + previewH + _gap,
+            child: Align(
+              alignment: alignRight ? Alignment.topRight : Alignment.topLeft,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: alignRight ? 0 : leftPadMenu,
+                  right: alignRight ? rightPadMenu : 0,
+                ),
+                child: FadeTransition(
+                  opacity: curve,
+                  child: ScaleTransition(
+                    scale: pop,
+                    alignment: alignRight
+                        ? Alignment.topRight
+                        : Alignment.topLeft,
+                    child: _Menu(
+                      actions: actions,
+                      seen: seen,
+                      reactionsCount: reactionsCount,
+                      showInfo: showInfo,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -217,24 +268,28 @@ class _EmojiBar extends StatelessWidget {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(children: [
-            for (final e in kFamilyEmojis)
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop('emoji:$e'),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
-                  width: _FamilyPopup._cell,
-                  height: _FamilyPopup._cell,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: e == mine ? const Color(0xFF6366F1).withValues(alpha: 0.22) : null,
+          child: Row(
+            children: [
+              for (final e in kFamilyEmojis)
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop('emoji:$e'),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: _FamilyPopup._cell,
+                    height: _FamilyPopup._cell,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: e == mine
+                          ? const Color(0xFF6366F1).withValues(alpha: 0.22)
+                          : null,
+                    ),
+                    child: ReactionEmoji(e, size: 23),
                   ),
-                  child: Text(e, style: const TextStyle(fontSize: 21, height: 1.1)),
                 ),
-              ),
-          ]),
+            ],
+          ),
         ),
       ),
     );
@@ -242,7 +297,12 @@ class _EmojiBar extends StatelessWidget {
 }
 
 class _Menu extends StatelessWidget {
-  const _Menu({required this.actions, required this.seen, required this.reactionsCount, this.showInfo = true});
+  const _Menu({
+    required this.actions,
+    required this.seen,
+    required this.reactionsCount,
+    this.showInfo = true,
+  });
   final List<FamilyPopupAction> actions;
   final int seen;
   final int reactionsCount;
@@ -250,19 +310,38 @@ class _Menu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget row(TIData icon, String label, VoidCallback onTap, {bool danger = false, bool info = false}) {
-      final c = danger ? const Color(0xFFF43F5E) : (info ? WebC.zinc400 : AppColors.textPrimary);
+    Widget row(
+      TIData icon,
+      String label,
+      VoidCallback onTap, {
+      bool danger = false,
+      bool info = false,
+    }) {
+      final c = danger
+          ? const Color(0xFFF43F5E)
+          : (info ? WebC.zinc400 : AppColors.textPrimary);
       return InkWell(
         onTap: onTap,
         child: SizedBox(
           height: info ? 44 : 46,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: Row(children: [
-              Expanded(child: Text(label, style: TextStyle(color: c, fontSize: info ? 13.5 : 15, fontWeight: info ? FontWeight.w600 : FontWeight.w500))),
-              const SizedBox(width: 10),
-              TIcon(icon, size: info ? 16 : 18, color: c),
-            ]),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: c,
+                      fontSize: info ? 13.5 : 15,
+                      fontWeight: info ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TIcon(icon, size: info ? 16 : 18, color: c),
+              ],
+            ),
           ),
         ),
       );
@@ -275,15 +354,34 @@ class _Menu extends StatelessWidget {
       clip: true,
       padding: const EdgeInsets.symmetric(vertical: 6),
       borderRadius: BorderRadius.circular(22),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        if (showInfo) ...[
-          row(TI.visibility_outlined, 'Kördi: $seen', () => Navigator.of(context).pop('people:seen'), info: true),
-          if (reactionsCount > 0)
-            row(TI.favorite_rounded, 'Reaksiyalar: $reactionsCount', () => Navigator.of(context).pop('people:reactions'), info: true),
-          Divider(height: 1, color: WebC.border),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showInfo) ...[
+            row(
+              TI.visibility_outlined,
+              'Kördi: $seen',
+              () => Navigator.of(context).pop('people:seen'),
+              info: true,
+            ),
+            if (reactionsCount > 0)
+              row(
+                TI.favorite_rounded,
+                'Reaksiyalar: $reactionsCount',
+                () => Navigator.of(context).pop('people:reactions'),
+                info: true,
+              ),
+            Divider(height: 1, color: WebC.border),
+          ],
+          for (final a in actions)
+            row(
+              a.icon,
+              a.label,
+              () => Navigator.of(context).pop(a.id),
+              danger: a.danger,
+            ),
         ],
-        for (final a in actions) row(a.icon, a.label, () => Navigator.of(context).pop(a.id), danger: a.danger),
-      ]),
+      ),
     );
   }
 }
@@ -291,7 +389,14 @@ class _Menu extends StatelessWidget {
 /// Pufakcha ostidagi reaksiyalar: emoji + son; meniki — ajratilgan. Bosilsa — almashtiriladi,
 /// bosib turilsa — kim bosganini ko'rsatadi.
 class FamilyReactionChips extends StatelessWidget {
-  const FamilyReactionChips({super.key, required this.message, required this.meId, required this.onTap, required this.onLongPress, this.alignRight = false});
+  const FamilyReactionChips({
+    super.key,
+    required this.message,
+    required this.meId,
+    required this.onTap,
+    required this.onLongPress,
+    this.alignRight = false,
+  });
   final FamilyMessage message;
   final String? meId;
   final void Function(String emoji) onTap;
@@ -319,20 +424,33 @@ class FamilyReactionChips extends StatelessWidget {
               duration: const Duration(milliseconds: 180),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: r.users.contains(meId) ? const Color(0xFF6366F1).withValues(alpha: 0.22) : AppColors.tint(0.06),
+                color: r.users.contains(meId)
+                    ? const Color(0xFF6366F1).withValues(alpha: 0.22)
+                    : AppColors.tint(0.06),
                 borderRadius: BorderRadius.circular(99),
-                border: Border.all(color: r.users.contains(meId) ? const Color(0xFF818CF8) : AppColors.cardBorder),
+                border: Border.all(
+                  color: r.users.contains(meId)
+                      ? const Color(0xFF818CF8)
+                      : AppColors.cardBorder,
+                ),
               ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(r.emoji, style: const TextStyle(fontSize: 14, height: 1.2)),
-                const SizedBox(width: 4),
-                Text('${r.count}',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ReactionEmoji(r.emoji, size: 15),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${r.count}',
                     style: TextStyle(
-                      color: r.users.contains(meId) ? WebC.indigoSoft : AppColors.textSecondary,
+                      color: r.users.contains(meId)
+                          ? WebC.indigoSoft
+                          : AppColors.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                    )),
-              ]),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
       ],
@@ -341,11 +459,17 @@ class FamilyReactionChips extends StatelessWidget {
 }
 
 /// Kim ko'rgan / kim reaksiya bosgan — yorliqlar bilan.
-Future<void> showFamilyPeople(BuildContext context, String messageId, {bool reactions = false, String? emoji}) {
+Future<void> showFamilyPeople(
+  BuildContext context,
+  String messageId, {
+  bool reactions = false,
+  String? emoji,
+}) {
   return showAppSheet(
     context,
     title: 'Xabar haqida',
-    builder: (_) => _People(messageId: messageId, reactions: reactions, emoji: emoji),
+    builder: (_) =>
+        _People(messageId: messageId, reactions: reactions, emoji: emoji),
   );
 }
 
@@ -362,17 +486,21 @@ class _People extends StatefulWidget {
 class _PeopleState extends State<_People> {
   late bool _reactions = widget.reactions;
   late String? _emoji = widget.emoji;
-  ({List<FamilyPerson> reactions, List<FamilyPerson> seen, int seenCount})? _data;
+  ({List<FamilyPerson> reactions, List<FamilyPerson> seen, int seenCount})?
+  _data;
   bool _failed = false;
 
   @override
   void initState() {
     super.initState();
-    FamilyRepository.instance.people(widget.messageId).then((d) {
-      if (mounted) setState(() => _data = d);
-    }).catchError((_) {
-      if (mounted) setState(() => _failed = true);
-    });
+    FamilyRepository.instance
+        .people(widget.messageId)
+        .then((d) {
+          if (mounted) setState(() => _data = d);
+        })
+        .catchError((_) {
+          if (mounted) setState(() => _failed = true);
+        });
   }
 
   @override
@@ -385,73 +513,154 @@ class _PeopleState extends State<_People> {
     final list = d == null
         ? const <FamilyPerson>[]
         : _reactions
-            ? d.reactions.where((r) => _emoji == null || r.emoji == _emoji).toList()
-            : d.seen;
-    return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(color: AppColors.tint(0.06), borderRadius: BorderRadius.circular(14)),
-        child: Row(children: [
-          _Tab(label: 'Kördi${d == null ? '' : ' · ${d.seenCount}'}', icon: TI.visibility_outlined, on: !_reactions, onTap: () => setState(() => _reactions = false)),
-          _Tab(label: 'Reaksiyalar${d == null ? '' : ' · ${d.reactions.length}'}', icon: TI.favorite_rounded, on: _reactions, onTap: () => setState(() => _reactions = true)),
-        ]),
-      ),
-      if (_reactions && byEmoji.isNotEmpty) ...[
-        const SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(children: [
-            _Filter(label: 'Hammasi', on: _emoji == null, onTap: () => setState(() => _emoji = null)),
-            for (final e in byEmoji.entries)
-              _Filter(label: '${e.key} ${e.value}', on: _emoji == e.key, onTap: () => setState(() => _emoji = e.key)),
-          ]),
+        ? d.reactions.where((r) => _emoji == null || r.emoji == _emoji).toList()
+        : d.seen;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.tint(0.06),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              _Tab(
+                label: 'Kördi${d == null ? '' : ' · ${d.seenCount}'}',
+                icon: TI.visibility_outlined,
+                on: !_reactions,
+                onTap: () => setState(() => _reactions = false),
+              ),
+              _Tab(
+                label:
+                    'Reaksiyalar${d == null ? '' : ' · ${d.reactions.length}'}',
+                icon: TI.favorite_rounded,
+                on: _reactions,
+                onTap: () => setState(() => _reactions = true),
+              ),
+            ],
+          ),
         ),
-      ],
-      const SizedBox(height: 12),
-      if (_failed)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Text("Yuklab bölmadi", textAlign: TextAlign.center, style: TextStyle(color: AppColors.textMuted)),
-        )
-      else if (d == null)
-        for (var i = 0; i < 4; i++)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Row(children: [SCircle(size: 40), SizedBox(width: 12), SBar(width: 150, height: 14)]),
-          )
-      else if (list.isEmpty)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Text(_reactions ? "Hali reaksiya yöq" : "Hali heç kim körmadi",
-              textAlign: TextAlign.center, style: TextStyle(color: AppColors.textMuted)),
-        )
-      else
-        for (final p in list)
-          InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: p.user.id, allowMessage: false))),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
-              child: Row(children: [
-                UserAvatar(imageUrl: p.user.image, initial: p.user.initial, size: 40),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(p.user.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.textPrimary, fontSize: 14.5, fontWeight: FontWeight.w600)),
-                    Text(p.user.login != null ? '@${p.user.login} · ${smartTime(p.at)}' : smartTime(p.at),
-                        style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                  ]),
+        if (_reactions && byEmoji.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _Filter(
+                  label: 'Hammasi',
+                  on: _emoji == null,
+                  onTap: () => setState(() => _emoji = null),
                 ),
-                if (p.emoji != null) Text(p.emoji!, style: const TextStyle(fontSize: 22)),
-              ]),
+                for (final e in byEmoji.entries)
+                  _Filter(
+                    label: '${e.value}',
+                    emoji: e.key,
+                    on: _emoji == e.key,
+                    onTap: () => setState(() => _emoji = e.key),
+                  ),
+              ],
             ),
           ),
-    ]);
+        ],
+        const SizedBox(height: 12),
+        if (_failed)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              "Yuklab bölmadi",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textMuted),
+            ),
+          )
+        else if (d == null)
+          for (var i = 0; i < 4; i++)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  SCircle(size: 40),
+                  SizedBox(width: 12),
+                  SBar(width: 150, height: 14),
+                ],
+              ),
+            )
+        else if (list.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              _reactions ? "Hali reaksiya yöq" : "Hali heç kim körmadi",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textMuted),
+            ),
+          )
+        else
+          for (final p in list)
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PublicProfileScreen(
+                    userId: p.user.id,
+                    allowMessage: false,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                child: Row(
+                  children: [
+                    UserAvatar(
+                      imageUrl: p.user.image,
+                      initial: p.user.initial,
+                      size: 40,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p.user.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            p.user.login != null
+                                ? '@${p.user.login} · ${smartTime(p.at)}'
+                                : smartTime(p.at),
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (p.emoji != null) ReactionEmoji(p.emoji!, size: 22),
+                  ],
+                ),
+              ),
+            ),
+      ],
+    );
   }
 }
 
 class _Tab extends StatelessWidget {
-  const _Tab({required this.label, required this.icon, required this.on, required this.onTap});
+  const _Tab({
+    required this.label,
+    required this.icon,
+    required this.on,
+    required this.onTap,
+  });
   final String label;
   final TIData icon;
   final bool on;
@@ -467,13 +676,31 @@ class _Tab extends StatelessWidget {
           height: 38,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(11),
-            gradient: on ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]) : null,
+            gradient: on
+                ? const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                  )
+                : null,
           ),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            TIcon(icon, size: 16, color: on ? Colors.white : AppColors.textSecondary),
-            const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: on ? Colors.white : AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w700)),
-          ]),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TIcon(
+                icon,
+                size: 16,
+                color: on ? Colors.white : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: on ? Colors.white : AppColors.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -481,8 +708,14 @@ class _Tab extends StatelessWidget {
 }
 
 class _Filter extends StatelessWidget {
-  const _Filter({required this.label, required this.on, required this.onTap});
+  const _Filter({
+    required this.label,
+    required this.on,
+    required this.onTap,
+    this.emoji,
+  });
   final String label;
+  final String? emoji;
   final bool on;
   final VoidCallback onTap;
 
@@ -494,11 +727,31 @@ class _Filter extends StatelessWidget {
         margin: const EdgeInsets.only(right: 6),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: on ? const Color(0xFF6366F1).withValues(alpha: 0.2) : AppColors.tint(0.05),
+          color: on
+              ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+              : AppColors.tint(0.05),
           borderRadius: BorderRadius.circular(99),
-          border: Border.all(color: on ? const Color(0xFF818CF8) : AppColors.cardBorder),
+          border: Border.all(
+            color: on ? const Color(0xFF818CF8) : AppColors.cardBorder,
+          ),
         ),
-        child: Text(label, style: TextStyle(color: on ? WebC.indigoSoft : AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (emoji != null) ...[
+              ReactionEmoji(emoji!, size: 15),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: on ? WebC.indigoSoft : AppColors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

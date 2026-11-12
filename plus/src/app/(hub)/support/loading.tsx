@@ -2,7 +2,7 @@ import { SBar, SCircle } from "@/components/skeleton";
 
 export default function SupportLoading() {
   return (
-    <div className="-mx-4 -mb-24 -mt-6 flex h-[calc(100dvh-4rem)] flex-col bg-white sm:mx-0 sm:mb-0 sm:mt-0 sm:h-[calc(100dvh-8rem)] sm:rounded-3xl sm:border sm:border-zinc-200 lg:h-[calc(100dvh-5rem)]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-white">
       <div className="flex items-center gap-3 border-b border-zinc-100 px-5 py-4">
         <SCircle />
         <div className="space-y-2">

@@ -8,6 +8,13 @@ import '../constants.dart';
 import '../storage/local_storage.dart';
 import 'api_exception.dart';
 
+/// Faylni to'g'ridan R2 ga yuklaş (PUT) uçun: ulaniş va javob kutiş vaqti çeklangan —
+/// aloqa uzilsa yuklaş «cheksiz aylanib» qolmaydi (yuboriş tezligi çeklanmaydi — katta fayllar uçun).
+final kUploadOptions = BaseOptions(
+  connectTimeout: const Duration(seconds: 20),
+  receiveTimeout: const Duration(seconds: 90),
+);
+
 /// Har bir so'rovga avtomatik "Authorization: Bearer TOKEN" qo'shadi
 /// (token bo'lsa). tayyorr.uz backendi bilan gaplashadigan yagona joy.
 class ApiClient {

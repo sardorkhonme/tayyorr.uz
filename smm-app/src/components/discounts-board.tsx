@@ -43,10 +43,11 @@ export function DiscountsBoard({
 
   if (services.length === 0) {
     return (
-      <section className="card !rounded-3xl text-zinc-900">
+      <section className="text-zinc-900">
         <MascotState
           pose="empty-discounts"
-          size={200}
+          size={240}
+          className="mascot-page"
           title="Hozirça çegirmalar yöq"
           message="Yangi çegirmalar tez-tez qöşiladi — kuzatib boring. Hozirça barça xizmatlarni körişingiz mumkin."
         >

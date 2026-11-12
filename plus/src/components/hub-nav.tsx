@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 
 import { SignOutButton } from "@/components/sign-out-button";
 import { Icon } from "@/components/icons";
@@ -30,11 +28,11 @@ function Avatar({ user, size = "h-10 w-10" }: { user: NonNullable<HubUser>; size
   );
 }
 
-function NavLinks({ user, onNavigate, mobile = false }: { user: HubUser; onNavigate?: () => void; mobile?: boolean }) {
+function NavLinks({ user, onNavigate }: { user: HubUser; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-1">
-      {HUB_NAV.filter((l) => (!l.auth || user) && (mobile || !l.mobileOnly)).map((l) => {
+      {HUB_NAV.filter((l) => (!l.auth || user) && !l.mobileOnly).map((l) => {
         const active = !l.external && isActive(pathname, l.href);
         const cls = `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition ${
           active ? "bg-gradient-to-r from-indigo-50 to-fuchsia-50 text-indigo-700" : "nav-item text-zinc-600"
@@ -116,7 +114,7 @@ function SignOut({ name }: { name?: string | null }) {
   );
 }
 
-/** Kompyuterda chap tomonda doimiy panel (header o'rniga). */
+/** Kompyuterda chap tomonda doimiy panel (header o'rniga). Telefon/planşetda — mobile-shell.tsx. */
 export function HubSidebar({ user }: { user: HubUser }) {
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-dvh w-64 flex-col border-r border-zinc-200/80 bg-white lg:flex">
@@ -146,82 +144,5 @@ export function HubSidebar({ user }: { user: HubUser }) {
         {user && <SignOut name={user.name} />}
       </div>
     </aside>
-  );
-}
-
-/** Telefonda: tepada ixcham panel, barcha bo'limlar popup menyuda. */
-export function HubMobileBar({ user }: { user: HubUser }) {
-  const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-
-  useEffect(() => setOpen(false), [pathname]);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  return (
-    <>
-      <div className="sticky top-0 z-[60] flex h-16 items-center gap-2 border-b border-zinc-200/70 bg-white/90 px-4 backdrop-blur-xl lg:hidden">
-        <Link href="/">
-          <Logo className="text-2xl" />
-        </Link>
-        <div className="ml-auto flex items-center gap-2">
-          {user && (
-            <TopupButton className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white py-1 pl-3 pr-1 text-sm font-semibold text-zinc-900 shadow-sm">
-              {som(user.balance)}
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
-                <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} />
-              </span>
-            </TopupButton>
-          )}
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Menyu"
-            aria-expanded={open}
-            className="grid h-10 w-10 place-items-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm"
-          >
-            <span className="relative flex h-3.5 w-4 flex-col justify-between">
-              <span className={`h-0.5 w-full rounded bg-current transition ${open ? "translate-y-[6px] rotate-45" : ""}`} />
-              <span className={`h-0.5 w-full rounded bg-current transition ${open ? "opacity-0" : ""}`} />
-              <span className={`h-0.5 w-full rounded bg-current transition ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {open &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div className="fixed inset-x-0 bottom-0 top-16 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-zinc-900/25 backdrop-blur-sm" onClick={() => setOpen(false)} />
-            <div className="animate-pop absolute right-3 top-2 max-h-[calc(100dvh-5.5rem)] w-[min(20rem,calc(100vw-1.5rem))] space-y-4 overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-4 shadow-2xl">
-              {user ? (
-                <>
-                  {/* balans tepadagi panelda turibdi — menyuda faqat profil */}
-                  <div className="flex items-center gap-3 px-1">
-                    <Avatar user={user} />
-                    <span className="min-w-0 truncate font-semibold text-zinc-900">{user.name}</span>
-                  </div>
-                </>
-              ) : (
-                <GuestCard />
-              )}
-              <NavLinks user={user} mobile onNavigate={() => setOpen(false)} />
-              <div className="space-y-2 border-t border-zinc-100 pt-3">
-                        {user && <SignOut name={user.name} />}
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
-    </>
   );
 }

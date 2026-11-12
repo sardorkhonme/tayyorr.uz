@@ -1,3 +1,4 @@
+import { cache } from "react";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -177,8 +178,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 });
 
-/** Joriy foydalanuvchi (bazadan yangi holatda) yoki null. */
-export async function currentUser() {
+/** Joriy foydalanuvçi (bazadan yangi holatda) yoki null; bitta sörov davomida bir marta öqiladi (layout va sahifa uçun umumiy). */
+export const currentUser = cache(async () => {
   const session = await auth();
   const id = session?.user?.id;
   if (!id) return null;
@@ -196,6 +197,7 @@ export async function currentUser() {
       balance: true,
       walletCode: true,
       bannedUntil: true,
+      theme: true,
     },
   });
-}
+});

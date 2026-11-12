@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 import { shortDateTime } from "@/lib/date";
-import { StarIcon } from "@/components/icons";
+import { Icon, StarIcon } from "@/components/icons";
 import { MascotState } from "@/components/mascot";
+import { useIsDesktop } from "@/components/use-media";
 import {
   FilterChip,
   FilterFooter,
@@ -53,7 +54,12 @@ export function OffersBrowser({
   offers: OfferRow[];
   initialOrderStatus: string | null;
 }) {
-  const { open: searching, query } = useHeaderSearch();
+  const isDesktop = useIsDesktop();
+  const { open: headerSearchOpen, query: headerQuery } = useHeaderSearch();
+  // kompyuterda — sahifadagi qidiruv maydoni, telefonda — header qidiruvi
+  const [deskQ, setDeskQ] = useState("");
+  const searching = !isDesktop && headerSearchOpen;
+  const query = isDesktop ? deskQ : searching ? headerQuery : "";
   const [orderStatus, setOrderStatus] = useState<string | null>(
     initialOrderStatus && ORDER_STATUSES.includes(initialOrderStatus)
       ? initialOrderStatus
@@ -145,41 +151,93 @@ export function OffersBrowser({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3 px-1">
-        <h2 className="text-base font-semibold text-white">
+      {/* ——— kompyuter: sarlavha, qidiruv va holat filtri sahifaning özida (asl körinişi) ——— */}
+      <div className="hidden lg:block">
+        <h1 className="text-2xl font-semibold tracking-tight text-white">Mening takliflarim</h1>
+        <p className="mt-1 text-sm text-zinc-400">
+          Siz yuborgan barça takliflar (arizalar) şu yerda.
+        </p>
+      </div>
+      <div className="sticky top-4 z-20 hidden flex-col gap-2.5 rounded-2xl border border-white/10 bg-[var(--surface)] px-3 py-3 shadow-lg shadow-black/10 lg:flex">
+        <div className="relative">
+          <Icon
+            name="search"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500"
+          />
+          <input
+            type="search"
+            className="input pl-9"
+            placeholder="Takliflarimdan qidiriş…"
+            value={deskQ}
+            onChange={(e) => setDeskQ(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 flex-wrap gap-1.5">
+            {[null, ...ORDER_STATUSES].map((st) => (
+              <button
+                key={st ?? "ALL"}
+                type="button"
+                onClick={() => setOrderStatus(st)}
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                  orderStatus === st
+                    ? "bg-indigo-500/20 text-indigo-300"
+                    : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {st ? STATUS_LABEL[st] : "Hammasi"}
+              </button>
+            ))}
+          </div>
+          <span className="ml-auto shrink-0 whitespace-nowrap text-xs text-zinc-500">
+            {filtered.length} ta
+          </span>
+        </div>
+      </div>
+
+      {/* ——— telefon/planşet: sarlavha + son (qidiruv/filtr headerda) ——— */}
+      <div className="flex items-center justify-between gap-3 px-1 lg:hidden">
+        <h2 className="min-w-0 truncate text-base font-semibold text-white">
           {searching && query.trim() ? "Qidiruv natijalari" : "Mening takliflarim"}
         </h2>
-        <span className="text-xs text-zinc-500">{filtered.length} ta</span>
+        <span className="shrink-0 whitespace-nowrap text-xs text-zinc-500">{filtered.length} ta</span>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card">
-          {offers.length === 0 ? (
-            <MascotState
-              pose="empty-offers"
-              size={140}
-              title="Siz hali taklif yubormagansiz"
-              message="Özingizga mos buyurtmani tanlab, birinçi taklifingizni yuboring."
-            >
-              <Link href="/dashboard" className="btn-primary">
-                Buyurtmalarni köriş
-              </Link>
-            </MascotState>
-          ) : (
-            <MascotState
-              pose="no-results"
-              size={140}
-              title="Mos taklif topilmadi"
-              message="Qidiruv sözini özgartirib yoki filtrni tozalab köring."
-            >
-              {active && (
-                <button type="button" onClick={reset} className="btn-ghost">
-                  Filtrni tozalaş
-                </button>
-              )}
-            </MascotState>
-          )}
-        </div>
+        offers.length === 0 ? (
+          <MascotState
+            pose="empty-offers"
+            size={240}
+            className="mascot-xl"
+            title="Siz hali taklif yubormagansiz"
+            message="Özingizga mos buyurtmani tanlab, birinçi taklifingizni yuboring."
+          >
+            <Link href="/dashboard" className="btn-primary">
+              Buyurtmalarni köriş
+            </Link>
+          </MascotState>
+        ) : (
+          <MascotState
+            pose="no-results"
+            size={240}
+            className="mascot-xl"
+            title="Mos taklif topilmadi"
+            message="Qidiruv sözini özgartirib yoki filtrni tozalab köring."
+          >
+            {(active || query) && (
+              <button
+                type="button"
+                onClick={() => {
+                  reset();
+                  setDeskQ("");
+                }}
+                className="btn-ghost"
+              >
+                Filtrni tozalaş
+              </button>
+            )}
+          </MascotState>
+        )
       ) : (
         <ul className="flex flex-col gap-2.5">
           {filtered.map((o) => {

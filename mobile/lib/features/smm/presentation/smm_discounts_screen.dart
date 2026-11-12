@@ -36,8 +36,8 @@ class _SmmDiscountsScreenState extends State<SmmDiscountsScreen> {
     try {
       final c = await SmmApi.instance.catalog(force: force);
       if (mounted) setState(() => _cat = c);
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
     }
   }
 
@@ -103,7 +103,7 @@ class _SmmDiscountsScreenState extends State<SmmDiscountsScreen> {
           ErrorState.from(_error, () {
             setState(() => _error = null);
             _load(force: true);
-          }, card: true)
+          })
         else if (c == null) ...[
           for (var i = 0; i < 3; i++) ...const [
             SmmServiceTileSkeleton(withLabel: true),

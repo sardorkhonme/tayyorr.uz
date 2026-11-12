@@ -23,7 +23,8 @@ class PlusHomeScreen extends StatefulWidget {
   State<PlusHomeScreen> createState() => _PlusHomeScreenState();
 }
 
-class _PlusHomeScreenState extends State<PlusHomeScreen> with WidgetsBindingObserver {
+class _PlusHomeScreenState extends State<PlusHomeScreen>
+    with WidgetsBindingObserver {
   int? _smmServices;
   int _smmOrders = 0;
 
@@ -78,7 +79,12 @@ class _PlusHomeScreenState extends State<PlusHomeScreen> with WidgetsBindingObse
           slivers: [
             const AppHeaderSliver(),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(14, 18, 14, 36 + MediaQuery.paddingOf(context).bottom),
+              padding: EdgeInsets.fromLTRB(
+                12,
+                20,
+                12,
+                36 + MediaQuery.paddingOf(context).bottom,
+              ),
               sliver: SliverList.list(
                 children: [
                   Text(
@@ -413,7 +419,11 @@ class _SoonCard extends StatelessWidget {
               color: WebC.fill5,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: TIcon(TI.auto_awesome_rounded, color: WebC.zinc400, size: 22),
+            child: TIcon(
+              TI.auto_awesome_rounded,
+              color: WebC.zinc400,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(

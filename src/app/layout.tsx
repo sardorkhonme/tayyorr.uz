@@ -7,6 +7,9 @@ import { PlatformTransition } from "@/components/platform-transition";
 import { Providers } from "@/components/providers";
 import { OfflineOverlay } from "@/components/offline-overlay";
 import { ActivityTracker } from "@/components/activity-tracker";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { THEME_COOKIE, themeCookieMigrateJs, type ThemeMode } from "@/lib/theme";
 
 // sarlavhalar uchun asosiy (display) shrift — geometrik, lekin haddan
 // tashqari o'yinqaro (Baloo) ham, haddan tashqari qat'iy (Orbitron) ham emas
@@ -119,7 +122,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const light = (await cookies()).get("tyr_theme")?.value === "light";
+  // mavzu: kirgan bölsa — bazadagi tanlov (mobil ilova, tayyorr+ va Tayyorr SMM bilan umumiy), aks holda
+  // umumiy cookie (.tayyorr.uz) — tayyorr+ yoki Tayyorr SMM da tanlansa ham şu yerda qöllanadi
+  const [jar, session] = await Promise.all([cookies(), auth().catch(() => null)]);
+  const uid = session?.user?.id;
+  const saved = uid
+    ? (await db.user.findUnique({ where: { id: uid }, select: { theme: true } }).catch(() => null))?.theme
+    : null;
+  const dbTheme: ThemeMode | null = saved === "light" || saved === "dark" ? saved : null;
+  const light = (dbTheme ?? jar.get(THEME_COOKIE)?.value) === "light";
 
   return (
     <html
@@ -130,8 +141,8 @@ export default async function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            // landing / login / register — har doim qorong'i
-            __html: `(function(){try{var p=location.pathname;if(p==='/'||p.indexOf('/login')===0||p.indexOf('/register')===0)document.documentElement.classList.remove('light');document.documentElement.classList.add('js-reveal');}catch(e){}})();`,
+            // landing / login / register — har doim qorong'i; mavzu cookie'si — umumiy (.tayyorr.uz) domenga
+            __html: `(function(){try{var p=location.pathname;if(p==='/'||p.indexOf('/login')===0||p.indexOf('/register')===0)document.documentElement.classList.remove('light');document.documentElement.classList.add('js-reveal');${themeCookieMigrateJs(dbTheme)}}catch(e){}})();`,
           }}
         />
       </head>

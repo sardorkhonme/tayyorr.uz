@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Icon, type IconName } from "@/components/icons";
+import { writeThemeCookie } from "@/lib/theme";
 
 type Mode = "light" | "dark";
 
 function apply(mode: Mode) {
   document.documentElement.classList.toggle("light", mode === "light");
-  document.cookie = `tyr_theme=${mode}; path=/; max-age=31536000; samesite=lax`;
+  // umumiy cookie (.tayyorr.uz) — tayyorr+ va Tayyorr SMM ham şu rejimda oçiladi
+  writeThemeCookie(mode);
   fetch("/api/me/theme", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/icons";
@@ -45,6 +45,13 @@ export function AccountEditor({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  // «Saqlandi» — 4 soniya turib yöqoladi (xato xabari tuzatilguncha qoladi)
+  useEffect(() => {
+    if (!msg?.ok) return;
+    const t = setTimeout(() => setMsg(null), 4000);
+    return () => clearTimeout(t);
+  }, [msg]);
 
   async function pickImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -153,7 +160,15 @@ export function AccountEditor({
       </section>
 
       {msg && (
-        <p className={`rounded-xl px-4 py-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>{msg.text}</p>
+        <p
+          role="status"
+          className={`animate-pop flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
+            msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+          }`}
+        >
+          <Icon name={msg.ok ? "check" : "close"} className="h-4 w-4 shrink-0" strokeWidth={2.4} />
+          {msg.text}
+        </p>
       )}
       <button className="btn-primary w-full !py-3.5 sm:w-auto" disabled={busy}>
         {busy ? "Saqlanmoqda…" : "Saqlaş"}

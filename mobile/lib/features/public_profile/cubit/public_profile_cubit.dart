@@ -47,12 +47,12 @@ class PublicProfileCubit extends Cubit<PublicProfileState>
           profile: profile,
         ),
       );
-    } on ApiException catch (e) {
+    } catch (e) {
       emit(
         PublicProfileState(
           status: PublicProfileStatus.failure,
-          error: e.message,
-          errorCode: e.statusCode,
+          error: friendlyError(e),
+          errorCode: (e is ApiException ? e.statusCode : null),
         ),
       );
     }

@@ -23,20 +23,20 @@ const ANDROID =
 const APPLE =
   "M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.33.8-.69 0-1.74-.78-2.86-.76-1.47.02-2.83.86-3.59 2.17-1.53 2.66-.39 6.6 1.1 8.75.73 1.05 1.6 2.24 2.73 2.2 1.1-.05 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.32-3.5zM14.2 6.13c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.54 1.31-.56.64-1.05 1.67-.92 2.66.97.08 1.96-.49 2.56-1.21z";
 
-/** Ilova afzalliklari — ixcham ro'yxat (qorong'i fon uchun). */
+/** Ilova afzalliklari — ixcham ro'yxat (qorong'i fon uchun; ranglar mavzuga bog'liq emas). */
 export function AppBenefits() {
   return (
     <ul className="mx-auto mt-6 grid max-w-xl gap-x-5 gap-y-3 text-left sm:grid-cols-2 lg:mx-0">
       {BENEFITS.map((b) => (
         <li key={b.title} className="flex items-start gap-3">
-          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.07] text-indigo-300">
+          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.07] text-[#a5b4fc]">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d={ICONS[b.icon]} />
             </svg>
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">{b.title}</span>
-            <span className="block text-xs leading-relaxed text-zinc-400">{b.text}</span>
+            <span className="block text-xs leading-relaxed text-[#a1a1aa]">{b.text}</span>
           </span>
         </li>
       ))}
@@ -52,7 +52,7 @@ export function AppStoreButtons({ href }: { href: string }) {
       <a
         href={href}
         aria-label="Android ilovasini yuklab oliş"
-        className="inline-flex min-h-[3.5rem] w-full whitespace-nowrap items-center justify-center gap-2.5 rounded-[0.9rem] border border-zinc-200 bg-white px-5 font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 lg:w-auto lg:px-6"
+        className="inline-flex min-h-[3.5rem] w-full whitespace-nowrap items-center justify-center gap-2.5 rounded-[0.9rem] border border-[#e4e4e7] bg-[#ffffff] px-5 font-semibold text-[#18181b] shadow-sm transition hover:bg-[#fafafa] lg:w-auto lg:px-6"
       >
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#3DDC84]/15">
           <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#0f8a4a]" fill="currentColor" aria-hidden>
@@ -64,7 +64,7 @@ export function AppStoreButtons({ href }: { href: string }) {
       <span
         aria-disabled
         aria-label="iOS ilovasi — tez kunda"
-        className="inline-flex min-h-[3.5rem] w-full whitespace-nowrap cursor-default items-center justify-center gap-2.5 rounded-[0.9rem] border border-zinc-500/30 bg-zinc-500/[0.06] px-5 font-semibold text-zinc-500 lg:w-auto lg:px-6"
+        className="inline-flex min-h-[3.5rem] w-full whitespace-nowrap cursor-default items-center justify-center gap-2.5 rounded-[0.9rem] border border-zinc-500/30 bg-zinc-500/[0.06] px-5 font-semibold text-[#71717b] lg:w-auto lg:px-6"
       >
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-zinc-500/10">
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
@@ -73,7 +73,7 @@ export function AppStoreButtons({ href }: { href: string }) {
         </span>
         <span className="flex flex-col items-start leading-tight">
           Yuklab oliş
-          <span className="text-[11px] font-medium text-zinc-500">Tez kunda</span>
+          <span className="text-[11px] font-medium text-[#71717b]">Tez kunda</span>
         </span>
       </span>
     </div>

@@ -616,3 +616,155 @@ class _SignOutScreenState extends State<SignOutScreen>
     );
   }
 }
+
+/// Brend yuklaniş belgisi — kiriş animatsiyasining ixçam varianti: tayyorr+ belgisi yumşoq
+/// «nafas oladi» (pulse), orqasidan ikki halqa to'lqini (indigo va pushti) navbat bilan tarqaladi.
+/// Butun ekran / bloklovçi kutişlar uçun (skelet — faqat röyxatlar örnida).
+class BrandLoader extends StatefulWidget {
+  const BrandLoader({super.key, this.size = 96, this.label});
+
+  /// Belgi + halqalar egallaydigan kvadrat tomoni.
+  final double size;
+
+  /// Ostidagi matn (masalan «Kirilmoqda...»).
+  final String? label;
+
+  @override
+  State<BrandLoader> createState() => _BrandLoaderState();
+}
+
+class _BrandLoaderState extends State<BrandLoader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1600),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.size;
+    final light = AppColors.isLight;
+    final loader = SizedBox(
+      width: s,
+      height: s,
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) {
+          final t = _c.value;
+          // nafas: 0.92 → 1.06 → 0.92
+          final pulse = 0.92 + 0.14 * (0.5 - 0.5 * math.cos(t * 2 * math.pi));
+          Widget ring(double phase, Color color) {
+            final p = (t + phase) % 1.0;
+            final d = s * (0.42 + 0.58 * Curves.easeOutCubic.transform(p));
+            return Container(
+              width: d,
+              height: d,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: color.withValues(alpha: 0.55 * (1 - p)),
+                  width: math.max(1.5, s * 0.018),
+                ),
+              ),
+            );
+          }
+
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              ring(0, AppColors.indigo),
+              ring(0.5, _magenta),
+              Container(
+                width: s * 0.5,
+                height: s * 0.5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.indigo.withValues(
+                        alpha: (light ? 0.16 : 0.32) * pulse,
+                      ),
+                      blurRadius: s * 0.35,
+                      spreadRadius: s * 0.02,
+                    ),
+                  ],
+                ),
+              ),
+              Transform.scale(
+                scale: pulse,
+                child: Image.asset(
+                  'assets/plus-mark.png',
+                  height: s * 0.46,
+                  filterQuality: FilterQuality.high,
+                  gaplessPlayback: true,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (widget.label == null) {
+      return Semantics(label: 'Yuklanmoqda', child: loader);
+    }
+    return Semantics(
+      label: widget.label,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          loader,
+          const SizedBox(height: 14),
+          Text(
+            widget.label!,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.1,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Butun ekranli kutiş sahifasi (yaxlit fon) — örtada [BrandLoader] va matn.
+class BrandLoaderPage extends StatelessWidget {
+  const BrandLoaderPage({super.key, this.label, this.size = 132});
+  final String? label;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: AppColors.bg,
+    child: Center(
+      child: BrandLoader(size: size, label: label),
+    ),
+  );
+}
+
+/// Sahifa içidagi (header ostidagi) kutiş: bösh joy örtasida [BrandLoader].
+class BrandLoaderBlock extends StatelessWidget {
+  const BrandLoaderBlock({super.key, this.label, this.size = 104});
+  final String? label;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: BoxConstraints(
+      minHeight: MediaQuery.sizeOf(context).height * 0.6,
+    ),
+    child: Center(
+      child: BrandLoader(size: size, label: label),
+    ),
+  );
+}

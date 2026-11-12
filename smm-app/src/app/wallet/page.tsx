@@ -8,7 +8,8 @@ import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
 import { som } from "@/lib/format";
 import { PAYOUT_STATUS } from "@/lib/payout";
-import { Mascot, MascotState } from "@/components/mascot";
+import { FlashNotice } from "@/components/flash-notice";
+import { MascotState } from "@/components/mascot";
 import {
   ensureWalletCode,
   expireStaleClickTopups,
@@ -54,15 +55,11 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
       </header>
 
       {topup && (
-        <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-          <Mascot pose="success" size={110} priority className="shrink-0" />
-          <div className="min-w-0">
-            <p className="font-semibold text-emerald-900">Rahmat! Tölov qabul qilinmoqda</p>
-            <p className="mt-1 text-sm">
-              Tölov tekşirilmoqda — ötgan bölsa, balans bir neça soniyada yangilanadi. Sahifani yangilang.
-            </p>
-          </div>
-        </div>
+        <FlashNotice
+          clearParam="topup"
+          title="Rahmat! Tölov qabul qilinmoqda"
+          message="Tölov tekşirilmoqda — ötgan bölsa, balans bir neça soniyada yangilanadi."
+        />
       )}
 
       {/* balans */}
@@ -75,7 +72,7 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
           Hisob kodi: <span className="font-mono font-semibold text-white">{walletCode}</span>
         </p>
         <div className="relative z-[2] mt-6 flex flex-col gap-2 sm:flex-row">
-          <TopupButton className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-indigo-700 transition hover:bg-indigo-50">
+          <TopupButton className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#ffffff] px-5 py-3 font-semibold text-[#4338ca] transition hover:bg-[#eef2ff]">
             <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} /> Hamyonni töldiriş
           </TopupButton>
           <a
@@ -126,10 +123,11 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
       <section>
         <h2 className="font-display text-xl font-bold text-zinc-900">Amallar tarixi</h2>
         {txns.length === 0 ? (
-          <div className="card mt-4 !rounded-3xl text-zinc-900">
+          <div className="mt-2 text-zinc-900">
             <MascotState
               pose="wallet-empty"
-              size={140}
+              size={240}
+              className="mascot-page"
               title="Hozirça amallar yöq"
               message="Hamyonni töldirsangiz yoki buyurtma bersangiz, barça amallar şu yerda körinadi."
             >

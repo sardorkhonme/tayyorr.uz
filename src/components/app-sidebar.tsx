@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { navForRole } from "@/lib/nav";
+import { sidebarNavForRole } from "@/lib/nav";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BalanceAmount } from "@/components/balance-amount";
@@ -34,7 +34,7 @@ export function AppSidebar({
   const { t } = useLocale();
   const live = useUnread();
   const unreadCount = live ? live.total : unread;
-  const nav = navForRole(user.role).map((l) =>
+  const nav = sidebarNavForRole(user.role).map((l) =>
     l.href === "/messages" ? { ...l, badge: unreadCount } : l,
   );
   const displayName =

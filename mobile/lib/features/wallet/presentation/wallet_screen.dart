@@ -13,7 +13,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/mascot.dart';
-import '../../../widgets/skeleton.dart';
+import '../../../widgets/session_transitions.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -63,16 +63,7 @@ class _WalletView extends StatelessWidget {
         if (wallet == null && state.status == WalletStatus.failure) {
           body = [ErrorState.from(state.error, reload)];
         } else if (wallet == null) {
-          // haqiqiy tuzilma: balans kartasi, to'ldirish, yechib olish formasi, amallar tarixi
-          body = [
-            const _BalanceSkeleton(),
-            const _TopUpSkeleton(),
-            const SBlock(height: 280),
-            _Section(
-              title: 'Amallar tarixi',
-              children: [for (var i = 0; i < 4; i++) const _TxnSkeleton()],
-            ),
-          ];
+          body = const [BrandLoaderBlock()];
         } else {
           body = [
             _BalanceCard(wallet: wallet),
@@ -97,8 +88,9 @@ class _WalletView extends StatelessWidget {
                         title: "Hozirça amallar yöq",
                         message:
                             "Hamyonni töldirganingizda yoki tölov qilganingizda amallar şu yerda körinadi.",
-                        size: 140,
-                        card: true,
+                        size: 200,
+                        fill: false,
+                        padding: EdgeInsets.fromLTRB(8, 8, 8, 16),
                       ),
                     ]
                   : [for (final t in wallet.transactions) _TxnRow(txn: t)],
@@ -121,91 +113,6 @@ class _WalletView extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class _BalanceSkeleton extends StatelessWidget {
-  const _BalanceSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: WebC.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: WebC.cardBorder),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SBar(width: 90, height: 13),
-          SizedBox(height: 10),
-          SBar(width: 190, height: 36, borderRadius: 10),
-          SizedBox(height: 14),
-          SBar(width: 210, height: 32, borderRadius: 8),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopUpSkeleton extends StatelessWidget {
-  const _TopUpSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: WebC.cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: WebC.cardBorder),
-      ),
-      child: const Row(
-        children: [
-          Skel(width: 46, height: 46, borderRadius: 14),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SBar(width: 140, height: 15),
-                SizedBox(height: 6),
-                SBar(width: 190, height: 11),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TxnSkeleton extends StatelessWidget {
-  const _TxnSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return const WebCard(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SBar(width: 120, height: 14),
-                SizedBox(height: 6),
-                SBar(width: 150, height: 11),
-              ],
-            ),
-          ),
-          SizedBox(width: 12),
-          SBar(width: 80, height: 14),
-        ],
-      ),
     );
   }
 }
@@ -438,7 +345,7 @@ class _BalanceCardState extends State<_BalanceCard> {
     await Clipboard.setData(ClipboardData(text: widget.wallet.walletCode));
     if (!mounted) return;
     setState(() => _copied = true);
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    Future.delayed(const Duration(milliseconds: 3500), () {
       if (mounted) setState(() => _copied = false);
     });
   }
@@ -640,8 +547,8 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
       setState(() => _msg = (true, '$n star sotib olindi!'));
       _stars.clear();
       widget.onDone();
-    } on ApiException catch (e) {
-      setState(() => _msg = (false, e.message));
+    } catch (e) {
+      setState(() => _msg = (false, friendlyError(e)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -710,7 +617,8 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
           ],
           const SizedBox(height: 16),
           WebButton(
-            label: _busy ? '...' : 'Star sotib oliş',
+            label: 'Star sotib oliş',
+            busy: _busy,
             onPressed: _busy ? null : _submit,
             expand: true,
           ),
@@ -859,8 +767,8 @@ class _PayoutFormState extends State<_PayoutForm> {
       _cardName.clear();
       _amount.clear();
       widget.onDone();
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _msg = (false, e.message));
+    } catch (e) {
+      if (mounted) setState(() => _msg = (false, friendlyError(e)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -987,7 +895,8 @@ class _PayoutFormState extends State<_PayoutForm> {
           Align(
             alignment: Alignment.centerLeft,
             child: WebButton(
-              label: _busy ? '...' : 'Yeçib oliş',
+              label: 'Yeçib oliş',
+              busy: _busy,
               onPressed: _busy ? null : _submit,
             ),
           ),
@@ -1018,8 +927,8 @@ class _PayoutRowState extends State<_PayoutRow> {
       if (!mounted) return;
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
       await widget.onCancelled();
-    } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message, kind: ToastKind.error);
+    } catch (e) {
+      if (mounted) showToast(context, friendlyError(e), kind: ToastKind.error);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1072,7 +981,8 @@ class _PayoutRowState extends State<_PayoutRow> {
           if (p.status == 'PENDING') ...[
             const SizedBox(width: 12),
             WebButton(
-              label: _busy ? '...' : 'Bekor qiliş',
+              label: 'Bekor qiliş',
+              busy: _busy,
               variant: WebBtn.ghost,
               small: true,
               onPressed: _busy ? null : _cancel,

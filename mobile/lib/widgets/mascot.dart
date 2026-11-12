@@ -126,8 +126,9 @@ class _MascotState extends State<Mascot> with TickerProviderStateMixin {
   }
 }
 
-/// Böş / xato / internet yöq holatlari uçun yagona blok: maskot, sarlavha, izoh va (ixtiyoriy) tugma.
-/// Barça sahifalarda bir xil ölçam va oraliqlar. [card] — röyxat içida karta ramkasida (maskot 140).
+/// Böş / xato / internet yöq holatlari uçun yagona blok: katta maskot (ramkasiz), sarlavha,
+/// izoh va (ixtiyoriy) tugma. Barça sahifalarda bir xil ölçam va oraliqlar.
+/// [fill] — röyxat / sahifa içida bösh joyning örtasida turadi (ekran balandligining ~58%).
 class MascotState extends StatelessWidget {
   const MascotState({
     super.key,
@@ -139,10 +140,14 @@ class MascotState extends StatelessWidget {
     this.onAction,
     this.secondaryLabel,
     this.onSecondary,
-    this.size = 190,
+    this.size = 250,
     this.padding = const EdgeInsets.fromLTRB(24, 8, 24, 24),
-    this.card = false,
+    this.fill = true,
+    this.action,
   });
+
+  /// Tayyor tugma (masalan boşqa uslubdagi) — [actionLabel] örniga.
+  final Widget? action;
 
   final MascotPose pose;
   final String title;
@@ -155,65 +160,69 @@ class MascotState extends StatelessWidget {
   final double size;
   final EdgeInsets padding;
 
-  /// Röyxat içida — WebCard ramkasida.
-  final bool card;
+  /// Bösh joyni egallab, örtada turadi (böş sahifa / xato). `false` — bölim içida (ixçam).
+  final bool fill;
 
   @override
   Widget build(BuildContext context) {
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Mascot(pose, size: size),
-        const SizedBox(height: 12),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: card ? 16 : 18,
-            fontWeight: FontWeight.w700,
-            height: 1.3,
-          ),
-        ),
-        if (message != null) ...[
-          const SizedBox(height: 6),
+    final screen = MediaQuery.sizeOf(context);
+    // past ekranlarda maskot ham moslaşadi (lekin kiçik emas)
+    final side = math.min(size, screen.height * 0.34).clamp(140.0, size);
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 420),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Mascot(pose, size: side),
+          const SizedBox(height: 14),
           Text(
-            message!,
+            title,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: card ? 13 : 14,
-              height: 1.45,
+              color: AppColors.textPrimary,
+              fontSize: 19,
+              fontWeight: FontWeight.w700,
+              height: 1.3,
             ),
           ),
+          if (message != null && message!.trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              message!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14.5,
+                height: 1.45,
+              ),
+            ),
+          ],
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: 22),
+            WebButton(
+              label: actionLabel!,
+              leading: actionIcon,
+              onPressed: onAction,
+            ),
+          ],
+          if (action != null) ...[const SizedBox(height: 22), action!],
+          if (secondaryLabel != null && onSecondary != null) ...[
+            const SizedBox(height: 8),
+            WebButton(
+              label: secondaryLabel!,
+              variant: WebBtn.ghost,
+              onPressed: onSecondary,
+            ),
+          ],
         ],
-        if (actionLabel != null && onAction != null) ...[
-          SizedBox(height: card ? 16 : 20),
-          WebButton(
-            label: actionLabel!,
-            leading: actionIcon,
-            onPressed: onAction,
-          ),
-        ],
-        if (secondaryLabel != null && onSecondary != null) ...[
-          const SizedBox(height: 8),
-          WebButton(
-            label: secondaryLabel!,
-            variant: WebBtn.ghost,
-            onPressed: onSecondary,
-          ),
-        ],
-      ],
+      ),
     );
-    if (card) {
-      return WebCard(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: content,
-      );
-    }
     return Padding(
       padding: padding,
-      child: Center(child: content),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: fill ? screen.height * 0.58 : 0),
+        child: Center(child: content),
+      ),
     );
   }
 }
@@ -260,8 +269,8 @@ class ErrorState extends StatelessWidget {
     this.notFoundMessage,
     this.notFoundAction,
     this.notFoundActionLabel,
-    this.size = 190,
-    this.card = false,
+    this.size = 250,
+    this.fill = true,
   });
 
   /// Qisqa yozuv: `ErrorState.from(error, onRetry)`.
@@ -274,8 +283,8 @@ class ErrorState extends StatelessWidget {
     this.notFoundMessage,
     this.notFoundAction,
     this.notFoundActionLabel,
-    this.size = 190,
-    this.card = false,
+    this.size = 250,
+    this.fill = true,
   });
 
   /// ApiException, DioException, SocketException, TimeoutException yoki xato matni.
@@ -289,7 +298,9 @@ class ErrorState extends StatelessWidget {
   final VoidCallback? notFoundAction;
   final String? notFoundActionLabel;
   final double size;
-  final bool card;
+
+  /// [MascotState.fill].
+  final bool fill;
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +310,6 @@ class ErrorState extends StatelessWidget {
       final String m => m,
       _ => null,
     };
-    final s = card ? 140.0 : size;
     return switch (kind) {
       ErrorKind.network => MascotState(
         pose: MascotPose.noInternet,
@@ -308,8 +318,8 @@ class ErrorState extends StatelessWidget {
         actionLabel: "Qayta urinib köriş",
         actionIcon: TI.refresh_rounded,
         onAction: onRetry,
-        size: s,
-        card: card,
+        size: size,
+        fill: fill,
       ),
       ErrorKind.notFound => MascotState(
         pose: MascotPose.notFound,
@@ -317,8 +327,8 @@ class ErrorState extends StatelessWidget {
         message: notFoundMessage ?? msg,
         actionLabel: notFoundActionLabel,
         onAction: notFoundAction,
-        size: s,
-        card: card,
+        size: size,
+        fill: fill,
       ),
       ErrorKind.other => MascotState(
         pose: MascotPose.error,
@@ -332,20 +342,55 @@ class ErrorState extends StatelessWidget {
         actionLabel: "Qayta urinib köriş",
         actionIcon: TI.refresh_rounded,
         onAction: onRetry,
-        size: s,
-        card: card,
+        size: size,
+        fill: fill,
       ),
     };
   }
 }
 
-/// Muvaffaqiyat lahzasi: Tayyor-Man sakrab «zör» deydi. ~1.8 s dan keyin özi yopiladi
-/// (yoki «Yaxşi» tugmasi bilan). Yopilgandan keyin Future tugaydi — keyingi navigatsiya şundan söng.
+/// Muvaffaqiyat lahzasi: Tayyor-Man sakrab «zör» deydi. Ekran örtasida — yaxlit (şaffof emas)
+/// karta: katta maskot, sarlavha, izoh va «Yaxşi». ~3.5 s turadi (pastdagi ingiçka çiziq qolgan
+/// vaqtni körsatadi) yoki «Yaxşi» bosilguncha. Yopilgandan keyin Future tugaydi.
 Future<void> showMascotSuccess(
   BuildContext context, {
   required String title,
   String? message,
-  Duration autoClose = const Duration(milliseconds: 1800),
+  Duration autoClose = const Duration(milliseconds: 3500),
+}) => _showMascotDialog(
+  context,
+  pose: MascotPose.success,
+  accent: const Color(0xFF10B981),
+  title: title,
+  message: message,
+  button: 'Yaxşi',
+  autoClose: autoClose,
+);
+
+/// Xato oynasi: Tayyor-Man `error` holatida, sarlavha va tuşunarli matn. Özi yopilmaydi —
+/// «Tuşunarli» bosilguncha (yoki fon bosilguncha) turadi.
+Future<void> showMascotError(
+  BuildContext context, {
+  required String title,
+  String? message,
+  MascotPose pose = MascotPose.error,
+}) => _showMascotDialog(
+  context,
+  pose: pose,
+  accent: const Color(0xFFF43F5E),
+  title: title,
+  message: message,
+  button: 'Tuşunarli',
+);
+
+Future<void> _showMascotDialog(
+  BuildContext context, {
+  required MascotPose pose,
+  required Color accent,
+  required String title,
+  String? message,
+  required String button,
+  Duration? autoClose,
 }) async {
   final navigator = Navigator.of(context, rootNavigator: true);
   var open = true;
@@ -354,54 +399,173 @@ Future<void> showMascotSuccess(
     useRootNavigator: true,
     barrierDismissible: true,
     barrierLabel: title,
-    barrierColor: Colors.black.withValues(alpha: 0.45),
-    transitionDuration: const Duration(milliseconds: 260),
-    pageBuilder: (ctx, _, _) => _SuccessCard(title: title, message: message),
+    barrierColor: Colors.black.withValues(alpha: 0.55),
+    transitionDuration: const Duration(milliseconds: 320),
+    pageBuilder: (ctx, _, _) => _SuccessCard(
+      pose: pose,
+      accent: accent,
+      title: title,
+      message: message,
+      button: button,
+      duration: autoClose,
+    ),
     transitionBuilder: (ctx, a, _, child) => FadeTransition(
-      opacity: a,
+      opacity: CurvedAnimation(parent: a, curve: Curves.easeOut),
       child: ScaleTransition(
         scale: Tween(
-          begin: 0.9,
+          begin: 0.88,
           end: 1.0,
         ).animate(CurvedAnimation(parent: a, curve: Curves.easeOutBack)),
         child: child,
       ),
     ),
   ).whenComplete(() => open = false);
-  Future.delayed(autoClose, () {
-    if (open && navigator.mounted) navigator.pop();
-  });
+  if (autoClose != null) {
+    Future.delayed(autoClose, () {
+      if (open && navigator.mounted) navigator.pop();
+    });
+  }
   await done;
 }
 
-class _SuccessCard extends StatelessWidget {
-  const _SuccessCard({required this.title, this.message});
+class _SuccessCard extends StatefulWidget {
+  const _SuccessCard({
+    required this.pose,
+    required this.accent,
+    required this.title,
+    this.message,
+    required this.button,
+    this.duration,
+  });
+  final MascotPose pose;
+  final Color accent;
   final String title;
   final String? message;
+  final String button;
+
+  /// null — özi yopilmaydi (vaqt çizig'i ham yöq).
+  final Duration? duration;
+
+  @override
+  State<_SuccessCard> createState() => _SuccessCardState();
+}
+
+class _SuccessCardState extends State<_SuccessCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _t = AnimationController(
+    vsync: this,
+    duration: widget.duration ?? const Duration(seconds: 1),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.duration != null) _t.forward();
+  }
+
+  @override
+  void dispose() {
+    _t.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final light = AppColors.isLight;
+    final surface = light ? Colors.white : const Color(0xFF15151F);
+    final side = math.min(220.0, MediaQuery.sizeOf(context).height * 0.3);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360),
+          constraints: const BoxConstraints(maxWidth: 380),
           child: Material(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(28),
-            child: Container(
+            color: surface,
+            elevation: 0,
+            borderRadius: BorderRadius.circular(30),
+            clipBehavior: Clip.antiAlias,
+            child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: AppColors.cardBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: light ? 0.18 : 0.5),
+                    blurRadius: 40,
+                    offset: const Offset(0, 18),
+                  ),
+                ],
               ),
-              child: MascotState(
-                pose: MascotPose.success,
-                title: title,
-                message: message,
-                size: 170,
-                actionLabel: 'Yaxşi',
-                onAction: () => Navigator.of(context).maybePop(),
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.only(top: 22),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          widget.accent.withValues(alpha: light ? 0.14 : 0.18),
+                          surface,
+                        ],
+                      ),
+                    ),
+                    child: Center(child: Mascot(widget.pose, size: side)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 10, 24, 22),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.title,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w800,
+                            height: 1.25,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        if (widget.message != null &&
+                            widget.message!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.message!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14.5,
+                              height: 1.45,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 22),
+                        WebButton(
+                          label: widget.button,
+                          expand: true,
+                          onPressed: () => Navigator.of(context).maybePop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // avtomatik yopiliş vaqti
+                  if (widget.duration != null)
+                    AnimatedBuilder(
+                      animation: _t,
+                      builder: (_, _) => Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: 1 - _t.value,
+                          child: Container(height: 3, color: widget.accent),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),

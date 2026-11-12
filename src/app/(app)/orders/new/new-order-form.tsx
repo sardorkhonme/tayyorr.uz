@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { BrandLoaderOverlay } from "@/components/brand-loader";
+import { errorText, fetchJson } from "@/components/fetch-json";
+import { ORDER_CREATED_KEY } from "@/components/order-created-banner";
+
 const TYPES = [
   ["PRESENTATION", "Prezentatsiya"],
   ["COURSE_WORK", "Kurs işi"],
@@ -43,10 +47,9 @@ export function NewOrderForm() {
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch("/api/orders", {
+      const data = await fetchJson<{ order: { id: string } }>("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           title: form.title,
           type: form.type,
           description: form.description,
@@ -54,16 +57,23 @@ export function NewOrderForm() {
             ? new Date(form.deadline).toISOString()
             : undefined,
           budget: form.budget ? Number(form.budget) : undefined,
-        }),
+        },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Xatolik");
-      // replace — "orqaga" bosilganda /orders/new ga qaytmasin
+      if (!data.order?.id) throw new Error("Server javobi notöğri. Buyurtmalarim bölimini tekşiring.");
+      try {
+        // tabrik oynasi sahifa qayta qurilganda ham körinsin
+        sessionStorage.setItem(ORDER_CREATED_KEY, data.order.id);
+      } catch {
+        /* e'tiborsiz */
+      }
+      // replace — "orqaga" bosilganda /orders/new ga qaytmasin.
+      // busy qoladi: sahifa almaşguncha tugma qayta bosilmasin (ikki marta joylanmasin)
       router.replace(`/orders/${data.order.id}?created=1`);
       router.refresh();
+      // sahifa baribir almaşmasa — abadiy kutib qolmasin
+      setTimeout(() => setBusy(false), 12_000);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Xatolik");
-    } finally {
+      setErr(errorText(e));
       setBusy(false);
     }
   }
@@ -73,6 +83,7 @@ export function NewOrderForm() {
       <h1 className="mb-5 text-2xl font-semibold tracking-tight text-white">
         Yangi buyurtma
       </h1>
+      {busy && <BrandLoaderOverlay label="Buyurtma joylanmoqda…" />}
       <form onSubmit={submit} className="card flex flex-col gap-3">
         <div>
           <label className="label">Sarlavha</label>
@@ -133,10 +144,14 @@ export function NewOrderForm() {
           </div>
         </div>
 
-        {err && <p className="text-sm text-red-400">{err}</p>}
+        {err && (
+          <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {err}
+          </p>
+        )}
 
         <button className="btn-primary" disabled={busy}>
-          {busy ? "..." : "Buyurtmani eʼlon qiliş"}
+          {busy ? "Joylanmoqda…" : "Buyurtmani eʼlon qiliş"}
         </button>
       </form>
     </div>

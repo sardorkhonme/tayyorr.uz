@@ -46,10 +46,11 @@ export default async function OrdersPage() {
       <p className="mt-2 text-zinc-500">Batafsil körish uçun buyurtmani bosing. Bajarilmagan qism uçun pul avtomatik qaytadi.</p>
 
       {orders.length === 0 ? (
-        <div className="card mt-8 !rounded-3xl text-zinc-900">
+        <div className="mt-4 text-zinc-900">
           <MascotState
             pose="empty-orders"
-            size={200}
+            size={240}
+            className="mascot-page"
             title="Hali buyurtma yöq"
             message="Birinçi buyurtmangizni bir daqiqada bering."
           >
@@ -66,11 +67,11 @@ export default async function OrdersPage() {
               { label: "Sarflandi", value: som(spent), icon: "wallet" as const },
             ].map((s) => (
               <div key={s.label} className="card p-4">
-                <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-500">
+                <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-zinc-500">
                   <Icon name={s.icon} className="h-3.5 w-3.5" />
                   {s.label}
                 </span>
-                <p className="mt-1.5 font-display text-xl font-bold tabular-nums text-zinc-900">{s.value}</p>
+                <p className="mt-1.5 truncate font-display text-xl font-bold tabular-nums text-zinc-900">{s.value}</p>
                 {s.sub && <p className="text-xs text-zinc-400">{s.sub}</p>}
               </div>
             ))}
@@ -98,7 +99,7 @@ export default async function OrdersPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <p className="line-clamp-1 font-medium text-zinc-900">{splitServiceName(o.service.name).title}</p>
-                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
+                        <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${st.cls}`}>{st.label}</span>
                       </div>
                       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-zinc-500">
                         <span className="tabular-nums">{num(o.quantity)} dona</span>

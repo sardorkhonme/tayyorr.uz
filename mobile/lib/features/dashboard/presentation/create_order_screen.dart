@@ -77,8 +77,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: id)),
       );
-    } on ApiException catch (e) {
-      setState(() => _error = e.message);
+    } catch (e) {
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

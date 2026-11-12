@@ -27,7 +27,11 @@ export default async function ReferralPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <BackLink fallback="/profile" />
+      {/* kompyuterda Qöllanma/Referal sidebar menyusida — «orqaga» kerak emas */}
+      <BackLink
+        fallback="/profile"
+        className="inline-flex w-fit items-center gap-1 text-sm text-zinc-500 hover:text-white lg:hidden"
+      />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-white">Referal</h1>
         <p className="mt-1 text-sm text-zinc-400">

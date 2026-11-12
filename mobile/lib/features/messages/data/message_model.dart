@@ -29,9 +29,14 @@ class MessageReaction {
   final int count;
   final bool mine;
 
-  const MessageReaction({required this.emoji, required this.count, this.mine = false});
+  const MessageReaction({
+    required this.emoji,
+    required this.count,
+    this.mine = false,
+  });
 
-  factory MessageReaction.fromJson(Map<String, dynamic> json) => MessageReaction(
+  factory MessageReaction.fromJson(Map<String, dynamic> json) =>
+      MessageReaction(
         emoji: json['emoji'] as String? ?? '',
         count: (json['count'] as num?)?.toInt() ?? 0,
         mine: json['mine'] as bool? ?? false,
@@ -50,15 +55,28 @@ class MessageReaction {
       final like = (list['like'] as num?)?.toInt() ?? 0;
       final dislike = (list['dislike'] as num?)?.toInt() ?? 0;
       return [
-        if (like > 0) MessageReaction(emoji: '👍', count: like, mine: list['mine'] == 'LIKE'),
-        if (dislike > 0) MessageReaction(emoji: '👎', count: dislike, mine: list['mine'] == 'DISLIKE'),
+        if (like > 0)
+          MessageReaction(
+            emoji: '👍',
+            count: like,
+            mine: list['mine'] == 'LIKE',
+          ),
+        if (dislike > 0)
+          MessageReaction(
+            emoji: '👎',
+            count: dislike,
+            mine: list['mine'] == 'DISLIKE',
+          ),
       ];
     }
     return const [];
   }
 
   /// Optimistik yangilash: o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi.
-  static List<MessageReaction> toggle(List<MessageReaction> list, String emoji) {
+  static List<MessageReaction> toggle(
+    List<MessageReaction> list,
+    String emoji,
+  ) {
     final cur = list.where((r) => r.mine).map((r) => r.emoji).firstOrNull;
     final next = cur == emoji ? null : emoji;
     final out = <MessageReaction>[
@@ -68,7 +86,11 @@ class MessageReaction {
     if (next != null) {
       final i = out.indexWhere((r) => r.emoji == next);
       if (i >= 0) {
-        out[i] = MessageReaction(emoji: next, count: out[i].count + 1, mine: true);
+        out[i] = MessageReaction(
+          emoji: next,
+          count: out[i].count + 1,
+          mine: true,
+        );
       } else {
         out.add(MessageReaction(emoji: next, count: 1, mine: true));
       }
@@ -84,7 +106,18 @@ class MessageReaction {
 }
 
 /// Reaksiyalar ro'yxati — Family guruhidagi va saytdagi bilan bir xil.
-const kReactionEmojis = ['👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
+const kReactionEmojis = [
+  '👍',
+  '👎',
+  '❤️',
+  '😂',
+  '😮',
+  '😢',
+  '😡',
+  '🔥',
+  '🙏',
+  '👏',
+];
 
 class ChatFileModel {
   final String name;
@@ -92,15 +125,35 @@ class ChatFileModel {
   final int size;
   final String url;
 
-  const ChatFileModel({required this.name, required this.type, required this.size, required this.url});
+  const ChatFileModel({
+    required this.name,
+    required this.type,
+    required this.size,
+    required this.url,
+  });
 
   /// Kengaytma (kichik harfda), masalan "pdf".
-  String get ext => name.contains('.') ? name.split('.').last.toLowerCase() : '';
+  String get ext =>
+      name.contains('.') ? name.split('.').last.toLowerCase() : '';
 
-  bool get isImage => type.startsWith('image/') || const {'jpg', 'jpeg', 'png', 'webp', 'gif'}.contains(ext);
-  bool get isVideo => type.startsWith('video/') || const {'mp4', 'mov', 'webm', 'mkv', '3gp'}.contains(ext);
+  bool get isImage =>
+      type.startsWith('image/') ||
+      const {'jpg', 'jpeg', 'png', 'webp', 'gif'}.contains(ext);
+  bool get isVideo =>
+      type.startsWith('video/') ||
+      const {'mp4', 'mov', 'webm', 'mkv', '3gp'}.contains(ext);
   bool get isAudio =>
-      type.startsWith('audio/') || const {'mp3', 'm4a', 'aac', 'ogg', 'oga', 'opus', 'wav', 'flac'}.contains(ext);
+      type.startsWith('audio/') ||
+      const {
+        'mp3',
+        'm4a',
+        'aac',
+        'ogg',
+        'oga',
+        'opus',
+        'wav',
+        'flac',
+      }.contains(ext);
 
   factory ChatFileModel.fromJson(Map<String, dynamic> json) {
     return ChatFileModel(
@@ -127,6 +180,7 @@ class ChatMessageModel {
   final String senderId;
   final String body;
   final bool system;
+
   /// Tizim xabari tegishli buyurtma — ostidagi tugma shuni ochadi
   final String? orderId;
   final MessageAction? action;
@@ -178,26 +232,25 @@ class ChatMessageModel {
     String? clientId,
     ChatSendStatus? status,
     int? updatedAt,
-  }) =>
-      ChatMessageModel(
-        id: id,
-        senderId: senderId,
-        body: body ?? this.body,
-        system: system,
-        orderId: orderId,
-        action: action,
-        createdAt: createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        mine: mine,
-        edited: edited ?? this.edited,
-        deleted: deleted ?? this.deleted,
-        replyTo: replyTo,
-        reactions: reactions ?? this.reactions,
-        file: deleted == true ? null : file,
-        readAt: readAt,
-        clientId: clientId ?? this.clientId,
-        status: status ?? this.status,
-      );
+  }) => ChatMessageModel(
+    id: id,
+    senderId: senderId,
+    body: body ?? this.body,
+    system: system,
+    orderId: orderId,
+    action: action,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    mine: mine,
+    edited: edited ?? this.edited,
+    deleted: deleted ?? this.deleted,
+    replyTo: replyTo,
+    reactions: reactions ?? this.reactions,
+    file: deleted == true ? null : file,
+    readAt: readAt,
+    clientId: clientId ?? this.clientId,
+    status: status ?? this.status,
+  );
 
   DateTime get createdAtDate => DateTime.fromMillisecondsSinceEpoch(createdAt);
 
@@ -219,9 +272,13 @@ class ChatMessageModel {
       mine: json['mine'] as bool? ?? false,
       edited: json['edited'] as bool? ?? false,
       deleted: json['deleted'] as bool? ?? false,
-      replyTo: json['replyTo'] != null ? ReplyPreviewModel.fromJson(json['replyTo'] as Map<String, dynamic>) : null,
+      replyTo: json['replyTo'] != null
+          ? ReplyPreviewModel.fromJson(json['replyTo'] as Map<String, dynamic>)
+          : null,
       reactions: MessageReaction.listFromJson(json),
-      file: json['file'] != null ? ChatFileModel.fromJson(json['file'] as Map<String, dynamic>) : null,
+      file: json['file'] != null
+          ? ChatFileModel.fromJson(json['file'] as Map<String, dynamic>)
+          : null,
       readAt: (json['readAt'] as num?)?.toInt(),
     );
   }
@@ -251,7 +308,9 @@ class ChatOtherUser {
       login: json['login'] as String?,
       image: json['image'] as String?,
       isSupport: json['isSupport'] as bool? ?? false,
-      lastSeenAt: json['lastSeenAt'] != null ? DateTime.parse(json['lastSeenAt'] as String) : null,
+      lastSeenAt: json['lastSeenAt'] != null
+          ? DateTime.parse(json['lastSeenAt'] as String)
+          : null,
     );
   }
 }
@@ -261,8 +320,10 @@ class ChatContractOrderRef {
   final String title;
   final String type;
   final String status;
+
   /// SENT — shartnoma yuborilgan (javob kutilmoqda), ACCEPTED — imzolangan
   final String contractStatus;
+
   /// PENDING — bekor qilish so'ralgan, DISPUTED — admin ko'rib chiqmoqda
   final String? cancelState;
   final DateTime? deadline;
@@ -302,7 +363,9 @@ class ChatContractOrderRef {
       status: json['status'] as String,
       contractStatus: json['contractStatus'] as String? ?? 'ACCEPTED',
       cancelState: json['cancelState'] as String?,
-      deadline: json['deadline'] != null ? DateTime.parse(json['deadline'] as String) : null,
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'] as String)
+          : null,
     );
   }
 }
@@ -352,7 +415,9 @@ class ConversationModel {
       lastMessageBody: last?['body'] as String?,
       lastMessageMine: last?['mine'] as bool?,
       lastMessageAt: DateTime.parse(json['lastMessageAt'] as String),
-      lastMessageCreatedAt: last?['createdAt'] != null ? DateTime.parse(last!['createdAt'] as String) : null,
+      lastMessageCreatedAt: last?['createdAt'] != null
+          ? DateTime.parse(last!['createdAt'] as String)
+          : null,
       unread: (json['unread'] as num?)?.toInt() ?? 0,
       blockedMe: json['blockedMe'] as bool? ?? false,
     );

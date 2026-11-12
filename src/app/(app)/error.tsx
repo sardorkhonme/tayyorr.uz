@@ -30,7 +30,7 @@ export default function AppError({
 
   return (
     <div className="flex min-h-[55vh] flex-col items-center justify-center gap-4 text-center">
-      <Mascot pose={isUserNotFound ? "not-found" : "error"} size={200} priority />
+      <Mascot pose={isUserNotFound ? "not-found" : "error"} size={260} priority className="mascot-big" />
       <h1 className="text-xl font-semibold text-white">
         {isUserNotFound ? "Bunday hisob mavjud emas" : "Nimadir notöğri ketdi"}
       </h1>

@@ -8,7 +8,7 @@ import { AnnouncementCarousel } from "@/components/announcement-banner";
 import { OrdersBrowser, type OrderRow } from "@/components/orders-browser";
 
 /**
- * Asosiy: header (qidiruv + filtr) · banner · buyurtmalar lentasi.
+ * Asosiy: banner · qidiruv + filtr (telefonda — headerda) · buyurtmalar lentasi.
  *  - tayyorlovchi: ochiq buyurtmalar + o'ziga biriktirilganlari
  *  - buyurtmachi: BOSHQA foydalanuvchilarning ochiq buyurtmalari — faqat
  *    ko'rish uchun (taklif yubora olmaydi). O'z buyurtmalari — /orders.
@@ -62,6 +62,8 @@ export default async function DashboardPage() {
     <OrdersBrowser
       orders={rows}
       variant="feed"
+      // kompyuterda bannerdan pastdagi qutida «+ Yangi buyurtma» (buyurtmachiga)
+      newOrderHref={isPreparer ? undefined : "/orders/new"}
       banner={
         announcements.length > 0 ? (
           <AnnouncementCarousel items={announcements} />

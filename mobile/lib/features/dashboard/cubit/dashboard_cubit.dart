@@ -49,8 +49,13 @@ class DashboardCubit extends Cubit<DashboardState>
     try {
       final orders = await _repo.fetchOrders(scope: scope);
       emit(state.copyWith(status: DashboardStatus.success, orders: orders));
-    } on ApiException catch (e) {
-      emit(state.copyWith(status: DashboardStatus.failure, error: e.message));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: DashboardStatus.failure,
+          error: friendlyError(e),
+        ),
+      );
     }
   }
 }

@@ -108,16 +108,19 @@ class MessageNotifier {
 
   /// Tizim ovozi sifatida chalinadigan pleyer (media emas): Android'da «tizim» ovoz balandligiga
   /// bo'ysunadi, jim/tebranish rejimida eshitilmaydi, musiqani to'xtatmaydi (audio focus olmaydi).
-  AudioPlayer _systemPlayer(String asset) {
+  AudioPlayer _systemPlayer(String asset, {bool media = false}) {
     final p = AudioPlayer(
       handleInterruptions: false,
       androidApplyAudioAttributes: false,
       handleAudioSessionActivation: false,
     );
-    p.setAndroidAudioAttributes(const AndroidAudioAttributes(
-      contentType: AndroidAudioContentType.sonification,
-      usage: AndroidAudioUsage.assistanceSonification,
-    ));
+    p.setAndroidAudioAttributes(media
+        // fayl qanday bölsa şunday (töliq çastota, odatiy balandlik) — tizim kanali ovozni ingiçkalaştiradi
+        ? const AndroidAudioAttributes(contentType: AndroidAudioContentType.music, usage: AndroidAudioUsage.media)
+        : const AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.sonification,
+            usage: AndroidAudioUsage.assistanceSonification,
+          ));
     p.setAsset(asset);
     return p;
   }
@@ -130,7 +133,7 @@ class MessageNotifier {
     _lastSend = now;
     () async {
       try {
-        final p = _send ??= _systemPlayer('assets/sounds/send.mp3');
+        final p = _send ??= _systemPlayer('assets/sounds/send.mp3', media: true);
         await p.seek(Duration.zero);
         await p.setVolume(1.0);
         await p.play();

@@ -77,43 +77,86 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  static const _signingIn = 'Kirilmoqda...';
+  static const _saving = 'Saqlanmoqda...';
+
+  /// Heç bir kiriş amali cheksiz kutmaydi.
+  static const _limit = Duration(seconds: 40);
+
+  Future<T> _guard<T>(Future<T> f) => f.timeout(
+    _limit,
+    onTimeout: () =>
+        throw ApiException(ApiException.slowMessage, network: true),
+  );
+
   Future<void> _onLogin(
     AuthLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
+    if (state.status == AuthStatus.authenticating) return;
+    emit(
+      state.copyWith(
+        status: AuthStatus.authenticating,
+        clearError: true,
+        busyLabel: _signingIn,
+      ),
+    );
     try {
-      final user = await _repo.login(
-        login: event.login,
-        password: event.password,
+      final user = await _guard(
+        _repo.login(login: event.login, password: event.password),
       );
       _syncTheme(user);
       emit(state.copyWith(status: _statusFor(user), user: user));
-    } on ApiException catch (e) {
+    } catch (e) {
       emit(
-        state.copyWith(status: AuthStatus.unauthenticated, error: e.message),
+        state.copyWith(
+          status: AuthStatus.unauthenticated,
+          error: friendlyError(
+            e,
+            fallback: 'Kirib bölmadi — qayta urinib köring',
+          ),
+        ),
       );
     }
   }
+
+  bool _googleBusy = false;
 
   Future<void> _onGoogleSignIn(
     AuthGoogleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
+    if (_googleBusy || state.status == AuthStatus.authenticating) return;
+    _googleBusy = true;
+    // eski xato matni yöqolsin (hisob tanlaş oynasi oçilayotganda)
+    if (state.error != null) emit(state.copyWith(clearError: true));
     try {
-      final user = await _repo.signInWithGoogle();
-      if (user == null) {
-        // Foydalanuvchi hisob tanlashni bekor qildi — xatosiz avvalgi holatga.
-        emit(state.copyWith(status: AuthStatus.unauthenticated));
-        return;
-      }
+      // 1) hisob tanlaş — bu paytda kiriş sahifasi turaveradi
+      final account = await _repo.pickGoogleAccount();
+      if (account == null) return; // bekor qilindi — xatosiz
+      // 2) hisob tanlandi — butun ekranli «Kirilmoqda...» sahifasi
+      emit(
+        state.copyWith(
+          status: AuthStatus.authenticating,
+          clearError: true,
+          busyLabel: _signingIn,
+        ),
+      );
+      final user = await _guard(_repo.finishGoogleSignIn(account));
       _syncTheme(user);
       emit(state.copyWith(status: _statusFor(user), user: user));
-    } on ApiException catch (e) {
+    } catch (e) {
       emit(
-        state.copyWith(status: AuthStatus.unauthenticated, error: e.message),
+        state.copyWith(
+          status: AuthStatus.unauthenticated,
+          error: friendlyError(
+            e,
+            fallback: 'Google orqali kirib bölmadi — qayta urinib köring',
+          ),
+        ),
       );
+    } finally {
+      _googleBusy = false;
     }
   }
 
@@ -121,13 +164,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthRoleChosen event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
+    if (state.status == AuthStatus.authenticating) return;
+    emit(
+      state.copyWith(
+        status: AuthStatus.authenticating,
+        clearError: true,
+        busyLabel: _saving,
+      ),
+    );
     try {
-      final user = await _repo.chooseRole(event.role);
+      final user = await _guard(_repo.chooseRole(event.role));
       _syncTheme(user);
       emit(state.copyWith(status: _statusFor(user), user: user));
-    } on ApiException catch (e) {
-      emit(state.copyWith(status: AuthStatus.onboarding, error: e.message));
+    } catch (e) {
+      emit(
+        state.copyWith(status: AuthStatus.onboarding, error: friendlyError(e)),
+      );
     }
   }
 
@@ -135,23 +187,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthOnboardingCompleted event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.authenticating, clearError: true));
+    if (state.status == AuthStatus.authenticating) return;
+    emit(
+      state.copyWith(
+        status: AuthStatus.authenticating,
+        clearError: true,
+        busyLabel: _saving,
+      ),
+    );
     try {
-      final user = await _repo.completeOnboarding(
-        role: event.role,
-        firstName: event.firstName,
-        lastName: event.lastName,
-        login: event.login,
-        password: event.password,
-        about: event.about,
-        birthDate: event.birthDate,
-        hearAboutUs: event.hearAboutUs,
-        hearAboutUsDetail: event.hearAboutUsDetail,
+      final user = await _guard(
+        _repo.completeOnboarding(
+          role: event.role,
+          firstName: event.firstName,
+          lastName: event.lastName,
+          login: event.login,
+          password: event.password,
+          about: event.about,
+          birthDate: event.birthDate,
+          hearAboutUs: event.hearAboutUs,
+          hearAboutUsDetail: event.hearAboutUsDetail,
+        ),
       );
       _syncTheme(user);
       emit(state.copyWith(status: AuthStatus.authenticated, user: user));
-    } on ApiException catch (e) {
-      emit(state.copyWith(status: AuthStatus.onboarding, error: e.message));
+    } catch (e) {
+      emit(
+        state.copyWith(status: AuthStatus.onboarding, error: friendlyError(e)),
+      );
     }
   }
 
@@ -165,8 +228,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await Future.wait([
       () async {
         SmmApi.instance.reset();
-        await PushService.instance.unregister().catchError((_) {});
-        await _repo.logout();
+        // push öçiriş sekin bölsa ham çiqiş kutib qolmaydi
+        await PushService.instance
+            .unregister()
+            .timeout(const Duration(seconds: 6))
+            .catchError((_) {});
+        await _repo.logout().timeout(
+          const Duration(seconds: 6),
+          onTimeout: () {},
+        );
       }(),
       Future<void>.delayed(const Duration(milliseconds: 2000)),
     ]);

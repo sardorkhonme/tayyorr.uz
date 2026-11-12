@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/unread_counter.dart';
 import '../../../core/utils/format.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -46,7 +47,10 @@ class _MessagesListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationsCubit, ConversationsState>(
       builder: (context, state) {
-        final loading = (state.status == ConversationsStatus.loading || state.status == ConversationsStatus.initial) && state.conversations.isEmpty;
+        final loading =
+            (state.status == ConversationsStatus.loading ||
+                state.status == ConversationsStatus.initial) &&
+            state.conversations.isEmpty;
         return WebPage(
           background: false,
           onRefresh: () async {
@@ -61,44 +65,68 @@ class _MessagesListView extends StatelessWidget {
             const FamilyListRow(),
             const SizedBox(height: 8),
             // «Tayyorr Support» — doim tepada (pastdagi ro'yxatda takrorlanmaydi)
-            Builder(builder: (context) {
-              ConversationModel? sc;
-              for (final c in state.conversations) {
-                if (c.other.isSupport) sc = c;
-              }
-              return FamilySupportRow(
-                unread: sc?.unread ?? 0,
-                subtitle: (sc?.lastMessageBody ?? '').trim().isEmpty ? null : sc!.lastMessageBody!.trim(),
-                onTap: () {
-                  if (sc != null) {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (_) => ChatScreen(conversationId: sc!.id, other: sc.other)))
-                        .then((_) {
-                      if (context.mounted) context.read<ConversationsCubit>().load();
-                    });
-                  } else {
-                    openSupportChat(context);
-                  }
-                },
-              );
-            }),
+            Builder(
+              builder: (context) {
+                ConversationModel? sc;
+                for (final c in state.conversations) {
+                  if (c.other.isSupport) sc = c;
+                }
+                return FamilySupportRow(
+                  unread: sc?.unread ?? 0,
+                  subtitle: (sc?.lastMessageBody ?? '').trim().isEmpty
+                      ? null
+                      : sc!.lastMessageBody!.trim(),
+                  onTap: () {
+                    if (sc != null) {
+                      Navigator.of(context)
+                          .push(
+                            MaterialPageRoute(
+                              builder: (_) => ChatScreen(
+                                conversationId: sc!.id,
+                                other: sc.other,
+                              ),
+                            ),
+                          )
+                          .then((_) {
+                            if (context.mounted) {
+                              context.read<ConversationsCubit>().load();
+                            }
+                          });
+                    } else {
+                      openSupportChat(context);
+                    }
+                  },
+                );
+              },
+            ),
             const SizedBox(height: 8),
             if (loading)
-              for (var i = 0; i < 5; i++) ...[const _ConversationSkeleton(), const SizedBox(height: 8)]
-            else if (state.conversations.where((c) => !c.other.isSupport).isEmpty)
-              WebCard(
-                child: Text(
-                  state.status == ConversationsStatus.failure
-                      ? (state.error ?? "Yuklab bölmadi")
-                      : "Hozirça suhbat yöq. Buyurtma sahifasida taklif ostidagi «Yoziş» tugmasidan suhbat boşlaşingiz mumkin.",
-                  style: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.45),
-                ),
-              )
-            else
-              for (final c in state.conversations.where((c) => !c.other.isSupport)) ...[
-                _ConversationTile(conv: c),
+              for (var i = 0; i < 5; i++) ...[
+                const _ConversationSkeleton(),
                 const SizedBox(height: 8),
-              ],
+              ]
+            else if (state.conversations
+                .where((c) => !c.other.isSupport)
+                .isEmpty)
+              state.status == ConversationsStatus.failure
+                  ? ErrorState.from(
+                      state.error,
+                      () => context.read<ConversationsCubit>().load(),
+                      fill: false,
+                      size: 200,
+                    )
+                  : const MascotState(
+                      pose: MascotPose.emptyFeed,
+                      title: 'Hozirça suhbat yöq',
+                      message:
+                          "Buyurtma sahifasida taklif ostidagi «Yoziş» tugmasidan suhbat boşlaşingiz mumkin.",
+                      fill: false,
+                      size: 200,
+                    )
+            else
+              for (final c in state.conversations.where(
+                (c) => !c.other.isSupport,
+              )) ...[_ConversationTile(conv: c), const SizedBox(height: 8)],
           ],
         );
       },
@@ -106,26 +134,46 @@ class _MessagesListView extends StatelessWidget {
   }
 }
 
-/// [_ConversationTile] skeleti: 44px avatar, ism + vaqt, oxirgi xabar.
+/// [_ConversationTile] skeleti: 48px avatar, ism + vaqt, oxirgi xabar.
 class _ConversationSkeleton extends StatelessWidget {
   const _ConversationSkeleton();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(16), border: Border.all(color: WebC.cardBorder)),
-      child: const Row(children: [
-        SCircle(size: 44),
-        SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [Expanded(child: Align(alignment: Alignment.centerLeft, child: SBar(width: 130, height: 15))), SizedBox(width: 8), SBar(width: 36, height: 11)]),
-            SizedBox(height: 7),
-            SBar(width: 200, height: 12),
-          ]),
-        ),
-      ]),
+      padding: kConvRowPadding,
+      decoration: BoxDecoration(
+        color: WebC.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: WebC.cardBorder),
+      ),
+      child: const Row(
+        children: [
+          SCircle(size: kConvAvatar),
+          SizedBox(width: kConvGap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: SBar(width: 130, height: 15),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    SBar(width: 36, height: 11),
+                  ],
+                ),
+                SizedBox(height: 7),
+                SBar(width: 200, height: 12),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -143,13 +191,21 @@ class _ConversationTile extends StatelessWidget {
     final hasLast = c.lastMessageBody != null || lastAt != null;
     final fileOnly = hasLast && (c.lastMessageBody ?? '').isEmpty;
     final prefix = hasLast && c.lastMessageMine == true ? 'Siz: ' : '';
-    final preview = hasLast ? (fileOnly ? 'fayl' : c.lastMessageBody!) : 'Suhbat boşlandi';
+    final preview = hasLast
+        ? (fileOnly ? 'fayl' : c.lastMessageBody!)
+        : 'Suhbat boşlandi';
 
     Widget avatar;
     if (c.blockedMe) {
       avatar = TIcon(TI.block_rounded, size: 20, color: WebC.zinc500);
     } else if (img.isNotEmpty) {
-      avatar = Image.network(img, fit: BoxFit.cover, width: 44, height: 44, errorBuilder: (_, __, ___) => const SizedBox());
+      avatar = Image.network(
+        img,
+        fit: BoxFit.cover,
+        width: kConvAvatar,
+        height: kConvAvatar,
+        errorBuilder: (_, __, ___) => const SizedBox(),
+      );
     } else if (support) {
       avatar = TIcon(TI.support_rounded, size: 22, color: WebC.indigoSoft);
     } else {
@@ -157,24 +213,36 @@ class _ConversationTile extends StatelessWidget {
     }
 
     final card = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: kConvRowPadding,
       decoration: BoxDecoration(
-        color: support ? const Color(0xFF6366F1).withValues(alpha: 0.06) : WebC.cardBg,
+        color: support
+            ? const Color(0xFF6366F1).withValues(alpha: 0.06)
+            : WebC.cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: support ? const Color(0xFF818CF8).withValues(alpha: 0.30) : WebC.cardBorder),
+        border: Border.all(
+          color: support
+              ? const Color(0xFF818CF8).withValues(alpha: 0.30)
+              : WebC.cardBorder,
+        ),
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: kConvAvatar,
+            height: kConvAvatar,
             alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: WebC.fill5, ),
-            foregroundDecoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: WebC.border)),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: WebC.fill5,
+            ),
+            foregroundDecoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: WebC.border),
+            ),
             child: avatar,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: kConvGap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,14 +254,23 @@ class _ConversationTile extends StatelessWidget {
                       const SizedBox(width: 6),
                     ],
                     Expanded(
-                      child: Text(c.other.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w500)),
+                      child: Text(
+                        c.other.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: WebC.white,
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     if (lastAt != null) ...[
                       const SizedBox(width: 8),
-                      Text(_ago(lastAt), style: TextStyle(color: WebC.zinc500, fontSize: 12)),
+                      Text(
+                        _ago(lastAt),
+                        style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                      ),
                     ],
                   ],
                 ),
@@ -202,22 +279,43 @@ class _ConversationTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text.rich(
-                          TextSpan(children: [
+                        TextSpan(
+                          children: [
                             if (prefix.isNotEmpty) TextSpan(text: prefix),
-                            if (fileOnly) iconSpan(TI.attach_file_rounded, size: 14, color: WebC.zinc400, gap: 2),
+                            if (fileOnly)
+                              iconSpan(
+                                TI.attach_file_rounded,
+                                size: 14,
+                                color: WebC.zinc400,
+                                gap: 2,
+                              ),
                             TextSpan(text: preview),
-                          ]),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: WebC.zinc400, fontSize: 14)),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: WebC.zinc400, fontSize: 13.5),
+                      ),
                     ),
                     if (c.unread > 0) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(999)),
-                        child: Text(c.unread > 99 ? '99+' : '${c.unread}',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          c.unread > 99 ? '99+' : '${c.unread}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ],
@@ -233,7 +331,9 @@ class _ConversationTile extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         await Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => ChatScreen(conversationId: c.id, other: c.other)),
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(conversationId: c.id, other: c.other),
+          ),
         );
         if (context.mounted) {
           context.read<ConversationsCubit>().load();

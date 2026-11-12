@@ -10,7 +10,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/realtime/realtime_service.dart';
 import '../../../core/ui/app_dialogs.dart';
 import '../../../widgets/aurora_background.dart';
-import '../../../widgets/skeleton.dart';
+import '../../../widgets/session_transitions.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
@@ -33,7 +33,7 @@ class SmmOrderDetailScreen extends StatefulWidget {
 
 class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
   SmmOrderDetail? _d;
-  ApiException? _error;
+  Object? _error;
   bool _refreshing = false;
   StreamSubscription<RealtimeEvent>? _rt;
   Timer? _timer;
@@ -66,7 +66,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
           _error = null;
         });
       }
-    } on ApiException catch (e) {
+    } catch (e) {
       if (mounted) setState(() => _error = e);
     }
   }
@@ -77,11 +77,11 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
       await SmmApi.instance.refresh(widget.id);
       await _load();
       if (mounted) showToast(context, 'Yangilandi', kind: ToastKind.success);
-    } on ApiException catch (e) {
+    } catch (e) {
       if (mounted) {
         showToast(
           context,
-          e.message.isEmpty ? 'Yangilab bölmadi' : e.message,
+          friendlyError(e).isEmpty ? 'Yangilab bölmadi' : friendlyError(e),
           kind: ToastKind.error,
         );
       }
@@ -113,7 +113,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
                 notFoundAction: () => Navigator.of(context).maybePop(),
               )
             else if (d == null)
-              ..._skeleton()
+              const BrandLoaderBlock()
             else
               ..._body(d),
           ],
@@ -121,63 +121,6 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
       ),
     );
   }
-
-  /// Haqiqiy [_body] tuzilmasi: gradient sarlavha, bajarilish halqasi, 2×3 statistika, havola kartasi.
-  List<Widget> _skeleton() => [
-    const Skel(height: 128, borderRadius: 24),
-    const SizedBox(height: 14),
-    const WebCard(
-      child: Row(
-        children: [
-          SCircle(size: 92),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SBar(width: 110, height: 18),
-                SizedBox(height: 8),
-                SBar(height: 12),
-                SizedBox(height: 6),
-                SBar(width: 140, height: 12),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-    const SizedBox(height: 12),
-    GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 2.1,
-      children: [
-        for (var i = 0; i < 6; i++)
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: WebC.cardBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: WebC.cardBorder),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SBar(width: 70, height: 10),
-                SizedBox(height: 6),
-                SBar(width: 90, height: 16),
-              ],
-            ),
-          ),
-      ],
-    ),
-    const SizedBox(height: 12),
-    const SBlock(height: 120),
-  ];
 
   List<Widget> _body(SmmOrderDetail d) {
     final o = d.order;

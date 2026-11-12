@@ -1,6 +1,5 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../core/ui/app_dialogs.dart';
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
@@ -58,8 +57,8 @@ class WebC {
       : const Color(0xFF6366F1).withValues(alpha: 0.18);
 
   /// `.card` foni/chegarasi
-  static Color get cardBg =>
-      _l ? Colors.white : Colors.white.withValues(alpha: 0.035);
+  /// Yaxlit (şaffof emas) — fon bir tekis bölgani uçun kartalar ham aniq ajralib turadi.
+  static Color get cardBg => _l ? Colors.white : const Color(0xFF111118);
   static Color get cardBorder => _l
       ? Colors.black.withValues(alpha: 0.08)
       : Colors.white.withValues(alpha: 0.08);
@@ -100,15 +99,6 @@ class WebCard extends StatelessWidget {
       ),
       child: child,
     );
-    if (!AppColors.isLight) {
-      box = ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-          child: box,
-        ),
-      );
-    }
     if (opacity < 1) box = Opacity(opacity: opacity, child: box);
     if (onTap == null) return box;
     return GestureDetector(
@@ -196,35 +186,39 @@ class WebButton extends StatelessWidget {
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (busy)
+        // band paytida ham matn qoladi (tugma ölçami sakramaydi) — oldida aylanuvçi belgi
+        if (busy) ...[
           SizedBox(
             width: 14,
             height: 14,
             child: CircularProgressIndicator(strokeWidth: 2, color: fg),
-          )
-        else ...[
+          ),
+          const SizedBox(width: 8),
+        ] else ...[
           if (icon != null) ...[icon!, const SizedBox(width: 8)],
           if (leading != null) ...[
             TIcon(leading, size: small ? 15 : 16, color: fg),
             const SizedBox(width: 8),
           ],
-          Flexible(
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: fg,
-                fontSize: small ? 13 : 14,
-                fontWeight: FontWeight.w500,
-                height: 1.2,
-              ),
+        ],
+        Flexible(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: fg,
+              fontSize: small ? 13 : 14,
+              fontWeight: FontWeight.w500,
+              height: 1.2,
             ),
           ),
-        ],
+        ),
       ],
     );
     return Opacity(
-      opacity: disabled ? 0.45 : 1,
+      opacity: busy ? 0.8 : (disabled ? 0.45 : 1),
       child: GestureDetector(
         onTap: disabled ? null : onPressed,
         child: Container(

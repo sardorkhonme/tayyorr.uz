@@ -160,14 +160,13 @@ export default async function WalletPage({
       <div>
         <h2 className="mb-3 px-1 text-base font-semibold text-white">Amallar tarixi</h2>
         {txns.length === 0 ? (
-          <div className="card">
-            <MascotState
-              pose="wallet-empty"
-              size={130}
-              title="Hozirça amallar yöq"
-              message="Hisobni töldirsangiz yoki star sotib olsangiz, barça amallar şu yerda körinadi."
-            />
-          </div>
+          <MascotState
+            pose="wallet-empty"
+            size={240}
+            className="mascot-xl"
+            title="Hozirça amallar yöq"
+            message="Hisobni töldirsangiz yoki star sotib olsangiz, barça amallar şu yerda körinadi."
+          />
         ) : (
           <ul className="flex flex-col gap-2">
             {txns.map((tx) => {

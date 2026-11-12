@@ -25,7 +25,7 @@ class AppLogo extends StatelessWidget {
         ],
       ),
       maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      softWrap: false,
       style: GoogleFonts.spaceGrotesk(
         fontSize: height,
         height: 1.1,
@@ -45,7 +45,7 @@ class AppLogo extends StatelessWidget {
           filterQuality: FilterQuality.high,
         ),
         SizedBox(width: height * 0.35),
-        Flexible(child: text),
+        text,
       ],
     );
   }

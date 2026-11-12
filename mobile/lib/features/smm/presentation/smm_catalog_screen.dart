@@ -58,8 +58,8 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
     try {
       final c = await SmmApi.instance.catalog(force: force);
       if (mounted) setState(() => _cat = c);
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e));
     }
   }
 
@@ -114,7 +114,7 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
           ErrorState.from(_error, () {
             setState(() => _error = null);
             _load(force: true);
-          }, card: true),
+          }),
         ] else if (c == null) ...[
           // haqiqiy ko'rinish: 1-qadam sarlavhasi + 3 ustunli platforma plitkalari
           const SizedBox(height: 22),
