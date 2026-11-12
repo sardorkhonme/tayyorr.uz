@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../core/media/media_cache.dart';
@@ -27,6 +28,7 @@ import '../messages/data/message_model.dart';
 import '../messages/presentation/chat_composer.dart';
 import '../messages/presentation/chat_media.dart';
 import '../messages/presentation/chat_widgets.dart';
+import '../auth/bloc/auth_bloc.dart';
 import '../public_profile/presentation/public_profile_screen.dart';
 import 'family_entry.dart';
 import 'family_models.dart';
@@ -77,6 +79,18 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   /// Shu qurilmadan yuborilganlar (Tayyorr.uz nomidan yozilgani ham «meniki»).
   final Set<String> _sentIds = {};
 
+  /// Optimistik yuborilayotganlar: clientId → yuborish ma'lumoti (qayta yuborish uchun).
+  final Map<String, _Outgoing> _outbox = {};
+  final Set<String> _myClientIds = {};
+
+  /// Paydo bo'lish animatsiyasi o'ynaydigan (yangi) xabarlar kaliti.
+  final Set<String> _fresh = {};
+
+  /// Tahrirlanayotgan o'z xabarim.
+  FamilyMessage? _editing;
+  Timer? _byTimer;
+  String? _uid;
+
   String _as = 'self';
   FamilyMessage? _replyTo;
   PendingAttachment? _pending;
@@ -115,12 +129,53 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     _sub = _live.events.listen(_onEvent);
     _live.connected.addListener(_onConnected);
     _live.start();
-    _load(initial: true);
+    _uid = context.read<AuthBloc>().state.user?.id;
+    _enter();
     _startOnline();
+  }
+
+  /// Kirish: keshdagi xabarlar darhol (shimmersiz), keyin faqat yangilari / o'zgarganlari.
+  Future<void> _enter() async {
+    final uid = _uid;
+    final cache = FamilyCache.instance;
+    if (uid != null && (cache.has(uid) || await cache.restore(uid)) && mounted && _messages.isEmpty) {
+      setState(() {
+        _me ??= cache.me;
+        _messages = List.of(cache.messages);
+        _pinned = List.of(cache.pinned);
+        _hasMore = cache.hasMore;
+        _maxUpdated = cache.maxUpdated;
+        _members ??= cache.members;
+        _online ??= cache.online;
+        _loading = false;
+      });
+      await _catchUp();
+      await _load();
+      _scheduleRead();
+    } else {
+      await _load(initial: true);
+    }
+  }
+
+  void _saveCache() {
+    final uid = _uid ?? _me?.id;
+    if (uid == null || _messages.isEmpty) return;
+    FamilyCache.instance.save(
+      uid,
+      me: _me,
+      messages: _messages,
+      pinned: _pinned,
+      hasMore: _hasMore,
+      maxUpdated: _maxUpdated,
+      members: _members,
+      online: _online,
+    );
   }
 
   @override
   void dispose() {
+    _saveCache();
+    _byTimer?.cancel();
     FamilyScreen.isOpen = false;
     WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
@@ -141,6 +196,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   @override
   void didChangeAppLifecycleState(AppLifecycleState s) {
     if (s == AppLifecycleState.paused) {
+      _saveCache();
       _live.stop();
       _onlineTimer?.cancel();
     } else if (s == AppLifecycleState.resumed) {
@@ -177,8 +233,26 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
 
   // ───────────────────────── ma'lumot ─────────────────────────
 
-  bool _isMine(FamilyMessage m) =>
-      m.mine ?? ((m.author.isUser && m.author.id == _me?.id) || _sentIds.contains(m.id));
+  bool _isMine(FamilyMessage m) => m.mine ?? _guessMine(m);
+
+  /// Faqat yangi (ro'yxatda yo'q) xabar uchun: men yozganmanmi.
+  bool _guessMine(FamilyMessage m) =>
+      (m.author.isUser && m.author.id == (_me?.id ?? _uid)) ||
+      _sentIds.contains(m.id) ||
+      (m.clientId != null && _myClientIds.contains(m.clientId));
+
+  /// Kelgan xabarni mavjudi bilan birlashtirish: `mine` hech qachon «sakramaydi» (bor bo'lsa saqlanadi),
+  /// clientId va admin uchun `by` ham yo'qolmaydi.
+  FamilyMessage _resolve(FamilyMessage m, FamilyMessage? old) {
+    final mine = m.mine ?? old?.mine ?? _guessMine(m);
+    return m.copyWith(mine: mine, clientId: m.clientId ?? old?.clientId, by: m.by ?? old?.by, status: FamilySendStatus.sent);
+  }
+
+  int _indexOf(FamilyMessage m) {
+    final i = _messages.indexWhere((x) => x.id == m.id);
+    if (i >= 0 || m.clientId == null) return i;
+    return _messages.indexWhere((x) => x.clientId == m.clientId);
+  }
 
   Future<void> _load({bool initial = false}) async {
     try {
@@ -196,8 +270,13 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
         _online = (r['online'] as num?)?.toInt() ?? _online;
         _loading = false;
         _error = null;
-        if (initial || _messages.isEmpty) {
-          _messages = msgs.where((m) => !m.deleted).toList();
+        final page = msgs.where((m) => !m.deleted).toList();
+        final sent = _messages.where((m) => !m.isLocal).toList();
+        // keshdagilar bilan oradagi bo'shliq (ko'p yangi xabar) — ro'yxat yangidan
+        final gap = sent.isNotEmpty && page.isNotEmpty && (r['hasMore'] as bool? ?? false) && page.first.sendAt.isAfter(sent.last.sendAt);
+        if (initial || sent.isEmpty || gap) {
+          final local = _messages.where((m) => m.isLocal).toList();
+          _messages = [for (final m in page) _resolve(m, null), ...local];
           _hasMore = r['hasMore'] as bool? ?? false;
         } else {
           for (final m in msgs) {
@@ -215,6 +294,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       });
       _armNext((r['nextAt'] as num?)?.toInt());
       if (initial) _scheduleRead();
+      _saveCache();
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -261,10 +341,13 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     if (m.deleted) return _remove(m.id);
     _scheduled.removeWhere((x) => x.id == m.id);
     if (m.scheduled) return;
-    final i = _messages.indexWhere((x) => x.id == m.id);
+    final i = _indexOf(m);
     if (i >= 0) {
-      _messages[i] = m;
+      // o'z joyida almashtiramiz (kalit — clientId ?? id — o'zgarmaydi: yo'qolib qayta chiqmaydi)
+      _messages[i] = m = _resolve(m, _messages[i]);
+      if (m.clientId != null) _outbox.remove(m.clientId);
     } else {
+      m = _resolve(m, null);
       var at = _messages.length;
       while (at > 0 && _messages[at - 1].sendAt.isAfter(m.sendAt)) {
         at--;
@@ -307,11 +390,13 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     } catch (_) {
       return;
     }
-    final isNew = !_messages.any((x) => x.id == m.id);
-    final mine = _isMine(m);
+    final isNew = _indexOf(m) < 0;
+    final old = isNew ? null : _messages[_indexOf(m)];
+    final mine = m.mine ?? old?.mine ?? _guessMine(m);
     final nearBottom = _nearBottom;
     setState(() {
-      _upsert(m.withMine(mine));
+      if (isNew && e == 'new') _markFresh(m.stableKey);
+      _upsert(m);
       if (e == 'new' && isNew && !mine && _me != null && m.mentionsMe(_me!.id, _isAdmin) && !nearBottom) {
         if (_mentionSeen.add(m.id)) _mentionQueue.add(m.id);
       }
@@ -319,6 +404,11 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     if (e == 'new' && isNew) {
       if (nearBottom || mine) WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
       if (nearBottom) _scheduleRead();
+    }
+    // admin: Tayyorr.uz / Support nomidagi xabarning haqiqiy muallifi realtime'da kelmaydi — ?since bilan olamiz
+    if (_isAdmin && m.author.isOfficial && m.by == null && old?.by == null) {
+      _byTimer?.cancel();
+      _byTimer = Timer(const Duration(milliseconds: 700), _catchUp);
     }
   }
 
@@ -347,8 +437,16 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     if (seen.isNotEmpty) setState(() => _mentionQueue.removeWhere(seen.contains));
   }
 
+  /// Xabar id'si → ro'yxatdagi barqaror kalit.
+  String _kOf(String id) {
+    for (final m in _messages) {
+      if (m.id == id) return m.stableKey;
+    }
+    return id;
+  }
+
   bool _isVisible(String id) {
-    final ctx = _keys[id]?.currentContext;
+    final ctx = _keys[_kOf(id)]?.currentContext;
     final listCtx = _listKey.currentContext;
     if (ctx == null || listCtx == null) return false;
     final box = ctx.findRenderObject();
@@ -361,8 +459,10 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   void _scheduleRead() {
     _readTimer?.cancel();
     _readTimer = Timer(const Duration(milliseconds: 800), () {
-      if (!mounted || _messages.isEmpty || !_nearBottom) return;
-      final at = _messages.last.sendAtMs;
+      if (!mounted || !_nearBottom) return;
+      final sent = _messages.where((m) => !m.isLocal);
+      if (sent.isEmpty) return;
+      final at = sent.last.sendAtMs;
       if (at <= _readSent) return;
       _readSent = at;
       _repo.read(at).catchError((_) {});
@@ -405,19 +505,20 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       showToast(context, "Xabar topilmadi (öçirilgan bölişi mumkin)");
       return;
     }
-    for (var attempt = 0; attempt < 4 && _keys[id]?.currentContext == null; attempt++) {
+    final key = _messages[index].stableKey;
+    for (var attempt = 0; attempt < 4 && _keys[key]?.currentContext == null; attempt++) {
       if (!_scroll.hasClients) return;
       final pos = _scroll.position;
       final frac = _messages.length <= 1 ? 0.0 : (_messages.length - 1 - index) / (_messages.length - 1);
       _scroll.jumpTo((pos.maxScrollExtent * frac).clamp(0.0, pos.maxScrollExtent));
       await WidgetsBinding.instance.endOfFrame;
     }
-    final ctx = _keys[id]?.currentContext;
+    final ctx = _keys[key]?.currentContext;
     if (ctx == null || !ctx.mounted) return;
     await Scrollable.ensureVisible(ctx, alignment: 0.4, duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
     if (!mounted) return;
     setState(() {
-      _flashId = id;
+      _flashId = key;
       _flashTick++;
     });
   }
@@ -432,6 +533,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   // ───────────────────────── yuborish ─────────────────────────
 
   Future<void> _send({bool notifyAll = false, DateTime? at}) async {
+    if (_editing != null) return _saveEdit();
     final pending = _pending;
     if (pending != null && !pending.ready) return;
     final text = _text.text;
@@ -444,16 +546,108 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       _suggest = const [];
       _mentionStart = null;
     });
+    // rejalashtirilgan — ro'yxatga emas, «Rejalaştirilgan» ga tushadi
+    if (at != null) return _sendScheduled(text, reply, pending, at);
+
+    final clientId = 'c${DateTime.now().microsecondsSinceEpoch}';
+    _myClientIds.add(clientId);
+    final myName = context.read<AuthBloc>().state.user?.displayName ?? 'Men';
+    ChatFileModel? file;
+    if (pending != null) {
+      // mahalliy fayl xabarning doimiy kesh kalitiga — server javobidan keyin qayta yuklanmaydi
+      await MediaCache.instance.adopt(pending.localKey, 'f-$clientId', pending.name);
+      file = ChatFileModel(name: pending.name, type: pending.type, size: pending.size, url: '');
+    }
+    if (!mounted) return;
+    final who = _identity ??
+        FamilyAuthor(kind: 'user', id: _me?.id ?? _uid ?? '', name: myName);
+    final local = FamilyMessage(
+      id: 'local:$clientId',
+      author: who,
+      mine: true,
+      body: text.trim(),
+      file: file,
+      expiredFile: null,
+      replyTo: reply == null ? null : FamilyReply(id: reply.id, authorName: reply.author.name, text: reply.preview, deleted: false),
+      mentions: const [],
+      notifyAll: notifyAll,
+      pinned: false,
+      scheduled: false,
+      sendAt: DateTime.now(),
+      updatedAt: 0,
+      deleted: false,
+      clientId: clientId,
+      status: FamilySendStatus.pending,
+    );
+    _outbox[clientId] = _Outgoing(body: text, replyToId: reply?.id, as: _as, notifyAll: notifyAll, file: pending?.prepared);
+    setState(() {
+      _markFresh(clientId);
+      _messages.add(local);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    await _deliver(clientId);
+  }
+
+  /// Optimistik xabarni serverga yuborish (qayta yuborishda ham).
+  Future<void> _deliver(String clientId) async {
+    final o = _outbox[clientId];
+    if (o == null) return;
+    void mark(FamilySendStatus st) {
+      final i = _messages.indexWhere((x) => x.clientId == clientId && x.isLocal);
+      if (i >= 0) _messages[i] = _messages[i].copyWith(status: st);
+    }
+
+    setState(() => mark(FamilySendStatus.pending));
     try {
-      final m = await _repo.send(
-        body: text,
-        replyToId: reply?.id,
-        as: _as,
-        notifyAll: notifyAll,
-        sendAt: at,
-        file: pending?.prepared,
-      );
-      if (pending != null) await MediaCache.instance.adopt(pending.localKey, 'f-${m.id}', pending.name);
+      final m = await _repo.send(body: o.body, replyToId: o.replyToId, as: o.as, notifyAll: o.notifyAll, file: o.file, clientId: clientId);
+      _sentIds.add(m.id);
+      if (!mounted) return;
+      // realtime oldinroq kelgan bo'lsa — o'sha joyda yangilanadi, dublikat bo'lmaydi
+      setState(() => _upsert(m.copyWith(clientId: clientId, mine: true)));
+      _outbox.remove(clientId);
+      if (o.notifyAll) showToast(context, 'Hammaga bildirib yuborildi', kind: ToastKind.success);
+    } catch (e) {
+      if (!mounted) return;
+      // realtime orqali yetib kelgan bo'lsa — xato emas
+      if (!_messages.any((x) => x.clientId == clientId && !x.isLocal)) {
+        setState(() => mark(FamilySendStatus.failed));
+        if (e is ApiException) showToast(context, e.message, kind: ToastKind.error);
+      }
+    }
+  }
+
+  /// Animatsiya bir marta o'ynaydi — keyin (ro'yxatdan chiqib-kirsa ham) qayta o'ynamaydi.
+  void _markFresh(String k) {
+    _fresh.add(k);
+    Future.delayed(const Duration(milliseconds: 500), () => _fresh.remove(k));
+  }
+
+  void _discardLocal(FamilyMessage m) {
+    _outbox.remove(m.clientId);
+    setState(() => _messages.removeWhere((x) => x.clientId == m.clientId && x.isLocal));
+  }
+
+  void _failedMenu(FamilyMessage m) {
+    showAppSheet(
+      context,
+      title: 'Xabar yuborilmadi',
+      builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
+        AppSheetAction(icon: TI.refresh_rounded, label: 'Qayta yuboriş', onTap: () {
+          Navigator.of(ctx).pop();
+          _deliver(m.clientId!);
+        }),
+        AppSheetAction(icon: TI.delete_outline_rounded, label: 'Öçiriş', danger: true, onTap: () {
+          Navigator.of(ctx).pop();
+          _discardLocal(m);
+        }),
+      ]),
+    );
+  }
+
+  Future<void> _sendScheduled(String text, FamilyMessage? reply, PendingAttachment? pending, DateTime at) async {
+    try {
+      final m = await _repo.send(body: text, replyToId: reply?.id, as: _as, sendAt: at, file: pending?.prepared);
+      if (pending != null) await MediaCache.instance.adopt(pending.localKey, m.cacheKey, pending.name);
       _sentIds.add(m.id);
       if (!mounted) return;
       if (m.scheduled) {
@@ -465,26 +659,57 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
         showToast(context, 'Rejalaştirildi: ${shortDateTime(m.sendAt)}', kind: ToastKind.success);
       } else {
         setState(() => _upsert(m.withMine(true)));
-        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-        if (notifyAll) showToast(context, 'Hammaga bildirib yuborildi', kind: ToastKind.success);
       }
-    } on ApiException catch (e) {
+    } catch (e) {
       if (!mounted) return;
       if (_text.text.isEmpty) _text.text = text;
       setState(() {
         _replyTo ??= reply;
         _pending ??= pending;
       });
-      showToast(context, e.message, kind: ToastKind.error);
-    } catch (_) {
+      showToast(context, e is ApiException ? e.message : "Yuborib bölmadi — qayta urinib köring", kind: ToastKind.error);
+    }
+  }
+
+  void _startEdit(FamilyMessage m) {
+    setState(() {
+      _editing = m;
+      _replyTo = null;
+    });
+    _text.value = TextEditingValue(text: m.body, selection: TextSelection.collapsed(offset: m.body.length));
+    _focus.requestFocus();
+  }
+
+  void _cancelEdit() {
+    setState(() => _editing = null);
+    _text.clear();
+  }
+
+  /// Tahrir: darhol ko'rsatiladi, server rad etsa — qaytariladi.
+  Future<void> _saveEdit() async {
+    final m = _editing;
+    final text = _text.text.trim();
+    if (m == null || text.isEmpty) return;
+    setState(() => _editing = null);
+    _text.clear();
+    if (text == m.body) return;
+    final i = _indexOf(m);
+    final before = i >= 0 ? _messages[i] : m;
+    if (i >= 0) setState(() => _messages[i] = before.copyWith(body: text, edited: true));
+    try {
+      final r = await _repo.edit(m.id, text);
+      if (mounted) setState(() => _upsert(r));
+    } catch (e) {
       if (!mounted) return;
-      if (_text.text.isEmpty) _text.text = text;
-      showToast(context, "Yuborib bölmadi — qayta urinib köring", kind: ToastKind.error);
+      final j = _indexOf(m);
+      if (j >= 0) setState(() => _messages[j] = before);
+      showToast(context, e is ApiException ? e.message : "Tahrirlab bölmadi", kind: ToastKind.error);
     }
   }
 
   /// Yuborish tugmasini bosib turish — Telegramdagidek menyu.
   Future<void> _sendMenu() async {
+    if (_editing != null) return;
     final v = await showAppSheet<String>(
       context,
       title: 'Yuboriş',
@@ -629,8 +854,12 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   /// Bitta bosish — zamonaviy popup: xira fon, xabar o'z joyida, tepada reaksiyalar, pastda amallar.
   Future<void> _openPopup(FamilyMessage m) async {
     if (m.deleted) return;
+    if (m.isLocal) {
+      if (m.status == FamilySendStatus.failed) _failedMenu(m);
+      return;
+    }
     final idx = _messages.indexWhere((x) => x.id == m.id);
-    final box = _bubbleKeys[m.id]?.currentContext?.findRenderObject();
+    final box = _bubbleKeys[m.stableKey]?.currentContext?.findRenderObject();
     if (idx < 0 || box is! RenderBox || !box.attached) return;
     final rect = box.localToGlobal(Offset.zero) & box.size;
     final cur = _messages[idx];
@@ -647,6 +876,8 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       actions: [
         const FamilyPopupAction('reply', TI.reply_rounded, 'Javob beriş'),
         if (cur.body.isNotEmpty) const FamilyPopupAction('copy', TI.copy_rounded, 'Nusxa oliş'),
+        if (mine && cur.body.isNotEmpty)
+          const FamilyPopupAction('edit', TI.edit_outlined, 'Tahrirlaş'),
         if (cur.file != null)
           FamilyPopupAction('save', TI.download_rounded, cur.file!.isImage || cur.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş'),
         if (_isAdmin) FamilyPopupAction('pin', cur.pinned ? TI.push_pin_outlined : TI.push_pin_rounded, cur.pinned ? 'Qadaşdan oliş' : 'Qadaş'),
@@ -667,7 +898,9 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
         Clipboard.setData(ClipboardData(text: cur.body));
         showToast(context, 'Nusxalandi', kind: ToastKind.success);
       case 'save':
-        saveChatFile(context, cur.file!, 'f-${cur.id}');
+        saveChatFile(context, cur.file!, cur.cacheKey);
+      case 'edit':
+        _startEdit(cur);
       case 'pin':
         _togglePin(cur);
       case 'delete':
@@ -910,15 +1143,18 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
                   ),
                 ),
               ),
-            if (_replyTo != null) _ReplyBanner(message: _replyTo!, onClose: () => setState(() => _replyTo = null), onTap: () => _jumpTo(_replyTo!.id)),
+            if (_editing != null)
+              _ReplyBanner(message: _editing!, editing: true, onClose: _cancelEdit, onTap: () => _jumpTo(_editing!.id))
+            else if (_replyTo != null)
+              _ReplyBanner(message: _replyTo!, onClose: () => setState(() => _replyTo = null), onTap: () => _jumpTo(_replyTo!.id)),
             if (_pending != null) PendingAttachmentBar(pending: _pending!, onCancel: _cancelPending),
-            if (_me != null)
-              ChatComposer(
+            // kirishi bilanoq yozish mumkin (ma'lumot yuklanishini kutmaydi)
+            ChatComposer(
                 controller: _text,
                 focusNode: _focus,
                 onSend: () => _send(),
                 onSendLongPress: _sendMenu,
-                onAttach: _pickFile,
+                onAttach: _editing != null ? null : _pickFile,
                 onRecorded: _onRecorded,
                 hasAttachment: _pending != null,
                 attachmentReady: _pending?.ready ?? false,
@@ -982,7 +1218,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const FamilyMark(size: 64),
+            const FamilyMark(size: 56),
             const SizedBox(height: 16),
             Text('Hali xabar yöq', style: TextStyle(color: WebC.white, fontSize: 17, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
@@ -1009,16 +1245,22 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
           final m = _messages[idx];
           final mine = _isMine(m);
           final f = _flags(idx);
+          final k = m.stableKey;
           return Column(
-            key: _keyFor(m.id),
+            key: _keyFor(k),
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (f.newDay) _DayChip(date: m.sendAt),
-              SwipeToReply(
-                onReply: () => _setReply(m),
-                child: FlashHighlight(
-                  flashKey: _flashId == m.id ? _flashTick : null,
-                  child: _bubble(m, mine, f, bubbleKey: _bubbleKeys.putIfAbsent(m.id, GlobalKey.new)),
+              ChatAppear(
+                animate: _fresh.contains(k),
+                fromRight: mine,
+                child: SwipeToReply(
+                  enabled: !m.isLocal,
+                  onReply: () => _setReply(m),
+                  child: FlashHighlight(
+                    flashKey: _flashId == k ? _flashTick : null,
+                    child: _bubble(m, mine, f, bubbleKey: _bubbleKeys.putIfAbsent(k, GlobalKey.new)),
+                  ),
                 ),
               ),
             ],
@@ -1061,9 +1303,12 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       onTap: () => _openPopup(m),
       onAuthorTap: () => _openProfile(m.author),
       onMentionTap: _openProfileByMention,
-      onReact: (e) => _react(m.id, e),
+      onReact: (e) => m.isLocal ? null : _react(m.id, e),
       onReactLong: (e) => showFamilyPeople(context, m.id, reactions: true, emoji: e),
       onReplyTap: m.replyTo == null ? null : () => _jumpTo(m.replyTo!.id),
+      showBy: _isAdmin,
+      onRetry: m.status == FamilySendStatus.failed ? () => _deliver(m.clientId!) : null,
+      onDiscard: m.status == FamilySendStatus.failed ? () => _discardLocal(m) : null,
     );
   }
 
@@ -1096,7 +1341,7 @@ class _Header extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        const FamilyMark(size: 38),
+        const FamilyMark(size: 36),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
@@ -1213,7 +1458,17 @@ class _FamilyBubble extends StatelessWidget {
     this.onReplyTap,
     this.bubbleKey,
     this.previewOnly = false,
+    this.showBy = false,
+    this.onRetry,
+    this.onDiscard,
   });
+
+  /// Admin: Tayyorr.uz / Support nomidagi xabarda haqiqiy muallif qatori.
+  final bool showBy;
+
+  /// Yuborilmagan (qizil) xabar uchun.
+  final VoidCallback? onRetry;
+  final VoidCallback? onDiscard;
   final FamilyMessage message;
   final bool mine;
   final bool showName;
@@ -1226,7 +1481,7 @@ class _FamilyBubble extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onAuthorTap;
   final void Function(FamilyMention) onMentionTap;
-  final void Function(String emoji) onReact;
+  final void Function(String emoji)? onReact;
   final void Function(String emoji) onReactLong;
   final VoidCallback? onReplyTap;
 
@@ -1261,9 +1516,11 @@ class _FamilyBubble extends StatelessWidget {
             bottomLeft: Radius.circular(!mine && showAvatar ? 5 : 16),
             bottomRight: Radius.circular(mine && !tight ? 5 : 16),
           ),
-          border: mine
-              ? null
-              : Border.all(color: mentioned ? const Color(0xFFF59E0B).withValues(alpha: 0.45) : WebC.border),
+          border: m.status == FamilySendStatus.failed
+              ? Border.all(color: const Color(0xFFF43F5E), width: 1.5)
+              : mine
+                  ? null
+                  : Border.all(color: mentioned ? const Color(0xFFF59E0B).withValues(alpha: 0.45) : WebC.border),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
           if (showName)
@@ -1309,7 +1566,7 @@ class _FamilyBubble extends StatelessWidget {
                 ]),
               ),
             ),
-          if (m.file != null) ChatAttachment(file: m.file!, cacheKey: 'f-${m.id}', mine: mine),
+          if (m.file != null) ChatAttachment(file: m.file!, cacheKey: m.cacheKey, mine: mine),
           if (m.expiredFile != null) _ExpiredFile(file: m.expiredFile!, mine: mine),
           if (m.body.isNotEmpty) ...[
             if (m.file != null || m.expiredFile != null) const SizedBox(height: 6),
@@ -1321,19 +1578,34 @@ class _FamilyBubble extends StatelessWidget {
               onMentionTap: onMentionTap,
             ),
           ],
+          // admin: kim nomidan va aslida kim yozgan
+          if (showBy && m.by != null && a.isOfficial) ...[
+            const SizedBox(height: 4),
+            Text(
+              '${a.name} nomidan · ${m.by!.login != null ? '@${m.by!.login}' : m.by!.name} yozdi',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: timeColor, fontSize: 10.5, fontStyle: FontStyle.italic),
+            ),
+          ],
           const SizedBox(height: 2),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
             if (m.notifyAll) ...[TIcon(TI.campaign_rounded, size: 12, color: timeColor), const SizedBox(width: 4)],
             if (m.pinned) ...[TIcon(TI.push_pin_rounded, size: 12, color: timeColor), const SizedBox(width: 4)],
-            Text(_hm(m.sendAt), style: TextStyle(color: timeColor, fontSize: 10)),
-            // meniki: ✓ — yuborildi, ✓✓ — kimdir ko'rdi
+            Text('${m.edited ? 'tahrirlangan · ' : ''}${_hm(m.sendAt)}', style: TextStyle(color: timeColor, fontSize: 10)),
+            // meniki: soat — yuborilmoqda, ! — yuborilmadi, ✓ — yuborildi, ✓✓ — kimdir ko'rdi
             if (mine) ...[
               const SizedBox(width: 3),
-              TIcon(
-                m.seen > 0 ? TI.done_all_rounded : TI.done_rounded,
-                size: 14,
-                color: m.seen > 0 ? const Color(0xFF7DD3FC) : timeColor,
-              ),
+              if (m.status == FamilySendStatus.pending)
+                TIcon(TI.schedule_rounded, size: 13, color: timeColor)
+              else if (m.status == FamilySendStatus.failed)
+                const TIcon(TI.error_outline_rounded, size: 13, color: Color(0xFFFDA4AF))
+              else
+                TIcon(
+                  m.seen > 0 ? TI.done_all_rounded : TI.done_rounded,
+                  size: 14,
+                  color: m.seen > 0 ? const Color(0xFF7DD3FC) : timeColor,
+                ),
             ],
           ]),
         ]),
@@ -1372,8 +1644,21 @@ class _FamilyBubble extends StatelessWidget {
                 padding: EdgeInsets.only(top: 5, left: mine ? 0 : 42),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: c.maxWidth * 0.86),
-                  child: FamilyReactionChips(message: m, meId: meId, alignRight: mine, onTap: onReact, onLongPress: onReactLong),
+                  child: FamilyReactionChips(message: m, meId: meId, alignRight: mine, onTap: (e) => onReact?.call(e), onLongPress: onReactLong),
                 ),
+              ),
+            if (onRetry != null || onDiscard != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const TIcon(TI.error_outline_rounded, size: 14, color: Color(0xFFF43F5E)),
+                  const SizedBox(width: 4),
+                  const Text('Yuborilmadi', style: TextStyle(color: Color(0xFFF43F5E), fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 10),
+                  _MiniButton(label: 'Qayta yuboriş', icon: TI.refresh_rounded, onTap: onRetry),
+                  const SizedBox(width: 6),
+                  _MiniButton(label: 'Öçiriş', icon: TI.delete_outline_rounded, onTap: onDiscard, danger: true),
+                ]),
               ),
           ],
         ),
@@ -1575,7 +1860,8 @@ class _IdentityRow extends StatelessWidget {
 }
 
 class _ReplyBanner extends StatelessWidget {
-  const _ReplyBanner({required this.message, required this.onClose, required this.onTap});
+  const _ReplyBanner({required this.message, required this.onClose, required this.onTap, this.editing = false});
+  final bool editing;
   final FamilyMessage message;
   final VoidCallback onClose;
   final VoidCallback onTap;
@@ -1595,7 +1881,7 @@ class _ReplyBanner extends StatelessWidget {
         child: Row(children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${message.author.name} — javob',
+              Text(editing ? 'Tahrirlanmoqda' : '${message.author.name} — javob',
                   maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.indigo, fontSize: 11.5, fontWeight: FontWeight.w700)),
               Text(message.preview, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
             ]),
@@ -1624,5 +1910,44 @@ class _SkelRow extends StatelessWidget {
       const SizedBox(width: 8),
       SBar(width: MediaQuery.sizeOf(context).width * widthFraction, height: 46, borderRadius: 16),
     ]);
+  }
+}
+
+/// Optimistik yuborilgan xabar ma'lumoti (qayta yuborish uchun).
+class _Outgoing {
+  const _Outgoing({required this.body, this.replyToId, required this.as, required this.notifyAll, this.file});
+  final String body;
+  final String? replyToId;
+  final String as;
+  final bool notifyAll;
+  final Map<String, Object>? file;
+}
+
+class _MiniButton extends StatelessWidget {
+  const _MiniButton({required this.label, required this.icon, this.onTap, this.danger = false});
+  final String label;
+  final TIData icon;
+  final VoidCallback? onTap;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = danger ? const Color(0xFFF43F5E) : WebC.indigoSoft;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: c.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(99),
+          border: Border.all(color: c.withValues(alpha: 0.4)),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          TIcon(icon, size: 13, color: c),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
   }
 }

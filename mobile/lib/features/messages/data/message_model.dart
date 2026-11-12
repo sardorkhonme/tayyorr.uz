@@ -72,6 +72,9 @@ class MessageAction {
   const MessageAction({required this.url, required this.label});
 }
 
+/// Yuborish holati (faqat ilovada).
+enum ChatSendStatus { sent, pending, failed }
+
 class ChatMessageModel {
   final String id;
   final String senderId;
@@ -92,6 +95,14 @@ class ChatMessageModel {
   /// Qabul qiluvchi o'qigan vaqt (epoch ms) — ✓✓ uchun.
   final int? readAt;
 
+  /// Shu qurilmadan optimistik yuborilgan xabarning mahalliy id'si — ro'yxat kaliti barqaror bo'lsin
+  /// (server javobi kelganda xabar o'z joyida almashadi).
+  final String? clientId;
+  final ChatSendStatus status;
+
+  String get stableKey => clientId ?? id;
+  bool get isLocal => status != ChatSendStatus.sent;
+
   const ChatMessageModel({
     required this.id,
     required this.senderId,
@@ -108,7 +119,38 @@ class ChatMessageModel {
     required this.reactions,
     this.file,
     this.readAt,
+    this.clientId,
+    this.status = ChatSendStatus.sent,
   });
+
+  ChatMessageModel copyWith({
+    String? body,
+    bool? edited,
+    bool? deleted,
+    ReactionSummary? reactions,
+    String? clientId,
+    ChatSendStatus? status,
+    int? updatedAt,
+  }) =>
+      ChatMessageModel(
+        id: id,
+        senderId: senderId,
+        body: body ?? this.body,
+        system: system,
+        orderId: orderId,
+        action: action,
+        createdAt: createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        mine: mine,
+        edited: edited ?? this.edited,
+        deleted: deleted ?? this.deleted,
+        replyTo: replyTo,
+        reactions: reactions ?? this.reactions,
+        file: deleted == true ? null : file,
+        readAt: readAt,
+        clientId: clientId ?? this.clientId,
+        status: status ?? this.status,
+      );
 
   DateTime get createdAtDate => DateTime.fromMillisecondsSinceEpoch(createdAt);
 

@@ -44,7 +44,7 @@ class FamilyReply {
 }
 
 /// Guruhdagi reaksiyalar (serverdagi FAMILY_EMOJIS bilan bir xil).
-const kFamilyEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🙏', '👏'];
+const kFamilyEmojis = ['👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
 
 class FamilyReaction {
   const FamilyReaction({required this.emoji, required this.count, required this.users});
@@ -67,6 +67,20 @@ class FamilyMention {
   final String login;
 }
 
+/// Admin uchun: Tayyorr.uz / Support nomidan haqiqatda kim yozgan.
+class FamilyBy {
+  const FamilyBy({required this.id, required this.name, this.login});
+  final String id;
+  final String name;
+  final String? login;
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'login': login};
+  factory FamilyBy.fromJson(Map<String, dynamic> j) => FamilyBy(id: '${j['id']}', name: j['name'] as String? ?? '', login: j['login'] as String?);
+}
+
+/// Yuborish holati (faqat ilovada): yuborilgan / yuborilmoqda / yuborilmadi.
+enum FamilySendStatus { sent, pending, failed }
+
 class FamilyMessage {
   const FamilyMessage({
     required this.id,
@@ -85,6 +99,10 @@ class FamilyMessage {
     required this.deleted,
     this.reactions = const [],
     this.seen = 0,
+    this.edited = false,
+    this.clientId,
+    this.by,
+    this.status = FamilySendStatus.sent,
   });
 
   final String id;
@@ -109,8 +127,25 @@ class FamilyMessage {
 
   /// Nechta a'zo ko'rgan (muallifdan tashqari).
   final int seen;
+  final bool edited;
+
+  /// Shu qurilmada yuborilgan xabarning mahalliy id'si — vidjet kaliti shu bilan barqaror
+  /// (server javobi kelganda xabar o'z joyida almashadi, yo'qolib qayta paydo bo'lmaydi).
+  final String? clientId;
+
+  /// Faqat admin ko'radi: Tayyorr.uz / Support nomidan yozilgan bo'lsa — haqiqiy muallif.
+  final FamilyBy? by;
+  final FamilySendStatus status;
 
   int get sendAtMs => sendAt.millisecondsSinceEpoch;
+
+  /// Ro'yxatdagi barqaror kalit.
+  String get stableKey => clientId ?? id;
+
+  /// Fayl keshi kaliti (mahalliy fayl yuborilgach ham o'sha kalit — qayta yuklanmaydi).
+  String get cacheKey => 'f-$stableKey';
+
+  bool get isLocal => status != FamilySendStatus.sent;
 
   /// Matn bo'lmasa — fayl nomi.
   String get preview {
@@ -151,11 +186,20 @@ class FamilyMessage {
     return copyWith(reactions: list);
   }
 
-  FamilyMessage copyWith({bool? mine, List<FamilyReaction>? reactions}) => FamilyMessage(
+  FamilyMessage copyWith({
+    bool? mine,
+    List<FamilyReaction>? reactions,
+    String? body,
+    bool? edited,
+    String? clientId,
+    FamilyBy? by,
+    FamilySendStatus? status,
+  }) =>
+      FamilyMessage(
         id: id,
         author: author,
         mine: mine ?? this.mine,
-        body: body,
+        body: body ?? this.body,
         file: file,
         expiredFile: expiredFile,
         replyTo: replyTo,
@@ -168,9 +212,41 @@ class FamilyMessage {
         deleted: deleted,
         reactions: reactions ?? this.reactions,
         seen: seen,
+        edited: edited ?? this.edited,
+        clientId: clientId ?? this.clientId,
+        by: by ?? this.by,
+        status: status ?? this.status,
       );
 
   FamilyMessage withMine(bool v) => copyWith(mine: v);
+
+  /// Disk keshi uchun (server JSON'i bilan bir xil shakl).
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic>? f(ChatFileModel? x) => x == null ? null : {'name': x.name, 'type': x.type, 'size': x.size, 'url': x.url};
+    return {
+      'id': id,
+      'author': {'kind': author.kind, 'id': author.id, 'name': author.name, 'login': author.login, 'image': author.image},
+      'mine': mine,
+      'body': body,
+      'file': f(file),
+      'expiredFile': f(expiredFile),
+      'replyTo': replyTo == null
+          ? null
+          : {'id': replyTo!.id, 'authorName': replyTo!.authorName, 'text': replyTo!.text, 'deleted': replyTo!.deleted},
+      'mentions': [for (final m in mentions) {'id': m.id, 'login': m.login}],
+      'notifyAll': notifyAll,
+      'pinned': pinned,
+      'scheduled': scheduled,
+      'sendAt': sendAtMs,
+      'updatedAt': updatedAt,
+      'deleted': deleted,
+      'reactions': [for (final r in reactions) {'emoji': r.emoji, 'count': r.count, 'users': r.users}],
+      'seen': seen,
+      'edited': edited,
+      'clientId': clientId,
+      'by': by?.toJson(),
+    };
+  }
 
   factory FamilyMessage.fromJson(Map<String, dynamic> j) {
     ChatFileModel? meta(Object? v, {bool withUrl = true}) {
@@ -207,6 +283,9 @@ class FamilyMessage {
           .map((r) => FamilyReaction.fromJson(Map<String, dynamic>.from(r)))
           .toList(),
       seen: (j['seen'] as num?)?.toInt() ?? 0,
+      edited: j['edited'] as bool? ?? false,
+      clientId: j['clientId'] as String?,
+      by: j['by'] is Map ? FamilyBy.fromJson(Map<String, dynamic>.from(j['by'] as Map)) : null,
     );
   }
 }
@@ -231,6 +310,12 @@ class FamilyMe {
   final String id;
   final bool isAdmin;
   final List<FamilyAuthor> identities;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'isAdmin': isAdmin,
+        'identities': [for (final a in identities) {'kind': a.kind, 'id': a.id, 'name': a.name, 'login': a.login, 'image': a.image}],
+      };
 
   factory FamilyMe.fromJson(Map<String, dynamic> j) => FamilyMe(
         id: j['id'] as String,

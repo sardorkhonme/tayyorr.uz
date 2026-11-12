@@ -137,7 +137,7 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
               },
               count: widget.mentionCount,
               accent: true,
-              child: const TIcon(TI.alternate_email_rounded, size: 22, color: Colors.white),
+              child: const TIcon(TI.alternate_email_rounded, size: 20, color: Colors.white),
             ),
           ),
         ),
@@ -145,7 +145,7 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
           visible: _showDown,
           child: _RoundFab(
             onTap: _down,
-            child: TIcon(TI.keyboard_arrow_down_rounded, size: 24, color: WebC.zinc300),
+            child: TIcon(TI.keyboard_arrow_down_rounded, size: 22, color: WebC.zinc300),
           ),
         ),
       ],
@@ -314,6 +314,58 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
         ),
         Transform.translate(offset: Offset(_dx, 0), child: widget.child),
       ]),
+    );
+  }
+}
+
+/// Yangi xabar paydo bo'lishi: pastdan biroz ko'tarilib, kattalashib chiqadi. Faqat bir marta
+/// ([animate] true bo'lib qurilganda) — keyingi qayta qurilishlarda (server javobi bilan almashganda)
+/// qayta o'ynamaydi.
+class ChatAppear extends StatefulWidget {
+  const ChatAppear({super.key, required this.animate, required this.child, this.fromRight = false});
+  final bool animate;
+  final bool fromRight;
+  final Widget child;
+
+  @override
+  State<ChatAppear> createState() => _ChatAppearState();
+}
+
+class _ChatAppearState extends State<ChatAppear> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 260), value: widget.animate ? 0 : 1);
+  late final Animation<double> _a = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.animate) _c.forward();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _a,
+      child: widget.child,
+      builder: (context, child) {
+        if (_a.value >= 1) return child!;
+        return Opacity(
+          opacity: _a.value,
+          child: Transform.translate(
+            offset: Offset(0, 14 * (1 - _a.value)),
+            child: Transform.scale(
+              scale: 0.94 + 0.06 * _a.value,
+              alignment: widget.fromRight ? Alignment.bottomRight : Alignment.bottomLeft,
+              child: child,
+            ),
+          ),
+        );
+      },
     );
   }
 }

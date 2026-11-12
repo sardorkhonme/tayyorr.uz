@@ -13,6 +13,7 @@ import '../cubit/conversations_cubit.dart';
 import '../data/message_model.dart';
 import '../data/messages_repository.dart';
 import 'chat_screen.dart';
+import '../../../core/navigation/support.dart';
 
 /// Saytdagi /messages ro'yxati (bu sahifadagi timeAgo boshqacha: "hozir", "5 daq oldin").
 String _ago(DateTime d) {
@@ -59,9 +60,32 @@ class _MessagesListView extends StatelessWidget {
             // «Tayyorr's Family» — umumiy guruh, doim tepada
             const FamilyListRow(),
             const SizedBox(height: 8),
+            // «Tayyorr Support» — doim tepada (pastdagi ro'yxatda takrorlanmaydi)
+            Builder(builder: (context) {
+              ConversationModel? sc;
+              for (final c in state.conversations) {
+                if (c.other.isSupport) sc = c;
+              }
+              return FamilySupportRow(
+                unread: sc?.unread ?? 0,
+                subtitle: (sc?.lastMessageBody ?? '').trim().isEmpty ? null : sc!.lastMessageBody!.trim(),
+                onTap: () {
+                  if (sc != null) {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => ChatScreen(conversationId: sc!.id, other: sc.other)))
+                        .then((_) {
+                      if (context.mounted) context.read<ConversationsCubit>().load();
+                    });
+                  } else {
+                    openSupportChat(context);
+                  }
+                },
+              );
+            }),
+            const SizedBox(height: 8),
             if (loading)
               for (var i = 0; i < 5; i++) ...[const _ConversationSkeleton(), const SizedBox(height: 8)]
-            else if (state.conversations.isEmpty)
+            else if (state.conversations.where((c) => !c.other.isSupport).isEmpty)
               WebCard(
                 child: Text(
                   state.status == ConversationsStatus.failure
@@ -71,7 +95,7 @@ class _MessagesListView extends StatelessWidget {
                 ),
               )
             else
-              for (final c in state.conversations) ...[
+              for (final c in state.conversations.where((c) => !c.other.isSupport)) ...[
                 _ConversationTile(conv: c),
                 const SizedBox(height: 8),
               ],

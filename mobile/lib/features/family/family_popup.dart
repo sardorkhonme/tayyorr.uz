@@ -81,7 +81,8 @@ class _FamilyPopup extends StatelessWidget {
   final bool canReact;
 
   static const _barH = 52.0;
-  static const _barW = 8 * 40.0 + 12;
+  static const _cell = 36.0;
+  static double barWidth(double screenW) => math.min(kFamilyEmojis.length * _cell + 12, screenW - 24);
   static const _menuW = 236.0;
   static const _gap = 8.0;
 
@@ -103,8 +104,9 @@ class _FamilyPopup extends StatelessWidget {
     final previewTop = top + barH + _gap;
 
     double sidePad(double desired, double w) => desired.clamp(0.0, math.max(0.0, size.width - 24 - w));
-    final leftPad = sidePad(rect.left - 12, _barW);
-    final rightPad = sidePad(size.width - rect.right - 12, _barW);
+    final barW = barWidth(size.width);
+    final leftPad = sidePad(rect.left - 12, barW);
+    final rightPad = sidePad(size.width - rect.right - 12, barW);
     final leftPadMenu = sidePad(rect.left - 12, _menuW);
     final rightPadMenu = sidePad(size.width - rect.right - 12, _menuW);
 
@@ -159,7 +161,7 @@ class _FamilyPopup extends StatelessWidget {
                   child: ScaleTransition(
                     scale: pop,
                     alignment: alignRight ? Alignment.bottomRight : Alignment.bottomLeft,
-                    child: _EmojiBar(mine: myReaction),
+                    child: _EmojiBar(mine: myReaction, width: barW),
                   ),
                 ),
               ),
@@ -192,37 +194,47 @@ class _FamilyPopup extends StatelessWidget {
 Color get _panel => AppColors.isLight ? Colors.white : const Color(0xFF17171F);
 
 class _EmojiBar extends StatelessWidget {
-  const _EmojiBar({required this.mine});
+  const _EmojiBar({required this.mine, required this.width});
   final String? mine;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
+    // 10 ta reaksiya: ekranga sig'masa — gorizontal suriladi
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      width: width,
       decoration: BoxDecoration(
         color: _panel,
         borderRadius: BorderRadius.circular(99),
         border: Border.all(color: WebC.border),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isLight ? 0.12 : 0.4), blurRadius: 24, offset: const Offset(0, 8))],
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        for (final e in kFamilyEmojis)
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop('emoji:$e'),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: e == mine ? const Color(0xFF6366F1).withValues(alpha: 0.22) : null,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(99),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Row(children: [
+            for (final e in kFamilyEmojis)
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop('emoji:$e'),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  width: _FamilyPopup._cell,
+                  height: _FamilyPopup._cell,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: e == mine ? const Color(0xFF6366F1).withValues(alpha: 0.22) : null,
+                  ),
+                  child: Text(e, style: const TextStyle(fontSize: 21, height: 1.1)),
+                ),
               ),
-              child: Text(e, style: const TextStyle(fontSize: 24, height: 1.1)),
-            ),
-          ),
-      ]),
+          ]),
+        ),
+      ),
     );
   }
 }
@@ -246,7 +258,7 @@ class _Menu extends StatelessWidget {
             child: Row(children: [
               Expanded(child: Text(label, style: TextStyle(color: c, fontSize: info ? 13.5 : 15, fontWeight: info ? FontWeight.w600 : FontWeight.w500))),
               const SizedBox(width: 10),
-              TIcon(icon, size: info ? 17 : 19, color: c),
+              TIcon(icon, size: info ? 16 : 18, color: c),
             ]),
           ),
         ),

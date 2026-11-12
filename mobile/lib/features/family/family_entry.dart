@@ -41,7 +41,7 @@ class FamilyMark extends StatelessWidget {
           BoxShadow(color: const Color(0xFF8B5CF6).withValues(alpha: 0.35), blurRadius: size * 0.4, offset: Offset(0, size * 0.12), spreadRadius: -size * 0.12),
         ],
       ),
-      child: TIcon(TI.family, size: size * 0.56, color: Colors.white),
+      child: TIcon(TI.family, size: size * 0.5, color: Colors.white),
     );
   }
 }
@@ -109,7 +109,7 @@ class FamilyHubCard extends StatelessWidget {
           border: Border.all(color: light ? const Color(0xFFE9D5FF) : Colors.white.withValues(alpha: 0.12)),
         ),
         child: Row(children: [
-          const FamilyMark(size: 52),
+          const FamilyMark(size: 48),
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -189,4 +189,80 @@ class FamilyListRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Xabarlar ro'yxatida «Tayyorr's Family» ostida qadalgan «Tayyorr Support» qatori
+/// (ismi va rasmi — admin tahrirlaydigan support profilidan, bo'lmasa logotip).
+class FamilySupportRow extends StatelessWidget {
+  const FamilySupportRow({super.key, required this.onTap, this.unread = 0, this.subtitle});
+  final VoidCallback onTap;
+  final int unread;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: WebC.fill5,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: WebC.border),
+        ),
+        child: ValueListenableBuilder(
+          valueListenable: FamilySummary.instance.support,
+          builder: (context, sp, _) => Row(children: [
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: ClipOval(
+                child: (sp?.image ?? '').isNotEmpty
+                    ? Image.network(sp!.image!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const _LogoFallback())
+                    : const _LogoFallback(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Flexible(
+                    child: Text(sp?.name ?? 'Tayyorr Support',
+                        maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(width: 6),
+                  TIcon(TI.push_pin_rounded, size: 13, color: WebC.zinc500),
+                ]),
+                const SizedBox(height: 2),
+                Text(subtitle ?? 'Savol, muammo yoki taklif — yozing, yordam beramiz',
+                    maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: WebC.zinc500, fontSize: 13)),
+              ]),
+            ),
+            if (unread > 0) ...[
+              const SizedBox(width: 8),
+              Container(
+                height: 22,
+                constraints: const BoxConstraints(minWidth: 22),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: const Color(0xFFF43F5E), borderRadius: BorderRadius.circular(99)),
+                child: Text(unread > 99 ? '99+' : '$unread', style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoFallback extends StatelessWidget {
+  const _LogoFallback();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(7),
+        child: Image.asset('assets/logo-mark.png', filterQuality: FilterQuality.high),
+      );
 }

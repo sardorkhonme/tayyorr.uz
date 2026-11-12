@@ -80,13 +80,24 @@ class _ChatViewState extends State<_ChatView> {
 
   GlobalKey _keyFor(String id) => _itemKeys.putIfAbsent(id, GlobalKey.new);
 
-  Future<void> _jumpTo(String id) async {
+  // yangi xabarlar paydo bo'lish animatsiyasi (bir marta)
+  final _fresh = <String>{};
+  final _known = <String>{};
+
+  void _markFresh(String k) {
+    _fresh.add(k);
+    Future.delayed(const Duration(milliseconds: 500), () => _fresh.remove(k));
+  }
+
+  Future<void> _jumpTo(String msgId) async {
     final messages = context.read<ChatCubit>().state.messages;
-    final index = messages.indexWhere((m) => m.id == id);
+    final index = messages.indexWhere((m) => m.id == msgId);
     if (index < 0) {
       showToast(context, "Asl xabar topilmadi (öçirilgan yoki juda eski)");
       return;
     }
+    // ro'yxat kaliti — clientId ?? id
+    final id = messages[index].stableKey;
     // Xabar hali qurilmagan (ekrandan uzoqda) bo'lsa — taxminiy joyga
     // sakrab, keyin aniq joylashtiramiz.
     for (var attempt = 0; attempt < 4 && _itemKeys[id]?.currentContext == null; attempt++) {
@@ -148,24 +159,28 @@ class _ChatViewState extends State<_ChatView> {
     );
   }
 
+  /// Optimistik: xabar darhol ro'yxatda paydo bo'ladi (soat belgisi bilan), server javobi kelganda
+  /// o'z joyida almashadi — yo'qolib qayta chiqmaydi.
   Future<void> _send() async {
     final cubit = context.read<ChatCubit>();
     final text = _controller.text;
     final pending = _pending;
+    // fayl hali yuklanayotgan bo'lsa — tugashini kutamiz (tugma xira turadi)
+    if (pending != null && !pending.ready) return;
+    if (pending == null && text.trim().isEmpty) return;
+    final clientId = 'c${DateTime.now().microsecondsSinceEpoch}';
+    _controller.clear();
+    setState(() => _pending = null);
+    ChatFileModel? fileModel;
     if (pending != null) {
-      // fayl hali yuklanayotgan bo'lsa — tugashini kutamiz (tugma xira turadi)
-      if (!pending.ready) return;
-      _controller.clear();
-      setState(() => _pending = null);
-      final msg = await cubit.sendPrepared(file: pending.prepared!, body: text);
-      // yuborilgan faylni qayta yuklamaslik uchun keshdagi nusxani xabarga bog'laymiz
-      if (msg != null) await MediaCache.instance.adopt(pending.localKey, msg.id, pending.name);
-    } else {
-      if (text.trim().isEmpty) return;
-      _controller.clear();
-      await cubit.send(text);
+      // mahalliy fayl xabarning doimiy kesh kalitiga (clientId) — qayta yuklanmaydi
+      await MediaCache.instance.adopt(pending.localKey, clientId, pending.name);
+      fileModel = ChatFileModel(name: pending.name, type: pending.type, size: pending.size, url: '');
     }
+    _markFresh(clientId);
+    _known.add(clientId);
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    await cubit.sendOptimistic(clientId: clientId, body: text, file: pending?.prepared, fileModel: fileModel);
   }
 
   /// Fayl tanlash — darhol yuborilmaydi: yuklanadi va ko'rib chiqish uchun ko'rsatiladi.
@@ -235,6 +250,11 @@ class _ChatViewState extends State<_ChatView> {
             // yangi xabar kelganda pastga tushamiz — faqat foydalanuvchi pastda
             // turgan bo'lsa yoki xabar o'ziniki bo'lsa (eski xabarlarni o'qiyotganda sakratmaymiz)
             listener: (context, state) {
+              // yangi kelganlar — paydo bo'lish animatsiyasi (birinchi yuklashda emas)
+              final first = _known.isEmpty;
+              for (final m in state.messages) {
+                if (_known.add(m.stableKey) && !first) _markFresh(m.stableKey);
+              }
               final nearBottom = !_scrollController.hasClients || _scrollController.offset < 300;
               final mineLast = state.messages.isNotEmpty && state.messages.last.mine;
               if (nearBottom || mineLast) {
@@ -313,20 +333,25 @@ class _ChatViewState extends State<_ChatView> {
                           itemCount: state.messages.length,
                           itemBuilder: (context, i) {
                             final m = state.messages[state.messages.length - 1 - i];
+                            final k = m.stableKey;
                             return KeyedSubtree(
-                              key: _keyFor(m.id),
+                              key: _keyFor(k),
                               // chapga surib — javob berish (Telegramdagidek)
-                              child: SwipeToReply(
-                                enabled: !m.deleted && !m.system,
+                              child: ChatAppear(
+                                animate: _fresh.contains(k),
+                                fromRight: m.mine,
+                                child: SwipeToReply(
+                                enabled: !m.deleted && !m.system && !m.isLocal,
                                 onReply: () => context.read<ChatCubit>().setReplyTo(m),
                                 child: FlashHighlight(
-                                flashKey: _flashId == m.id ? _flashTick : null,
+                                flashKey: _flashId == k ? _flashTick : null,
                                 child: _MessageBubble(
                                   message: m,
                                   pinnedOrderId:
                                       state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
                                   onReplyTap: _jumpTo,
                                 ),
+                              ),
                               ),
                               ),
                             );
@@ -736,6 +761,24 @@ class _MessageBubble extends StatelessWidget {
   void _openMenu(BuildContext context) {
     if (message.deleted) return;
     final cubit = context.read<ChatCubit>();
+    if (message.isLocal) {
+      if (message.status != ChatSendStatus.failed) return;
+      showAppSheet(
+        context,
+        title: 'Xabar yuborilmadi',
+        builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
+          AppSheetAction(icon: TI.refresh_rounded, label: 'Qayta yuboriş', onTap: () {
+            Navigator.of(ctx).pop();
+            cubit.retry(message.clientId!);
+          }),
+          AppSheetAction(icon: TI.delete_outline_rounded, label: 'Öçiriş', danger: true, onTap: () {
+            Navigator.of(ctx).pop();
+            cubit.discard(message.clientId!);
+          }),
+        ]),
+      );
+      return;
+    }
     showAppSheet(
       context,
       builder: (sheetContext) => Column(
@@ -778,7 +821,7 @@ class _MessageBubble extends StatelessWidget {
               label: message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
               onTap: () {
                 Navigator.of(sheetContext).pop();
-                saveChatFile(context, message.file!, message.id);
+                saveChatFile(context, message.file!, message.stableKey);
               },
             ),
           if (message.body.isNotEmpty)
@@ -931,7 +974,9 @@ class _MessageBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: mine ? const Color(0xFF4F39F6) : WebC.fill5,
           borderRadius: BorderRadius.circular(16),
-          border: mine ? null : Border.all(color: WebC.border),
+          border: message.status == ChatSendStatus.failed
+              ? Border.all(color: const Color(0xFFF43F5E), width: 1.5)
+              : (mine ? null : Border.all(color: WebC.border)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -943,7 +988,7 @@ class _MessageBubble extends StatelessWidget {
                 mine: mine,
                 onTap: onReplyTap == null ? null : () => onReplyTap!(message.replyTo!.id),
               ),
-            if (message.file != null) ChatAttachment(file: message.file!, cacheKey: message.id, mine: mine),
+            if (message.file != null) ChatAttachment(file: message.file!, cacheKey: message.stableKey, mine: mine),
             if (!message.deleted && message.body.isNotEmpty) ...[
               if (message.file != null) const SizedBox(height: 6),
               LinkText(
@@ -998,11 +1043,16 @@ class _MessageBubble extends StatelessWidget {
                 // Telegramdagidek: ✓ — yetkazildi, ✓✓ — o'qildi
                 if (mine && !message.deleted) ...[
                   const SizedBox(width: 3),
-                  TIcon(
-                    message.readAt != null ? TI.done_all_rounded : TI.done_rounded,
-                    size: 14,
-                    color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
-                  ),
+                  if (message.status == ChatSendStatus.pending)
+                    TIcon(TI.schedule_rounded, size: 13, color: timeColor)
+                  else if (message.status == ChatSendStatus.failed)
+                    const TIcon(TI.error_outline_rounded, size: 13, color: Color(0xFFFDA4AF))
+                  else
+                    TIcon(
+                      message.readAt != null ? TI.done_all_rounded : TI.done_rounded,
+                      size: 14,
+                      color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
+                    ),
                 ],
               ],
             ),
@@ -1032,6 +1082,19 @@ class _MessageBubble extends StatelessWidget {
               );
             },
           ),
+          if (message.status == ChatSendStatus.failed)
+            Padding(
+              padding: const EdgeInsets.only(top: 5, right: 34),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const TIcon(TI.error_outline_rounded, size: 14, color: Color(0xFFF43F5E)),
+                const SizedBox(width: 4),
+                const Text('Yuborilmadi', style: TextStyle(color: Color(0xFFF43F5E), fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(width: 10),
+                _RetryPill(label: 'Qayta yuboriş', icon: TI.refresh_rounded, onTap: () => context.read<ChatCubit>().retry(message.clientId!)),
+                const SizedBox(width: 6),
+                _RetryPill(label: 'Öçiriş', icon: TI.delete_outline_rounded, danger: true, onTap: () => context.read<ChatCubit>().discard(message.clientId!)),
+              ]),
+            ),
           if (message.reactions.like > 0 || message.reactions.dislike > 0)
             Padding(
               padding: EdgeInsets.only(top: 4, left: mine ? 0 : 4, right: mine ? 34 : 0),
@@ -1127,6 +1190,35 @@ class _ReactionCountPill extends StatelessWidget {
           const SizedBox(width: 4),
           Text('$count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
         ],
+      ),
+    );
+  }
+}
+
+class _RetryPill extends StatelessWidget {
+  const _RetryPill({required this.label, required this.icon, required this.onTap, this.danger = false});
+  final String label;
+  final TIData icon;
+  final VoidCallback onTap;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = danger ? const Color(0xFFF43F5E) : WebC.indigoSoft;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: c.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(99),
+          border: Border.all(color: c.withValues(alpha: 0.4)),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          TIcon(icon, size: 13, color: c),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w600)),
+        ]),
       ),
     );
   }
