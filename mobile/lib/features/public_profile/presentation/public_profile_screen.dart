@@ -1,5 +1,4 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
-import '../../../core/ui/app_dialogs.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -7,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/format.dart';
 import '../../../widgets/mascot.dart';
-import '../../../widgets/session_transitions.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -51,7 +50,47 @@ class _PublicProfileView extends StatelessWidget {
         final p = state.profile;
         final List<Widget> body;
         if (state.status == PublicProfileStatus.loading) {
-          body = const [BrandLoaderBlock()];
+          // haqiqiy tuzilma: 80px rasm + ism/login/holat, «Xabar yozish», ma'lumotlar kartasi
+          body = [
+            const Row(
+              children: [
+                SCircle(size: 80),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SBar(width: 150, height: 20),
+                      SizedBox(height: 7),
+                      SBar(width: 170, height: 13),
+                      SizedBox(height: 7),
+                      SBar(width: 70, height: 11),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SBar(height: 46, borderRadius: 12),
+            WebCard(
+              child: Column(
+                children: [
+                  for (var i = 0; i < 3; i++) ...[
+                    if (i > 0) Container(height: 1, color: WebC.fill5),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        children: [
+                          SBar(width: 110, height: 13),
+                          Spacer(),
+                          SBar(width: 90, height: 13),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ];
         } else if (state.status == PublicProfileStatus.failure || p == null) {
           body = [
             ErrorState.from(
@@ -324,33 +363,26 @@ class _Head extends StatelessWidget {
   }
 }
 
-Future<void> _openChat(BuildContext context, PublicProfileModel p) async {
-  final navigator = Navigator.of(context);
-  try {
-    final convId = await MessagesRepository().startConversation(p.id);
-    if (!context.mounted) return;
-    navigator.push(
-      MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          conversationId: convId,
-          other: ChatOtherUser(
-            id: p.id,
-            name: p.displayName,
-            login: p.login,
-            image: p.image,
-            isSupport: false,
-          ),
+/// Çat sahifasi DARHOL oçiladi (skelet bilan) — suhbat uning içida yaratiladi / topiladi.
+void _openChat(BuildContext context, PublicProfileModel p) {
+  final other = ChatOtherUser(
+    id: p.id,
+    name: p.displayName,
+    login: p.login,
+    image: p.image,
+    isSupport: false,
+  );
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => PendingChatScreen(
+        other: other,
+        resolve: () async => (
+          id: await MessagesRepository().startConversation(p.id),
+          other: other,
         ),
       ),
-    );
-  } catch (_) {
-    if (context.mounted)
-      showToast(
-        context,
-        "Suhbat oçilmadi — qayta urinib köring",
-        kind: ToastKind.error,
-      );
-  }
+    ),
+  );
 }
 
 class _InfoRow extends StatelessWidget {

@@ -38,6 +38,7 @@ import 'family_info_screen.dart';
 import 'family_models.dart';
 import 'family_popup.dart';
 import 'family_repository.dart';
+import '../../widgets/app_header_sliver.dart' show kHeaderGap, kHeaderSide;
 
 /// «Tayyorr's Family» — faqat ilovadagi umumiy guruh.
 ///  · real vaqt — faqat shu oyna ochiq turganda ("family" kanali, xabar mazmuni signal ichida);
@@ -55,7 +56,7 @@ class FamilyScreen extends StatefulWidget {
 }
 
 class _FamilyScreenState extends State<FamilyScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, RouteSettleMixin {
   final _repo = FamilyRepository.instance;
   final _live = RealtimeService.family();
   StreamSubscription<RealtimeEvent>? _sub;
@@ -342,7 +343,16 @@ class _FamilyScreenState extends State<FamilyScreen>
     try {
       final list = await _repo.since(_maxUpdated);
       if (!mounted || list.isEmpty) return;
+      // oz sonli yangi xabarlar — paydo bölish animatsiyasi bilan (köp bölsa — tarix kabi)
+      final added = list
+          .where((m) => !m.deleted && !m.scheduled && _indexOf(m) < 0)
+          .toList();
       setState(() {
+        if (added.length <= 6) {
+          for (final m in added) {
+            _markFresh(m.stableKey);
+          }
+        }
         for (final m in list) {
           _upsert(m);
         }
@@ -1506,7 +1516,18 @@ class _FamilyScreenState extends State<FamilyScreen>
                     }
                   },
                 ),
-              Expanded(child: _body()),
+              // skelet → xabarlar: yumşoq almaşadi (tarix sakramasdan paydo böladi)
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  switchInCurve: Curves.easeOut,
+                  switchOutCurve: Curves.easeIn,
+                  child: KeyedSubtree(
+                    key: ValueKey(_showSkeleton),
+                    child: _body(),
+                  ),
+                ),
+              ),
               if (_suggest.isNotEmpty)
                 _SuggestPanel(items: _suggest, onPick: _insertMention),
               if (_scheduled.isNotEmpty)
@@ -1618,8 +1639,11 @@ class _FamilyScreenState extends State<FamilyScreen>
     );
   }
 
+  /// Sahifa kirib kelayotganda ham — skelet (ogʼir röyxat oçiliş animatsiyasini qotirmasin).
+  bool get _showSkeleton => !routeSettled || (_loading && _messages.isEmpty);
+
   Widget _body() {
-    if (_loading && _messages.isEmpty) {
+    if (_showSkeleton) {
       return const Padding(
         padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
         child: Column(
@@ -1817,7 +1841,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     // iOS 26 uslubi: orqaga — alohida shisha doira, guruh — suyuq shisha kapsula
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: const EdgeInsets.fromLTRB(kHeaderSide, 6, kHeaderSide, 6),
       child: Row(
         children: [
           GlassTap(
@@ -1832,10 +1856,11 @@ class _Header extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: kHeaderGap),
           Expanded(
             child: LiquidGlass(
-              borderRadius: BorderRadius.circular(26),
+              height: 48,
+              borderRadius: BorderRadius.circular(24),
               strong: true,
               padding: const EdgeInsets.fromLTRB(8, 6, 12, 6),
               child: Row(

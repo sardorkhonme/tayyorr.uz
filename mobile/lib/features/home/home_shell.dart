@@ -15,6 +15,7 @@ import '../profile/presentation/profile_screen.dart';
 import '../referral/presentation/referral_screen.dart';
 import '../wallet/presentation/wallet_screen.dart';
 import 'section_cubit.dart';
+import '../../widgets/lazy_indexed_stack.dart';
 
 /// Tayyorr.uz xizmati (ilmiy ishlar) — tayyorr+ bosh sahifasidan ochiladi.
 /// Pastki panel: Asosiy, (tayyorlovchida) Takliflarim yoki (buyurtmachida) Buyurtmalarim,
@@ -78,7 +79,7 @@ class _HomeShellView extends StatelessWidget {
                 kind: ServiceKind.uz,
                 child: _SectionFade(
                   sectionKey: section,
-                  child: IndexedStack(
+                  child: LazyIndexedStack(
                     index: _sectionOrder.indexOf(section),
                     // rolga tegishli bo'lmagan bo'lim qurilmaydi (keraksiz so'rov yubormasin)
                     children: [

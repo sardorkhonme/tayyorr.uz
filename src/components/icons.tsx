@@ -61,7 +61,8 @@ export type IconName =
   | "headset"
   | "sliders"
   | "calendar"
-  | "tag";
+  | "tag"
+  | "more";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   sliders: (
@@ -396,6 +397,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="12" r="8.5" />
       <path d="M12 7.5V12l3 2" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="12" cy="5.5" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="18.5" r="1.4" fill="currentColor" stroke="none" />
     </>
   ),
   headset: (

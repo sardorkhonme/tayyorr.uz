@@ -80,16 +80,26 @@ export function OrderDialog({
       <div
         role="dialog"
         aria-modal="true"
-        className="animate-pop max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl sm:p-8"
+        className="animate-pop flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-5 flex items-start justify-between gap-3">
-          <div>
+        {/* tepa panel (xizmat nomi + ✕) — kontent aylantirilganda joyida qoladi */}
+        <div className="z-10 flex shrink-0 items-start justify-between gap-3 border-b border-zinc-100 bg-white px-6 pb-4 pt-5 sm:px-8 sm:pt-7">
+          <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">{service.category}</p>
             <h3 className="mt-1.5 font-display text-xl font-bold leading-snug text-zinc-900">
               {splitServiceName(service.name).title}
             </h3>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+          </div>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopiş">
+            <Icon name="close" />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 pt-4 sm:px-8 sm:pb-8">
+        <div className="mb-5">
+          <div>
+            <div className="flex flex-wrap gap-1.5">
               {splitServiceName(service.name)
                 .tags.filter((t) => !isGuaranteeTag(t))
                 .slice(0, 6)
@@ -105,9 +115,6 @@ export function OrderDialog({
               {verdict.reason}
             </p>
           </div>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900" aria-label="Yopiş">
-            <Icon name="close" />
-          </button>
         </div>
 
         {/* obunachi kafolatsiz bo'lsa — oldindan ogohlantiramiz */}
@@ -243,6 +250,7 @@ export function OrderDialog({
             </p>
           </form>
         )}
+        </div>
       </div>
     </div>
   );

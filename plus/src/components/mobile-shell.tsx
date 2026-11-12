@@ -55,7 +55,7 @@ export function MobileHeader() {
             <Icon name="arrow-left" className="h-5 w-5" strokeWidth={2.2} />
           </button>
         )}
-        <Link href="/" className="glass flex h-12 min-w-0 items-center rounded-full px-4 transition active:scale-[0.98]">
+        <Link href="/" className="glass flex h-12 min-w-0 flex-1 items-center justify-center rounded-full px-4 transition active:scale-[0.98]">
           <Logo className="whitespace-nowrap text-[19px]" markClassName="h-7" />
         </Link>
       </div>

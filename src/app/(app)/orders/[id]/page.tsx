@@ -65,6 +65,8 @@ export default async function OrderDetailPage({
               ratingCount: true,
               ratingSum: true,
               about: true,
+              avatarUrl: true,
+              image: true,
             },
           },
         },
@@ -331,8 +333,10 @@ export default async function OrderDetailPage({
             status: o.status,
             preparerId: o.preparerId,
             starsSpent: o.starsSpent,
+            createdAt: o.createdAt.toISOString(),
             preparer: {
               name: o.preparer.name ?? o.preparer.login ?? "—",
+              image: o.preparer.avatarUrl ?? o.preparer.image,
               login: o.preparer.login,
               about: o.preparer.about,
               rating: o.preparer.ratingCount

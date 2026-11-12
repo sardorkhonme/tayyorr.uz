@@ -4,8 +4,6 @@ import '../../features/home/section_cubit.dart';
 import '../../features/messages/data/message_model.dart';
 import '../../features/messages/data/messages_repository.dart';
 import '../../features/messages/presentation/chat_screen.dart';
-import '../../widgets/session_transitions.dart';
-import '../ui/app_dialogs.dart';
 import 'services.dart';
 
 String _scopeOf(ServiceKind k) => switch (k) {
@@ -21,26 +19,21 @@ Future<ConversationModel?> _supportConversation() async {
 }
 
 /// Qo'llab-quvvatlash çati — joriy xizmat bo'yicha (tayyorr+ da faqat tayyorr+ xabarlari, SMM da — SMM niki).
+/// Sahifa darhol oçiladi (çat skeleti bilan), suhbat esa uning içida topiladi.
 Future<void> openSupportChat(BuildContext context) async {
   final scope = _scopeOf(ServiceScope.of(context));
-  try {
-    final c = await _supportConversation();
-    if (!context.mounted) return;
-    if (c != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              ChatScreen(conversationId: c.id, other: c.other, scope: scope),
-        ),
-      );
-      return;
-    }
-    openUzSection(AppSection.messages);
-  } catch (_) {
-    if (context.mounted) {
-      showToast(context, "Internetga ulanib bölmadi", kind: ToastKind.error);
-    }
-  }
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => PendingChatScreen(
+        scope: scope,
+        resolve: () async {
+          final c = await _supportConversation();
+          return c == null ? null : (id: c.id, other: c.other);
+        },
+        onMissing: () => openUzSection(AppSection.messages),
+      ),
+    ),
+  );
 }
 
 /// Qobiq bo'limi sifatidagi support çati (tayyorr+ → "Yordam").
@@ -94,7 +87,7 @@ class _SupportChatTabState extends State<SupportChatTab> {
         ),
       );
     }
-    // çat oçilguncha — brend yuklaniş belgisi
-    return const Center(child: BrandLoader(size: 110, label: 'Çat oçilmoqda…'));
+    // çat oçilguncha — çat ekranining özi kabi: sarlavha (avatar + ism), pastdan pufakçalar, yoziş maydoni
+    return const ChatSkeletonView(embedded: true);
   }
 }

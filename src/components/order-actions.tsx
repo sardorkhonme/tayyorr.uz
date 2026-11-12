@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -54,8 +55,10 @@ interface OfferView {
   status: string;
   preparerId: string;
   starsSpent: number;
+  createdAt: string;
   preparer: {
     name: string;
+    image: string | null;
     login: string | null;
     about: string | null;
     rating: number | null;
@@ -141,6 +144,8 @@ export function OrderActions(props: Props) {
   const [cAmount, setCAmount] = useState("");
   const [cNote, setCNote] = useState("");
   const [cDeadline, setCDeadline] = useState("");
+  // bosilgan taklif — amallar oynasi (blursiz, markazda)
+  const [openOffer, setOpenOffer] = useState<string | null>(null);
 
   const sentContract = contracts.find((c) => c.status === "SENT") ?? null;
   const acceptedContract = contracts.find((c) => c.status === "ACCEPTED") ?? null;
@@ -150,12 +155,12 @@ export function OrderActions(props: Props) {
   async function sendContract(preparerId: string) {
     if (!cAmount || Number(cAmount) <= 0) {
       setErr("Summani kiriting", "contract");
-      return;
+      return false;
     }
     const deadline = localInputToIso(cDeadline);
     if (!deadline || new Date(deadline).getTime() <= Date.now()) {
       setErr("Şartnoma muddatini (sana va vaqt) tanlang", "contract");
-      return;
+      return false;
     }
     const ok = await call(`/api/orders/${orderId}/contract`, "POST", {
       preparerId,
@@ -163,10 +168,18 @@ export function OrderActions(props: Props) {
       note: cNote || undefined,
       deadline,
     }, "contract");
-    if (!ok) return;
+    if (!ok) return false;
     setContractFor(null);
     setCAmount("");
     setCNote("");
+    return true;
+  }
+
+  /** Taklif qatoridagi muddat: şu tayyorlovçiga yuborilgan şartnoma muddati, bölmasa buyurtma muddati. */
+  function offerDeadlineText(o: OfferView) {
+    const c = contracts.find((x) => x.preparerId === o.preparerId && x.deadline);
+    const d = c?.deadline ?? orderDeadline;
+    return d ? shortDateTime(d) : "muddat yöq";
   }
 
   async function boost() {
@@ -486,157 +499,203 @@ export function OrderActions(props: Props) {
         </div>
       )}
 
-      {/* Buyurtmachi: takliflar ro'yxati */}
+      {/* Buyurtmachi: takliflar — bitta quti, ičida ixçam qatorlar; amallar qator bosilganda oynada */}
       {isOrderer && (
-        <div className="flex flex-col gap-3">
-          <h2 className="px-1 text-sm font-semibold text-white">Takliflar ({offers.length})</h2>
-          {offers.length === 0 && (
+        <section className="card !p-0 overflow-hidden">
+          <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-4 sm:px-5">
+            <h2 className="text-base font-semibold text-white">Takliflar</h2>
+            <span className="text-sm text-zinc-500">{offers.length} ta</span>
+          </div>
+          {offers.length === 0 ? (
             <MascotState
               pose="empty-offers"
-              size={220}
-              className="mascot-xl"
+              size={170}
+              className="!pb-7 !pt-3"
               title="Hozirça taklif yöq"
               message="Tayyorlovçilar takliflarini yuborişi bilan ular şu yerda paydo böladi."
             />
+          ) : (
+            <ul className="px-2 pb-2">
+              {offers.map((o) => (
+                <li key={o.id}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenOffer(o.id)}
+                    className="flex w-full items-center gap-3 rounded-2xl px-2.5 py-3 text-left transition hover:bg-white/[0.04] active:scale-[0.99] [li+li>&]:mt-0.5"
+                  >
+                    <OfferAvatar name={o.preparer.name} image={o.preparer.image} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[15px] font-medium text-white">
+                        {o.preparer.name}
+                      </span>
+                      <span className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-400">
+                        <Icon name="star" className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" />
+                        <span className="shrink-0">
+                          {o.preparer.rating != null
+                            ? `${o.preparer.rating.toFixed(1)} (${o.preparer.ratingCount})`
+                            : "yangi"}
+                        </span>
+                        <span className="text-zinc-600">·</span>
+                        <Icon name="clock" className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
+                        <span className="truncate">{offerDeadlineText(o)}</span>
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 flex-col items-end gap-1">
+                      <span className="text-[15px] font-semibold text-white">
+                        {o.price.toLocaleString("ru-RU")} <span className="text-xs font-normal text-zinc-400">söm</span>
+                      </span>
+                      <OfferBadge status={o.status} inline />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
-          {offers.map((o) => (
-            <div key={o.id} className="card flex flex-col gap-2">
-              <div className="flex items-center justify-between gap-3">
-                <Link
-                  href={`/u/${o.preparerId}`}
-                  className="min-w-0 font-medium text-white hover:underline"
-                >
+        </section>
+      )}
+
+      {isOrderer && openOffer && (() => {
+        const o = offers.find((x) => x.id === openOffer);
+        if (!o) return null;
+        return (
+          <OfferDialog onClose={() => { setOpenOffer(null); setContractFor(null); }}>
+            <div className="flex items-start gap-3">
+              <OfferAvatar name={o.preparer.name} image={o.preparer.image} size="lg" />
+              <div className="min-w-0 flex-1">
+                <Link href={`/u/${o.preparerId}`} className="block truncate font-semibold text-white hover:underline">
                   {o.preparer.name}
-                  {o.preparer.login && (
-                    <span className="text-zinc-400"> @{o.preparer.login}</span>
-                  )}
                 </Link>
-                <span className="inline-flex shrink-0 items-center gap-0.5 text-xs text-amber-300">
+                {o.preparer.login && <div className="truncate text-xs text-zinc-500">@{o.preparer.login}</div>}
+                <div className="mt-1 flex items-center gap-2 text-sm">
+                  <Stars value={o.preparer.rating ?? 0} />
+                  <span className="text-zinc-300">
+                    {o.preparer.rating != null ? o.preparer.rating.toFixed(1) : "yangi"}
+                  </span>
+                  <span className="text-xs text-zinc-500">({o.preparer.ratingCount} baho)</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setOpenOffer(null); setContractFor(null); }}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-zinc-400 transition hover:bg-white/5 hover:text-white"
+                aria-label="Yopiş"
+              >
+                <Icon name="close" className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/[0.04] p-3 text-sm">
+              <div>
+                <div className="text-xs text-zinc-500">Narx</div>
+                <div className="font-semibold text-white">{o.price.toLocaleString("ru-RU")} söm</div>
+              </div>
+              <div>
+                <div className="text-xs text-zinc-500">Muddat</div>
+                <div className="font-medium text-white">{offerDeadlineText(o)}</div>
+              </div>
+              <div className="col-span-2 flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+                <OfferBadge status={o.status} inline />
+                <span className="inline-flex items-center gap-0.5 text-xs text-amber-300">
                   {o.starsSpent} <StarIcon className="h-3 w-3" />
                 </span>
               </div>
-              <Link
-                href={`/u/${o.preparerId}`}
-                className="flex items-center gap-2 text-sm"
+            </div>
+
+            {o.message && <p className="mt-3 whitespace-pre-line text-sm text-zinc-300">{o.message}</p>}
+            {o.preparer.about && <p className="mt-2 text-xs text-zinc-500">{o.preparer.about}</p>}
+
+            <div className="mt-4 grid grid-cols-2 gap-2 [&>*]:h-11">
+              <button
+                type="button"
+                className="btn-ghost"
+                disabled={busy}
+                onClick={() => startChat(o.preparerId)}
               >
-                <Stars value={o.preparer.rating ?? 0} />
-                <span className="text-zinc-300">
-                  {o.preparer.rating != null ? o.preparer.rating.toFixed(1) : "yangi"}
-                </span>
-                <span className="text-xs text-zinc-500">
-                  ({o.preparer.ratingCount} baho)
-                </span>
-              </Link>
-              {o.preparer.about && (
-                <p className="text-xs text-zinc-500">{o.preparer.about}</p>
-              )}
-              <div className="text-sm text-zinc-300">
-                Narx: <b className="text-white">{o.price.toLocaleString("ru-RU")} söm</b>
-              </div>
-              {o.message && <p className="text-sm text-zinc-300">{o.message}</p>}
-
-              <div className="grid grid-cols-2 gap-2 border-t border-white/10 pt-3 sm:flex sm:flex-wrap [&>*]:h-10">
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  disabled={busy}
-                  onClick={() => startChat(o.preparerId)}
-                >
-                  <Icon name="message" className="h-4 w-4" />
-                  Çat
-                </button>
-                <ReportButton
-                  suspectId={o.preparerId}
-                  orderId={orderId}
-                  label="Şikoyat"
-                />
-                {status === "OPEN" && o.status === "PENDING" && !sentContract && (
-                  <>
-                    <button
-                      className="btn-primary"
-                      disabled={busy}
-                      onClick={() => {
-                        setContractFor(
-                          contractFor === o.preparerId ? null : o.preparerId,
-                        );
-                        setCAmount(String(o.price));
-                        setCNote("");
-                        setCDeadline(
-                          orderDeadline && new Date(orderDeadline).getTime() > Date.now()
-                            ? toLocalInput(orderDeadline)
-                            : "",
-                        );
-                      }}
-                    >
-                      <Icon name="file" className="h-4 w-4" />
-                      Şartnoma tuziş
-                    </button>
-                    <button
-                      className="btn-ghost"
-                      disabled={busy}
-                      onClick={() =>
-                        call(`/api/offers/${o.id}`, "PATCH", { action: "REJECT" })
-                      }
-                    >
-                      Rad etiş
-                    </button>
-                  </>
-                )}
-                {o.status !== "PENDING" && (
-                  <span className="col-span-2 flex sm:col-span-1">
-                    <OfferBadge status={o.status} />
-                  </span>
-                )}
-              </div>
-
-              {contractFor === o.preparerId && (
-                <div className="mt-1 flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <div className="text-sm font-medium text-white">
-                    Kelişilgan şartnoma
-                  </div>
-                  <div>
-                    <label className="label">Kelişilgan summa (söm)</label>
-                    <input
-                      className="input"
-                      type="number"
-                      min={1}
-                      value={cAmount}
-                      onChange={(e) => setCAmount(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Topşiriş muddati (sana va vaqt)</label>
-                    <input
-                      className="input"
-                      type="datetime-local"
-                      value={cDeadline}
-                      min={toLocalInput(new Date().toISOString())}
-                      onChange={(e) => setCDeadline(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Izoh / şartlar (ixtiyoriy)</label>
-                    <textarea
-                      className="input"
-                      rows={2}
-                      value={cNote}
-                      onChange={(e) => setCNote(e.target.value)}
-                    />
-                  </div>
-                  {errFor("contract")}
+                <Icon name="message" className="h-4 w-4" />
+                Çat
+              </button>
+              <ReportButton suspectId={o.preparerId} orderId={orderId} label="Şikoyat" />
+              {status === "OPEN" && o.status === "PENDING" && !sentContract && (
+                <>
                   <button
-                    className="btn-primary w-fit"
+                    className="btn-primary"
                     disabled={busy}
-                    onClick={() => sendContract(o.preparerId)}
+                    onClick={() => {
+                      setContractFor(contractFor === o.preparerId ? null : o.preparerId);
+                      setCAmount(String(o.price));
+                      setCNote("");
+                      setCDeadline(
+                        orderDeadline && new Date(orderDeadline).getTime() > Date.now()
+                          ? toLocalInput(orderDeadline)
+                          : "",
+                      );
+                    }}
                   >
-                    {busy ? "Yuborilmoqda…" : "Şartnoma yuboriş"}
+                    <Icon name="file" className="h-4 w-4" />
+                    Şartnoma tuziş
                   </button>
-                </div>
+                  <button
+                    className="btn-ghost"
+                    disabled={busy}
+                    onClick={async () => {
+                      const ok = await call(`/api/offers/${o.id}`, "PATCH", { action: "REJECT" });
+                      if (ok) setOpenOffer(null);
+                    }}
+                  >
+                    Rad etiş
+                  </button>
+                </>
               )}
             </div>
-          ))}
-        </div>
-      )}
+
+            {contractFor === o.preparerId && (
+              <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-sm font-medium text-white">Kelişilgan şartnoma</div>
+                <div>
+                  <label className="label">Kelişilgan summa (söm)</label>
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    value={cAmount}
+                    onChange={(e) => setCAmount(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="label">Topşiriş muddati (sana va vaqt)</label>
+                  <input
+                    className="input"
+                    type="datetime-local"
+                    value={cDeadline}
+                    min={toLocalInput(new Date().toISOString())}
+                    onChange={(e) => setCDeadline(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="label">Izoh / şartlar (ixtiyoriy)</label>
+                  <textarea
+                    className="input"
+                    rows={2}
+                    value={cNote}
+                    onChange={(e) => setCNote(e.target.value)}
+                  />
+                </div>
+                {errFor("contract")}
+                <button
+                  className="btn-primary w-full"
+                  disabled={busy}
+                  onClick={async () => {
+                    if (await sendContract(o.preparerId)) setOpenOffer(null);
+                  }}
+                >
+                  {busy ? "Yuborilmoqda…" : "Şartnoma yuboriş"}
+                </button>
+              </div>
+            )}
+            {errFor("general")}
+          </OfferDialog>
+        );
+      })()}
 
       {/* Baholash (ish yakunlangач buyurtmachi) */}
       {isOrderer && status === "DONE" &&
@@ -703,5 +762,44 @@ export function OrderActions(props: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function OfferAvatar({ name, image, size = "md" }: { name: string; image: string | null; size?: "md" | "lg" }) {
+  const cls = size === "lg" ? "h-12 w-12 text-base" : "h-11 w-11 text-[15px]";
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 font-semibold text-zinc-300 ${cls}`}
+    >
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt="" className="h-full w-full object-cover" />
+      ) : (
+        name.trim().slice(0, 1).toUpperCase() || "?"
+      )}
+    </span>
+  );
+}
+
+/** Taklif amallari oynasi — markazda, blursiz (faqat yengil xiralik), Escape / tashqariga bosilsa yopiladi. */
+function OfferDialog({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <div className="menu-backdrop absolute inset-0 bg-black/40" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="pop-in relative max-h-[85dvh] w-full max-w-sm overflow-y-auto rounded-3xl border border-white/10 bg-[var(--surface-2)] p-4 shadow-2xl shadow-black/40 sm:p-5"
+      >
+        {children}
+      </div>
+    </div>,
+    document.body,
   );
 }

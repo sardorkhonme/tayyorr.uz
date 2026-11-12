@@ -6,6 +6,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/ui/app_dialogs.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
@@ -13,7 +14,7 @@ import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/date_time_picker.dart';
 import '../../../widgets/mascot.dart';
-import '../../../widgets/session_transitions.dart';
+import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -75,7 +76,74 @@ class _OrderDetailView extends StatelessWidget {
               ],
             );
           }
-          return const WebPage(children: [BrandLoaderBlock()]);
+          // haqiqiy tuzilma: sarlavha kartasi, 2 ta fakt, tavsif, ishtirokchi
+          return const WebPage(
+            gap: 16,
+            children: [
+              WebCard(
+                padding: EdgeInsets.all(kDetailPad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SBar(width: 90, height: 24, borderRadius: 99),
+                        SizedBox(width: 8),
+                        SBar(width: 70, height: 24, borderRadius: 99),
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    SBar(height: 22),
+                    SizedBox(height: 6),
+                    SBar(width: 180, height: 22),
+                    SizedBox(height: 12),
+                    SBar(width: 120, height: 12),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(child: SBlock(height: 72)),
+                  SizedBox(width: 12),
+                  Expanded(child: SBlock(height: 72)),
+                ],
+              ),
+              WebCard(
+                padding: EdgeInsets.all(kDetailPad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SBar(width: 80, height: 16),
+                    SizedBox(height: 14),
+                    SBar(height: 13),
+                    SizedBox(height: 7),
+                    SBar(height: 13),
+                    SizedBox(height: 7),
+                    SBar(width: 200, height: 13),
+                  ],
+                ),
+              ),
+              WebCard(
+                padding: EdgeInsets.all(kDetailPad),
+                child: Row(
+                  children: [
+                    SCircle(size: 44),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SBar(width: 140, height: 15),
+                          SizedBox(height: 6),
+                          SBar(width: 80, height: 11),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
         }
         return WebPage(
           onRefresh: () => context.read<OrderDetailCubit>().load(),
@@ -531,7 +599,6 @@ class _OrderActionsState extends State<_OrderActions> {
   int _reviewStars = 0;
   String? _contractFor;
   String? _localErr;
-  bool _chatBusy = false;
 
   OrderDetailModel get o => widget.order;
   OrderOfferModel? get _myOffer {
@@ -566,38 +633,33 @@ class _OrderActionsState extends State<_OrderActions> {
 
   OrderDetailCubit get _cubit => context.read<OrderDetailCubit>();
 
-  Future<void> _startChat(OrderPartyModel user) async {
-    setState(() {
-      _chatBusy = true;
-      _localErr = null;
-    });
-    try {
-      final id = await MessagesRepository().startConversation(
-        user.id,
-        orderId: o.id,
-      );
-      if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            conversationId: id,
-            other: ChatOtherUser(
-              id: user.id,
-              name: (user.name ?? '').isNotEmpty
-                  ? user.name!
-                  : (user.login ?? 'Foydalanuvçi'),
-              login: user.login,
-              image: user.image,
-              isSupport: false,
+  /// Çat sahifasi DARHOL oçiladi (skelet bilan) — suhbat uning içida yaratiladi / topiladi.
+  void _startChat(OrderPartyModel user) {
+    setState(() => _localErr = null);
+    final other = ChatOtherUser(
+      id: user.id,
+      name: (user.name ?? '').isNotEmpty
+          ? user.name!
+          : (user.login ?? 'Foydalanuvçi'),
+      login: user.login,
+      image: user.image,
+      isSupport: false,
+    );
+    final orderId = o.id;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PendingChatScreen(
+          other: other,
+          resolve: () async => (
+            id: await MessagesRepository().startConversation(
+              user.id,
+              orderId: orderId,
             ),
+            other: other,
           ),
         ),
-      );
-    } catch (e) {
-      setState(() => _localErr = friendlyError(e));
-    } finally {
-      if (mounted) setState(() => _chatBusy = false);
-    }
+      ),
+    );
   }
 
   void _report(String suspectId) {
@@ -609,7 +671,7 @@ class _OrderActionsState extends State<_OrderActions> {
 
   @override
   Widget build(BuildContext context) {
-    final busy = widget.state.busy || _chatBusy;
+    final busy = widget.state.busy;
     final status = o.status;
     final sent = _contract('SENT');
     final accepted = _contract('ACCEPTED');
@@ -1112,158 +1174,269 @@ class _OrderActionsState extends State<_OrderActions> {
     ),
   );
 
+  /// Takliflar — BITTA karta: ičida ixçam qatorlar (avatar, ism, reyting, narx, holat).
+  /// Qator bosilganda — yonida amallar popupi (şartnoma, yoziş, profil, rad etiş, şikoyat).
   List<Widget> _offers(bool busy, String status, ContractModel? sent) {
     return [
-      Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Takliflar',
-              style: TextStyle(
-                color: WebC.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Text(
-            '${o.offers.length} ta',
-            style: TextStyle(color: WebC.zinc500, fontSize: 13),
-          ),
-        ],
-      ),
-      if (o.offers.isEmpty)
-        const ListMessage(
-          pose: MascotPose.emptyOffers,
-          title: "Hozirça taklif yöq",
-          subtitle:
-              "Tayyorlovçilar narx taklif qilişi bilan şu yerda körinadi.",
-          fill: false,
+      DetailCard(
+        title: 'Takliflar',
+        icon: TI.local_offer_outlined,
+        trailing: Text(
+          '${o.offers.length} ta',
+          style: TextStyle(color: WebC.zinc500, fontSize: 13),
         ),
-      for (final x in o.offers) _offerCard(x, busy, status, sent),
+        child: o.offers.isEmpty
+            ? const MascotState(
+                pose: MascotPose.emptyOffers,
+                title: "Hozirça taklif yöq",
+                message:
+                    "Tayyorlovçilar narx taklif qilişi bilan şu yerda körinadi.",
+                size: 170,
+                fill: false,
+                padding: EdgeInsets.fromLTRB(8, 4, 8, 8),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < o.offers.length; i++) ...[
+                    if (i > 0) Container(height: 1, color: WebC.fill5),
+                    _offerRow(o.offers[i], busy, status, sent),
+                    if (_contractFor == o.offers[i].preparer.id) ...[
+                      const SizedBox(height: 4),
+                      _contractForm(o.offers[i], busy),
+                      const SizedBox(height: kDetailGap),
+                    ],
+                  ],
+                ],
+              ),
+      ),
     ];
   }
 
-  Widget _offerCard(
+  /// Ixçam taklif qatori (~64px). Bosilganda — amallar popupi.
+  Widget _offerRow(
     OrderOfferModel x,
     bool busy,
     String status,
     ContractModel? sent,
   ) {
-    void profile() => Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PublicProfileScreen(userId: x.preparer.id),
-      ),
-    );
     final name = (x.preparer.name ?? '').isNotEmpty
         ? x.preparer.name!
         : (x.preparer.login ?? '—');
-    final open = _contractFor == x.preparer.id;
-    final canContract =
-        status == 'OPEN' && x.status == 'PENDING' && sent == null;
     final img = x.preparer.image ?? '';
-    return WebCard(
-      padding: const EdgeInsets.all(kDetailPad),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // tayyorlovchi: avatar, ism, reyting — o'ngda narx
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: profile,
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  clipBehavior: Clip.antiAlias,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: WebC.fill10,
-                  ),
-                  child: img.isEmpty
-                      ? Text(
-                          name.characters.first.toUpperCase(),
-                          style: TextStyle(
-                            color: WebC.zinc300,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        )
-                      : Image.network(
-                          img,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const SizedBox(),
-                        ),
+    return Builder(
+      builder: (rowCtx) => InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _offerMenu(rowCtx, x, busy, status, sent),
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                clipBehavior: Clip.antiAlias,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: WebC.fill10,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                child: img.isEmpty
+                    ? Text(
+                        name.characters.first.toUpperCase(),
                         style: TextStyle(
-                          color: WebC.white,
+                          color: WebC.zinc300,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
+                      )
+                    : Image.network(
+                        img,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox(),
                       ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          WebStars(value: x.preparerRating ?? 0, size: 11),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              x.preparerRating != null
-                                  ? '${x.preparerRating!.toStringAsFixed(1)} (${x.preparerRatingCount})'
-                                  : 'yangi',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: WebC.zinc400,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "${groupDigits(x.price)} söm",
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: WebC.white,
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          '${x.starsSpent} ',
-                          style: TextStyle(color: WebC.amber, fontSize: 12),
+                        WebStars(value: x.preparerRating ?? 0, size: 11),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            x.preparerRating != null
+                                ? '${x.preparerRating!.toStringAsFixed(1)} (${x.preparerRatingCount})'
+                                : 'yangi',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: WebC.zinc400, fontSize: 12),
+                          ),
                         ),
-                        const StarGlyph(size: 11),
                       ],
                     ),
                   ],
                 ),
-              ],
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "${groupDigits(x.price)} söm",
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  if (x.status != 'PENDING')
+                    _OfferBadge(status: x.status, compact: true)
+                  else
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${timeAgo(x.createdAt)} · ${x.starsSpent} ',
+                          style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                        ),
+                        const StarGlyph(size: 11),
+                      ],
+                    ),
+                ],
+              ),
+              const SizedBox(width: 4),
+              TIcon(TI.more_horiz_rounded, size: 18, color: WebC.zinc500),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Taklif amallari — qator yonida çiqadigan popup (blursiz karta).
+  Future<void> _offerMenu(
+    BuildContext anchor,
+    OrderOfferModel x,
+    bool busy,
+    String status,
+    ContractModel? sent,
+  ) async {
+    final open = _contractFor == x.preparer.id;
+    final canContract =
+        status == 'OPEN' && x.status == 'PENDING' && sent == null;
+    final hasNote =
+        (x.message ?? '').isNotEmpty || (x.preparerAbout ?? '').isNotEmpty;
+    final v = await showAnchoredMenu(
+      anchor,
+      items: [
+        if (canContract && !busy)
+          AnchoredMenuItem(
+            id: 'contract',
+            icon: open ? TI.close_rounded : TI.description_outlined,
+            label: open ? 'Şartnomani yopiş' : 'Şartnoma tuziş',
+          ),
+        if (hasNote)
+          const AnchoredMenuItem(
+            id: 'note',
+            icon: TI.chat_bubble_outline_rounded,
+            label: 'Taklif matni',
+          ),
+        if (!busy)
+          const AnchoredMenuItem(
+            id: 'chat',
+            icon: TI.send_rounded,
+            label: 'Yoziş',
+          ),
+        const AnchoredMenuItem(
+          id: 'profile',
+          icon: TI.person_outline_rounded,
+          label: 'Profilni köriş',
+        ),
+        if (canContract && !busy)
+          const AnchoredMenuItem(
+            id: 'reject',
+            icon: TI.block_rounded,
+            label: 'Rad etiş',
+            danger: true,
+          ),
+        const AnchoredMenuItem(
+          id: 'report',
+          icon: TI.flag_outlined,
+          label: 'Şikoyat',
+          danger: true,
+        ),
+      ],
+    );
+    if (!mounted || v == null) return;
+    switch (v) {
+      case 'contract':
+        setState(() {
+          _contractFor = open ? null : x.preparer.id;
+          _cAmount.text = '${x.price}';
+          _cNote.clear();
+          _cDeadline = o.deadline != null && o.deadline!.isAfter(DateTime.now())
+              ? o.deadline
+              : null;
+        });
+      case 'note':
+        _showOfferNote(x);
+      case 'chat':
+        _startChat(x.preparer);
+      case 'profile':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PublicProfileScreen(userId: x.preparer.id),
+          ),
+        );
+      case 'reject':
+        _cubit.respondToOffer(x.id, accept: false);
+      case 'report':
+        _report(x.preparer.id);
+    }
+  }
+
+  /// Taklif matni va tayyorlovçi haqida — kiçik oyna.
+  void _showOfferNote(OrderOfferModel x) {
+    final name = (x.preparer.name ?? '').isNotEmpty
+        ? x.preparer.name!
+        : (x.preparer.login ?? '—');
+    showAppDialog<void>(
+      context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            name,
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
             ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "${groupDigits(x.price)} söm",
+            style: TextStyle(color: WebC.zinc400, fontSize: 13),
           ),
           if ((x.message ?? '').isNotEmpty) ...[
             const SizedBox(height: kDetailGap),
@@ -1284,170 +1457,121 @@ class _OrderActionsState extends State<_OrderActions> {
             ),
           ],
           if ((x.preparerAbout ?? '').isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
               x.preparerAbout!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
+              style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.4),
             ),
           ],
+          const SizedBox(height: 16),
+          AppDialogButton(
+            label: 'Yopiş',
+            primary: false,
+            onTap: () => Navigator.of(ctx).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Tanlangan taklif ostida — şartnoma formasi (karta içida).
+  Widget _contractForm(OrderOfferModel x, bool busy) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.tint(0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: WebC.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Şartnoma',
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: kDetailGap),
-          if (canContract) ...[
-            ActionGroup(
-              children: [
-                ActionBtn(
-                  label: 'Rad etiş',
-                  kind: ActionKind.ghost,
-                  onPressed: busy
-                      ? null
-                      : () => _cubit.respondToOffer(x.id, accept: false),
-                ),
-                ActionBtn(
-                  label: open ? 'Yopiş' : 'Şartnoma tuziş',
-                  icon: open ? TI.close_rounded : TI.description_outlined,
-                  onPressed: busy
-                      ? null
-                      : () => setState(() {
-                          _contractFor = open ? null : x.preparer.id;
-                          _cAmount.text = '${x.price}';
-                          _cNote.clear();
-                          _cDeadline =
-                              o.deadline != null &&
-                                  o.deadline!.isAfter(DateTime.now())
-                              ? o.deadline
-                              : null;
-                        }),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-          ] else if (x.status != 'PENDING') ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: _OfferBadge(status: x.status),
-            ),
-            const SizedBox(height: 8),
-          ],
-          ActionGroup(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ActionBtn(
-                label: 'Yoziş',
-                icon: TI.chat_bubble_outline_rounded,
-                kind: ActionKind.ghost,
-                onPressed: busy ? null : () => _startChat(x.preparer),
+              Expanded(
+                child: _field(
+                  "Summa (söm)",
+                  WebInput(
+                    controller: _cAmount,
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
               ),
-              ActionBtn(
-                label: 'Şikoyat',
-                icon: TI.flag_outlined,
-                kind: ActionKind.ghost,
-                onPressed: () => _report(x.preparer.id),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _field(
+                  'Topşiriş muddati',
+                  WebInput(
+                    readOnly: true,
+                    hint: 'Tanlang',
+                    controller: TextEditingController(
+                      text: _cDeadline == null
+                          ? ''
+                          : shortDateTime(_cDeadline!),
+                    ),
+                    onTap: () async {
+                      final d = await pickDateTime(
+                        context,
+                        initial: _cDeadline,
+                      );
+                      if (d != null && mounted) {
+                        setState(() => _cDeadline = d);
+                      }
+                    },
+                  ),
+                ),
               ),
             ],
           ),
-          if (open) ...[
-            const SizedBox(height: kDetailGap),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.tint(0.03),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: WebC.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Şartnoma',
-                    style: TextStyle(
-                      color: WebC.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: kDetailGap),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _field(
-                          "Summa (söm)",
-                          WebInput(
-                            controller: _cAmount,
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _field(
-                          'Topşiriş muddati',
-                          WebInput(
-                            readOnly: true,
-                            hint: 'Tanlang',
-                            controller: TextEditingController(
-                              text: _cDeadline == null
-                                  ? ''
-                                  : shortDateTime(_cDeadline!),
-                            ),
-                            onTap: () async {
-                              final d = await pickDateTime(
-                                context,
-                                initial: _cDeadline,
-                              );
-                              if (d != null && mounted) {
-                                setState(() => _cDeadline = d);
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: kDetailGap),
-                  _field(
-                    'Izoh / şartlar (ixtiyoriy)',
-                    WebInput(controller: _cNote, maxLines: 2, minLines: 2),
-                  ),
-                  const SizedBox(height: kDetailGap),
-                  ActionBtn(
-                    label: 'Şartnoma yuboriş',
-                    icon: TI.send_rounded,
-                    onPressed: busy
-                        ? null
-                        : () async {
-                            final amount =
-                                int.tryParse(_cAmount.text.trim()) ?? 0;
-                            if (amount <= 0) {
-                              setState(() => _localErr = 'Summani kiriting');
-                              return;
-                            }
-                            if (_cDeadline == null ||
-                                !_cDeadline!.isAfter(DateTime.now())) {
-                              setState(
-                                () => _localErr =
-                                    'Şartnoma muddatini (sana va vaqt) tanlang',
-                              );
-                              return;
-                            }
-                            setState(() => _localErr = null);
-                            final ok = await _cubit.sendContract(
-                              preparerId: x.preparer.id,
-                              amount: amount,
-                              note: _cNote.text.trim().isEmpty
-                                  ? null
-                                  : _cNote.text.trim(),
-                              deadline: _cDeadline,
-                            );
-                            if (ok && mounted) {
-                              setState(() => _contractFor = null);
-                            }
-                          },
-                  ),
-                ],
-              ),
-            ),
-          ],
+          const SizedBox(height: kDetailGap),
+          _field(
+            'Izoh / şartlar (ixtiyoriy)',
+            WebInput(controller: _cNote, maxLines: 2, minLines: 2),
+          ),
+          const SizedBox(height: kDetailGap),
+          ActionBtn(
+            label: 'Şartnoma yuboriş',
+            icon: TI.send_rounded,
+            onPressed: busy
+                ? null
+                : () async {
+                    final amount = int.tryParse(_cAmount.text.trim()) ?? 0;
+                    if (amount <= 0) {
+                      setState(() => _localErr = 'Summani kiriting');
+                      return;
+                    }
+                    if (_cDeadline == null ||
+                        !_cDeadline!.isAfter(DateTime.now())) {
+                      setState(
+                        () => _localErr =
+                            'Şartnoma muddatini (sana va vaqt) tanlang',
+                      );
+                      return;
+                    }
+                    setState(() => _localErr = null);
+                    final ok = await _cubit.sendContract(
+                      preparerId: x.preparer.id,
+                      amount: amount,
+                      note: _cNote.text.trim().isEmpty
+                          ? null
+                          : _cNote.text.trim(),
+                      deadline: _cDeadline,
+                    );
+                    if (ok && mounted) {
+                      setState(() => _contractFor = null);
+                    }
+                  },
+          ),
         ],
       ),
     );
@@ -1505,8 +1629,11 @@ class _OrderActionsState extends State<_OrderActions> {
 
 /// Taklif holati — rangli yorliq (saytdagi OfferBadge).
 class _OfferBadge extends StatelessWidget {
-  const _OfferBadge({required this.status});
+  const _OfferBadge({required this.status, this.compact = false});
   final String status;
+
+  /// Ixçam qatorda — pastroq (20px).
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -1517,7 +1644,7 @@ class _OfferBadge extends StatelessWidget {
       _ => WebC.zinc400,
     };
     return Container(
-      height: 24,
+      height: compact ? 20 : 24,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       alignment: Alignment.center,
       decoration: BoxDecoration(

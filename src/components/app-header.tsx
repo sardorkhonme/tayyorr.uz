@@ -78,13 +78,12 @@ export function AppHeader() {
             <Link
               href="/dashboard"
               aria-label="Tayyorr.uz — asosiy"
-              className={`flex h-12 min-w-0 shrink items-center overflow-hidden rounded-full px-4 transition active:scale-[0.98] ${HEADER_CAPSULE}`}
+              className={`flex h-12 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-full px-4 transition active:scale-[0.98] ${HEADER_CAPSULE}`}
             >
               <Logo className="text-[17px]" markClassName="h-6" />
             </Link>
-            <div className="ml-auto flex shrink-0 items-center">
-              {config && <HeaderIconGroup config={config} />}
-            </div>
+            {/* kapsulalar orasidagi masofa hamişa 8px (gap-2); logo kapsulasi qolgan joyni egallaydi */}
+            {config && <HeaderIconGroup config={config} />}
           </>
         )}
       </div>

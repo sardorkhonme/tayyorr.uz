@@ -29,10 +29,10 @@ type Action = { href: string; label: string; icon: IconName };
 const GUIDE: Action = { href: "/qollanma", label: "Qöllanma", icon: "book" };
 const HELP: Action = { href: "/support", label: "Yordam", icon: "headset" };
 
-/** Sahifaga xos header ikonkalari (ilovadagidek): Xizmatlar — qöllanma, Profil — qöllanma va yordam. */
+/** Sahifaga xos header ikonkalari: Xizmatlar va Çegirmalar — qöllanma, Profil — yordam. */
 function actionsFor(pathname: string): Action[] {
-  if (pathname === "/") return [GUIDE];
-  if (pathname === "/account") return [GUIDE, HELP];
+  if (pathname === "/" || pathname === "/chegirmalar") return [GUIDE];
+  if (pathname === "/account") return [HELP];
   return [];
 }
 
@@ -105,7 +105,7 @@ export function MobileHeader() {
         )}
         <Link
           href="/"
-          className="glass flex h-12 min-w-0 items-center gap-[7px] rounded-full px-4 transition active:scale-[0.98]"
+          className="glass flex h-12 min-w-0 flex-1 items-center justify-center gap-[7px] rounded-full px-4 transition active:scale-[0.98]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/smm-mark.png" alt="" className="h-7 w-7 shrink-0 object-contain" />
@@ -113,12 +113,7 @@ export function MobileHeader() {
             Tayyorr <span className="text-fuchsia-500">SMM</span>
           </span>
         </Link>
-        {actions.length > 0 && (
-          <>
-            <span className="flex-1" />
-            <HeaderIconGroup items={actions} />
-          </>
-        )}
+        <HeaderIconGroup items={actions} />
       </div>
     </div>
   );

@@ -116,7 +116,12 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
           child: _statusFade(topInset),
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(12, topInset + 12, 12, 4),
+          padding: EdgeInsets.fromLTRB(
+            kHeaderSide,
+            topInset + 12,
+            kHeaderSide,
+            4,
+          ),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
             switchInCurve: Curves.easeOutCubic,
@@ -150,6 +155,12 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
       old.trailing != trailing ||
       old.replace != replace;
 }
+
+/// Header kapsulalari orasidagi bir xil oraliq (ilova va çat headerlari).
+const double kHeaderGap = 8;
+
+/// Header qatorining yon çekkalari (ilova va çat headerlari bir xil).
+const double kHeaderSide = 12;
 
 /// Headerning o'zi (sliver'siz) — iOS 26 navigatsiya qatori: alohida suzuvchi shisha kapsulalar
 /// (orqaga tugmasi — doira, xizmat logosi — kapsula). Bosilganda shisha yorishib ozgina kattalashadi,
@@ -209,33 +220,35 @@ class WebHeaderBar extends StatelessWidget {
       height: _HeaderDelegate.barHeight,
       child: Row(
         children: [
-          if (lead != null) ...[lead, const SizedBox(width: 8)],
-          // logo (belgi + nom) hamişa töliq: joy tor bölsa kiçrayadi, lekin nom tuşib qolmaydi
+          if (lead != null) ...[lead, const SizedBox(width: kHeaderGap)],
+          // logo kapsulasi çap va öng kapsulalar orasidagi butun joyni egallaydi (böş joy qolmaydi),
+          // logo uning örtasida; joy tor bölsa logo kiçrayadi, lekin nom tuşib qolmaydi
           Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: GlassTap(
-                height: h,
-                onTap: () => switch (service) {
-                  ServiceKind.uz => openUzSection(AppSection.dashboard),
-                  ServiceKind.smm => openSmm(0),
-                  ServiceKind.plus => openHub(),
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: switch (service) {
-                      ServiceKind.uz => const AppLogo(height: 20),
-                      ServiceKind.smm => const BrandLogo.smm(),
-                      ServiceKind.plus => const BrandLogo.plus(),
-                    },
-                  ),
+            child: GlassTap(
+              height: h,
+              width: double.infinity,
+              onTap: () => switch (service) {
+                ServiceKind.uz => openUzSection(AppSection.dashboard),
+                ServiceKind.smm => openSmm(0),
+                ServiceKind.plus => openHub(),
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: switch (service) {
+                    ServiceKind.uz => const AppLogo(height: 20),
+                    ServiceKind.smm => const BrandLogo.smm(),
+                    ServiceKind.plus => const BrandLogo.plus(),
+                  },
                 ),
               ),
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+          if (trailing != null) ...[
+            const SizedBox(width: kHeaderGap),
+            trailing!,
+          ],
         ],
       ),
     );

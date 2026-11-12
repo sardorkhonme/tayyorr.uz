@@ -11,7 +11,11 @@ import '../../../widgets/web_ui.dart';
 /// Telegramdagidek: o'tilgan xabar orqasida yumshoq indigo nur ikki marta
 /// "lip-lip" yonib, so'nadi. [flashKey] o'zgarganda animatsiya qayta boshlanadi.
 class FlashHighlight extends StatefulWidget {
-  const FlashHighlight({super.key, required this.flashKey, required this.child});
+  const FlashHighlight({
+    super.key,
+    required this.flashKey,
+    required this.child,
+  });
   final int? flashKey;
   final Widget child;
 
@@ -19,13 +23,29 @@ class FlashHighlight extends StatefulWidget {
   State<FlashHighlight> createState() => _FlashHighlightState();
 }
 
-class _FlashHighlightState extends State<FlashHighlight> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+class _FlashHighlightState extends State<FlashHighlight>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  );
   late final Animation<double> _a = TweenSequence<double>([
-    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)), weight: 14),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 0.0,
+        end: 1.0,
+      ).chain(CurveTween(curve: Curves.easeOut)),
+      weight: 14,
+    ),
     TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.35), weight: 16),
     TweenSequenceItem(tween: Tween(begin: 0.35, end: 1.0), weight: 14),
-    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 56),
+    TweenSequenceItem(
+      tween: Tween(
+        begin: 1.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeIn)),
+      weight: 56,
+    ),
   ]).animate(_c);
 
   @override
@@ -37,7 +57,9 @@ class _FlashHighlightState extends State<FlashHighlight> with SingleTickerProvid
   @override
   void didUpdateWidget(covariant FlashHighlight old) {
     super.didUpdateWidget(old);
-    if (widget.flashKey != null && widget.flashKey != old.flashKey) _c.forward(from: 0);
+    if (widget.flashKey != null && widget.flashKey != old.flashKey) {
+      _c.forward(from: 0);
+    }
   }
 
   @override
@@ -67,7 +89,13 @@ class _FlashHighlightState extends State<FlashHighlight> with SingleTickerProvid
 ///  · «@» — o'qilmagan belgilashlar bo'lsa, hisoblagich bilan: pastga tugmasi ko'rinsa — uning ustida,
 ///    ko'rinmasa — uning o'rnida.
 class ChatScrollButtons extends StatefulWidget {
-  const ChatScrollButtons({super.key, required this.controller, this.mentionCount = 0, this.onMention, this.onDown});
+  const ChatScrollButtons({
+    super.key,
+    required this.controller,
+    this.mentionCount = 0,
+    this.onMention,
+    this.onDown,
+  });
   final ScrollController controller;
   final int mentionCount;
   final VoidCallback? onMention;
@@ -120,7 +148,11 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
     final far = c.offset > c.position.viewportDimension * 4;
     // juda uzoqda bo'lsa — avval yaqiniga sakrab, keyin silliq
     if (far) c.jumpTo(c.position.viewportDimension * 1.5);
-    c.animateTo(0, duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+    c.animateTo(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
@@ -140,7 +172,11 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
               },
               count: widget.mentionCount,
               accent: true,
-              child: const TIcon(TI.alternate_email_rounded, size: 20, color: Colors.white),
+              child: const TIcon(
+                TI.alternate_email_rounded,
+                size: 20,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -148,7 +184,11 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
           visible: _showDown,
           child: _RoundFab(
             onTap: _down,
-            child: TIcon(TI.keyboard_arrow_down_rounded, size: 22, color: WebC.zinc300),
+            child: TIcon(
+              TI.keyboard_arrow_down_rounded,
+              size: 22,
+              color: WebC.zinc300,
+            ),
           ),
         ),
       ],
@@ -171,15 +211,25 @@ class _Pop extends StatelessWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
         switchInCurve: Curves.easeOutBack,
-        transitionBuilder: (c, a) => ScaleTransition(scale: a, child: FadeTransition(opacity: a, child: c)),
-        child: visible ? KeyedSubtree(key: const ValueKey(1), child: child) : const SizedBox(key: ValueKey(0), width: 46),
+        transitionBuilder: (c, a) => ScaleTransition(
+          scale: a,
+          child: FadeTransition(opacity: a, child: c),
+        ),
+        child: visible
+            ? KeyedSubtree(key: const ValueKey(1), child: child)
+            : const SizedBox(key: ValueKey(0), width: 46),
       ),
     );
   }
 }
 
 class _RoundFab extends StatelessWidget {
-  const _RoundFab({required this.onTap, required this.child, this.count = 0, this.accent = false});
+  const _RoundFab({
+    required this.onTap,
+    required this.child,
+    this.count = 0,
+    this.accent = false,
+  });
   final VoidCallback onTap;
   final Widget child;
   final int count;
@@ -188,7 +238,9 @@ class _RoundFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // iOS 26 suzuvchi shisha tugma: bosilganda yorishib kattalashadi, rezinadek cho'ziladi
-    return Stack(clipBehavior: Clip.none, children: [
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
         GlassTap(
           width: 46,
           height: 46,
@@ -207,16 +259,26 @@ class _RoundFab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF43F5E),
                 borderRadius: BorderRadius.circular(99),
-                border: Border.all(color: AppColors.isLight ? Colors.white : const Color(0xFF0B0B12), width: 2),
+                border: Border.all(
+                  color: AppColors.isLight
+                      ? Colors.white
+                      : const Color(0xFF0B0B12),
+                  width: 2,
+                ),
               ),
               child: Text(
                 count > 99 ? '99+' : '$count',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
-      ]);
+      ],
+    );
   }
 }
 
@@ -224,7 +286,12 @@ class _RoundFab extends StatelessWidget {
 /// belgisi paydo bo'ladi; chegaradan o'tganda titraydi, qo'yib yuborilganda — [onReply].
 /// O'ngga surilsa — ekrandan ortga qaytadi (chapda «ortga» belgisi chiqadi).
 class SwipeToReply extends StatefulWidget {
-  const SwipeToReply({super.key, required this.child, required this.onReply, this.enabled = true});
+  const SwipeToReply({
+    super.key,
+    required this.child,
+    required this.onReply,
+    this.enabled = true,
+  });
   final Widget child;
   final VoidCallback onReply;
   final bool enabled;
@@ -233,23 +300,32 @@ class SwipeToReply extends StatefulWidget {
   State<SwipeToReply> createState() => _SwipeToReplyState();
 }
 
-class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderStateMixin {
+class _SwipeToReplyState extends State<SwipeToReply>
+    with SingleTickerProviderStateMixin {
   static const _threshold = 64.0;
   static const _max = 96.0;
 
   /// Qaytish — yengil «prujina» (biroz o'tib ketib, joyiga tushadi).
-  late final AnimationController _back = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+  late final AnimationController _back = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
   double _raw = 0; // barmoq haqiqatda qancha surdi
   double _dx = 0; // pufakcha qancha siljigan (qarshilik bilan)
   double _from = 0;
   bool _armed = false;
-  bool _backArmed = false; // o'ngga yetarlicha surildi — qo'yib yuborilsa ortga qaytadi
+  bool _backArmed =
+      false; // o'ngga yetarlicha surildi — qo'yib yuborilsa ortga qaytadi
   static const _backThreshold = 56.0;
 
   @override
   void initState() {
     super.initState();
-    _back.addListener(() => setState(() => _dx = _from * (1 - Curves.easeOutBack.transform(_back.value))));
+    _back.addListener(
+      () => setState(
+        () => _dx = _from * (1 - Curves.easeOutBack.transform(_back.value)),
+      ),
+    );
   }
 
   @override
@@ -259,7 +335,8 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
   }
 
   /// Rezina: qancha ko'p tortilsa, shuncha kam siljiydi.
-  static double _rubber(double x, double limit) => limit * (1 - math.exp(-x / limit));
+  static double _rubber(double x, double limit) =>
+      limit * (1 - math.exp(-x / limit));
 
   void _update(DragUpdateDetails d) {
     if (_back.isAnimating) {
@@ -271,14 +348,20 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
     if (_raw <= 0) {
       // chapga — javob: chegaragacha deyarli erkin, keyin qarshilik
       final x = -_raw;
-      next = -(x <= _threshold ? x : _threshold + _rubber(x - _threshold, _max - _threshold));
+      next = -(x <= _threshold
+          ? x
+          : _threshold + _rubber(x - _threshold, _max - _threshold));
     } else {
       // o'ngga — ortga qaytish: chegaragacha erkin, keyin qarshilik
-      next = _raw <= _backThreshold ? _raw : _backThreshold + _rubber(_raw - _backThreshold, 40);
+      next = _raw <= _backThreshold
+          ? _raw
+          : _backThreshold + _rubber(_raw - _backThreshold, 40);
     }
     final armed = -next >= _threshold;
     final backArmed = next >= _backThreshold;
-    if ((armed && !_armed) || (backArmed && !_backArmed)) HapticFeedback.lightImpact();
+    if ((armed && !_armed) || (backArmed && !_backArmed)) {
+      HapticFeedback.lightImpact();
+    }
     setState(() {
       _dx = next;
       _armed = armed;
@@ -300,64 +383,87 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     if (!widget.enabled) return widget.child;
-    final p = (-_dx / _threshold).clamp(0.0, 1.0); // faqat chapga surganda belgi ko'rinadi
-    final pb = (_dx / _backThreshold).clamp(0.0, 1.0); // o'ngga — «ortga» belgisi
+    final p = (-_dx / _threshold).clamp(
+      0.0,
+      1.0,
+    ); // faqat chapga surganda belgi ko'rinadi
+    final pb = (_dx / _backThreshold).clamp(
+      0.0,
+      1.0,
+    ); // o'ngga — «ortga» belgisi
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragStart: (_) => _raw = _dx,
       onHorizontalDragUpdate: _update,
       onHorizontalDragEnd: _end,
       onHorizontalDragCancel: _end,
-      child: Stack(alignment: Alignment.centerRight, clipBehavior: Clip.none, children: [
-        Positioned(
-          right: 6,
-          child: Opacity(
-            opacity: p,
-            child: Transform.scale(
-              scale: 0.6 + 0.4 * p,
-              child: Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _armed ? const Color(0xFF6366F1) : WebC.fill10,
+      child: Stack(
+        alignment: Alignment.centerRight,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            right: 6,
+            child: Opacity(
+              opacity: p,
+              child: Transform.scale(
+                scale: 0.6 + 0.4 * p,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _armed ? const Color(0xFF6366F1) : WebC.fill10,
+                  ),
+                  child: TIcon(
+                    TI.reply_rounded,
+                    size: 18,
+                    color: _armed ? Colors.white : WebC.zinc300,
+                  ),
                 ),
-                child: TIcon(TI.reply_rounded, size: 18, color: _armed ? Colors.white : WebC.zinc300),
               ),
             ),
           ),
-        ),
-        Positioned(
-          left: 6,
-          child: Opacity(
-            opacity: pb,
-            child: Transform.scale(
-              scale: 0.6 + 0.4 * pb,
-              child: Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _backArmed ? const Color(0xFF6366F1) : WebC.fill10,
+          Positioned(
+            left: 6,
+            child: Opacity(
+              opacity: pb,
+              child: Transform.scale(
+                scale: 0.6 + 0.4 * pb,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _backArmed ? const Color(0xFF6366F1) : WebC.fill10,
+                  ),
+                  child: TIcon(
+                    TI.arrow_back_ios_new_rounded,
+                    size: 18,
+                    color: _backArmed ? Colors.white : WebC.zinc300,
+                  ),
                 ),
-                child: TIcon(TI.arrow_back_ios_new_rounded, size: 18, color: _backArmed ? Colors.white : WebC.zinc300),
               ),
             ),
           ),
-        ),
-        Transform.translate(offset: Offset(_dx, 0), child: widget.child),
-      ]),
+          Transform.translate(offset: Offset(_dx, 0), child: widget.child),
+        ],
+      ),
     );
   }
 }
 
-/// Yangi xabar paydo bo'lishi: pastdan biroz ko'tarilib, kattalashib chiqadi. Faqat bir marta
-/// ([animate] true bo'lib qurilganda) — keyingi qayta qurilishlarda (server javobi bilan almashganda)
-/// qayta o'ynamaydi.
+/// Yangi xabar paydo bölişi: 220ms ease-out — biroz pastdan kötarilib, şaffofdan çiqadi. Faqat bir marta
+/// ([animate] true bölib qurilganda) — keyingi qayta qurilişlarda (server javobi bilan almaşganda)
+/// qayta öynamaydi. Daraxt tuzilmasi özgarmaydi (pufakça holati / videolar qayta yaratilmaydi).
 class ChatAppear extends StatefulWidget {
-  const ChatAppear({super.key, required this.animate, required this.child, this.fromRight = false});
+  const ChatAppear({
+    super.key,
+    required this.animate,
+    required this.child,
+    this.fromRight = false,
+  });
   final bool animate;
   final bool fromRight;
   final Widget child;
@@ -366,41 +472,85 @@ class ChatAppear extends StatefulWidget {
   State<ChatAppear> createState() => _ChatAppearState();
 }
 
-class _ChatAppearState extends State<ChatAppear> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 260), value: widget.animate ? 0 : 1);
-  late final Animation<double> _a = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+class _ChatAppearState extends State<ChatAppear>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _c;
+  late final Animation<double> _a;
 
   @override
   void initState() {
     super.initState();
-    if (widget.animate) _c.forward();
+    if (widget.animate) {
+      final c = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 220),
+      );
+      _c = c;
+      _a = CurvedAnimation(parent: c, curve: Curves.easeOut);
+      c.forward();
+    }
   }
 
   @override
   void dispose() {
-    _c.dispose();
+    _c?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _a,
-      child: widget.child,
-      builder: (context, child) {
-        if (_a.value >= 1) return child!;
-        return Opacity(
-          opacity: _a.value,
-          child: Transform.translate(
-            offset: Offset(0, 14 * (1 - _a.value)),
-            child: Transform.scale(
-              scale: 0.94 + 0.06 * _a.value,
-              alignment: widget.fromRight ? Alignment.bottomRight : Alignment.bottomLeft,
-              child: child,
-            ),
-          ),
-        );
-      },
+    // animatsiyasiz yaratilgan — heç qanday qöşimça qatlam yöq (tarixdagi xabarlar arzon)
+    if (_c == null) return widget.child;
+    return FadeTransition(
+      opacity: _a,
+      child: AnimatedBuilder(
+        animation: _a,
+        child: widget.child,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(0, 10 * (1 - _a.value)),
+          child: child,
+        ),
+      ),
     );
+  }
+}
+
+/// Sahifa oçiliş animatsiyasi tugagunça ([routeSettled] false) ogʼir röyxatni qurmaslik uçun —
+/// bosiş darhol sezilsin, sahifa silliq kirib kelsin (ungaça skelet körinadi).
+mixin RouteSettleMixin<T extends StatefulWidget> on State<T> {
+  bool routeSettled = false;
+  Animation<double>? _routeAnim;
+  bool _routeChecked = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_routeChecked) return;
+    _routeChecked = true;
+    final a = ModalRoute.of(context)?.animation;
+    if (a == null || a.status == AnimationStatus.completed) {
+      routeSettled = true;
+      return;
+    }
+    _routeAnim = a..addStatusListener(_onRouteStatus);
+    // ehtiyot: animatsiya qandaydir sabab bilan tugamasa ham kontent köp kutmasin
+    Future.delayed(const Duration(milliseconds: 600), _settle);
+  }
+
+  void _onRouteStatus(AnimationStatus s) {
+    if (s == AnimationStatus.completed) _settle();
+  }
+
+  void _settle() {
+    _routeAnim?.removeStatusListener(_onRouteStatus);
+    _routeAnim = null;
+    if (!routeSettled && mounted) setState(() => routeSettled = true);
+  }
+
+  @override
+  void dispose() {
+    _routeAnim?.removeStatusListener(_onRouteStatus);
+    _routeAnim = null;
+    super.dispose();
   }
 }

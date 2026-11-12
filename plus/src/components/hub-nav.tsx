@@ -72,13 +72,18 @@ function WalletCard({ user }: { user: NonNullable<HubUser> }) {
   return (
     <div className="shine rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 p-4 text-white shadow-lg shadow-indigo-500/25">
       <Link href="/wallet" className="relative z-[2] block">
-        <p className="flex items-center gap-1.5 text-xs text-indigo-100">
+        <p className="flex items-center gap-1.5 text-xs text-white/80">
           <Icon name="wallet" className="h-4 w-4" /> Hamyon
         </p>
         <p className="mt-0.5 font-display text-2xl font-bold">{som(user.balance)}</p>
       </Link>
-      {user.walletCode && <p className="mt-0.5 text-[11px] text-indigo-200">kod: {user.walletCode}</p>}
-      <TopupButton className="mt-3 w-full rounded-xl bg-white/15 py-2 text-sm font-semibold transition hover:bg-white/25">
+      {/* rangli kartada — tema özgaruvçilariga bağlanmagan oq rang (qorong'i rejimda indigo-200 töq bölib qolardi) */}
+      {user.walletCode && (
+        <p className="relative z-[2] mt-0.5 text-[11px] text-white/75">
+          kod: <span className="font-semibold tracking-wide text-white">{user.walletCode}</span>
+        </p>
+      )}
+      <TopupButton className="relative z-[2] mt-3 w-full rounded-xl bg-white/15 py-2 text-sm font-semibold text-white transition hover:bg-white/25">
         <span className="inline-flex items-center gap-1.5">
           <Icon name="plus" className="h-4 w-4" strokeWidth={2.2} /> Töldiriş
         </span>

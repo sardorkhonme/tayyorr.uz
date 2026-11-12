@@ -23,7 +23,10 @@ export default async function DiscountsPage() {
         </div>
       </header>
 
-      <GuideBanner />
+      {/* telefon/planşetda qöllanma headerdagi ikonkada */}
+      <div className="hidden lg:block">
+        <GuideBanner />
+      </div>
 
       <DiscountsBoard services={sale} loggedIn={!!user} balance={user?.balance ?? 0} />
     </div>

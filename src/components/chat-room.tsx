@@ -23,6 +23,7 @@ import { isForeignSource, type MessageSource } from "@/lib/message-source";
 import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { flashMessage } from "@/lib/flash-message";
 import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
+import { BackChevron, HEADER_CAPSULE } from "@/components/page-header";
 
 interface ReplyPreview {
   id: string;
@@ -189,7 +190,7 @@ export function ChatRoom({
       const M = 8;
       let left = r.right - W;
       if (left < M) left = M;
-      return { left, top: r.bottom + 6 };
+      return { left, top: r.bottom + 8 };
     });
   }
 
@@ -711,6 +712,13 @@ export function ChatRoom({
     return null;
   }, [messages]);
 
+  const profileHref =
+    !other.id || other.isSupport
+      ? "#"
+      : asSupport
+        ? `/sardorxon/admin/users/${other.id}`
+        : `/u/${other.id}`;
+
   const canSend =
     !uploading && (editing ? !!text.trim() : !!text.trim() || !!attachment);
 
@@ -718,77 +726,85 @@ export function ChatRoom({
     <div
       className={`fixed inset-0 z-40 flex flex-col ${asSupport ? "lg:left-[33rem]" : "lg:left-[34rem]"}`}
     >
-      {/* ---- birlashgan header (sayt + suhbat) ---- */}
-      <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
+      {/* ---- header: ilovadagi kabi alohida kapsulalar — orqaga · avatar · ism+holat · ⋮ ---- */}
+      <header className="relative z-10 shrink-0">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%+12px)]"
+          style={{
+            background:
+              "linear-gradient(to bottom, var(--bg) 0%, color-mix(in srgb, var(--bg) 85%, transparent) 60%, transparent 100%)",
+          }}
+        />
+        <div
+          className="relative mx-auto flex h-14 max-w-3xl items-center gap-2 px-3 sm:px-4"
+          style={{ marginTop: "calc(env(safe-area-inset-top, 0px) + 0.5rem)", marginBottom: "0.25rem" }}
+        >
           <button
             type="button"
             onClick={() => router.push(listHref)}
-            className="backdrop-blur-sm -ml-1 rounded-lg px-1.5 py-1 text-lg text-zinc-400 transition hover:bg-white/5 hover:text-white"
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-zinc-200 transition hover:text-white active:scale-95 ${HEADER_CAPSULE}`}
             aria-label="Orqaga"
           >
-            ‹
+            <BackChevron className="h-[19px] w-[19px]" />
           </button>
           <Link
-            href={
-              !other.id || other.isSupport
-                ? "#"
-                : asSupport
-                  ? `/sardorxon/admin/users/${other.id}`
-                  : `/u/${other.id}`
-            }
-            className="flex min-w-0 flex-1 items-center gap-2.5"
+            href={profileHref}
+            aria-label={other.name}
+            className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full text-zinc-500 transition active:scale-95 ${HEADER_CAPSULE}`}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 text-zinc-500">
-              {theyBlocked ? (
-                <BlockedIcon className="h-4 w-4" />
-              ) : (
-                other.image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={other.image} alt="" className="h-full w-full object-cover" />
-                )
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="truncate font-medium text-white">{other.name}</div>
-              {!other.isSupport && (
-                <div className="flex items-center gap-1.5 truncate text-xs text-zinc-500">
-                  {theyBlocked ? (
-                    <span>uzoq vaqt kirmagan</span>
-                  ) : (
-                    (() => {
-                      const p = presenceText(otherSeen);
-                      return (
-                        <>
-                          <span
-                            className={`inline-block h-1.5 w-1.5 rounded-full ${
-                              p.online ? "bg-emerald-400" : "bg-zinc-600"
-                            }`}
-                          />
-                          <span className={p.online ? "text-emerald-400" : ""}>
-                            {p.text}
-                          </span>
-                        </>
-                      );
-                    })()
-                  )}
-                </div>
-              )}
-            </div>
+            {theyBlocked ? (
+              <BlockedIcon className="h-5 w-5" />
+            ) : other.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={other.image} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-[17px] font-semibold text-zinc-300">
+                {other.name.trim().slice(0, 1).toUpperCase() || "?"}
+              </span>
+            )}
+          </Link>
+          <Link
+            href={profileHref}
+            className={`flex h-12 min-w-0 flex-1 flex-col justify-center rounded-full px-4 transition active:scale-[0.99] ${HEADER_CAPSULE}`}
+          >
+            <div className="truncate text-[14.5px] font-medium leading-tight text-white">{other.name}</div>
+            {other.isSupport ? (
+              <div className="truncate text-xs leading-tight text-emerald-400">Qöllab-quvvatlaş</div>
+            ) : (
+              <div className="mt-0.5 flex items-center gap-1.5 truncate text-xs leading-tight text-zinc-500">
+                {theyBlocked ? (
+                  <span>uzoq vaqt kirmagan</span>
+                ) : (
+                  (() => {
+                    const p = presenceText(otherSeen);
+                    return (
+                      <>
+                        <span
+                          className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
+                            p.online ? "bg-emerald-400" : "bg-zinc-600"
+                          }`}
+                        />
+                        <span className={`truncate ${p.online ? "text-emerald-400" : ""}`}>{p.text}</span>
+                      </>
+                    );
+                  })()
+                )}
+              </div>
+            )}
           </Link>
 
           {other.id && !other.isSupport && !asSupport && (
-            <div className="shrink-0">
-              <button
-                ref={hdrBtnRef}
-                type="button"
-                onClick={toggleHdrMenu}
-                className="backdrop-blur-sm flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
-                aria-label="Menyu"
-              >
-                ⋮
-              </button>
-            </div>
+            <button
+              ref={hdrBtnRef}
+              type="button"
+              onClick={toggleHdrMenu}
+              aria-expanded={!!hdrMenu}
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-zinc-200 transition hover:text-white active:scale-95 ${HEADER_CAPSULE}`}
+              aria-label="Amallar"
+            >
+              <Icon name="more" className="h-[21px] w-[21px]" />
+            </button>
           )}
         </div>
       </header>
@@ -842,20 +858,30 @@ export function ChatRoom({
       {/* ---- header menyusi — portal, hamma narsadan ustun, scrollga xalaqit bermaydi ---- */}
       {hdrMenu &&
         createPortal(
+          // blursiz, qattiq fonli karta — ⋮ kapsulasining tagida, öng çetiga tekislangan
           <div
             ref={hdrMenuRef}
-            className="menu-panel fixed z-[999] w-52 overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50"
+            role="menu"
+            className="menu-panel fixed z-[999] w-52 overflow-hidden rounded-2xl border border-white/10 bg-[var(--surface-2)] p-1 text-sm shadow-2xl shadow-black/50"
             style={{ left: hdrMenu.left, top: hdrMenu.top }}
           >
             {!other.isSupport && (
               <>
+                <Link
+                  href={profileHref}
+                  onClick={() => setHdrMenu(null)}
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                >
+                  <Icon name="user" className="h-4 w-4 shrink-0" />
+                  Profilni köriş
+                </Link>
                 <button
                   type="button"
                   onClick={() => {
                     setHdrMenu(null);
                     setReportHdr(true);
                   }}
-                  className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-amber-300 hover:bg-white/5"
                 >
                   <Icon name="alert" className="h-4 w-4 shrink-0" />
                   Şikoyat qiliş
@@ -863,22 +889,20 @@ export function ChatRoom({
                 <button
                   type="button"
                   onClick={toggleBlock}
-                  className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
                 >
                   <Icon name={iBlocked ? "check" : "ban"} className="h-4 w-4 shrink-0" />
                   {iBlocked ? "Blokdan çiqariş" : "Bloklaş"}
                 </button>
+                <button
+                  type="button"
+                  onClick={deleteConversation}
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
+                >
+                  <Icon name="trash" className="h-4 w-4 shrink-0" />
+                  Suhbatni öçiriş
+                </button>
               </>
-            )}
-            {!other.isSupport && (
-              <button
-                type="button"
-                onClick={deleteConversation}
-                className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-red-400 hover:bg-white/5"
-              >
-                <Icon name="trash" className="h-4 w-4 shrink-0" />
-                Suhbatni öçiriş
-              </button>
             )}
           </div>,
           document.body,
@@ -1063,16 +1087,19 @@ export function ChatRoom({
           </div>
         </div>
 
-        {/* suzuvchi, chegarali, blurli composer — pastda bo'shliq bilan */}
+        {/* ilovadagi composer: çapda alohida 📎 kapsula, öngda yumaloq maydon + yuboriş tugmasi;
+            javob / tahrir / fayl kartalari maydon ustida */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 px-3 sm:px-4"
-          style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
         >
-          <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#0b0b12]/80 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
-            {err && <p className="mb-2 px-1 text-xs text-red-400">{err}</p>}
+          <div className="pointer-events-auto mx-auto max-w-3xl">
+            {err && (
+              <p className={`mb-2 rounded-2xl px-3.5 py-2 text-xs text-red-400 ${HEADER_CAPSULE}`}>{err}</p>
+            )}
 
             {blocked ? (
-              <div className="flex items-center justify-between gap-3 px-1 py-1.5 text-sm text-zinc-400">
+              <div className={`flex items-center justify-between gap-3 rounded-[24px] px-4 py-3 text-sm text-zinc-400 ${HEADER_CAPSULE}`}>
                 <span>
                   {iBlocked
                     ? "Siz bu foydalanuvçini bloklagansiz."
@@ -1082,7 +1109,7 @@ export function ChatRoom({
                   <button
                     type="button"
                     onClick={toggleBlock}
-                    className="backdrop-blur-sm shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 hover:bg-white/10"
+                    className="shrink-0 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-zinc-200 hover:bg-white/10"
                   >
                     Blokdan çiqariş
                   </button>
@@ -1090,8 +1117,10 @@ export function ChatRoom({
               </div>
             ) : (
               <>
+            {(editing || jumpMiss || (replyingTo && !editing) || (localFile && !editing)) && (
+              <div className={`mb-2 rounded-2xl p-2 ${HEADER_CAPSULE}`}>
             {editing && (
-              <div className="mb-2 flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
+              <div className="[&:not(:last-child)]:mb-2 flex items-center justify-between rounded-lg bg-white/5 px-3 py-1.5 text-xs text-zinc-300">
                 <span>Xabarni tahrirlaş</span>
                 <button
                   type="button"
@@ -1104,14 +1133,14 @@ export function ChatRoom({
             )}
 
             {jumpMiss && (
-              <div className="pointer-events-none mb-2 flex justify-center">
+              <div className="pointer-events-none flex justify-center [&:not(:last-child)]:mb-2">
                 <span className="rounded-full bg-zinc-900/90 px-3 py-1.5 text-xs text-white shadow-lg">
                   Asl xabar topilmadi (öçirilgan yoki juda eski)
                 </span>
               </div>
             )}
             {replyingTo && !editing && (
-              <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border-l-2 border-indigo-400/70 bg-white/5 px-3 py-1.5 text-xs">
+              <div className="[&:not(:last-child)]:mb-2 flex items-center justify-between gap-2 rounded-lg border-l-2 border-indigo-400/70 bg-white/5 px-3 py-1.5 text-xs">
                 {/* bosilsa — asl xabarga o'tadi (mobil ilovadagidek) */}
                 <button
                   type="button"
@@ -1139,7 +1168,7 @@ export function ChatRoom({
 
             {/* tanlangan fayl / ovozli xabar — yuborishdan oldin ko'rib chiqish */}
             {localFile && !editing && (
-              <div className="mb-2 flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
+              <div className="[&:not(:last-child)]:mb-2 flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
                 <div className="relative min-w-0 flex-1">
                   <ChatFileView file={localFile} mine={false} />
                   {uploading && (
@@ -1164,6 +1193,9 @@ export function ChatRoom({
               </div>
             )}
 
+              </div>
+            )}
+
             <form onSubmit={submit} className="flex items-end gap-2">
               <input
                 ref={fileInputRef}
@@ -1174,19 +1206,21 @@ export function ChatRoom({
                   if (f) onPickFile(f);
                 }}
               />
-              {!editing && (
+              {!editing && !voice.recording && (
                 <button
                   type="button"
-                  className="btn-ghost flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-zinc-200 transition hover:text-white active:scale-95 disabled:opacity-50 ${HEADER_CAPSULE}`}
                   disabled={uploading}
                   onClick={() => fileInputRef.current?.click()}
+                  aria-label="Fayl biriktiriş"
                   title="Fayl biriktiriş"
                 >
-                  {uploading ? "…" : <Icon name="paperclip" className="h-5 w-5" />}
+                  {uploading ? "…" : <Icon name="paperclip" className="h-[21px] w-[21px]" />}
                 </button>
               )}
+              <div className={`flex min-w-0 flex-1 items-end gap-2 rounded-[24px] p-[3px] ${HEADER_CAPSULE}`}>
               {voice.recording ? (
-                <div className="flex min-h-[42px] flex-1 items-center gap-2.5 rounded-xl border border-red-400/30 bg-red-500/10 px-3 text-sm text-zinc-200">
+                <div className="flex h-[42px] flex-1 items-center gap-2.5 rounded-full bg-red-500/10 px-3 text-sm text-zinc-200">
                   <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
                   <span className="tabular-nums">
                     {Math.floor(voice.seconds / 60)}:{String(voice.seconds % 60).padStart(2, "0")}
@@ -1195,8 +1229,8 @@ export function ChatRoom({
                 </div>
               ) : (
                 <textarea
-                className="input max-h-32 min-h-[42px] resize-none bg-white/[0.03]"
-                placeholder={editing ? "Yangi matn…" : "Xabar yozing…"}
+                className="max-h-32 min-h-[42px] min-w-0 flex-1 resize-none bg-transparent px-3 py-[10px] text-sm leading-[1.5] text-white outline-none placeholder:text-zinc-500"
+                placeholder={editing ? "Yangi matn…" : attachment ? "Izoh qöşing…" : "Xabar yozing…"}
                 rows={1}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -1212,7 +1246,7 @@ export function ChatRoom({
                 // matn yo'q — Telegramdagidek mikrofon: bosib turib yozasiz, qo'yib yuborsangiz tayyor
                 <button
                   type="button"
-                  className={`btn-primary flex h-[42px] w-[42px] shrink-0 touch-none select-none items-center justify-center !p-0 ${
+                  className={`btn-primary flex h-[42px] w-[42px] shrink-0 touch-none select-none items-center justify-center !rounded-full !p-0 ${
                     voice.recording ? "scale-110 !bg-red-500 !bg-none" : ""
                   }`}
                   aria-label="Ovozli xabar (bosib turing)"
@@ -1230,7 +1264,7 @@ export function ChatRoom({
                 </button>
               ) : (
                 <button
-                  className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !p-0 text-lg leading-none"
+                  className="btn-primary flex h-[42px] w-[42px] shrink-0 items-center justify-center !rounded-full !p-0 text-lg leading-none"
                   disabled={!canSend}
                   aria-label={editing ? "Saqlaş" : "Yuboriş"}
                   title={editing ? "Saqlaş" : "Yuboriş"}
@@ -1238,9 +1272,10 @@ export function ChatRoom({
                   {editing ? <Icon name="check" className="h-5 w-5" strokeWidth={2.2} /> : <RocketIcon />}
                 </button>
               )}
+              </div>
             </form>
             {asSupport && !editing && (
-              <div className="mt-2 flex items-center gap-2 text-xs">
+              <div className={`mt-2 flex items-center gap-2 rounded-2xl px-3 py-2 text-xs ${HEADER_CAPSULE}`}>
                 <span className="text-zinc-500">Qayerda körinsin:</span>
                 <PlatformCheckboxes value={sendSource} onChange={setSendSource} />
               </div>

@@ -34,6 +34,7 @@ import '../../family/family_popup.dart' show FamilyPopupAction, showFamilyPopup;
 import '../cubit/chat_cubit.dart';
 import '../data/message_model.dart';
 import '../data/messages_repository.dart';
+import '../../../widgets/app_header_sliver.dart' show kHeaderGap, kHeaderSide;
 
 class ChatScreen extends StatelessWidget {
   const ChatScreen({
@@ -63,6 +64,209 @@ class ChatScreen extends StatelessWidget {
   }
 }
 
+/// Ochiladigan suhbat: id va suhbatdoş.
+typedef ChatTarget = ({String id, ChatOtherUser other});
+
+/// Suhbat hali aniqlanmagan (masalan «Yoziş» — suhbat serverda yaratiladi, yoki support suhbati
+/// qidiriladi) — sahifa DARHOL oçiladi, çat skeleti körinadi; suhbat topilgaç çatning özi.
+class PendingChatScreen extends StatefulWidget {
+  const PendingChatScreen({
+    super.key,
+    required this.resolve,
+    this.other,
+    this.scope = 'uz',
+    this.embedded = false,
+    this.onMissing,
+  });
+
+  final Future<ChatTarget?> Function() resolve;
+
+  /// Oldindan maʼlum suhbatdoş — skelet sarlavhasida darhol körinadi.
+  final ChatOtherUser? other;
+  final String scope;
+  final bool embedded;
+
+  /// Suhbat topilmadi (null) — sahifa yopiladi va şu çaqiriladi.
+  final VoidCallback? onMissing;
+
+  @override
+  State<PendingChatScreen> createState() => _PendingChatScreenState();
+}
+
+class _PendingChatScreenState extends State<PendingChatScreen> {
+  ChatTarget? _target;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final t = await widget.resolve();
+      if (!mounted) return;
+      if (t == null) {
+        if (widget.embedded) {
+          setState(() => _error = "Suhbat topilmadi");
+        } else {
+          Navigator.of(context).maybePop();
+          widget.onMissing?.call();
+        }
+        return;
+      }
+      setState(() => _target = t);
+    } catch (e) {
+      if (mounted) setState(() => _error = e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = _target;
+    if (t != null) {
+      return ChatScreen(
+        conversationId: t.id,
+        other: t.other,
+        scope: widget.scope,
+        embedded: widget.embedded,
+      );
+    }
+    final view = ChatSkeletonView(
+      other: widget.other,
+      embedded: widget.embedded,
+      body: _error == null
+          ? null
+          : Center(
+              child: SingleChildScrollView(
+                child: ErrorState.from(_error, () {
+                  setState(() => _error = null);
+                  _load();
+                }),
+              ),
+            ),
+    );
+    return widget.embedded
+        ? view
+        : Scaffold(body: AuroraBackground(child: view));
+  }
+}
+
+/// Çat oçilguncha — çat ekranining özi kabi: sarlavha (avatar + ism), pastdan pufakçalar,
+/// yoziş maydoni. [other] maʼlum bölsa sarlavhada darhol haqiqiy ism va rasm.
+class ChatSkeletonView extends StatelessWidget {
+  const ChatSkeletonView({
+    super.key,
+    this.other,
+    this.embedded = false,
+    this.body,
+  });
+  final ChatOtherUser? other;
+  final bool embedded;
+
+  /// Pufakçalar örniga (masalan xato holati).
+  final Widget? body;
+
+  @override
+  Widget build(BuildContext context) {
+    final o = other;
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(kHeaderSide, 6, kHeaderSide, 6),
+            child: Row(
+              children: [
+                if (!embedded) ...[
+                  GlassTap(
+                    width: 48,
+                    height: 48,
+                    strong: true,
+                    onTap: () => Navigator.of(context).maybePop(),
+                    semanticLabel: 'Orqaga',
+                    child: TIcon(
+                      TI.arrow_back_ios_new_rounded,
+                      size: 19,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: kHeaderGap),
+                ],
+                Expanded(
+                  child: LiquidGlass(
+                    height: 48,
+                    borderRadius: BorderRadius.circular(24),
+                    strong: true,
+                    padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                    child: Row(
+                      children: [
+                        if (o == null)
+                          const SCircle(size: 36)
+                        else
+                          UserAvatar(
+                            imageUrl: o.image,
+                            initial: _initial(o.name),
+                            size: 36,
+                          ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (o == null)
+                                const SBar(width: 130, height: 14)
+                              else
+                                Text(
+                                  o.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: WebC.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              const SizedBox(height: 6),
+                              const SBar(width: 70, height: 10),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child:
+                body ??
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SBubble(widthFraction: 0.55),
+                      SizedBox(height: 10),
+                      SBubble(widthFraction: 0.4, mine: true),
+                      SizedBox(height: 10),
+                      SBubble(widthFraction: 0.6),
+                    ],
+                  ),
+                ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: SBar(height: 48, borderRadius: 24),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ChatView extends StatefulWidget {
   const _ChatView({
     required this.initialOther,
@@ -77,7 +281,7 @@ class _ChatView extends StatefulWidget {
   State<_ChatView> createState() => _ChatViewState();
 }
 
-class _ChatViewState extends State<_ChatView> {
+class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   // tanlangan / yozib olingan, hali yuborilmagan fayl (ko'rib chiqish uchun)
@@ -98,6 +302,9 @@ class _ChatViewState extends State<_ChatView> {
   // yangi xabarlar paydo bo'lish animatsiyasi (bir marta)
   final _fresh = <String>{};
   final _known = <String>{};
+
+  /// Birinçi (keşdagi yoki serverdan kelgan) röyxat körilgan — undan keyingi har yangi xabar animatsiyali.
+  bool _seeded = false;
 
   void _markFresh(String k) {
     _fresh.add(k);
@@ -151,6 +358,12 @@ class _ChatViewState extends State<_ChatView> {
     super.initState();
     // shu suhbat ochiq — unga bildirishnoma kelmaydi, borini olib tashlaymiz
     _conversationId = context.read<ChatCubit>().conversationId;
+    // keşdagi xabarlar — tarix (animatsiyasiz)
+    final initial = context.read<ChatCubit>().state;
+    if (initial.status == ChatStatus.success) {
+      _known.addAll(initial.messages.map((m) => m.stableKey));
+      _seeded = true;
+    }
     MessageNotifier.instance.activeConversationId = _conversationId;
     MessageNotifier.instance.clearFor(_conversationId);
     _contractTimer = Timer.periodic(const Duration(seconds: 4), (_) {
@@ -311,11 +524,14 @@ class _ChatViewState extends State<_ChatView> {
               if (state.error != null && state.status == ChatStatus.success) {
                 showToast(context, state.error!, kind: ToastKind.error);
               }
-              // yangi kelganlar — paydo bo'lish animatsiyasi (birinchi yuklashda emas)
-              final first = _known.isEmpty;
-              for (final m in state.messages) {
-                if (_known.add(m.stableKey) && !first) _markFresh(m.stableKey);
-              }
+              // yangi kelganlar — paydo bo'lish animatsiyasi (birinchi yuklashda emas;
+              // bir yöla juda köp kelsa ham — ular tarix kabi, sakramasdan)
+              final added = [
+                for (final m in state.messages)
+                  if (_known.add(m.stableKey)) m.stableKey,
+              ];
+              if (_seeded && added.length <= 6) added.forEach(_markFresh);
+              if (state.status == ChatStatus.success) _seeded = true;
               final nearBottom =
                   !_scrollController.hasClients ||
                   _scrollController.offset < 300;
@@ -349,121 +565,142 @@ class _ChatViewState extends State<_ChatView> {
                       ),
                     ),
                   Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        if ((state.status == ChatStatus.loading ||
-                                state.status == ChatStatus.initial) &&
-                            state.messages.isEmpty) {
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                            // xabarlar pastdan joylashadi (reverse ro'yxat) — skelet ham pastda
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: const [
-                                SBubble(widthFraction: 0.4),
-                                SizedBox(height: 10),
-                                SBubble(widthFraction: 0.5, mine: true),
-                                SizedBox(height: 10),
-                                SBubble(widthFraction: 0.6),
-                                SizedBox(height: 10),
-                                SBubble(widthFraction: 0.4, mine: true),
-                                SizedBox(height: 10),
-                                SBubble(widthFraction: 0.35),
-                              ],
-                            ),
-                          );
-                        }
-                        if (state.status == ChatStatus.failure &&
-                            state.messages.isEmpty) {
-                          return Center(
-                            child: SingleChildScrollView(
-                              child: ErrorState.from(
-                                state.error,
-                                () => context.read<ChatCubit>().load(),
-                              ),
-                            ),
-                          );
-                        }
-                        if (state.blockedMe && !other.isSupport) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Text(
-                                'Bu foydalanuvçi sizni bloklagan — xabar yoza olmaysiz.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: AppColors.textMuted),
-                              ),
-                            ),
-                          );
-                        }
-                        if (state.messages.isEmpty) {
-                          return const Center(
-                            child: Text(
-                              'Xabar yozing — suhbat şu yerdan boşlanadi',
-                              style: TextStyle(color: AppColors.textMuted),
-                            ),
-                          );
-                        }
-                        // reverse — Telegramdagidek ro'yxat pastdan boshlanadi:
-                        // rasm/video yuklanib balandlik o'zgarsa ham oxirgi
-                        // xabar doim ko'rinib turadi.
-                        return Stack(
-                          children: [
-                            ListView.builder(
-                              controller: _scrollController,
-                              reverse: true,
+                    // skelet → xabarlar: yumşoq almaşadi (tarix sakramasdan paydo böladi)
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      switchInCurve: Curves.easeOut,
+                      switchOutCurve: Curves.easeIn,
+                      child: Builder(
+                        key: ValueKey(
+                          !routeSettled ||
+                              ((state.status == ChatStatus.loading ||
+                                      state.status == ChatStatus.initial) &&
+                                  state.messages.isEmpty),
+                        ),
+                        builder: (context) {
+                          // sahifa kirib kelayotganda — skelet (ogʼir röyxat animatsiyani qotirmasin)
+                          if (!routeSettled ||
+                              ((state.status == ChatStatus.loading ||
+                                      state.status == ChatStatus.initial) &&
+                                  state.messages.isEmpty)) {
+                            return Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 14,
                                 12,
                                 14,
                                 12,
                               ),
-                              itemCount: state.messages.length,
-                              itemBuilder: (context, i) {
-                                final m = state
-                                    .messages[state.messages.length - 1 - i];
-                                final k = m.stableKey;
-                                return KeyedSubtree(
-                                  key: _keyFor(k),
-                                  // chapga surib — javob berish (Telegramdagidek)
-                                  child: ChatAppear(
-                                    animate: _fresh.contains(k),
-                                    fromRight: m.mine,
-                                    child: SwipeToReply(
-                                      enabled:
-                                          !m.deleted && !m.system && !m.isLocal,
-                                      onReply: () => context
-                                          .read<ChatCubit>()
-                                          .setReplyTo(m),
-                                      child: FlashHighlight(
-                                        flashKey: _flashId == k
-                                            ? _flashTick
-                                            : null,
-                                        child: _MessageBubble(
-                                          message: m,
-                                          pinnedOrderId:
-                                              state.activeContracts.isNotEmpty
-                                              ? state.activeContracts.first.id
+                              // xabarlar pastdan joylashadi (reverse ro'yxat) — skelet ham pastda
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: const [
+                                  SBubble(widthFraction: 0.4),
+                                  SizedBox(height: 10),
+                                  SBubble(widthFraction: 0.5, mine: true),
+                                  SizedBox(height: 10),
+                                  SBubble(widthFraction: 0.6),
+                                  SizedBox(height: 10),
+                                  SBubble(widthFraction: 0.4, mine: true),
+                                  SizedBox(height: 10),
+                                  SBubble(widthFraction: 0.35),
+                                ],
+                              ),
+                            );
+                          }
+                          if (state.status == ChatStatus.failure &&
+                              state.messages.isEmpty) {
+                            return Center(
+                              child: SingleChildScrollView(
+                                child: ErrorState.from(
+                                  state.error,
+                                  () => context.read<ChatCubit>().load(),
+                                ),
+                              ),
+                            );
+                          }
+                          if (state.blockedMe && !other.isSupport) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(24),
+                                child: Text(
+                                  'Bu foydalanuvçi sizni bloklagan — xabar yoza olmaysiz.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: AppColors.textMuted),
+                                ),
+                              ),
+                            );
+                          }
+                          if (state.messages.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                'Xabar yozing — suhbat şu yerdan boşlanadi',
+                                style: TextStyle(color: AppColors.textMuted),
+                              ),
+                            );
+                          }
+                          // reverse — Telegramdagidek ro'yxat pastdan boshlanadi:
+                          // rasm/video yuklanib balandlik o'zgarsa ham oxirgi
+                          // xabar doim ko'rinib turadi.
+                          return Stack(
+                            children: [
+                              ListView.builder(
+                                controller: _scrollController,
+                                reverse: true,
+                                padding: const EdgeInsets.fromLTRB(
+                                  14,
+                                  12,
+                                  14,
+                                  12,
+                                ),
+                                itemCount: state.messages.length,
+                                itemBuilder: (context, i) {
+                                  final m = state
+                                      .messages[state.messages.length - 1 - i];
+                                  final k = m.stableKey;
+                                  return KeyedSubtree(
+                                    key: _keyFor(k),
+                                    // chapga surib — javob berish (Telegramdagidek)
+                                    child: ChatAppear(
+                                      animate: _fresh.contains(k),
+                                      fromRight: m.mine,
+                                      child: SwipeToReply(
+                                        enabled:
+                                            !m.deleted &&
+                                            !m.system &&
+                                            !m.isLocal,
+                                        onReply: () => context
+                                            .read<ChatCubit>()
+                                            .setReplyTo(m),
+                                        child: FlashHighlight(
+                                          flashKey: _flashId == k
+                                              ? _flashTick
                                               : null,
-                                          onReplyTap: _jumpTo,
+                                          child: _MessageBubble(
+                                            message: m,
+                                            pinnedOrderId:
+                                                state.activeContracts.isNotEmpty
+                                                ? state.activeContracts.first.id
+                                                : null,
+                                            onReplyTap: _jumpTo,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                            // yuqoriga chiqilganda — pastga tushish tugmasi
-                            Positioned(
-                              right: 14,
-                              bottom: 12,
-                              child: ChatScrollButtons(
-                                controller: _scrollController,
+                                  );
+                                },
                               ),
-                            ),
-                          ],
-                        );
-                      },
+                              // yuqoriga chiqilganda — pastga tushish tugmasi
+                              Positioned(
+                                right: 14,
+                                bottom: 12,
+                                child: ChatScrollButtons(
+                                  controller: _scrollController,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                   if (state.replyTo != null)
@@ -535,7 +772,7 @@ class _ChatHeader extends StatelessWidget {
     // suyuq shisha sarlavha (asosiy header bilan bir uslubda)
     // iOS 26 Messages uslubi: orqaga — alohida shisha doira, suhbatdosh — shisha kapsula
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: const EdgeInsets.fromLTRB(kHeaderSide, 6, kHeaderSide, 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -552,11 +789,12 @@ class _ChatHeader extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: kHeaderGap),
           ],
           Expanded(
             child: LiquidGlass(
-              borderRadius: BorderRadius.circular(26),
+              height: 48,
+              borderRadius: BorderRadius.circular(24),
               strong: true,
               padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
               child: Row(
@@ -652,7 +890,7 @@ class _ChatHeader extends StatelessWidget {
           ),
           // ⋮ — alohida şişa tugma (header ikonkalari bilan bir uslubda); bosilganda yonida popup
           if (!other.isSupport) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: kHeaderGap),
             Builder(
               builder: (btnCtx) => GlassTap(
                 width: 48,
