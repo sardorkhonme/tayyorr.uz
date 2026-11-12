@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getRestriction } from "@/lib/restriction";
+import { scopedRestriction } from "@/lib/restriction-scope";
 import { getActiveAnnouncements } from "@/lib/announcement";
 import { RestrictionNotice } from "@/components/restriction-notice";
 import { AnnouncementCarousel } from "@/components/announcement-banner";
@@ -10,6 +11,9 @@ export default async function DashboardPage() {
   const session = await auth();
   const restriction = await getRestriction(session!.user.id);
   if (restriction) return <RestrictionNotice restriction={restriction} />;
+  // «Tayyorr.uz — butunlay» qisman cheklovi
+  const uzAll = await scopedRestriction(session!.user.id, "uz_all");
+  if (uzAll) return <RestrictionNotice scoped={uzAll} />;
 
   const me = session!.user;
   const isPreparer = me.role === "PREPARER";

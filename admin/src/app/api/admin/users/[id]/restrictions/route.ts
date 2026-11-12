@@ -3,8 +3,34 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { createMessage, getOrCreateConversation } from "@/lib/chat";
+import { deliverMessage } from "@/lib/chat-notify";
+import { shortDateTime } from "@/lib/date";
+import { withSource, type MessageSource } from "@/lib/message-source";
+import { KIND_RULES, PLATFORM_NAME } from "@/lib/smm-adjust";
+import { getSupportUserId } from "@/lib/support";
 
-const SCOPES = ["smm", "smm_service", "uz_orders", "uz_offers", "uz_chat", "payout", "family"] as const;
+const SCOPES = ["smm", "smm_service", "uz_all", "uz_orders", "uz_offers", "uz_chat", "payout", "topup", "family"] as const;
+
+/** Foydalanuvchiga yuboriladigan xabardagi nomlar (src/lib/restriction-scope.ts bilan bir xil). */
+const LABEL: Record<string, string> = {
+  smm: "butunlay (barça xizmatlar)",
+  uz_all: "butunlay (buyurtma, taklif, şaxsiy xabarlar)",
+  uz_orders: "buyurtma beriş",
+  uz_offers: "taklif yuboriş",
+  uz_chat: "şaxsiy xabar yoziş",
+  payout: "pul yeçib oliş",
+  topup: "hisobni töldiriş",
+  family: "guruhga yoziş",
+};
+
+/** Har bir cheklov qaysi tizimga tegishli — xabar o'sha tizimning support chatiga boradi. */
+const SYSTEMS: { key: string; name: string; source: MessageSource; scopes: string[] }[] = [
+  { key: "uz", name: "Tayyorr.uz", source: "tayyorr.uz", scopes: ["uz_all", "uz_orders", "uz_offers", "uz_chat"] },
+  { key: "smm", name: "Tayyorr SMM", source: "smm", scopes: ["smm", "smm_service"] },
+  { key: "wallet", name: "Hamyon", source: "ikkalasi", scopes: ["payout", "topup"] },
+  { key: "family", name: "Tayyorr’s Family", source: "tayyorr+", scopes: ["family"] },
+];
 
 const addSchema = z.object({
   scopes: z.array(z.enum(SCOPES)).default([]),
@@ -16,6 +42,8 @@ const addSchema = z.object({
   until: z.string().optional(),
   indefinite: z.boolean().optional().default(false),
   reason: z.string().trim().max(1000).optional(),
+  /** foydalanuvchiga support orqali xabar (har tizimga alohida) */
+  notify: z.boolean().optional().default(true),
 });
 
 /** Qisman cheklov qo'yish: tanlangan imkoniyatlar (va SMM xizmatlari) — bitta muddat va sabab bilan. */
@@ -25,7 +53,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const parsed = addSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Notöğri maʼlumot" }, { status: 400 });
-  const { scopes, serviceIds, indefinite, reason } = parsed.data;
+  const { scopes, serviceIds, indefinite, reason, notify } = parsed.data;
   const plain = scopes.filter((s) => s !== "smm_service");
   if (!plain.length && !serviceIds.length) return NextResponse.json({ error: "Nimani çeklaşni tanlang" }, { status: 400 });
 
@@ -52,7 +80,44 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       ],
     }),
   ]);
+  if (notify) await notifyUser(id, plain, serviceIds, until, indefinite, reason).catch(() => {});
   return NextResponse.json({ ok: true });
+}
+
+/** Cheklov haqida xabar: har bir tizim uchun alohida — qaysi tizimda, aynan nima, qachongacha va sababi. */
+async function notifyUser(userId: string, plain: string[], targets: string[], until: Date, indefinite: boolean, reason?: string) {
+  const ids = targets.filter((t) => !t.includes(":"));
+  const services = ids.length
+    ? await db.smmService.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } })
+    : [];
+  const svcName = new Map(services.map((s) => [s.id, s.name]));
+  const kindLabel = (k: string) => KIND_RULES.find((r) => r.key === k)?.label ?? k;
+  const targetLabel = (t: string) => {
+    if (t.startsWith("p:")) return `${PLATFORM_NAME[t.slice(2)] ?? t.slice(2)} — barça xizmatlar`;
+    if (t.startsWith("g:")) {
+      const [, p, k] = t.split(":");
+      return `${PLATFORM_NAME[p] ?? p} → ${kindLabel(k)}`;
+    }
+    return `xizmat: ${svcName.get(t) ?? "—"}`;
+  };
+
+  const when = indefinite ? "muddatsiz" : `${shortDateTime(until)} gaça`;
+  const supportId = await getSupportUserId();
+  const conv = await getOrCreateConversation(supportId, userId);
+  for (const sys of SYSTEMS) {
+    const items = [
+      ...plain.filter((s) => sys.scopes.includes(s)).map((s) => LABEL[s] ?? s),
+      ...(sys.key === "smm" && !plain.includes("smm") ? targets.map(targetLabel) : []),
+    ];
+    if (!items.length) continue;
+    const body =
+      `⚠️ ${sys.name}'da sizga çeklov qöyildi (${when}):\n` +
+      items.map((x) => `• ${x}`).join("\n") +
+      (reason ? `\nSabab: ${reason}` : "") +
+      `\nQolgan imkoniyatlardan odatdagidek foydalanişingiz mumkin. Savollar bölsa — şu yerga yozing.`;
+    const m = await createMessage({ conversationId: conv.id, senderId: supportId, body: withSource(body, sys.source), system: false });
+    await deliverMessage(m);
+  }
 }
 
 /** Bitta qisman cheklovni olib tashlash (?rid=...). */

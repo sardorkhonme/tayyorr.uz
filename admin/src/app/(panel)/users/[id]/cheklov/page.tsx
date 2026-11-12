@@ -27,10 +27,12 @@ export default async function AdminUserBan({
   ]);
   const LABEL: Record<string, string> = {
     smm: "Tayyorr SMM — butunlay",
+    uz_all: "Tayyorr.uz — butunlay",
+    topup: "Hamyon: hisobni töldiriş",
     uz_orders: "Tayyorr.uz: buyurtma beriş",
     uz_offers: "Tayyorr.uz: taklif yuboriş",
     uz_chat: "Tayyorr.uz: şaxsiy xabar",
-    payout: "Pul yeçib oliş",
+    payout: "Hamyon: pul yeçib oliş",
     family: "Tayyorr’s Family: yoziş",
   };
   const svc = new Map(services.map((s) => [s.id, s.name]));

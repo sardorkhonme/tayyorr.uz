@@ -24,6 +24,17 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Notöğri maʼlumot" }, { status: 400 });
   const { amount, method } = parsed.data;
+  // admin qo'ygan qisman cheklov — «Hamyon — hisobni to'ldirish» (src/lib/restriction-scope.ts bilan bir xil matn)
+  const blocked = await db.userRestriction.findFirst({
+    where: { userId: session.user.id, scope: "topup", until: { gt: new Date() } },
+    select: { reason: true },
+  });
+  if (blocked) {
+    return NextResponse.json(
+      { error: `Sizga çeklov qöyilgan: «Hamyon — hisobni töldiriş»${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}. Savollar bölsa — «tayyorr.uz support».`, restricted: true },
+      { status: 403 },
+    );
+  }
   if (method !== "click") {
     return NextResponse.json({ error: "Bu tölov usuli tez orada ulanadi" }, { status: 400 });
   }

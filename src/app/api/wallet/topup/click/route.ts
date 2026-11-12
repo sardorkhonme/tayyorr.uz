@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { buildClickPayUrl, CLICK_MIN, CLICK_MAX } from "@/lib/click";
+import { scopedApiError } from "@/lib/restriction-scope";
 
 import { APP_URL as SITE_URL } from "@/lib/site";
 
@@ -28,6 +29,8 @@ export async function POST(req: Request) {
     );
   }
   const { amount, walletCode } = parsed.data;
+  const scoped = await scopedApiError(session.user.id, "topup");
+  if (scoped) return scoped;
 
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return NextResponse.json(

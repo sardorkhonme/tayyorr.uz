@@ -13,9 +13,16 @@ const GROUPS: { title: string; items: { scope: string; label: string; hint?: str
   {
     title: "Tayyorr.uz",
     items: [
+      { scope: "uz_all", label: "Tayyorr.uz — butunlay", hint: "Buyurtma, taklif va şaxsiy xabarlar yopiladi (Support bilan yozişa oladi)" },
       { scope: "uz_orders", label: "Buyurtma beriş" },
       { scope: "uz_offers", label: "Taklif yuboriş" },
       { scope: "uz_chat", label: "Şaxsiy xabar yoziş", hint: "Support bilan yozişa oladi" },
+    ],
+  },
+  {
+    title: "Hamyon (tayyorr+)",
+    items: [
+      { scope: "topup", label: "Hisobni töldiriş", hint: "tayyorr+, Tayyorr SMM, Tayyorr.uz va ilovada" },
       { scope: "payout", label: "Pul yeçib oliş" },
     ],
   },
@@ -38,6 +45,7 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
   const [until, setUntil] = useState(defaultUntil());
   const [indefinite, setIndefinite] = useState(false);
   const [reason, setReason] = useState("");
+  const [notify, setNotify] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -96,7 +104,8 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          scopes: [...scopes],
+          scopes: scopes.has("uz_all") ? [...scopes].filter((s) => !["uz_orders", "uz_offers", "uz_chat"].includes(s)) : [...scopes],
+          notify,
           serviceIds: effective(),
           until: indefinite ? undefined : new Date(until).toISOString(),
           indefinite,
@@ -154,7 +163,7 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
           <div key={g.title}>
             <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500">{g.title}</p>
             <div className="flex flex-col gap-1.5">
-              {g.items.map((it) => (
+              {g.items.filter((it) => !(scopes.has("uz_all") && ["uz_orders", "uz_offers", "uz_chat"].includes(it.scope))).map((it) => (
                 <label key={it.scope} className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-white/[0.03] px-3 py-2 text-sm hover:bg-white/[0.05]">
                   <input
                     type="checkbox"
@@ -260,6 +269,10 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
             <textarea className="input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
           </div>
         </div>
+        <label className="flex items-center gap-2 text-sm text-zinc-300">
+          <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+          Foydalanuvçiga xabar yuboriş (har tizim uçun alohida: qaysi tizimda, nima çeklangani, muddat va sabab)
+        </label>
         {err && <p className="text-sm text-red-400">{err}</p>}
         <button className="btn-primary w-fit" disabled={busy !== null || (scopes.size === 0 && picked.size === 0)}>
           {busy === "add" ? "..." : "Tanlanganlarni çeklaş"}

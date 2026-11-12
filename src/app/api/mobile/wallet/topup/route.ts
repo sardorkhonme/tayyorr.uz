@@ -6,6 +6,7 @@ import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { buildClickPayUrl, CLICK_MIN, CLICK_MAX } from "@/lib/click";
 import { siteUrl } from "@/lib/telegram-log";
+import { scopedApiError } from "@/lib/restriction-scope";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
@@ -25,6 +26,9 @@ export async function POST(req: Request) {
     return mobileJson({ error: "Maʼlumotlar notöğri" }, { status: 400 });
   }
   const { amount, walletCode } = parsed.data;
+  // admin qo'ygan qisman cheklov — «Hamyon — hisobni to'ldirish»
+  const scoped = await scopedApiError(auth.userId, "topup", null, true);
+  if (scoped) return scoped;
 
   if (amount < CLICK_MIN || amount > CLICK_MAX) {
     return mobileJson(

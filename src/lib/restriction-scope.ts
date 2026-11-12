@@ -8,20 +8,40 @@ import { corsHeaders } from "@/lib/mobile-cors";
  * Qisman cheklovlar (UserRestriction) — admin tanlagan imkoniyatgina yopiladi.
  * SMM uchun tekshiruv — smm-app/src/lib/orders.ts (placeOrder) da shu jadval bo'yicha.
  */
-export type RestrictionScope = "smm" | "smm_service" | "uz_orders" | "uz_offers" | "uz_chat" | "payout" | "family";
+export type RestrictionScope =
+  | "smm"
+  | "smm_service"
+  | "uz_all"
+  | "uz_orders"
+  | "uz_offers"
+  | "uz_chat"
+  | "payout"
+  | "topup"
+  | "family";
 
+/** Foydalanuvchiga ko'rinadigan nom — qaysi tizimda va nima cheklangani. */
 export const SCOPE_LABEL: Record<RestrictionScope, string> = {
-  smm: "Tayyorr SMM",
-  smm_service: "Şu SMM xizmati",
-  uz_orders: "Buyurtma beriş",
-  uz_offers: "Taklif yuboriş",
-  uz_chat: "Şaxsiy xabar yoziş",
-  payout: "Pul yeçib oliş",
-  family: "Tayyorr’s Family guruhiga yoziş",
+  smm: "Tayyorr SMM — butunlay",
+  smm_service: "Tayyorr SMM — şu xizmat",
+  uz_all: "Tayyorr.uz — butunlay",
+  uz_orders: "Tayyorr.uz — buyurtma beriş",
+  uz_offers: "Tayyorr.uz — taklif yuboriş",
+  uz_chat: "Tayyorr.uz — şaxsiy xabar yoziş",
+  payout: "Hamyon — pul yeçib oliş",
+  topup: "Hamyon — hisobni töldiriş",
+  family: "Tayyorr’s Family — guruhga yoziş",
+};
+
+/** «Tayyorr.uz — butunlay» uning barcha qismlarini ham yopadi. */
+const PARENT: Partial<Record<RestrictionScope, RestrictionScope>> = {
+  uz_orders: "uz_all",
+  uz_offers: "uz_all",
+  uz_chat: "uz_all",
+  smm_service: "smm",
 };
 
 export async function scopedRestriction(userId: string, scope: RestrictionScope, target?: string | null) {
-  const scopes: RestrictionScope[] = scope === "smm_service" ? ["smm", "smm_service"] : [scope];
+  const scopes: RestrictionScope[] = PARENT[scope] ? [PARENT[scope]!, scope] : [scope];
   const rows = await db.userRestriction.findMany({
     where: { userId, until: { gt: new Date() }, scope: { in: scopes } },
     orderBy: { until: "desc" },
@@ -32,7 +52,8 @@ export async function scopedRestriction(userId: string, scope: RestrictionScope,
   const label = SCOPE_LABEL[hit.scope as RestrictionScope] ?? "Bu imkoniyat";
   const when = permanent ? "muddatsiz" : `${shortDateTime(hit.until)} gaça`;
   return {
-    text: `«${label}» sizga ${when} çeklangan${hit.reason ? `. Sabab: ${hit.reason}` : ""}. Savollar bölsa — «tayyorr.uz support».`,
+    text: `Sizga çeklov qöyilgan: «${label}» — ${when}${hit.reason ? `. Sabab: ${hit.reason}` : ""}. Savollar bölsa — «tayyorr.uz support».`,
+    title: label,
     until: hit.until,
   };
 }

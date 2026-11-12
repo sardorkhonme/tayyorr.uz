@@ -75,13 +75,13 @@ export async function placeOrder(userId: string, serviceId: string, rawLink: str
   if (blocked) {
     const what =
       blocked.scope === "smm"
-        ? "Tayyorr SMM"
+        ? "Tayyorr SMM — butunlay"
         : blocked.target?.startsWith("p:")
-          ? `${platformOf(service.platform).name} xizmatlari`
+          ? `Tayyorr SMM — ${platformOf(service.platform).name} (butunlay)`
           : blocked.target?.startsWith("g:")
-            ? `${platformOf(service.platform).name} — ${KINDS.find((k) => k.key === kind)?.label ?? "bu tur"}`
-            : "Bu xizmat";
-    throw new OrderError(`${what} sizga vaqtinça çeklangan${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}`, 403);
+            ? `Tayyorr SMM — ${platformOf(service.platform).name} → ${KINDS.find((k) => k.key === kind)?.label ?? "bu tur"}`
+            : "Tayyorr SMM — şu xizmat";
+    throw new OrderError(`Sizga çeklov qöyilgan: «${what}»${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}`, 403);
   }
 
   const pricing = await getPricing();
