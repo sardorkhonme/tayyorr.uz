@@ -132,7 +132,7 @@ class MessageNotifier {
       try {
         final p = _send ??= _systemPlayer('assets/sounds/send.wav');
         await p.seek(Duration.zero);
-        await p.setVolume(0.8);
+        await p.setVolume(1.0);
         await p.play();
       } catch (_) {}
     }();

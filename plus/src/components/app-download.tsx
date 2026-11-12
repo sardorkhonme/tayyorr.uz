@@ -34,7 +34,7 @@ export function AppDownloadSection() {
           <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/30 blur-3xl" />
           <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-600/20 blur-3xl" />
         </div>
-        <div className="pointer-events-none absolute -top-36 left-1/2 w-[19rem] max-w-[88vw] -translate-x-1/2 sm:-top-44 sm:w-[26rem] lg:-top-10 lg:left-auto lg:right-2 lg:w-[28rem] lg:translate-x-0">
+        <div className="pointer-events-none absolute -top-36 left-1/2 w-[19rem] max-w-[88vw] -translate-x-1/2 sm:-top-44 sm:w-[26rem] lg:left-auto lg:right-2 lg:top-1/2 lg:w-[28rem] lg:-translate-y-1/2 lg:translate-x-0">
           <div className="animate-float">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

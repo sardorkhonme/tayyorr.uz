@@ -33,8 +33,8 @@ export default async function MobileUsersPage({ searchParams }: { searchParams: 
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <Link href="/stats" className="text-sm text-zinc-500 hover:text-white">
-          ← Statistika
+        <Link href="/app" className="text-sm text-zinc-500 hover:text-white">
+          ← Mobil ilova
         </Link>
         <h1 className="mt-2 text-xl font-semibold text-white">Mobil ilova — foydalanuvçilar</h1>
         <p className="mt-1 text-sm text-zinc-500">{current.hint}</p>

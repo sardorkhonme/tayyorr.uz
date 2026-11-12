@@ -1,7 +1,6 @@
 import { requireAdmin } from "@/lib/admin";
 import { resolvePeriod } from "@/lib/stats";
 import { StatsView } from "@/components/admin/stats/stats-view";
-import { MobileStatsSection } from "@/components/admin/stats/mobile-stats-section";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Statistika" };
@@ -13,7 +12,6 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   return (
     <div className="flex flex-col gap-5">
       <StatsView period={period} day={sp.day} />
-      <MobileStatsSection period={period} />
     </div>
   );
 }

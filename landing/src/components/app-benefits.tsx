@@ -47,25 +47,30 @@ export function AppBenefits() {
 /** «Yuklab oliş» — Android (APK) va iOS (tez kunda) tugmalari, faqat belgi bilan. */
 export function AppStoreButtons({ href }: { href: string }) {
   return (
-    <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+    // telefonda — ustma-ust, to'liq kenglikda; kengroq ekranda — teng kenglikda yonma-yon
+    <div className="mx-auto mt-8 grid max-w-md grid-cols-1 gap-3 sm:grid-cols-2 lg:mx-0 lg:flex lg:max-w-none">
       <a
         href={href}
         aria-label="Android ilovasini yuklab oliş"
-        className="inline-flex items-center gap-2.5 rounded-[0.9rem] bg-white px-6 py-3.5 font-semibold text-zinc-900 hover:bg-zinc-100"
+        className="inline-flex min-h-[3.5rem] w-full whitespace-nowrap items-center justify-center gap-2.5 rounded-[0.9rem] border border-zinc-200 bg-white px-5 font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 lg:w-auto lg:px-6"
       >
-        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#3DDC84]" fill="currentColor" aria-hidden>
-          <path d={ANDROID} />
-        </svg>
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#3DDC84]/15">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#0f8a4a]" fill="currentColor" aria-hidden>
+            <path d={ANDROID} />
+          </svg>
+        </span>
         Yuklab oliş
       </a>
       <span
         aria-disabled
         aria-label="iOS ilovasi — tez kunda"
-        className="inline-flex cursor-default items-center gap-2.5 rounded-[0.9rem] border border-white/15 bg-white/[0.04] px-6 py-2.5 font-semibold text-zinc-500"
+        className="inline-flex min-h-[3.5rem] w-full whitespace-nowrap cursor-default items-center justify-center gap-2.5 rounded-[0.9rem] border border-zinc-500/30 bg-zinc-500/[0.06] px-5 font-semibold text-zinc-500 lg:w-auto lg:px-6"
       >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-          <path d={APPLE} />
-        </svg>
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-zinc-500/10">
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+            <path d={APPLE} />
+          </svg>
+        </span>
         <span className="flex flex-col items-start leading-tight">
           Yuklab oliş
           <span className="text-[11px] font-medium text-zinc-500">Tez kunda</span>

@@ -175,13 +175,13 @@ export default async function Home() {
       </section>
 
       {/* ---------- mobil ilova ---------- */}
-      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-52 sm:pt-60 lg:pt-44">
+      <section id="ilova" className="relative z-10 mx-auto max-w-6xl scroll-mt-28 px-6 pb-20 pt-52 sm:pt-60 lg:pt-24">
         {/* telefon kartadan yuqoriga chiqib turadi */}
         <div className="card relative p-8 pt-40 sm:p-12 sm:pt-56 lg:min-h-[22rem] lg:pt-12">
           <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
             <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-violet-600/25 blur-3xl" />
           </div>
-          <div className="pointer-events-none absolute -top-44 left-1/2 w-[22rem] max-w-[92vw] -translate-x-1/2 sm:-top-52 sm:w-[30rem] lg:-top-40 lg:left-auto lg:right-2 lg:w-[34rem] lg:translate-x-0">
+          <div className="pointer-events-none absolute -top-44 left-1/2 w-[22rem] max-w-[92vw] -translate-x-1/2 sm:-top-52 sm:w-[30rem] lg:left-auto lg:right-2 lg:top-1/2 lg:w-[34rem] lg:-translate-y-1/2 lg:translate-x-0">
             <div className="animate-float">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

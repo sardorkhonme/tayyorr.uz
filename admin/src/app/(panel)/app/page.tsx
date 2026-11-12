@@ -11,6 +11,8 @@ import {
   type PhoneSlide,
 } from "@/components/admin/landing-phone-slide-manager";
 import { Icon } from "@/components/icons";
+import { MobileStatsSection } from "@/components/admin/stats/mobile-stats-section";
+import { resolvePeriod } from "@/lib/stats";
 
 // mobil ilovada onboarding tugaganda REGISTER yozuvi shu belgi bilan yoziladi
 const MOBILE_REGISTER = { action: "REGISTER", summary: { contains: "mobil ilova" } } as const;
@@ -19,9 +21,12 @@ const LIST_TAKE = 200;
 export default async function AdminMobileApp({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; r?: string; from?: string; to?: string }>;
 }) {
-  const { view } = await searchParams;
+  const sp = await searchParams;
+  const { view } = sp;
+  // ilova faolligi statistikasi (davr tanlovi bilan) — shu sahifada
+  const period = await resolvePeriod(sp);
   const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
 
   const [downloads, downloadsWeek, signups, signupsWeek, slideRows, update] = await Promise.all([
@@ -82,6 +87,8 @@ export default async function AdminMobileApp({
         notes={update.notes}
         apkUrl={publicUrl(update.apkKey) + (update.latest ? `?v=${versionCode(update.latest)}` : "")}
       />
+
+      <MobileStatsSection period={period} picker />
 
       <section className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">

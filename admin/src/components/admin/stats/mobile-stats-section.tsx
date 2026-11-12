@@ -5,9 +5,11 @@ import type { Period } from "@/lib/stats";
 import { Card } from "@/components/admin/stats/stats-view";
 import { ColumnChart, InfoTip, Kpi, LineChart } from "@/components/admin/stats/charts";
 import { Icon } from "@/components/icons";
+import { PeriodPicker } from "@/components/admin/stats/period-picker";
+import { todayTashkent } from "@/lib/stats";
 
-/** «Statistika» sahifasidagi mobil ilova bo'limi (davr — sahifaning umumiy tanlovi). */
-export async function MobileStatsSection({ period }: { period: Period }) {
+/** «Mobil ilova» sahifasidagi ilova faolligi statistikasi; `picker` — davr tanlovi shu bo'limda. */
+export async function MobileStatsSection({ period, picker = false }: { period: Period; picker?: boolean }) {
   const m = await loadMobileStats(period);
   const labels = period.buckets.map((b) => b.label);
   const col = (pts: { values: number[] }[]) => pts.map((p) => p.values[0]);
@@ -22,16 +24,19 @@ export async function MobileStatsSection({ period }: { period: Period }) {
 
   return (
     <div className="viz flex flex-col gap-5">
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-white/10 pt-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
             <Icon name="phone" className="h-5 w-5" /> Mobil ilova
           </h2>
           <p className="mt-0.5 text-sm text-zinc-500">{period.label} · faollik ilova yangilangandan beri yiğiladi</p>
         </div>
-        <Link href="/stats/mobile" className="btn-ghost !px-3 !py-1.5 text-sm">
-          Foydalanuvçilar röyxatlari ›
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          {picker && <PeriodPicker active={period.key} fromDay={period.fromDay} toDay={period.toDay} today={todayTashkent()} />}
+          <Link href="/stats/mobile" className="btn-ghost !px-3 !py-1.5 text-sm">
+            Foydalanuvçilar röyxatlari ›
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
