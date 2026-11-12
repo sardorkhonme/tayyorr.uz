@@ -119,7 +119,7 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
       const t = e.target as Node;
       // rasmni to'liq ko'rish oynasi (lightbox) ham chat qismi
       if ((t as Element).closest?.("[data-chat-lightbox]")) return;
-      if (!panelRef.current?.contains(t) && !btnRef.current?.contains(t)) setOpen(false);
+      if (!panelRef.current?.contains(t) && !btnRef.current?.contains(t) && !(t as Element).closest?.("[data-msg-menu]")) setOpen(false);
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onDown);

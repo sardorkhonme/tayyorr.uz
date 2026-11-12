@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ui/liquid_glass.dart';
 import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/google_logo.dart';
@@ -792,13 +793,8 @@ Future<DateTime?> showBirthDatePicker(BuildContext context, {DateTime? initial})
             children: [for (var i = 0; i < count; i++) Center(child: Text(label(i), style: text))],
           ),
         );
-        return Container(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).padding.bottom + 16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border(top: BorderSide(color: WebC.border)),
-          ),
+        return GlassSheetPanel(
+          padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).padding.bottom + 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

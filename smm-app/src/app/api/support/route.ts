@@ -23,11 +23,14 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Avval kiring" }, { status: 401 });
 
   let raw: unknown = "";
+  let replyToId: string | null = null;
   let image: { name: string; type: string; bytes: Uint8Array } | undefined;
   if ((req.headers.get("content-type") ?? "").includes("multipart/form-data")) {
     const form = await req.formData().catch(() => null);
     if (!form) return NextResponse.json({ error: "Notöğri söröv" }, { status: 400 });
     raw = form.get("text") ?? "";
+    const r = form.get("replyToId");
+    replyToId = typeof r === "string" && r ? r.slice(0, 40) : null;
     const f = form.get("file");
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type)) return NextResponse.json({ error: "Faqat rasm yuboriş mumkin" }, { status: 400 });
@@ -35,13 +38,15 @@ export async function POST(req: Request) {
       image = { name: f.name, type: f.type, bytes: new Uint8Array(await f.arrayBuffer()) };
     }
   } else {
-    raw = ((await req.json().catch(() => null)) as { text?: unknown } | null)?.text ?? "";
+    const j = (await req.json().catch(() => null)) as { text?: unknown; replyToId?: unknown } | null;
+    raw = j?.text ?? "";
+    replyToId = typeof j?.replyToId === "string" && j.replyToId ? j.replyToId.slice(0, 40) : null;
   }
   const parsed = textSchema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Xabar yozing" }, { status: 400 });
   if (!parsed.data && !image) return NextResponse.json({ error: "Xabar yozing" }, { status: 400 });
 
-  const message = await sendSupportMessage(user.id, parsed.data, image).catch((e) => {
+  const message = await sendSupportMessage(user.id, parsed.data, image, replyToId).catch((e) => {
     console.error("support send", e);
     return null;
   });

@@ -5,10 +5,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'liquid_glass.dart';
 
 /// Ilovaning yagona zamonaviy oyna uslubi: tasdiqlash oynasi, pastdan chiqadigan panel (sheet),
 /// qisqa xabar (toast) va ruxsat so'rashdan oldingi tushuntirish oynasi.
-/// Hammasi: yumshoq blur fon, katta burchak, gradient tugmalar, silliq animatsiya.
+/// Hammasi iOS 26 dagi kabi «suyuq shisha» (liquid_glass.dart): orqadagi kontent shisha ortida
+/// xira va qirralarda linzadek egilib ko'rinadi; oyna prujinadek «tomchi» bo'lib paydo bo'ladi.
 
 const kBrandGradient = LinearGradient(
   begin: Alignment.topLeft,
@@ -22,8 +24,7 @@ const kDangerGradient = LinearGradient(
   colors: [Color(0xFFF43F5E), Color(0xFFE11D48)],
 );
 
-Color get _panelColor => AppColors.isLight ? Colors.white : const Color(0xFF15151F);
-Color get _barrier => AppColors.isLight ? const Color(0xFF18181B).withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.6);
+Color get _barrier => AppColors.isLight ? const Color(0xFF18181B).withValues(alpha: 0.22) : Colors.black.withValues(alpha: 0.5);
 
 /// Gradient (yoki oddiy) tugma — oynalar ichida.
 class AppDialogButton extends StatelessWidget {
@@ -105,11 +106,12 @@ Route<T> _dialogRoute<T>(BuildContext context, WidgetBuilder builder, {bool dism
     opaque: false,
     barrierDismissible: dismissible,
     barrierColor: Colors.transparent,
-    transitionDuration: const Duration(milliseconds: 260),
-    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionDuration: const Duration(milliseconds: 420),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
     pageBuilder: (ctx, _, __) => builder(ctx),
     transitionsBuilder: (ctx, a, _, child) {
-      final curved = CurvedAnimation(parent: a, curve: Curves.easeOutBack, reverseCurve: Curves.easeIn);
+      // iOS 26 «tomchi»: shisha kichikdan prujinadek kattalashib, ozgina o'tib ketib joyiga tushadi
+      final curved = CurvedAnimation(parent: a, curve: const Cubic(0.34, 1.45, 0.64, 1), reverseCurve: Curves.easeInCubic);
       return Stack(children: [
         Positioned.fill(
           child: GestureDetector(
@@ -124,8 +126,8 @@ Route<T> _dialogRoute<T>(BuildContext context, WidgetBuilder builder, {bool dism
           ),
         ),
         FadeTransition(
-          opacity: a,
-          child: ScaleTransition(scale: Tween(begin: 0.9, end: 1.0).animate(curved), child: child),
+          opacity: CurvedAnimation(parent: a, curve: const Interval(0, 0.35), reverseCurve: Curves.easeIn),
+          child: ScaleTransition(scale: Tween(begin: 0.82, end: 1.0).animate(curved), child: child),
         ),
       ]);
     },
@@ -147,14 +149,11 @@ class AppDialogCard extends StatelessWidget {
           type: MaterialType.transparency,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Container(
+            child: LiquidGlass(
+              panel: true,
+              clip: true,
+              borderRadius: BorderRadius.circular(32),
               padding: const EdgeInsets.fromLTRB(22, 26, 22, 20),
-              decoration: BoxDecoration(
-                color: _panelColor,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: AppColors.tint(0.08)),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 50, offset: const Offset(0, 20), spreadRadius: -12)],
-              ),
               child: SingleChildScrollView(child: child),
             ),
           ),
@@ -260,17 +259,17 @@ Future<T?> showAppSheet<T>(
         ],
       ]);
       final body = builder(ctx);
+      final safeBottom = MediaQuery.paddingOf(ctx).bottom;
+      // iOS 26 sheet: ekran chetlaridan ajralgan, hamma burchagi yumaloq suzuvchi shisha panel
       return Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+        padding: EdgeInsets.fromLTRB(8, 0, 8, 8 + MediaQuery.viewInsetsOf(ctx).bottom),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(ctx).height * 0.92),
-          child: Container(
-            padding: EdgeInsets.fromLTRB(20, 10, 20, 20 + MediaQuery.paddingOf(ctx).bottom),
-            decoration: BoxDecoration(
-              color: _panelColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(top: BorderSide(color: AppColors.tint(0.08))),
-            ),
+          child: LiquidGlass(
+            panel: true,
+            clip: true,
+            borderRadius: BorderRadius.circular(34),
+            padding: EdgeInsets.fromLTRB(18, 10, 18, 16 + (safeBottom > 8 ? safeBottom - 8 : 0)),
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               head,
               scrollable ? Flexible(child: SingleChildScrollView(child: body)) : body,
@@ -384,27 +383,18 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
             child: Center(
               child: Material(
                 type: MaterialType.transparency,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF18181F).withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        TIcon(icon, color: color, size: 20),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Text(widget.message,
-                              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600, height: 1.35)),
-                        ),
-                      ]),
+                child: LiquidGlass(
+                  panel: true,
+                  borderRadius: BorderRadius.circular(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    TIcon(icon, color: color, size: 20),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(widget.message,
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600, height: 1.35)),
                     ),
-                  ),
+                  ]),
                 ),
               ),
             ),

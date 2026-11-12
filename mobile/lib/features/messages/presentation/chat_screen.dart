@@ -424,26 +424,30 @@ class _ChatHeader extends StatelessWidget {
     // Saytdagi chat-room sarlavhasi: ‹ matnli tugma, 36px avatar, ism,
     // holat nuqtasi va 32x32 chegarali ⋮ tugma; pastda nozik chiziq.
     // suyuq shisha sarlavha (asosiy header bilan bir uslubda)
+    // iOS 26 Messages uslubi: orqaga — alohida shisha doira, suhbatdosh — shisha kapsula
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
-      child: LiquidGlass(
-        borderRadius: BorderRadius.circular(22),
-        strong: true,
-        padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
-        child: Row(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (!embedded) ...[
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            GlassTap(
+              width: 48,
+              height: 48,
+              strong: true,
               onTap: () => Navigator.of(context).pop(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                child: TIcon(TI.arrow_back_ios_new_rounded, size: 20, color: WebC.zinc400),
-              ),
+              semanticLabel: 'Orqaga',
+              child: TIcon(TI.arrow_back_ios_new_rounded, size: 19, color: AppColors.textPrimary),
             ),
-            const SizedBox(width: 4),
-          ] else
             const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: LiquidGlass(
+        borderRadius: BorderRadius.circular(26),
+        strong: true,
+        padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+        child: Row(
+        children: [
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -526,16 +530,15 @@ class _ChatHeader extends StatelessWidget {
                 width: 36,
                 height: 36,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: WebC.border),
-                  color: WebC.fill5,
-                ),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.tint(0.07)),
                 child: TIcon(TI.more_horiz_rounded, size: 20, color: WebC.zinc300),
               ),
             ),
         ],
       ),
+      ),
+          ),
+        ],
       ),
     );
   }

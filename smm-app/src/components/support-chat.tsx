@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Icon } from "@/components/icons";
@@ -18,7 +19,109 @@ type Msg = {
   file?: ChatFile | null;
   fileAt?: number;
   reactions?: ReactionChip[];
+  replyTo?: { id: string; body: string; mine: boolean } | null;
 };
+
+/** Xabar menyusi (⋮): reaksiyalar + amallar. body'ga portal — popup/aylantirish ichida kesilmaydi, ekrandan çiqmaydi. */
+function MessageMenu({
+  anchor,
+  msg,
+  onReact,
+  onReply,
+  onClose,
+}: {
+  anchor: DOMRect;
+  msg: Msg;
+  onReact: (emoji: string) => void;
+  onReply: () => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const pad = 8;
+    // gorizontal: tugma tomonga qarab, ekran ichida
+    let left = msg.mine ? anchor.right - w : anchor.left;
+    left = Math.max(pad, Math.min(left, vw - w - pad));
+    // vertikal: pastda joy bo'lsa — pastga, aks holda tepaga; baribir ekran ichida
+    let top = anchor.bottom + 6;
+    if (top + h > vh - pad) top = anchor.top - h - 6;
+    top = Math.max(pad, Math.min(top, vh - h - pad));
+    setPos({ left, top });
+  }, [anchor, msg.mine]);
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node) && !(e.target as Element).closest?.("[data-msg-menu-btn]")) onClose();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onScroll = () => onClose();
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [onClose]);
+  const item = "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-zinc-700 transition hover:bg-zinc-100";
+  return createPortal(
+    <div
+      ref={ref}
+      data-msg-menu
+      style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999 }}
+      className="fixed z-[200] w-[224px] rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl shadow-zinc-900/15"
+    >
+      <div className="grid grid-cols-5 gap-0.5">
+        {REACTION_EMOJIS.map((e) => {
+          const on = msg.reactions?.some((r) => r.mine && r.emoji === e);
+          return (
+            <button
+              key={e}
+              type="button"
+              onClick={() => onReact(e)}
+              aria-label={e}
+              className={`grid h-9 w-full place-items-center rounded-xl text-xl transition hover:scale-110 hover:bg-zinc-100 ${on ? "bg-indigo-100" : ""}`}
+            >
+              {e}
+            </button>
+          );
+        })}
+      </div>
+      <div className="my-1.5 h-px bg-zinc-100" />
+      <button type="button" className={item} onClick={onReply}>
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-zinc-500" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 14 4 9l5-5" />
+          <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+        </svg>
+        Javob beriş
+      </button>
+      {!!msg.body && (
+        <button
+          type="button"
+          className={item}
+          onClick={() => {
+            void navigator.clipboard?.writeText(msg.body).catch(() => {});
+            onClose();
+          }}
+        >
+          <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-zinc-500" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            <rect x="8.5" y="8.5" width="11" height="11" rx="2.5" />
+            <path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" />
+          </svg>
+          Nusxa oliş
+        </button>
+      )}
+    </div>,
+    document.body,
+  );
+}
 
 /** Fayl havolasi 1 soat amal qiladi — 45 daqiqagacha eskisini ishlatamiz. */
 const FILE_URL_TTL = 45 * 60 * 1000;
@@ -84,21 +187,11 @@ export function SupportChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  // reaksiya tanlovi ochiq xabar (Family'dagidek 10 ta emoji)
-  const [picker, setPicker] = useState<string | null>(null);
-  useEffect(() => {
-    if (!picker) return;
-    const onDown = (e: PointerEvent) => {
-      if (!(e.target as Element).closest?.("[data-reaction-picker]")) setPicker(null);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPicker(null);
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [picker]);
+  // ⋮ menyusi ochiq xabar (reaksiyalar + javob)
+  const [menu, setMenu] = useState<{ id: string; rect: DOMRect } | null>(null);
+  const closeMenu = useCallback(() => setMenu(null), []);
+  const [replyTo, setReplyTo] = useState<Msg | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   // tanlangan rasm (yuborishdan oldin ko'rinadi)
   const [image, setImage] = useState<{ file: File; preview: string } | null>(null);
@@ -147,7 +240,7 @@ export function SupportChat({
 
   /** Reaksiya: o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi. */
   async function react(m: Msg, emoji: string) {
-    setPicker(null);
+    setMenu(null);
     setMsgs((list) => list.map((x) => (x.id === m.id ? { ...x, reactions: toggleReaction(x.reactions, emoji) } : x)));
     const res = await fetch("/api/support/react", {
       method: "POST",
@@ -170,10 +263,11 @@ export function SupportChat({
     if (image) {
       const form = new FormData();
       form.append("text", body);
+      if (replyTo) form.append("replyToId", replyTo.id);
       form.append("file", await shrinkImage(image.file));
       req = { method: "POST", body: form };
     } else {
-      req = { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: body }) };
+      req = { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: body, replyToId: replyTo?.id ?? null }) };
     }
     const res = await fetch("/api/support", req).catch(() => null);
     const data = await res?.json().catch(() => null);
@@ -181,6 +275,7 @@ export function SupportChat({
     if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib köring");
     setText("");
     setImage(null);
+    setReplyTo(null);
     setMsgs((m) => [...m, { ...data.message, fileAt: Date.now() }]);
   }
 
@@ -211,7 +306,7 @@ export function SupportChat({
 
       {loggedIn ? (
         <>
-          <div ref={listRef} className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
+          <div ref={listRef} onScroll={closeMenu} className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
             {msgs.length === 0 && (
               <div className="mx-auto mt-6 max-w-[260px] text-center">
                 <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
@@ -223,8 +318,8 @@ export function SupportChat({
                 </p>
               </div>
             )}
-            {msgs.map((m, i) => (
-              <div key={m.id} className={`group relative flex items-end gap-1 ${m.mine ? "flex-row-reverse" : ""}`}>
+            {msgs.map((m) => (
+              <div key={m.id} id={`sm-${m.id}`} className={`group relative flex items-end gap-1 ${m.mine ? "flex-row-reverse" : ""}`}>
                 <div
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed shadow-sm ${
                     m.mine
@@ -232,6 +327,24 @@ export function SupportChat({
                       : "rounded-bl-md border border-zinc-100 bg-white text-zinc-800"
                   }`}
                 >
+                  {m.replyTo && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById(`sm-${m.replyTo!.id}`);
+                        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        el?.animate([{ opacity: 0.4 }, { opacity: 1 }], { duration: 700 });
+                      }}
+                      className={`mb-1.5 block w-full rounded-lg border-l-[3px] px-2 py-1 text-left text-xs ${
+                        m.mine ? "border-white/70 bg-white/15 text-indigo-50" : "border-indigo-400 bg-indigo-50 text-zinc-600"
+                      }`}
+                    >
+                      <span className={`block font-semibold ${m.mine ? "text-white" : "text-indigo-600"}`}>
+                        {m.replyTo.mine ? "Siz" : "tayyorr support"}
+                      </span>
+                      <span className="line-clamp-2 break-words">{m.replyTo.body}</span>
+                    </button>
+                  )}
                   {m.file && (
                     <div className={m.body ? "-mx-1.5 -mt-0.5 mb-1.5" : "-mx-1.5 -mt-0.5"}>
                       <ChatFileView file={m.file} mine={m.mine} />
@@ -269,47 +382,65 @@ export function SupportChat({
                     </div>
                   )}
                 </div>
-                <div className="relative shrink-0 self-center" data-reaction-picker>
-                  <button
-                    type="button"
-                    onClick={() => setPicker((p) => (p === m.id ? null : m.id))}
-                    aria-label="Reaksiya bildiriş"
-                    title="Reaksiya"
-                    className={`grid h-7 w-7 place-items-center rounded-full text-base text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600 ${
-                      picker === m.id ? "bg-zinc-100 opacity-100" : "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
-                    }`}
-                  >
-                    ☺
-                  </button>
-                  {picker === m.id && (
-                    <div
-                      className={`animate-pop absolute z-10 grid ${i < 2 ? "top-full mt-1" : "bottom-full mb-1"} w-[212px] grid-cols-5 gap-0.5 rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl shadow-zinc-900/10 ${
-                        m.mine ? "right-0" : "left-0"
-                      }`}
-                    >
-                      {REACTION_EMOJIS.map((e) => {
-                        const on = m.reactions?.some((r) => r.mine && r.emoji === e);
-                        return (
-                          <button
-                            key={e}
-                            type="button"
-                            onClick={() => react(m, e)}
-                            aria-label={e}
-                            className={`grid h-9 w-9 place-items-center rounded-xl text-xl transition hover:scale-110 hover:bg-zinc-100 ${on ? "bg-indigo-100" : ""}`}
-                          >
-                            {e}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  data-msg-menu-btn
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setMenu((v) => (v?.id === m.id ? null : { id: m.id, rect }));
+                  }}
+                  aria-label="Amallar"
+                  title="Reaksiya, javob"
+                  className={`grid h-7 w-7 shrink-0 place-items-center self-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600 ${
+                    menu?.id === m.id ? "bg-zinc-100 opacity-100" : "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                    <circle cx="12" cy="5.5" r="1.7" />
+                    <circle cx="12" cy="12" r="1.7" />
+                    <circle cx="12" cy="18.5" r="1.7" />
+                  </svg>
+                </button>
               </div>
             ))}
           </div>
 
+          {menu &&
+            (() => {
+              const m = msgs.find((x) => x.id === menu.id);
+              return m ? (
+                <MessageMenu
+                  anchor={menu.rect}
+                  msg={m}
+                  onClose={closeMenu}
+                  onReact={(e) => react(m, e)}
+                  onReply={() => {
+                    setReplyTo(m);
+                    setMenu(null);
+                    inputRef.current?.focus();
+                  }}
+                />
+              ) : null;
+            })()}
+
           <form onSubmit={send} className="border-t border-zinc-100 bg-white p-3">
             {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+            {replyTo && (
+              <div className="mb-2 flex items-center gap-2 rounded-xl border-l-[3px] border-indigo-400 bg-indigo-50 py-1.5 pl-2.5 pr-1.5">
+                <span className="min-w-0 flex-1 text-xs">
+                  <span className="block font-semibold text-indigo-600">{replyTo.mine ? "Öz xabaringizga javob" : "tayyorr supportʼga javob"}</span>
+                  <span className="block truncate text-zinc-600">{replyTo.body || (replyTo.file ? `📎 ${replyTo.file.name}` : "Xabar")}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setReplyTo(null)}
+                  aria-label="Javobni bekor qiliş"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-zinc-500 transition hover:bg-indigo-100"
+                >
+                  <Icon name="close" className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
             {image && (
               <div className="mb-2 flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -362,11 +493,13 @@ export function SupportChat({
                   }
                 }}
                 onKeyDown={(e) => {
+                  if (e.key === "Escape" && replyTo) setReplyTo(null);
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     send(e);
                   }
                 }}
+                ref={inputRef}
                 rows={1}
                 maxLength={2000}
                 placeholder="Xabar yozing…"

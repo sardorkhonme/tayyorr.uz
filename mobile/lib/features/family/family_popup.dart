@@ -7,6 +7,7 @@ import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/ui/app_dialogs.dart';
+import '../../core/ui/liquid_glass.dart';
 import '../../core/utils/format.dart';
 import '../../widgets/skeleton.dart';
 import '../../widgets/user_avatar.dart';
@@ -196,8 +197,6 @@ class _FamilyPopup extends StatelessWidget {
   }
 }
 
-Color get _panel => AppColors.isLight ? Colors.white : const Color(0xFF17171F);
-
 class _EmojiBar extends StatelessWidget {
   const _EmojiBar({required this.mine, required this.width});
   final String? mine;
@@ -206,15 +205,13 @@ class _EmojiBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 10 ta reaksiya: ekranga sig'masa — gorizontal suriladi
-    return Container(
+    // iOS 26 reaksiyalar paneli — suyuq shisha kapsula
+    return LiquidGlass(
       height: 52,
       width: width,
-      decoration: BoxDecoration(
-        color: _panel,
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: WebC.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isLight ? 0.12 : 0.4), blurRadius: 24, offset: const Offset(0, 8))],
-      ),
+      panel: true,
+      clip: true,
+      borderRadius: BorderRadius.circular(26),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(99),
         child: SingleChildScrollView(
@@ -271,16 +268,13 @@ class _Menu extends StatelessWidget {
       );
     }
 
-    return Container(
+    // iOS 26 kontekst menyusi — suyuq shisha
+    return LiquidGlass(
       width: _FamilyPopup._menuW,
-      clipBehavior: Clip.antiAlias,
+      panel: true,
+      clip: true,
       padding: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: _panel,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: WebC.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isLight ? 0.12 : 0.4), blurRadius: 24, offset: const Offset(0, 8))],
-      ),
+      borderRadius: BorderRadius.circular(22),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         if (showInfo) ...[
           row(TI.visibility_outlined, 'Kördi: $seen', () => Navigator.of(context).pop('people:seen'), info: true),

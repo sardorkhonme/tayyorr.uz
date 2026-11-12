@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ui/liquid_glass.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/skeleton.dart';
@@ -135,7 +136,7 @@ class _DashboardViewState extends State<_DashboardView> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
+      barrierColor: Colors.black.withValues(alpha: AppColors.isLight ? 0.22 : 0.5),
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheet) {
           void update(VoidCallback fn) {
@@ -153,12 +154,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   Wrap(spacing: 8, runSpacing: 8, children: chips),
                 ],
               );
-          return Container(
-            decoration: BoxDecoration(
-              color: AppColors.isLight ? Colors.white : const Color(0xFF14141B),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              border: Border.all(color: WebC.border),
-            ),
+          return GlassSheetPanel(
             child: SafeArea(
               top: false,
               child: Column(

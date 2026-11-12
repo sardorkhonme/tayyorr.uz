@@ -1,7 +1,6 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ui/liquid_glass.dart';
 import '../../../widgets/progress_ring.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/message_model.dart';
@@ -61,10 +61,7 @@ class PendingAttachmentBar extends StatelessWidget {
                 if (!pending.ready)
                   Positioned.fill(
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.45), borderRadius: BorderRadius.circular(10)),
                       alignment: Alignment.center,
                       child: ProgressRing(value: pending.progress, size: 48),
                     ),
@@ -86,10 +83,7 @@ class PendingAttachmentBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                pending.ready ? formatBytes(pending.size) : '${(pending.progress * 100).round()}%',
-                style: TextStyle(color: WebC.zinc500, fontSize: 11),
-              ),
+              Text(pending.ready ? formatBytes(pending.size) : '${(pending.progress * 100).round()}%', style: TextStyle(color: WebC.zinc500, fontSize: 11)),
             ],
           ),
         ],
@@ -219,162 +213,136 @@ class _ChatComposerState extends State<ChatComposer> {
 
   @override
   Widget build(BuildContext context) {
+    // iOS 26 Messages uslubi: chapda alohida shisha doira (biriktirish), yonida suyuq shisha kapsula —
+    // ichida yozish maydoni va yuborish / mikrofon tugmasi. Orqadagi xabarlar shisha qirralarida egilib ko'rinadi.
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.isLight ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF0B0B12).withValues(alpha: 0.80),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.isLight ? Colors.black.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (widget.leading != null && !_recording) ...[widget.leading!, const SizedBox(width: 8)],
-                GestureDetector(
-                  onTap: _recording ? null : widget.onAttach,
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: WebC.fill5,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: WebC.border),
-                    ),
-                    child: TIcon(TI.attach_file_rounded, size: 20, color: WebC.zinc300),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(child: _recording ? _recordingBar() : _textField()),
-                const SizedBox(width: 8),
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: widget.controller,
-                  builder: (context, v, _) {
-                    final hasText = v.text.trim().isNotEmpty;
-                    if (hasText || widget.hasAttachment) {
-                      final enabled = hasText || widget.attachmentReady;
-                      return Opacity(
-                        opacity: enabled ? 1 : 0.5,
-                        child: GestureDetector(
-                          onTap: enabled ? widget.onSend : null,
-                          onLongPress: enabled && widget.onSendLongPress != null
-                              ? () {
-                                  HapticFeedback.mediumImpact();
-                                  widget.onSendLongPress!();
-                                }
-                              : null,
-                          child: _roundButton(const TIcon(TI.rocket_launch_rounded, color: Colors.white, size: 18)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (widget.leading != null && !_recording) ...[widget.leading!, const SizedBox(width: 8)],
+          GlassTap(
+            width: 48,
+            height: 48,
+            strong: true,
+            onTap: _recording ? null : widget.onAttach,
+            semanticLabel: 'Fayl biriktiriş',
+            child: TIcon(TI.attach_file_rounded, size: 21, color: AppColors.textPrimary),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: LiquidGlass(
+              strong: true,
+              borderRadius: BorderRadius.circular(24),
+              padding: const EdgeInsets.all(3),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(child: _recording ? _recordingBar() : _textField()),
+                  const SizedBox(width: 8),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: widget.controller,
+                    builder: (context, v, _) {
+                      final hasText = v.text.trim().isNotEmpty;
+                      if (hasText || widget.hasAttachment) {
+                        final enabled = hasText || widget.attachmentReady;
+                        return Opacity(
+                          opacity: enabled ? 1 : 0.5,
+                          child: GestureDetector(
+                            onTap: enabled ? widget.onSend : null,
+                            onLongPress: enabled && widget.onSendLongPress != null
+                                ? () {
+                                    HapticFeedback.mediumImpact();
+                                    widget.onSendLongPress!();
+                                  }
+                                : null,
+                            child: _roundButton(const TIcon(TI.rocket_launch_rounded, color: Colors.white, size: 18)),
+                          ),
+                        );
+                      }
+                      // matn yo'q — mikrofon: bosib turib yozish
+                      return Listener(
+                        onPointerDown: (_) => _start(),
+                        onPointerUp: (_) => _stop(),
+                        onPointerCancel: (_) => _stop(cancel: true),
+                        child: AnimatedScale(
+                          scale: _recording ? 1.18 : 1,
+                          duration: const Duration(milliseconds: 150),
+                          child: _roundButton(const TIcon(TI.mic_rounded, color: Colors.white, size: 22), red: _recording),
                         ),
                       );
-                    }
-                    // matn yo'q — mikrofon: bosib turib yozish
-                    return Listener(
-                      onPointerDown: (_) => _start(),
-                      onPointerUp: (_) => _stop(),
-                      onPointerCancel: (_) => _stop(cancel: true),
-                      child: AnimatedScale(
-                        scale: _recording ? 1.18 : 1,
-                        duration: const Duration(milliseconds: 150),
-                        child: _roundButton(
-                          const TIcon(TI.mic_rounded, color: Colors.white, size: 22),
-                          red: _recording,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _roundButton(Widget child, {bool red = false}) => Container(
-        width: 42,
-        height: 42,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: red ? const Color(0xFFEF4444) : null,
-          gradient: red
-              ? null
-              : const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                ),
-        ),
-        child: child,
-      );
+    width: 42,
+    height: 42,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: red ? const Color(0xFFEF4444) : null,
+      gradient: red ? null : const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
+    ),
+    child: child,
+  );
 
   Widget _recordingBar() => Container(
-        height: 42,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(11.2),
-          border: Border.all(color: const Color(0xFFF87171).withValues(alpha: 0.35)),
+    height: 42,
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(color: const Color(0xFFEF4444).withValues(alpha: 0.10), borderRadius: BorderRadius.circular(21)),
+    child: Row(
+      children: [
+        const _BlinkDot(),
+        const SizedBox(width: 10),
+        Text(
+          _mmss,
+          style: TextStyle(color: WebC.white, fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()]),
         ),
-        child: Row(
-          children: [
-            const _BlinkDot(),
-            const SizedBox(width: 10),
-            Text(
-              _mmss,
-              style: TextStyle(color: WebC.white, fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()]),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                "Qöyib yuboring — tayyor",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: WebC.zinc400, fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-      );
-
-  Widget _textField() => Container(
-        constraints: const BoxConstraints(minHeight: 42, maxHeight: 140),
-        padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.isLight ? Colors.black.withValues(alpha: 0.03) : Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(11.2),
-          border: Border.all(color: WebC.border),
-        ),
-        child: TextField(
-          controller: widget.controller,
-          focusNode: widget.focusNode,
-          minLines: 1,
-          maxLines: 5,
-          textCapitalization: TextCapitalization.sentences,
-          style: TextStyle(color: WebC.white, fontSize: 14, height: 1.5),
-          decoration: InputDecoration(
-            isDense: true,
-            isCollapsed: true,
-            contentPadding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            filled: false,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            hintText: widget.hasAttachment ? 'Izoh qöşing...' : 'Xabar yozing...',
-            hintStyle: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.5),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            "Qöyib yuboring — tayyor",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: WebC.zinc400, fontSize: 12),
           ),
         ),
-      );
+      ],
+    ),
+  );
+
+  Widget _textField() => Container(
+    constraints: const BoxConstraints(minHeight: 42, maxHeight: 140),
+    padding: const EdgeInsets.symmetric(horizontal: 12.8, vertical: 10),
+    child: TextField(
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      minLines: 1,
+      maxLines: 5,
+      textCapitalization: TextCapitalization.sentences,
+      style: TextStyle(color: WebC.white, fontSize: 14, height: 1.5),
+      decoration: InputDecoration(
+        isDense: true,
+        isCollapsed: true,
+        contentPadding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        filled: false,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        hintText: widget.hasAttachment ? 'Izoh qöşing...' : 'Xabar yozing...',
+        hintStyle: TextStyle(color: WebC.zinc500, fontSize: 14, height: 1.5),
+      ),
+    ),
+  );
 }
 
 class _BlinkDot extends StatefulWidget {
@@ -385,8 +353,7 @@ class _BlinkDot extends StatefulWidget {
 }
 
 class _BlinkDotState extends State<_BlinkDot> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
 
   @override
   void dispose() {
@@ -396,11 +363,11 @@ class _BlinkDotState extends State<_BlinkDot> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) => FadeTransition(
-        opacity: Tween(begin: 0.3, end: 1.0).animate(_c),
-        child: Container(
-          width: 10,
-          height: 10,
-          decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFEF4444)),
-        ),
-      );
+    opacity: Tween(begin: 0.3, end: 1.0).animate(_c),
+    child: Container(
+      width: 10,
+      height: 10,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFEF4444)),
+    ),
+  );
 }

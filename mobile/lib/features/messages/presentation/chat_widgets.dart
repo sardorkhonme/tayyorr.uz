@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ui/liquid_glass.dart';
 import '../../../widgets/web_ui.dart';
 
 /// Telegramdagidek: o'tilgan xabar orqasida yumshoq indigo nur ikki marta
@@ -186,27 +187,14 @@ class _RoundFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(clipBehavior: Clip.none, children: [
-        Container(
+    // iOS 26 suzuvchi shisha tugma: bosilganda yorishib kattalashadi, rezinadek cho'ziladi
+    return Stack(clipBehavior: Clip.none, children: [
+        GlassTap(
           width: 46,
           height: 46,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: accent ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]) : null,
-            color: accent ? null : (AppColors.isLight ? Colors.white : const Color(0xFF1C1C28)),
-            border: accent ? null : Border.all(color: WebC.border),
-            boxShadow: [
-              BoxShadow(
-                color: (accent ? const Color(0xFF6366F1) : Colors.black).withValues(alpha: accent ? 0.4 : (AppColors.isLight ? 0.12 : 0.45)),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-                spreadRadius: -4,
-              ),
-            ],
-          ),
+          haptic: false,
+          onTap: onTap,
+          tint: accent ? const Color(0xFF6D5CF6) : null,
           child: child,
         ),
         if (count > 0)
@@ -228,8 +216,7 @@ class _RoundFab extends StatelessWidget {
               ),
             ),
           ),
-      ]),
-    );
+      ]);
   }
 }
 

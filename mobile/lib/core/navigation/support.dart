@@ -92,9 +92,9 @@ class _SupportChatTabState extends State<SupportChatTab> {
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
             child: LiquidGlass(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(26),
               strong: true,
-              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
               child: const Row(
                 children: [
                   SCircle(size: 36),

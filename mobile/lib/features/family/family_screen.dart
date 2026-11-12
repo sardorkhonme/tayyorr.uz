@@ -1374,23 +1374,25 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // suyuq shisha sarlavha (asosiy header bilan bir uslubda)
+    // iOS 26 uslubi: orqaga — alohida shisha doira, guruh — suyuq shisha kapsula
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
-      child: LiquidGlass(
-        borderRadius: BorderRadius.circular(22),
-        strong: true,
-        padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
-        child: Row(children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
+      child: Row(children: [
+        GlassTap(
+          width: 48,
+          height: 48,
+          strong: true,
           onTap: onBack,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-            child: TIcon(TI.arrow_back_ios_new_rounded, size: 20, color: WebC.zinc400),
-          ),
+          semanticLabel: 'Orqaga',
+          child: TIcon(TI.arrow_back_ios_new_rounded, size: 19, color: AppColors.textPrimary),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
+        Expanded(
+          child: LiquidGlass(
+        borderRadius: BorderRadius.circular(26),
+        strong: true,
+        padding: const EdgeInsets.fromLTRB(8, 6, 12, 6),
+        child: Row(children: [
         Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -1421,6 +1423,8 @@ class _Header extends StatelessWidget {
         ),
       ]),
       ),
+        ),
+      ]),
     );
   }
 }

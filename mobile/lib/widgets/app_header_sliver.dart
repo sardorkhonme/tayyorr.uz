@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' show GlassBackdropGroup;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
@@ -7,7 +8,6 @@ import '../core/theme/app_colors.dart';
 import '../core/ui/liquid_glass.dart';
 import '../features/home/section_cubit.dart';
 import 'app_logo.dart';
-import 'web_ui.dart';
 
 /// Tepada suzib turuvchi shisha header — scroll'da doim ko'rinadi.
 ///  · tayyorr+ qobig'ining bo'limlarida — header yo'q (sahifaning o'z sarlavhasi yetarli);
@@ -92,7 +92,9 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _HeaderDelegate old) => old.topInset != topInset || old.light != light;
 }
 
-/// Headerning o'zi (sliver'siz).
+/// Headerning o'zi (sliver'siz) — iOS 26 navigatsiya qatori: alohida suzuvchi shisha kapsulalar
+/// (orqaga tugmasi — doira, xizmat logosi — kapsula). Bosilganda shisha yorishib ozgina kattalashadi,
+/// barmoq surilsa rezinadek cho'ziladi; orqadagi kontent qirralarda linzadek egilib ko'rinadi.
 class WebHeaderBar extends StatelessWidget {
   const WebHeaderBar({super.key});
 
@@ -100,69 +102,61 @@ class WebHeaderBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final service = ServiceScope.of(context);
     final atRoot = ShellRootScope.of(context) != null;
-    // iOS 26 uslubidagi suyuq shisha: kontent ostidan xira ko'rinib o'tadi
-    return LiquidGlass(
-      borderRadius: BorderRadius.circular(22),
-      blur: 26,
+    const h = 48.0;
+    Widget? lead;
+    if (atRoot) {
+      // xizmatning asosiy bo'limida — tayyorr+ (bosh sahifa) ga qaytish: orqaga belgisi + tayyorr+ logosi
+      lead = GlassTap(
+        height: h,
+        onTap: openHub,
+        semanticLabel: 'tayyorr+',
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12, right: 14),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TIcon(TI.arrow_back_ios_new_rounded, size: 17, color: AppColors.textPrimary),
+              const SizedBox(width: 4),
+              Image.asset('assets/plus-mark.png', height: 24, filterQuality: FilterQuality.high),
+            ],
+          ),
+        ),
+      );
+    } else if (ModalRoute.of(context)?.canPop ?? false) {
+      lead = GlassTap(
+        height: h,
+        width: h,
+        onTap: () => Navigator.of(context).maybePop(),
+        semanticLabel: 'Orqaga',
+        child: TIcon(TI.arrow_back_ios_new_rounded, size: 19, color: AppColors.textPrimary),
+      );
+    }
+    return SizedBox(
       height: _HeaderDelegate.barHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
-        children: [
-          if (atRoot)
-            // xizmatning asosiy bo'limida — tayyorr+ (bosh sahifa) ga qaytish: orqaga belgisi + tayyorr+ logosi
-            GestureDetector(
-              onTap: openHub,
-              child: Container(
-                height: 38,
-                padding: const EdgeInsets.only(left: 6, right: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: WebC.fill5,
-                  border: Border.all(color: WebC.border),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TIcon(TI.arrow_back_ios_new_rounded, size: 16, color: WebC.zinc300),
-                    const SizedBox(width: 3),
-                    Image.asset('assets/plus-mark.png', height: 22, filterQuality: FilterQuality.high),
-                  ],
-                ),
-              ),
-            )
-          else if (ModalRoute.of(context)?.canPop ?? false)
-            GestureDetector(
-              onTap: () => Navigator.of(context).maybePop(),
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: WebC.fill5,
-                  border: Border.all(color: WebC.border),
-                ),
-                child: Center(child: TIcon(TI.arrow_back_ios_new_rounded, size: 18, color: WebC.zinc300)),
-              ),
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
+      child: GlassBackdropGroup(
+        child: Row(
+          children: [
+            if (lead != null) ...[lead, const SizedBox(width: 8)],
+            Flexible(
+              child: GlassTap(
+                height: h,
                 onTap: () => switch (service) {
                   ServiceKind.uz => openUzSection(AppSection.dashboard),
                   ServiceKind.smm => openSmm(0),
                   ServiceKind.plus => openHub(),
                 },
-                child: switch (service) {
-                  ServiceKind.uz => const AppLogo(height: 20),
-                  ServiceKind.smm => const BrandLogo.smm(),
-                  ServiceKind.plus => const BrandLogo.plus(),
-                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: switch (service) {
+                    ServiceKind.uz => const AppLogo(height: 20),
+                    ServiceKind.smm => const BrandLogo.smm(),
+                    ServiceKind.plus => const BrandLogo.plus(),
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

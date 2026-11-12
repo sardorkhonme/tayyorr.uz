@@ -61,7 +61,20 @@ export type SupportMessage = {
   file: SupportFile | null;
   /** emoji reaksiyalar (Family'dagidek) */
   reactions: ReactionChip[];
+  /** javob berilgan xabar (qisqa) */
+  replyTo: { id: string; body: string; mine: boolean } | null;
 };
+
+type ReplyRow = { id: string; body: string; senderId: string; fileName: string | null; deletedAt: Date | null } | null;
+const replyOf = (r: ReplyRow, userId: string) =>
+  r
+    ? {
+        id: r.id,
+        mine: r.senderId === userId,
+        body: r.deletedAt ? "Xabar öçirilgan" : stripTag(r.body).slice(0, 160) || (r.fileName ? `📎 ${r.fileName}` : "Xabar"),
+      }
+    : null;
+const REPLY_SELECT = { select: { id: true, body: true, senderId: true, fileName: true, deletedAt: true } } as const;
 
 /** Fayl uchun vaqtinchalik havolalar (ko'rish + yuklab olish) — tayyorr.uz chatidagi kabi 1 soat. */
 async function fileOf(m: { fileKey: string | null; fileName: string | null; fileType: string | null; fileSize: number | null }) {
@@ -95,6 +108,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
       fileType: true,
       fileSize: true,
       reactions: { select: { userId: true, value: true }, orderBy: { createdAt: "asc" } },
+      replyTo: REPLY_SELECT,
     },
   });
   const unreadRows = rows.filter((m) => m.senderId === supportId && !m.readAt);
@@ -120,6 +134,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
         createdAt: m.createdAt.toISOString(),
         file: await fileOf(m).catch(() => null),
         reactions: reactionChips(m.reactions, userId),
+        replyTo: replyOf(m.replyTo, userId),
       })),
     ),
   };
@@ -150,9 +165,14 @@ export async function sendSupportMessage(
   userId: string,
   text: string,
   image?: { name: string; type: string; bytes: Uint8Array },
+  replyToId?: string | null,
 ) {
   const { conv } = await getConversation(userId, true);
   const c = conv!;
+  // javob — faqat shu suhbatdagi xabarga
+  const reply = replyToId
+    ? await db.message.findFirst({ where: { id: replyToId, conversationId: c.id }, ...REPLY_SELECT })
+    : null;
   // rasm — tayyorr.uz chatidagi kabi private bucketga, kalit "chat/<suhbat>/..."
   let file: { fileKey: string; fileName: string; fileType: string; fileSize: number } | null = null;
   if (image) {
@@ -163,7 +183,7 @@ export async function sendSupportMessage(
   }
   const m = await db.$transaction(async (tx) => {
     const msg = await tx.message.create({
-      data: { conversationId: c.id, senderId: userId, body: `${SOURCE_TAG} ${text}`.trimEnd(), ...file },
+      data: { conversationId: c.id, senderId: userId, body: `${SOURCE_TAG} ${text}`.trimEnd(), replyToId: reply?.id ?? null, ...file },
     });
     await tx.conversation.update({
       where: { id: c.id },
@@ -190,6 +210,7 @@ export async function sendSupportMessage(
     createdAt: m.createdAt.toISOString(),
     file: await fileOf(m).catch(() => null),
     reactions: [],
+    replyTo: replyOf(reply, userId),
   } satisfies SupportMessage;
 }
 
