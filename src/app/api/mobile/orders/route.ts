@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getRestriction, restrictionText } from "@/lib/restriction";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { postOrderToChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
@@ -84,6 +85,8 @@ export async function POST(req: Request) {
   if (restriction) {
     return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
   }
+  const scoped = await scopedApiError(auth.userId, "uz_orders", null, true);
+  if (scoped) return scoped;
 
   const parsed = createSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

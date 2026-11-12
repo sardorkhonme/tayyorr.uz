@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { restrictionApiError } from "@/lib/restriction";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { logActivity } from "@/lib/activity";
 import { sendTelegramToUser, siteUrl } from "@/lib/telegram-notify";
 import { supportNotice } from "@/lib/support-actions";
@@ -38,7 +39,7 @@ export async function POST(
       { status: 403 },
     );
   }
-  const restricted = await restrictionApiError(session.user.id);
+  const restricted = (await restrictionApiError(session.user.id)) ?? (await scopedApiError(session.user.id, "uz_offers"));
   if (restricted) return restricted;
   const { id } = await params;
 

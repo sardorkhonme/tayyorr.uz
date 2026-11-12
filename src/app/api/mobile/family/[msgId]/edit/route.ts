@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { familyInclude, familyRole, familySignal, parseMentions, toFamilyClients } from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -21,6 +22,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ msgId: 
   if (!parsed.success) return mobileJson({ error: "Matn bölişi kerak" }, { status: 400 });
   const restriction = await getRestriction(me);
   if (restriction) return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
+  const scoped = await scopedApiError(me, "family", null, true);
+  if (scoped) return scoped;
 
   const m = await db.familyMessage.findUnique({ where: { id: msgId }, select: { senderId: true, body: true, deletedAt: true } });
   if (!m || m.deletedAt) return mobileJson({ error: "Xabar topilmadi" }, { status: 404 });

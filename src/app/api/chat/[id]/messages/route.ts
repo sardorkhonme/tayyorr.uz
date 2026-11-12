@@ -9,6 +9,7 @@ import {
 } from "@/lib/chat";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
 import { MESSAGE_SOURCES, withSource } from "@/lib/message-source";
@@ -60,6 +61,10 @@ export async function POST(
   const restriction = await getRestriction(me);
   if (restriction && !isSupportThread) {
     return NextResponse.json({ error: restrictionText(restriction) }, { status: 403 });
+  }
+  if (!isSupportThread) {
+    const scoped = await scopedApiError(me, "uz_chat");
+    if (scoped) return scoped;
   }
 
   // bloklash

@@ -17,7 +17,7 @@ import { FAMILY_CHANNEL, signal } from "@/lib/realtime";
 export const FAMILY_NAME = "Tayyorr’s Family";
 export const FILE_TTL_MS = 5 * 24 * 3600 * 1000;
 /** Ruxsat etilgan reaksiyalar (ilovadagi tanlov bilan bir xil). */
-export const FAMILY_EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
+export const FAMILY_EMOJIS = ["👍", "👎", "💖", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz").replace(/\/+$/, "");
 
 export const BRAND_LOGIN = "tayyorr.uz";

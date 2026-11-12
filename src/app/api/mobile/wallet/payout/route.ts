@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -23,6 +24,8 @@ const schema = z.object({
 export async function POST(req: Request) {
   const auth = await requireMobileAuth(req);
   if (auth instanceof NextResponse) return auth;
+  const scoped = await scopedApiError(auth.userId, "payout", null, true);
+  if (scoped) return scoped;
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

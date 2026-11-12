@@ -16,6 +16,8 @@ import {
 } from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
+import { scopedApiError } from "@/lib/restriction-scope";
+import { scopedRestriction } from "@/lib/restriction-scope";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -92,8 +94,12 @@ export async function GET(req: Request) {
     : null;
   const [authors, presence] = await Promise.all([familyAuthors(), familyPresence()]);
   const identities = (isAdmin ? [self, authors.brand, authors.support] : [self]).filter(Boolean);
+  const ban = await getRestriction(me);
+  const writeBlocked = ban ? restrictionText(ban) : ((await scopedRestriction(me, "family"))?.text ?? null);
   return mobileJson({
     me: { id: me, isAdmin, identities },
+    // admin cheklagan bo'lsa — ilovada yozish maydoni o'rniga shu matn
+    writeBlocked,
     // sarlavha: «N aʼzo · M onlayn»
     members: presence.members,
     online: presence.online,
@@ -144,6 +150,8 @@ export async function POST(req: Request) {
 
   const restriction = await getRestriction(me);
   if (restriction) return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
+  const scoped = await scopedApiError(me, "family", null, true);
+  if (scoped) return scoped;
 
   const { isAdmin } = await familyRole(me);
   const as = isAdmin ? (d.as ?? "self") : "self";

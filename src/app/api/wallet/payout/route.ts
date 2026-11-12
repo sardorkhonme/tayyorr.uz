@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -23,6 +24,8 @@ export async function POST(req: Request) {
   }
   // cheklangan foydalanuvchi ham pulini yechib olishi mumkin — bu yerda tekshirmaymiz
   const me = session.user.id;
+  const scoped = await scopedApiError(me, "payout");
+  if (scoped) return scoped;
 
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

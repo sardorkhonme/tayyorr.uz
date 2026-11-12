@@ -33,6 +33,9 @@ export async function requestPayout(userId: string, amount: number, cardRaw: str
   if (card.length !== 16) throw new PayoutError("Karta raqami 16 raqamdan iborat bölsin");
   if (!Number.isInteger(amount) || amount < PAYOUT_MIN) throw new PayoutError(`Eng kami ${som(PAYOUT_MIN)}`);
   const { commission, net } = payoutNet(amount);
+  // admin qo'ygan qisman cheklov — «Pul yechib olish»
+  const blocked = await db.userRestriction.findFirst({ where: { userId, scope: "payout", until: { gt: new Date() } }, select: { reason: true } });
+  if (blocked) throw new PayoutError(`Pul yeçib oliş sizga vaqtinça çeklangan${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}`);
 
   const payout = await db.$transaction(async (tx) => {
     // shartli yechish — parallel so'rovlarda balans manfiy bo'lmaydi

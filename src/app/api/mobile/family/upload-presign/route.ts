@@ -4,6 +4,7 @@ import { z } from "zod";
 import { PRIVATE_BUCKET, buildKey, presignPut } from "@/lib/r2";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -16,6 +17,8 @@ export async function POST(req: Request) {
   if (auth instanceof NextResponse) return auth;
   const restriction = await getRestriction(auth.userId);
   if (restriction) return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
+  const scoped = await scopedApiError(auth.userId, "family", null, true);
+  if (scoped) return scoped;
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return mobileJson({ error: "Notöğri sörov" }, { status: 400 });
   const key = buildKey(`family/${auth.userId}`, parsed.data.filename);

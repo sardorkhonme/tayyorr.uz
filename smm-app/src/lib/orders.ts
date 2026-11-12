@@ -57,6 +57,17 @@ export async function placeOrder(userId: string, serviceId: string, rawLink: str
   if (user.bannedUntil && user.bannedUntil > new Date()) {
     throw new OrderError("Hisobingiz vaqtinça çeklangan", 403);
   }
+  // admin qo'ygan qisman cheklov: butun Tayyorr SMM yoki aynan shu xizmat
+  const blocked = await db.userRestriction.findFirst({
+    where: { userId, until: { gt: new Date() }, OR: [{ scope: "smm" }, { scope: "smm_service", target: serviceId }] },
+    select: { scope: true, reason: true },
+  });
+  if (blocked) {
+    throw new OrderError(
+      `${blocked.scope === "smm" ? "Tayyorr SMM" : "Bu xizmat"} sizga vaqtinça çeklangan${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}`,
+      403,
+    );
+  }
 
   const pricing = await getPricing();
   if (!pricing) throw new OrderError("Narxni hisoblab bölmadi, birozdan keyin urinib köring", 503);

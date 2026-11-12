@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { shortDateTime } from "@/lib/date";
 import { restrictionApiError } from "@/lib/restriction";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { postOrderToChannel } from "@/lib/telegram";
 import { logActivity } from "@/lib/activity";
 import { logToGroup, siteUrl, userLabel } from "@/lib/telegram-log";
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
       { status: 403 },
     );
   }
-  const restricted = await restrictionApiError(session.user.id);
+  const restricted = (await restrictionApiError(session.user.id)) ?? (await scopedApiError(session.user.id, "uz_orders"));
   if (restricted) return restricted;
 
   const parsed = createSchema.safeParse(await req.json().catch(() => null));

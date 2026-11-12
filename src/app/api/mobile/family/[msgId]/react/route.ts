@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { FAMILY_EMOJIS, familyInclude, familySignal, toFamilyClients } from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -23,6 +24,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ msgId: 
   }
   const restriction = await getRestriction(me);
   if (restriction) return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
+  const scoped = await scopedApiError(me, "family", null, true);
+  if (scoped) return scoped;
 
   const msg = await db.familyMessage.findUnique({ where: { id: msgId }, select: { deletedAt: true, sendAt: true } });
   if (!msg || msg.deletedAt || msg.sendAt.getTime() > Date.now()) return mobileJson({ error: "Xabar topilmadi" }, { status: 404 });

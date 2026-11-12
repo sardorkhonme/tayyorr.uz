@@ -15,6 +15,7 @@ import { toClientMessages, toClientMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
+import { scopedApiError } from "@/lib/restriction-scope";
 import { scopeOf, tagFor, visibleOn, withSource } from "@/lib/message-source";
 
 export { OPTIONS } from "@/lib/mobile-cors";
@@ -122,6 +123,10 @@ export async function POST(
   const restriction = await getRestriction(me);
   if (restriction && !isSupportThread) {
     return mobileJson({ error: restrictionText(restriction) }, { status: 403 });
+  }
+  if (!isSupportThread) {
+    const scoped = await scopedApiError(me, "uz_chat", null, true);
+    if (scoped) return scoped;
   }
 
   if (!isSupportThread) {

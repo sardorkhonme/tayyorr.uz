@@ -193,6 +193,7 @@ model User {
   familyMember       FamilyMember?
   familyReactions    FamilyReaction[]
   mobileDays         MobileDay[]
+  restrictions       UserRestriction[]
   payoutRequests     PayoutRequest[]
   reactions          MessageReaction[]
   activityLogs       ActivityLog[]
@@ -919,4 +920,19 @@ model FamilyReaction {
 
   @@id([messageId, userId])
   @@index([messageId])
+}
+
+// Qisman cheklovlar (admin → foydalanuvchi → Cheklov): butun hisob emas, faqat tanlangan imkoniyat.
+// scope: smm (Tayyorr SMM hammasi) | smm_service (target = SmmService.id) | uz_orders | uz_offers | uz_chat | payout | family
+model UserRestriction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scope     String
+  target    String?
+  until     DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, scope])
 }
