@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Service = { id: string; name: string; platform: string };
+import { KIND_RULES, PLATFORM_NAME } from "@/lib/smm-adjust";
+
+type Service = { id: string; name: string; platform: string; kind: string };
 type Active = { id: string; label: string; until: string; reason: string | null; permanent: boolean };
 
 const GROUPS: { title: string; items: { scope: string; label: string; hint?: string }[] }[] = [
@@ -41,9 +43,42 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
 
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const list = s ? services.filter((x) => `${x.name} ${x.platform}`.toLowerCase().includes(s)) : services;
+    const list = s ? services.filter((x) => `${x.name} ${x.platform}`.toLowerCase().includes(s)) : [];
     return list.slice(0, 60);
   }, [services, q]);
+
+  // platforma → tur → xizmatlar
+  const tree = useMemo(() => {
+    const byP = new Map<string, Map<string, Service[]>>();
+    for (const x of services) {
+      const kinds = byP.get(x.platform) ?? new Map<string, Service[]>();
+      kinds.set(x.kind, [...(kinds.get(x.kind) ?? []), x]);
+      byP.set(x.platform, kinds);
+    }
+    const pOrder = Object.keys(PLATFORM_NAME);
+    const kOrder = KIND_RULES.map((k) => k.key);
+    const idx = (arr: string[], v: string) => (arr.indexOf(v) < 0 ? 99 : arr.indexOf(v));
+    return [...byP.entries()]
+      .sort((a, b) => idx(pOrder, a[0]) - idx(pOrder, b[0]))
+      .map(([platform, kinds]) => ({
+        platform,
+        count: [...kinds.values()].reduce((n, l) => n + l.length, 0),
+        kinds: [...kinds.entries()].sort((a, b) => idx(kOrder, a[0]) - idx(kOrder, b[0])).map(([kind, list]) => ({ kind, list })),
+      }));
+  }, [services]);
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const pName = (p: string) => PLATFORM_NAME[p] ?? p;
+  const kName = (k: string) => KIND_RULES.find((r) => r.key === k)?.label ?? k;
+  // yuqori daraja belgilangan bo'lsa — ichidagilar ham yopiladi (alohida yuborilmaydi)
+  const coveredBy = (x: Service) =>
+    picked.has(`p:${x.platform}`) ? "p" : picked.has(`g:${x.platform}:${x.kind}`) ? "g" : null;
+  const effective = () =>
+    [...picked].filter((t) => {
+      if (t.startsWith("p:")) return true;
+      if (t.startsWith("g:")) return !picked.has(`p:${t.split(":")[1]}`);
+      const x = services.find((v) => v.id === t);
+      return !x || !coveredBy(x);
+    });
 
   const toggle = (set: Set<string>, v: string, fn: (s: Set<string>) => void) => {
     const n = new Set(set);
@@ -62,7 +97,7 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scopes: [...scopes],
-          serviceIds: [...picked],
+          serviceIds: effective(),
           until: indefinite ? undefined : new Date(until).toISOString(),
           indefinite,
           reason,
@@ -136,19 +171,74 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
               {g.title === "Tayyorr SMM" && !scopes.has("smm") && (
                 <div className="rounded-xl bg-white/[0.03] p-3">
                   <p className="mb-2 text-sm text-white">
-                    Faqat maʼlum xizmat(lar)
-                    {picked.size > 0 && <span className="ml-2 text-xs text-violet-300">tanlangan: {picked.size}</span>}
+                    Faqat maʼlum platforma, tur yoki xizmat(lar)
+                    {picked.size > 0 && <span className="ml-2 text-xs text-violet-300">tanlangan: {effective().length}</span>}
+                  </p>
+                  <p className="mb-2 text-xs text-zinc-500">
+                    Butun platformani (masalan Instagram), uning bir turini (masalan Instagram → layklar) yoki alohida xizmatni belgilang.
                   </p>
                   <input className="input !py-1.5 text-sm" placeholder="Xizmat qidiriş (nomi yoki platforma)" value={q} onChange={(e) => setQ(e.target.value)} />
-                  <div className="mt-2 max-h-56 overflow-y-auto">
-                    {shown.map((s) => (
-                      <label key={s.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-white/5">
-                        <input type="checkbox" className="h-4 w-4 accent-violet-500" checked={picked.has(s.id)} onChange={() => toggle(picked, s.id, setPicked)} />
-                        <span className="min-w-0 flex-1 truncate text-zinc-200">{s.name}</span>
-                        <span className="text-xs text-zinc-500">{s.platform}</span>
-                      </label>
-                    ))}
-                    {shown.length === 0 && <p className="py-3 text-center text-xs text-zinc-500">Topilmadi</p>}
+                  <div className="mt-2 max-h-80 overflow-y-auto">
+                    {q.trim() ? (
+                      <>
+                        {shown.map((s) => {
+                          const cov = coveredBy(s);
+                          return (
+                            <label key={s.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-white/5">
+                              <input type="checkbox" className="h-4 w-4 accent-violet-500" disabled={!!cov} checked={!!cov || picked.has(s.id)} onChange={() => toggle(picked, s.id, setPicked)} />
+                              <span className="min-w-0 flex-1 truncate text-zinc-200">{s.name}</span>
+                              <span className="text-xs text-zinc-500">{pName(s.platform)} · {kName(s.kind)}</span>
+                            </label>
+                          );
+                        })}
+                        {shown.length === 0 && <p className="py-3 text-center text-xs text-zinc-500">Topilmadi</p>}
+                      </>
+                    ) : (
+                      tree.map((p) => {
+                        const pKey = `p:${p.platform}`;
+                        const pOn = picked.has(pKey);
+                        return (
+                          <div key={p.platform} className="border-b border-white/5 last:border-0">
+                            <div className="flex items-center gap-2 px-1 py-1.5">
+                              <button type="button" className="w-5 text-zinc-500 hover:text-white" onClick={() => toggle(open, pKey, setOpen)}>
+                                {open.has(pKey) ? "▾" : "▸"}
+                              </button>
+                              <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm">
+                                <input type="checkbox" className="h-4 w-4 accent-violet-500" checked={pOn} onChange={() => toggle(picked, pKey, setPicked)} />
+                                <span className="font-medium text-white">{pName(p.platform)}</span>
+                                <span className="text-xs text-zinc-500">— butunlay · {p.count} ta xizmat</span>
+                              </label>
+                            </div>
+                            {open.has(pKey) &&
+                              p.kinds.map((k) => {
+                                const gKey = `g:${p.platform}:${k.kind}`;
+                                const gOn = pOn || picked.has(gKey);
+                                return (
+                                  <div key={gKey} className="ml-6">
+                                    <div className="flex items-center gap-2 px-1 py-1">
+                                      <button type="button" className="w-5 text-zinc-500 hover:text-white" onClick={() => toggle(open, gKey, setOpen)}>
+                                        {open.has(gKey) ? "▾" : "▸"}
+                                      </button>
+                                      <label className="flex flex-1 cursor-pointer items-center gap-2 text-sm">
+                                        <input type="checkbox" className="h-4 w-4 accent-violet-500" disabled={pOn} checked={gOn} onChange={() => toggle(picked, gKey, setPicked)} />
+                                        <span className="text-zinc-200">{kName(k.kind)}</span>
+                                        <span className="text-xs text-zinc-500">{k.list.length} ta</span>
+                                      </label>
+                                    </div>
+                                    {open.has(gKey) &&
+                                      k.list.map((s) => (
+                                        <label key={s.id} className="ml-7 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm hover:bg-white/5">
+                                          <input type="checkbox" className="h-4 w-4 accent-violet-500" disabled={gOn} checked={gOn || picked.has(s.id)} onChange={() => toggle(picked, s.id, setPicked)} />
+                                          <span className="min-w-0 flex-1 truncate text-zinc-300">{s.name}</span>
+                                        </label>
+                                      ))}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               )}

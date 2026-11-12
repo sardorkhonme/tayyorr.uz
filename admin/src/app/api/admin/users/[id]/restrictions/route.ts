@@ -8,8 +8,11 @@ const SCOPES = ["smm", "smm_service", "uz_orders", "uz_offers", "uz_chat", "payo
 
 const addSchema = z.object({
   scopes: z.array(z.enum(SCOPES)).default([]),
-  /** smm_service uchun — tanlangan xizmatlar */
-  serviceIds: z.array(z.string()).max(100).default([]),
+  /**
+   * smm_service uchun nishonlar: "p:<platforma>" — butun platforma (masalan Instagram),
+   * "g:<platforma>:<tur>" — platformadagi tur (Instagram layklari), yoki xizmat id'si.
+   */
+  serviceIds: z.array(z.string().regex(/^(p:[a-z0-9_-]{1,30}|g:[a-z0-9_-]{1,30}:[a-z0-9_-]{1,30}|[a-z0-9]{10,40})$/)).max(300).default([]),
   until: z.string().optional(),
   indefinite: z.boolean().optional().default(false),
   reason: z.string().trim().max(1000).optional(),

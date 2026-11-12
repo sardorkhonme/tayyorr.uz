@@ -5,6 +5,7 @@ import { shortDateTime } from "@/lib/date";
 import { AdminPostButton } from "@/components/admin/admin-post-button";
 import { BanForm } from "@/components/admin/ban-form";
 import { PartialRestrictionForm } from "@/components/admin/partial-restriction-form";
+import { KIND_RULES, PLATFORM_NAME, kindKey } from "@/lib/smm-adjust";
 
 export default async function AdminUserBan({
   params,
@@ -22,7 +23,7 @@ export default async function AdminUserBan({
 
   const [rows, services] = await Promise.all([
     db.userRestriction.findMany({ where: { userId: id, until: { gt: new Date() } }, orderBy: { createdAt: "desc" } }),
-    db.smmService.findMany({ where: { active: true }, select: { id: true, name: true, platform: true }, orderBy: [{ platform: "asc" }, { name: "asc" }] }),
+    db.smmService.findMany({ where: { active: true }, select: { id: true, name: true, platform: true, category: true }, orderBy: [{ platform: "asc" }, { name: "asc" }] }),
   ]);
   const LABEL: Record<string, string> = {
     smm: "Tayyorr SMM — butunlay",
@@ -33,9 +34,20 @@ export default async function AdminUserBan({
     family: "Tayyorr’s Family: yoziş",
   };
   const svc = new Map(services.map((s) => [s.id, s.name]));
+  const platformName = (p: string) => PLATFORM_NAME[p] ?? p;
+  const kindLabel = (k: string) => KIND_RULES.find((r) => r.key === k)?.label ?? k;
+  const targetLabel = (t: string | null) => {
+    if (t?.startsWith("p:")) return `SMM: ${platformName(t.slice(2))} — butunlay`;
+    if (t?.startsWith("g:")) {
+      const [, p, k] = t.split(":");
+      return `SMM: ${platformName(p)} → ${kindLabel(k)}`;
+    }
+    return `SMM xizmati: ${svc.get(t ?? "") ?? "öçirilgan xizmat"}`;
+  };
+  const svcList = services.map((s) => ({ id: s.id, name: s.name, platform: s.platform, kind: kindKey(s.category, s.name) }));
   const active = rows.map((r) => ({
     id: r.id,
-    label: r.scope === "smm_service" ? `SMM xizmati: ${svc.get(r.target ?? "") ?? "öçirilgan xizmat"}` : (LABEL[r.scope] ?? r.scope),
+    label: r.scope === "smm_service" ? targetLabel(r.target) : (LABEL[r.scope] ?? r.scope),
     until: shortDateTime(r.until),
     reason: r.reason,
     permanent: r.until.getTime() - Date.now() > 50 * 365 * 24 * 3600 * 1000,
@@ -70,7 +82,7 @@ export default async function AdminUserBan({
       <p className="mb-4 mt-1 text-xs text-zinc-500">
         Butun hisob emas — faqat tanlangan imkoniyatlar yopiladi. Foydalanuvçi qolgan qismdan odatdagidek foydalanadi; yopilgan joyda sabab bilan xabar çiqadi.
       </p>
-      <PartialRestrictionForm userId={user.id} services={services} active={active} />
+      <PartialRestrictionForm userId={user.id} services={svcList} active={active} />
     </section>
     </div>
   );

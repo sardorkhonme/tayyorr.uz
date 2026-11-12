@@ -26,6 +26,17 @@ export const KIND_RULES: { key: string; label: string; match: RegExp }[] = [
   { key: "other", label: "Boşqa", match: /.^/ },
 ];
 
+/** Platforma nomlari (smm-app/src/lib/platforms.ts dagi bilan bir xil). */
+export const PLATFORM_NAME: Record<string, string> = {
+  instagram: "Instagram",
+  telegram: "Telegram",
+  tiktok: "TikTok",
+  youtube: "YouTube",
+  facebook: "Facebook",
+  twitter: "X (Twitter)",
+  other: "Boşqa",
+};
+
 function matchKind(text: string) {
   return KIND_RULES.find((k) => k.key !== "other" && k.match.test(text))?.key ?? null;
 }

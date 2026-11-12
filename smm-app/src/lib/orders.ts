@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { chargeFor, num } from "@/lib/format";
-import { kindOf, splitServiceName } from "@/lib/kinds";
+import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
+import { platformOf } from "@/lib/platforms";
 import { normalizeLink } from "@/lib/links";
 import { getPricing, rateFor } from "@/lib/pricing";
 import { isHidden } from "@/lib/smm-adjust";
@@ -57,16 +58,30 @@ export async function placeOrder(userId: string, serviceId: string, rawLink: str
   if (user.bannedUntil && user.bannedUntil > new Date()) {
     throw new OrderError("Hisobingiz vaqtinça çeklangan", 403);
   }
-  // admin qo'ygan qisman cheklov: butun Tayyorr SMM yoki aynan shu xizmat
+  // admin qo'ygan qisman cheklov: butun Tayyorr SMM, butun platforma (p:instagram),
+  // platformadagi tur (g:instagram:likes) yoki aynan shu xizmat (id)
+  const kind = kindOf(service.category, service.name);
   const blocked = await db.userRestriction.findFirst({
-    where: { userId, until: { gt: new Date() }, OR: [{ scope: "smm" }, { scope: "smm_service", target: serviceId }] },
-    select: { scope: true, reason: true },
+    where: {
+      userId,
+      until: { gt: new Date() },
+      OR: [
+        { scope: "smm" },
+        { scope: "smm_service", target: { in: [serviceId, `p:${service.platform}`, `g:${service.platform}:${kind}`] } },
+      ],
+    },
+    select: { scope: true, target: true, reason: true },
   });
   if (blocked) {
-    throw new OrderError(
-      `${blocked.scope === "smm" ? "Tayyorr SMM" : "Bu xizmat"} sizga vaqtinça çeklangan${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}`,
-      403,
-    );
+    const what =
+      blocked.scope === "smm"
+        ? "Tayyorr SMM"
+        : blocked.target?.startsWith("p:")
+          ? `${platformOf(service.platform).name} xizmatlari`
+          : blocked.target?.startsWith("g:")
+            ? `${platformOf(service.platform).name} — ${KINDS.find((k) => k.key === kind)?.label ?? "bu tur"}`
+            : "Bu xizmat";
+    throw new OrderError(`${what} sizga vaqtinça çeklangan${blocked.reason ? `. Sabab: ${blocked.reason}` : ""}`, 403);
   }
 
   const pricing = await getPricing();
