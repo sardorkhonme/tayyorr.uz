@@ -3,7 +3,7 @@ description: "tayyorr.uz — talabalar uchun platforma"
 publish_to: "none"
 # Versiya ikki raqamli: 1.1, 1.2 … (katta.kichik). Build raqami = katta*100 + kichik —
 # server (admin → Mobil ilova) shu raqam bilan eskirgan ilovani aniqlaydi. Har yangilanishda ikkalasini oshiring.
-version: 1.9.0+109
+version: 1.10.0+110
 
 environment:
   sdk: ^3.11.0
@@ -45,6 +45,7 @@ dependencies:
   # fayllarni keshga yuklash, boshqa turlarni ochish, galereyaga saqlash
   video_player: ^2.11.1
   just_audio: ^0.10.6
+  audio_session: ^0.2.4
   pdfx: ^2.11.0
   path_provider: ^2.1.6
   open_filex: ^4.7.0

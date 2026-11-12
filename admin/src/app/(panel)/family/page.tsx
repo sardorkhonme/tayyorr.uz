@@ -7,6 +7,7 @@ import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { FamilyAdmins } from "@/components/admin/family-admins";
 import { FamilyRefresh } from "@/components/admin/family-refresh";
 import { BrandProfileForm } from "@/components/admin/brand-profile-form";
+import { FamilyHubForm } from "@/components/admin/family-hub-form";
 import { SupportProfileForm } from "@/components/admin/support-profile-form";
 
 export const dynamic = "force-dynamic";
@@ -85,6 +86,8 @@ export default async function AdminFamily({ searchParams }: { searchParams: Prom
         <BrandProfileForm />
         <SupportProfileForm />
       </div>
+
+      <FamilyHubForm />
 
       <FamilyAdmins admins={admins.map((a) => ({ id: a.id, name: nameOf(a), login: a.login, image: a.avatarUrl ?? a.image ?? null }))} />
 

@@ -16,7 +16,7 @@ const schema = z.object({
   buttonTextRu: z.string().trim().max(60).optional().default(""),
   buttonTextEn: z.string().trim().max(60).optional().default(""),
   buttonUrl: z.string().trim().max(500).optional().default(""),
-  role: z.enum(["ORDERER", "PREPARER"]).nullable().optional().default(null),
+  role: z.enum(["ORDERER", "PREPARER", "SMM"]).nullable().optional().default(null),
   active: z.boolean().default(true),
 });
 

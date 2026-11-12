@@ -1,3 +1,4 @@
+import '../../announcements/announcement_banner.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 
@@ -33,10 +34,22 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
   final _listKey = GlobalKey();
   final _kindKey = GlobalKey();
 
+  List<Announcement> _ann = const [];
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadAnn();
+  }
+
+  Future<void> _loadAnn() async {
+    try {
+      final list = await Announcement.fetch(smm: true);
+      if (mounted) setState(() => _ann = list);
+    } catch (_) {
+      /* banner majburiy emas */
+    }
   }
 
   Future<void> _load({bool force = false}) async {
@@ -58,10 +71,13 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
     final c = _cat;
     return WebPage(
       background: false,
-      onRefresh: () => _load(force: true),
+      onRefresh: () => Future.wait([_load(force: true), _loadAnn()]),
       children: [
-        _header(),
-        const SizedBox(height: 14),
+        // sarlavhadagi logo yetarli: tepada e'lon banneri, ostida qo'llanma banneri
+        if (_ann.isNotEmpty) ...[
+          AnnouncementCarousel(items: _ann),
+          const SizedBox(height: 12),
+        ],
         _GuideBanner(onOpen: () async {
           await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SmmGuideScreen()));
           if (mounted) setState(() {});
@@ -99,23 +115,6 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
       ],
     );
   }
-
-  Widget _header() => Row(children: [
-        Container(
-          width: 52,
-          height: 52,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.black.withValues(alpha: 0.05))),
-          child: Image.asset('assets/smm-mark.png', filterQuality: FilterQuality.high),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Tayyorr SMM', style: TextStyle(color: WebC.white, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
-            Text('Obunaçilar, layklar va körişlar — bir neça daqiqada.', style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.35)),
-          ]),
-        ),
-      ]);
 
   List<Widget> _content(SmmCatalog c) {
     if (c.services.isEmpty) {
@@ -326,10 +325,10 @@ class _KindTile extends StatelessWidget {
         ),
         child: Row(children: [
           Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: k.color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
-            child: TIcon(k.icon, color: k.color, size: 22),
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(color: k.color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(11)),
+            child: TIcon(k.icon, color: k.color, size: 17),
           ),
           const SizedBox(width: 12),
           Expanded(

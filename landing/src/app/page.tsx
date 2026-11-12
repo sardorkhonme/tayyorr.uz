@@ -1,3 +1,4 @@
+import { AppBenefits, AppStoreButtons } from "@/components/app-benefits";
 import { LandingVideos } from "@/components/landing-videos";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -201,12 +202,8 @@ export default async function Home() {
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-zinc-400 lg:mx-0">
               Buyurtmalar, xabarlar, hamyon va tayyorr+ — ilovaning özida. Yangi xabar kelsa, darhol bilasiz.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
-              <a href="/api/app/download" className="btn-white">
-                Android uçun yuklab oliş
-              </a>
-              <span className="btn-ghost cursor-default text-zinc-500">iOS — tez orada</span>
-            </div>
+            <AppBenefits />
+            <AppStoreButtons href="/api/app/download" />
           </div>
         </div>
       </section>

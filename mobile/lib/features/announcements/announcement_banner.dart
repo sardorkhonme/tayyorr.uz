@@ -17,8 +17,9 @@ class Announcement {
   final String? buttonText;
   final String? buttonUrl;
 
-  static Future<List<Announcement>> fetch() async {
-    final res = await ApiClient.instance.get('/mobile/announcements');
+  /// [smm] — Tayyorr SMM bo'limi (admin «Hammaga» yoki «Tayyorr SMM'da» deb qo'yganlar).
+  static Future<List<Announcement>> fetch({bool smm = false}) async {
+    final res = await ApiClient.instance.get(smm ? '/mobile/announcements?section=smm' : '/mobile/announcements');
     return (res['announcements'] as List)
         .cast<Map<String, dynamic>>()
         .map(

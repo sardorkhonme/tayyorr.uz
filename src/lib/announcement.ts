@@ -14,14 +14,19 @@ export interface AnnItem {
   buttonUrl: string | null;
 }
 
-/** Foydalanuvchiga ko'rinadigan faol e'lonlar (rol bo'yicha), 3 tilda. */
+/**
+ * Foydalanuvchiga ko'rinadigan faol e'lonlar, 3 tilda.
+ * section "uz" — hammaga + foydalanuvchi roli (ORDERER/PREPARER); "smm" — hammaga + "SMM".
+ */
 export async function getActiveAnnouncements(
   role: string | null | undefined,
+  section: "uz" | "smm" = "uz",
 ): Promise<AnnItem[]> {
+  const audience = section === "smm" ? "SMM" : role;
   const rows = await db.announcement.findMany({
     where: {
       active: true,
-      OR: [{ role: null }, ...(role ? [{ role }] : [])],
+      OR: [{ role: null }, ...(audience ? [{ role: audience }] : [])],
     },
     orderBy: { createdAt: "desc" },
   });

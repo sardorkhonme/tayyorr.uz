@@ -86,12 +86,27 @@ class _Badges extends StatelessWidget {
   }
 }
 
-/// tayyorr+ bosh sahifasining tepasidagi katta karta.
+/// tayyorr+ bosh sahifasining tepasidagi banner (hisoblagichsiz). Admin o'chirsa yoki
+/// «yuklab olgandan N kun» muddati o'tsa — ko'rinmaydi (ostidagi oraliq bilan birga).
 class FamilyHubCard extends StatelessWidget {
-  const FamilyHubCard({super.key});
+  const FamilyHubCard({super.key, this.gap = 14});
+  final double gap;
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: FamilySummary.instance.hub,
+      builder: (context, show, _) => AnimatedSize(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        child: show
+            ? Padding(padding: EdgeInsets.only(bottom: gap), child: _card(context))
+            : const SizedBox(width: double.infinity),
+      ),
+    );
+  }
+
+  Widget _card(BuildContext context) {
     final light = AppColors.isLight;
     return GestureDetector(
       onTap: () => openFamily(context),
@@ -139,11 +154,7 @@ class FamilyHubCard extends StatelessWidget {
             ]),
           ),
           const SizedBox(width: 8),
-          Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [
-            const _Badges(),
-            const SizedBox(height: 6),
-            TIcon(TI.chevron_right_rounded, size: 20, color: WebC.zinc500),
-          ]),
+          TIcon(TI.chevron_right_rounded, size: 20, color: WebC.zinc500),
         ]),
       ),
     );

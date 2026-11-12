@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../app.dart';
@@ -95,7 +96,7 @@ class MessageNotifier {
     if (now.difference(_lastTin) < const Duration(milliseconds: 1500)) return;
     _lastTin = now;
     try {
-      final p = _tin ??= AudioPlayer()..setAsset('assets/sounds/tin.wav');
+      final p = _tin ??= _systemPlayer('assets/sounds/tin.wav');
       await p.seek(Duration.zero);
       await p.setVolume(0.7);
       await p.play();
@@ -105,17 +106,33 @@ class MessageNotifier {
   AudioPlayer? _send;
   DateTime _lastSend = DateTime.fromMillisecondsSinceEpoch(0);
 
-  /// Telegramdagidek qisqa yumshoq «pik» — o'z xabarim yuborilganda (server qabul qilganda).
-  /// Kutilmaydi (UI to'xtamaydi); jim rejimda tizim media ovozi o'chiq bo'lsa — eshitilmaydi.
+  /// Tizim ovozi sifatida chalinadigan pleyer (media emas): Android'da «tizim» ovoz balandligiga
+  /// bo'ysunadi, jim/tebranish rejimida eshitilmaydi, musiqani to'xtatmaydi (audio focus olmaydi).
+  AudioPlayer _systemPlayer(String asset) {
+    final p = AudioPlayer(
+      handleInterruptions: false,
+      androidApplyAudioAttributes: false,
+      handleAudioSessionActivation: false,
+    );
+    p.setAndroidAudioAttributes(const AndroidAudioAttributes(
+      contentType: AndroidAudioContentType.sonification,
+      usage: AndroidAudioUsage.assistanceSonification,
+    ));
+    p.setAsset(asset);
+    return p;
+  }
+
+  /// Telegramdagidek qisqa «pik» — o'z xabarim yuborilganda (server qabul qilganda).
+  /// Kutilmaydi (UI to'xtamaydi); tizim ovozi — jim rejimda eshitilmaydi.
   void playSent() {
     final now = DateTime.now();
     if (now.difference(_lastSend) < const Duration(milliseconds: 250)) return;
     _lastSend = now;
     () async {
       try {
-        final p = _send ??= AudioPlayer()..setAsset('assets/sounds/send.wav');
+        final p = _send ??= _systemPlayer('assets/sounds/send.wav');
         await p.seek(Duration.zero);
-        await p.setVolume(0.5);
+        await p.setVolume(0.8);
         await p.play();
       } catch (_) {}
     }();

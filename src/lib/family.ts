@@ -63,6 +63,29 @@ export function displayName(u: Pick<Sender, "firstName" | "lastName" | "name" | 
   return [u.firstName, u.lastName].filter(Boolean).join(" ") || u.name || (u.login ? `@${u.login}` : "Foydalanuvçi");
 }
 
+/** tayyorr+ (ilova) bosh sahifasidagi guruh kartasi — admin: on / off / days (birinchi kirgandan N kun). */
+const FAMILY_HUB_KEY = "family.hub";
+let hubCache: { at: number; v: { mode: string; days?: number } } | null = null;
+
+export async function familyHubVisible(userId: string): Promise<boolean> {
+  if (!hubCache || Date.now() - hubCache.at > 60_000) {
+    let v: { mode: string; days?: number } = { mode: "on" };
+    try {
+      const row = await db.appSetting.findUnique({ where: { key: FAMILY_HUB_KEY } });
+      if (row) v = JSON.parse(row.value);
+    } catch {
+      /* standart — doim */
+    }
+    hubCache = { at: Date.now(), v };
+  }
+  const { mode, days } = hubCache.v;
+  if (mode === "off") return false;
+  if (mode !== "days" || !days) return true;
+  const u = await db.user.findUnique({ where: { id: userId }, select: { mobileFirstAt: true } });
+  const first = u?.mobileFirstAt?.getTime() ?? Date.now();
+  return Date.now() - first < days * 24 * 3600 * 1000;
+}
+
 /** Admin paneldagi «Tayyorr.uz profili» (AppSetting, JSON: { name, avatarUrl }). */
 export const BRAND_PROFILE_KEY = "family.brand";
 

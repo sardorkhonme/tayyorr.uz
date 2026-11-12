@@ -65,6 +65,10 @@ class LocalStorage {
   bool get smmGuideRead => _box?.get('smmGuideRead', defaultValue: false) as bool? ?? false;
   Future<void> setSmmGuideRead() async => _box?.put('smmGuideRead', true);
 
+  /// tayyorr+ dagi guruh kartasi ko'rinadimi (admin sozlamasi; oxirgi javob — sakramasligi uchun).
+  bool get familyHub => _box?.get('familyHub', defaultValue: true) as bool? ?? true;
+  Future<void> setFamilyHub(bool v) async => _box?.put('familyHub', v);
+
   String? get cachedTheme => _box?.get(_themeKey) as String?;
   Future<void> setCachedTheme(String theme) => _box!.put(_themeKey, theme);
 }

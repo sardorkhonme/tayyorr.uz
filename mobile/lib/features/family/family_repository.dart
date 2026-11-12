@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../core/network/api_client.dart';
+import '../../core/storage/local_storage.dart';
 import 'family_models.dart';
 
 /// «Tayyorr's Family» — server API (/api/mobile/family/*).
@@ -133,6 +134,9 @@ class FamilySummary {
 
   /// Support profili (admin panelda o'zgartiriladi) — «Xabarlar» bo'limidagi qator uchun.
   final support = ValueNotifier<({String name, String? image})?>(null);
+
+  /// tayyorr+ bosh sahifasidagi karta ko'rinsinmi (admin: doim / yo'q / yuklab olgandan N kun).
+  final hub = ValueNotifier<bool>(LocalStorage.instance.familyHub);
   DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// [force] bo'lmasa — 20 soniyada bir martadan ko'p so'ramaydi.
@@ -144,6 +148,11 @@ class FamilySummary {
       value.value = (unread: (r['unread'] as num?)?.toInt() ?? 0, mentions: (r['mentions'] as num?)?.toInt() ?? 0);
       final sp = r['support'];
       if (sp is Map) support.value = (name: '${sp['name'] ?? 'Tayyorr Support'}', image: sp['image'] as String?);
+      final h = r['hub'];
+      if (h is bool && h != hub.value) {
+        hub.value = h;
+        LocalStorage.instance.setFamilyHub(h);
+      }
     } catch (_) {
       /* jim — karta raqamsiz ham ishlaydi */
     }

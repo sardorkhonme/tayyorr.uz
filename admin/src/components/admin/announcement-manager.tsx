@@ -18,7 +18,7 @@ export interface Banner {
   buttonTextRu: string;
   buttonTextEn: string;
   buttonUrl: string;
-  role: "" | "ORDERER" | "PREPARER";
+  role: "" | "ORDERER" | "PREPARER" | "SMM";
   active: boolean;
 }
 
@@ -43,6 +43,7 @@ const ROLE_LABEL: Record<string, string> = {
   "": "Hammaga",
   ORDERER: "Buyurtmaçilarga",
   PREPARER: "Tayyorlovçilarga",
+  SMM: "Tayyorr SMM'da",
 };
 
 
@@ -93,6 +94,7 @@ function Fields({
             <option value="">Hammaga</option>
             <option value="ORDERER">Buyurtmaçilarga</option>
             <option value="PREPARER">Tayyorlovçilarga</option>
+            <option value="SMM">Tayyorr SMM'da</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-zinc-300">

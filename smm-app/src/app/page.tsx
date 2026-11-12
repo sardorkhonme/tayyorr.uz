@@ -1,7 +1,9 @@
 import { after } from "next/server";
 
 import { currentUser } from "@/lib/session";
+import { AnnouncementCarousel } from "@/components/announcement-banner";
 import { GuideBanner } from "@/components/guide-banner";
+import { getSmmAnnouncements } from "@/lib/announcement";
 import { ServicesBoard } from "@/components/services-board";
 import { SaleBanner } from "@/components/sale-banner";
 import { db } from "@/lib/db";
@@ -37,22 +39,14 @@ export default async function SmmPage({
   if ((await db.smmService.count({ where: { active: true } })) === 0) await maybeSyncServices();
   else after(() => maybeSyncServices());
 
-  const [user, services] = await Promise.all([currentUser(), loadCatalog()]);
+  const [user, services, announcements] = await Promise.all([currentUser(), loadCatalog(), getSmmAnnouncements()]);
   const sale = services.filter((s) => s.discount > 0);
   const maxSale = sale.reduce((m, s) => Math.max(m, s.discount), 0);
 
   return (
-    <div className="space-y-12">
-      <header className="animate-rise flex items-center gap-4">
-        <span className="shine grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-indigo-100 bg-white shadow-lg shadow-violet-500/20">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/smm-mark.png" alt="" className="h-10 w-10 object-contain" />
-        </span>
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-zinc-900">Tayyorr SMM</h1>
-          <p className="mt-1 text-zinc-500">Obunaçilar, layklar va körişlar — bir neça daqiqada.</p>
-        </div>
-      </header>
+    <div className="space-y-8">
+      {/* sarlavhadagi logo yetarli — tepada e'lon banneri, ostida qo'llanma banneri */}
+      {announcements.length > 0 && <AnnouncementCarousel items={announcements} />}
 
       <GuideBanner />
 

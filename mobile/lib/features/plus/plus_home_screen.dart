@@ -120,7 +120,6 @@ class _PlusHomeScreenState extends State<PlusHomeScreen> with WidgetsBindingObse
                   ),
                   const SizedBox(height: 20),
                   const FamilyHubCard(),
-                  const SizedBox(height: 14),
                   _UzCard(
                     roleLabel: user == null
                         ? null

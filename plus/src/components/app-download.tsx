@@ -1,3 +1,4 @@
+import { AppBenefits, AppStoreButtons } from "@/components/app-benefits";
 import { Icon } from "@/components/icons";
 
 /** Android ilovasi (app.tayyorr.uz orqali R2 dagi APK). */
@@ -52,15 +53,8 @@ export function AppDownloadSection() {
           <p className="mx-auto mt-4 max-w-md leading-relaxed text-zinc-400 lg:mx-0">
             tayyorr+, Tayyorr.uz va Tayyorr SMM — bitta ilovada. Buyurtmalar, xabarlar va hamyon; yangi xabar kelsa, darhol bilasiz.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
-            <a href={APP_DOWNLOAD_URL} className="inline-flex items-center gap-2 rounded-[0.9rem] bg-white px-6 py-3.5 font-semibold text-zinc-900 hover:bg-zinc-100">
-              <Icon name="download" className="h-4 w-4" />
-              Android uçun yuklab oliş
-            </a>
-            <span className="inline-flex cursor-default items-center rounded-[0.9rem] border border-white/15 px-6 py-3.5 font-semibold text-zinc-500">
-              iOS — tez orada
-            </span>
-          </div>
+          <AppBenefits />
+          <AppStoreButtons href={APP_DOWNLOAD_URL} />
         </div>
       </div>
     </section>
