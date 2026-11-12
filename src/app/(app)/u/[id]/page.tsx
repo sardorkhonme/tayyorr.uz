@@ -9,6 +9,7 @@ import { BackLink } from "@/components/back-link";
 import { BlockedIcon } from "@/components/icons";
 import { presenceText } from "@/lib/presence";
 import { shortDate } from "@/lib/date";
+import { MascotState } from "@/components/mascot";
 import { maskName } from "@/lib/mask-name";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -207,7 +208,9 @@ export default async function PublicProfile({
             {doneTitle} ({doneOrders.length})
           </h2>
           {doneOrders.length === 0 ? (
-            <div className="card text-sm text-zinc-500">Hozirça yöq.</div>
+            <div className="card">
+              <MascotState pose="empty-orders" size={120} title="Hozirça yöq" />
+            </div>
           ) : (
             <ul className="flex flex-col gap-2">
               {doneOrders.map((o) => (

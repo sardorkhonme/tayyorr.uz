@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/format.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -93,11 +94,16 @@ class _PublicProfileView extends StatelessWidget {
           ];
         } else if (state.status == PublicProfileStatus.failure || p == null) {
           body = [
-            WebCard(
-              child: Text(
-                state.error ?? 'Topilmadi',
-                style: TextStyle(color: WebC.zinc500, fontSize: 14),
-              ),
+            ErrorState.from(
+              state.status == PublicProfileStatus.failure ? state.error : null,
+              () => context.read<PublicProfileCubit>().load(),
+              // muvaffaqiyatli, lekin profil yöq — ham «topilmadi»
+              statusCode:
+                  p == null && state.status != PublicProfileStatus.failure
+                  ? 404
+                  : state.errorCode,
+              notFoundTitle: 'Foydalanuvçi topilmadi',
+              notFoundMessage: "Profil öçirilgan yoki havola notöğri.",
             ),
           ];
         } else if (p.blockedMe) {

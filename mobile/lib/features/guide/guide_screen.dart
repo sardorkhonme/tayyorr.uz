@@ -8,6 +8,7 @@ import '../../core/navigation/open_internal.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_exception.dart';
 import '../../widgets/skeleton.dart';
+import '../../widgets/mascot.dart';
 import '../../widgets/web_page.dart';
 import '../../widgets/web_ui.dart';
 import '../auth/bloc/auth_bloc.dart';
@@ -155,12 +156,7 @@ class _GuideScreenState extends State<GuideScreen> {
         if (_loading) ...[
           for (var i = 0; i < 4; i++) _stepSkeleton(last: i == 3),
         ] else if (_error != null)
-          WebCard(
-            child: Text(
-              _error!,
-              style: TextStyle(color: WebC.red, fontSize: 14),
-            ),
-          )
+          ErrorState.from(_error, _load, card: true)
         else ...[
           for (var i = 0; i < _steps.length; i++)
             _stepTile(i, _steps[i], last: i == _steps.length - 1),

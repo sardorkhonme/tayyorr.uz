@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../app_config.dart';
@@ -36,8 +38,10 @@ class ApiClient {
   static final ApiClient instance = ApiClient._internal();
   late final Dio _dio;
 
-  Future<Map<String, dynamic>> get(String path,
-      {Map<String, dynamic>? query}) async {
+  Future<Map<String, dynamic>> get(
+    String path, {
+    Map<String, dynamic>? query,
+  }) async {
     return _unwrap(() => _dio.get(path, queryParameters: query));
   }
 
@@ -53,12 +57,12 @@ class ApiClient {
     return _unwrap(() => _dio.patch(path, data: data));
   }
 
-  Future<Map<String, dynamic>> _unwrap(
-    Future<Response> Function() call,
-  ) async {
+  Future<Map<String, dynamic>> _unwrap(Future<Response> Function() call) async {
     try {
       final res = await call();
-      if (AppConfig.instance.maintenance != null) AppConfig.instance.setMaintenance(null);
+      if (AppConfig.instance.maintenance != null) {
+        AppConfig.instance.setMaintenance(null);
+      }
       final data = res.data;
       if (data is Map<String, dynamic>) return data;
       return {'data': data};
@@ -68,23 +72,41 @@ class ApiClient {
       if (code == 426 || (body is Map && body['updateRequired'] == true)) {
         AppConfig.instance.markUpdateRequired();
       } else if (code == 503 && body is Map && body['maintenance'] == true) {
-        AppConfig.instance.setMaintenance(body['error'] as String? ?? 'Texnik işlar olib borilmoqda');
+        AppConfig.instance.setMaintenance(
+          body['error'] as String? ?? 'Texnik işlar olib borilmoqda',
+        );
       }
       final msg = (body is Map && body['error'] is String)
           ? body['error'] as String
           : _fallbackMessage(e);
-      throw ApiException(msg, statusCode: e.response?.statusCode, restricted: body is Map && body['restricted'] == true);
+      throw ApiException(
+        msg,
+        statusCode: e.response?.statusCode,
+        restricted: body is Map && body['restricted'] == true,
+        network: e.response == null && _isNetwork(e),
+      );
     }
   }
+
+  static bool _isNetwork(DioException e) => switch (e.type) {
+    DioExceptionType.connectionTimeout ||
+    DioExceptionType.receiveTimeout ||
+    DioExceptionType.sendTimeout ||
+    DioExceptionType.connectionError => true,
+    DioExceptionType.unknown => e.error is SocketException,
+    _ => false,
+  };
 
   String _fallbackMessage(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return "Internet sekin — qayta urinib köring";
+        return ApiException.slowMessage;
       case DioExceptionType.connectionError:
-        return 'Internetga ulanib bölmadi';
+        return ApiException.offlineMessage;
+      case DioExceptionType.unknown when e.error is SocketException:
+        return ApiException.offlineMessage;
       default:
         return 'Nimadir xato ketdi';
     }

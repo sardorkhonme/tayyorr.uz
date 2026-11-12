@@ -59,7 +59,7 @@ export function NewOrderForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Xatolik");
       // replace — "orqaga" bosilganda /orders/new ga qaytmasin
-      router.replace(`/orders/${data.order.id}`);
+      router.replace(`/orders/${data.order.id}?created=1`);
       router.refresh();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Xatolik");

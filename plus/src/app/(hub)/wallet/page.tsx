@@ -8,6 +8,7 @@ import { TopupButton } from "@/components/topup-button";
 import { db } from "@/lib/db";
 import { som } from "@/lib/format";
 import { PAYOUT_STATUS } from "@/lib/payout";
+import { Mascot, MascotState } from "@/components/mascot";
 import {
   ensureWalletCode,
   expireStaleClickTopups,
@@ -53,8 +54,14 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
       </header>
 
       {topup && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
-          Tölov tekşirilmoqda — ötgan bölsa, balans bir neça soniyada yangilanadi. Sahifani yangilang.
+        <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+          <Mascot pose="success" size={110} priority className="shrink-0" />
+          <div className="min-w-0">
+            <p className="font-semibold text-emerald-900">Rahmat! Tölov qabul qilinmoqda</p>
+            <p className="mt-1 text-sm">
+              Tölov tekşirilmoqda — ötgan bölsa, balans bir neça soniyada yangilanadi. Sahifani yangilang.
+            </p>
+          </div>
         </div>
       )}
 
@@ -119,7 +126,16 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
       <section>
         <h2 className="font-display text-xl font-bold text-zinc-900">Amallar tarixi</h2>
         {txns.length === 0 ? (
-          <div className="card mt-4 !rounded-3xl px-6 py-12 text-center text-zinc-500">Hozirça amallar yöq.</div>
+          <div className="card mt-4 !rounded-3xl text-zinc-900">
+            <MascotState
+              pose="wallet-empty"
+              size={140}
+              title="Hozirça amallar yöq"
+              message="Hamyonni töldirsangiz yoki xizmatlardan foydalansangiz, barça amallar şu yerda körinadi."
+            >
+              <TopupButton className="btn-primary">Hamyonni töldiriş</TopupButton>
+            </MascotState>
+          </div>
         ) : (
           <ul className="mt-4 space-y-2.5">
             {txns.map((tx) => {

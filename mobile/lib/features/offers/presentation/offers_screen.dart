@@ -4,6 +4,7 @@ import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../../core/utils/format.dart';
 import '../../../widgets/app_header_sliver.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -234,21 +235,20 @@ class _OffersViewState extends State<_OffersView> {
                 ]
               else if (list.isEmpty)
                 state.status == OffersStatus.failure
-                    ? ListMessage(
-                        icon: TI.wifi_off_rounded,
-                        title: "Yuklab bölmadi",
-                        subtitle:
-                            state.error ?? 'Pastga tortib qayta uriniş mumkin.',
+                    ? ErrorState.from(
+                        state.error,
+                        () => context.read<OffersCubit>().load(),
+                        card: true,
                       )
                     : state.offers.isEmpty
                     ? const ListMessage(
-                        icon: TI.back_hand_outlined,
+                        pose: MascotPose.emptyOffers,
                         title: "Hali taklif yuborilmagan",
                         subtitle:
                             "Asosiy bölimdagi buyurtmaga narx taklif qiling — u şu yerda körinadi.",
                       )
                     : const ListMessage(
-                        icon: TI.search_off_rounded,
+                        pose: MascotPose.noResults,
                         title: 'Mos taklif topilmadi',
                         subtitle: "Filtr yoki qidiruvni özgartirib köring.",
                       )

@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -29,7 +30,8 @@ class StandaloneWallet extends StatelessWidget {
   const StandaloneWallet({super.key});
 
   @override
-  Widget build(BuildContext context) => const AuroraBackground(child: WalletScreen());
+  Widget build(BuildContext context) =>
+      const AuroraBackground(child: WalletScreen());
 }
 
 class WalletScreen extends StatelessWidget {
@@ -52,42 +54,51 @@ class _WalletView extends StatelessWidget {
     return BlocBuilder<WalletCubit, WalletState>(
       builder: (context, state) {
         final wallet = state.wallet;
-        final isPreparer = context.select((AuthBloc b) => b.state.user?.isPreparer ?? false);
+        final isPreparer = context.select(
+          (AuthBloc b) => b.state.user?.isPreparer ?? false,
+        );
         final reload = context.read<WalletCubit>().load;
 
         final List<Widget> body;
         if (wallet == null && state.status == WalletStatus.failure) {
-          body = [
-            Padding(
-              padding: const EdgeInsets.only(top: 40),
-              child: Center(child: Text(state.error ?? 'Xatolik', style: TextStyle(color: WebC.zinc500))),
-            ),
-          ];
+          body = [ErrorState.from(state.error, reload)];
         } else if (wallet == null) {
           // haqiqiy tuzilma: balans kartasi, to'ldirish, yechib olish formasi, amallar tarixi
           body = [
             const _BalanceSkeleton(),
             const _TopUpSkeleton(),
             const SBlock(height: 280),
-            _Section(title: 'Amallar tarixi', children: [for (var i = 0; i < 4; i++) const _TxnSkeleton()]),
+            _Section(
+              title: 'Amallar tarixi',
+              children: [for (var i = 0; i < 4; i++) const _TxnSkeleton()],
+            ),
           ];
         } else {
           body = [
             _BalanceCard(wallet: wallet),
-            if (isPreparer) _BuyStarsForm(starBalance: wallet.starBalance, onDone: reload),
+            if (isPreparer)
+              _BuyStarsForm(starBalance: wallet.starBalance, onDone: reload),
             const _TopUpCta(),
             _PayoutForm(balance: wallet.balance, onDone: reload),
             if (wallet.payouts.isNotEmpty)
               _Section(
                 title: "Yeçib olişlar",
-                children: [for (final p in wallet.payouts) _PayoutRow(payout: p, onCancelled: reload)],
+                children: [
+                  for (final p in wallet.payouts)
+                    _PayoutRow(payout: p, onCancelled: reload),
+                ],
               ),
             _Section(
               title: 'Amallar tarixi',
               children: wallet.transactions.isEmpty
                   ? [
-                      WebCard(
-                        child: Text("Hozirça amallar yöq.", style: TextStyle(color: WebC.zinc500, fontSize: 14)),
+                      const MascotState(
+                        pose: MascotPose.walletEmpty,
+                        title: "Hozirça amallar yöq",
+                        message:
+                            "Hamyonni töldirganingizda yoki tölov qilganingizda amallar şu yerda körinadi.",
+                        size: 140,
+                        card: true,
                       ),
                     ]
                   : [for (final t in wallet.transactions) _TxnRow(txn: t)],
@@ -103,7 +114,8 @@ class _WalletView extends StatelessWidget {
             const WebPageTitle(
               'Hamyon',
               size: 24,
-              subtitle: "Hisobingizni töldiring, buyurtmalar uçun şu balansdan tölov qilinadi.",
+              subtitle:
+                  "Hisobingizni töldiring, buyurtmalar uçun şu balansdan tölov qilinadi.",
             ),
             ...body,
           ],
@@ -125,13 +137,16 @@ class _BalanceSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: WebC.cardBorder),
       ),
-      child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SBar(width: 90, height: 13),
-        SizedBox(height: 10),
-        SBar(width: 190, height: 36, borderRadius: 10),
-        SizedBox(height: 14),
-        SBar(width: 210, height: 32, borderRadius: 8),
-      ]),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SBar(width: 90, height: 13),
+          SizedBox(height: 10),
+          SBar(width: 190, height: 36, borderRadius: 10),
+          SizedBox(height: 14),
+          SBar(width: 210, height: 32, borderRadius: 8),
+        ],
+      ),
     );
   }
 }
@@ -143,18 +158,27 @@ class _TopUpSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: WebC.cardBg, borderRadius: BorderRadius.circular(20), border: Border.all(color: WebC.cardBorder)),
-      child: const Row(children: [
-        Skel(width: 46, height: 46, borderRadius: 14),
-        SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SBar(width: 140, height: 15),
-            SizedBox(height: 6),
-            SBar(width: 190, height: 11),
-          ]),
-        ),
-      ]),
+      decoration: BoxDecoration(
+        color: WebC.cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: WebC.cardBorder),
+      ),
+      child: const Row(
+        children: [
+          Skel(width: 46, height: 46, borderRadius: 14),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SBar(width: 140, height: 15),
+                SizedBox(height: 6),
+                SBar(width: 190, height: 11),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -166,17 +190,22 @@ class _TxnSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return const WebCard(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SBar(width: 120, height: 14),
-            SizedBox(height: 6),
-            SBar(width: 150, height: 11),
-          ]),
-        ),
-        SizedBox(width: 12),
-        SBar(width: 80, height: 14),
-      ]),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SBar(width: 120, height: 14),
+                SizedBox(height: 6),
+                SBar(width: 150, height: 11),
+              ],
+            ),
+          ),
+          SizedBox(width: 12),
+          SBar(width: 80, height: 14),
+        ],
+      ),
     );
   }
 }
@@ -191,7 +220,14 @@ class _Section extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(title, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 12),
         for (var i = 0; i < children.length; i++) ...[
           if (i > 0) const SizedBox(height: 8),
@@ -204,7 +240,14 @@ class _Section extends StatelessWidget {
 
 /// Karta sarlavhasi + o'ng tomondagi kichik nishon.
 class _FormHead extends StatelessWidget {
-  const _FormHead({required this.title, this.tag, this.tagColor, this.tagBg, this.titleIcon, this.tagStar = false});
+  const _FormHead({
+    required this.title,
+    this.tag,
+    this.tagColor,
+    this.tagBg,
+    this.titleIcon,
+    this.tagStar = false,
+  });
   final String title;
   final String? tag;
   final Color? tagColor;
@@ -222,18 +265,39 @@ class _FormHead extends StatelessWidget {
       children: [
         if (titleIcon != null) ...[titleIcon!, const SizedBox(width: 8)],
         Expanded(
-          child: Text(title, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          child: Text(
+            title,
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
         if (tag != null)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: tagBg ?? WebC.fill5, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+              color: tagBg ?? WebC.fill5,
+              borderRadius: BorderRadius.circular(4),
+            ),
             child: Text.rich(
-              TextSpan(children: [
-                if (tagStar) ...[TextSpan(text: tag!.split(' ').first), const TextSpan(text: ' '), starSpan(size: 11), TextSpan(text: tag!.substring(tag!.indexOf(' ')))]
-                else TextSpan(text: tag!),
-              ]),
-              style: TextStyle(color: tagColor ?? WebC.zinc300, fontSize: 11, fontWeight: FontWeight.w600),
+              TextSpan(
+                children: [
+                  if (tagStar) ...[
+                    TextSpan(text: tag!.split(' ').first),
+                    const TextSpan(text: ' '),
+                    starSpan(size: 11),
+                    TextSpan(text: tag!.substring(tag!.indexOf(' '))),
+                  ] else
+                    TextSpan(text: tag!),
+                ],
+              ),
+              style: TextStyle(
+                color: tagColor ?? WebC.zinc300,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
       ],
@@ -254,24 +318,30 @@ class _CommissionBreakdown extends StatelessWidget {
     final commission = (amount * kPayoutCommissionPercent / 100).ceil();
     final net = amount - commission;
     Widget row(String k, String v, {bool strong = false}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(k,
-                    style: TextStyle(
-                        color: strong ? WebC.white : WebC.zinc400,
-                        fontSize: 13,
-                        fontWeight: strong ? FontWeight.w600 : FontWeight.normal)),
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              k,
+              style: TextStyle(
+                color: strong ? WebC.white : WebC.zinc400,
+                fontSize: 13,
+                fontWeight: strong ? FontWeight.w600 : FontWeight.normal,
               ),
-              Text(v,
-                  style: TextStyle(
-                      color: strong ? WebC.emerald : WebC.zinc400,
-                      fontSize: strong ? 15 : 13,
-                      fontWeight: strong ? FontWeight.w700 : FontWeight.normal)),
-            ],
+            ),
           ),
-        );
+          Text(
+            v,
+            style: TextStyle(
+              color: strong ? WebC.emerald : WebC.zinc400,
+              fontSize: strong ? 15 : 13,
+              fontWeight: strong ? FontWeight.w700 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -282,7 +352,10 @@ class _CommissionBreakdown extends StatelessWidget {
       child: Column(
         children: [
           row('Hamyondan yeçiladi', "${groupDigits(amount)} söm"),
-          row('Komissiya ($kPayoutCommissionPercent%)', "−${groupDigits(commission)} söm"),
+          row(
+            'Komissiya ($kPayoutCommissionPercent%)',
+            "−${groupDigits(commission)} söm",
+          ),
           Divider(color: WebC.border, height: 14),
           row('Kartangizga tuşadi', "${groupDigits(net)} söm", strong: true),
         ],
@@ -296,8 +369,10 @@ class _Hint extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
+  );
 }
 
 class _Msg extends StatelessWidget {
@@ -306,8 +381,10 @@ class _Msg extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: TextStyle(color: ok ? WebC.emerald : WebC.red, fontSize: 14));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(color: ok ? WebC.emerald : WebC.red, fontSize: 14),
+  );
 }
 
 /// Saytdagi tez tanlash tugmachasi (`rounded-lg border bg-white/5 text-xs`).
@@ -376,9 +453,15 @@ class _BalanceCardState extends State<_BalanceCard> {
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
           decoration: BoxDecoration(
-            color: light ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.06),
+            color: light
+                ? Colors.white.withValues(alpha: 0.7)
+                : Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: light ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.12)),
+            border: Border.all(
+              color: light
+                  ? Colors.black.withValues(alpha: 0.08)
+                  : Colors.white.withValues(alpha: 0.12),
+            ),
           ),
           child: Stack(
             children: [
@@ -407,7 +490,10 @@ class _BalanceCardState extends State<_BalanceCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Joriy balans', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
+                    Text(
+                      'Joriy balans',
+                      style: TextStyle(color: WebC.zinc400, fontSize: 14),
+                    ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -419,10 +505,16 @@ class _BalanceCardState extends State<_BalanceCard> {
                                 ? Text('•••••', style: _amountStyle)
                                 : TweenAnimationBuilder<double>(
                                     key: ValueKey('${w.balance}-$_run'),
-                                    tween: Tween(begin: 0, end: w.balance.toDouble()),
+                                    tween: Tween(
+                                      begin: 0,
+                                      end: w.balance.toDouble(),
+                                    ),
                                     duration: const Duration(milliseconds: 900),
                                     curve: Curves.easeOutCubic,
-                                    builder: (_, v, __) => Text(formatSom(v.round()), style: _amountStyle),
+                                    builder: (_, v, __) => Text(
+                                      formatSom(v.round()),
+                                      style: _amountStyle,
+                                    ),
                                   ),
                           ),
                         ),
@@ -433,7 +525,9 @@ class _BalanceCardState extends State<_BalanceCard> {
                             if (!_balanceHidden) _run++;
                           }),
                           child: TIcon(
-                            _balanceHidden ? TI.visibility_off_outlined : TI.visibility_outlined,
+                            _balanceHidden
+                                ? TI.visibility_off_outlined
+                                : TI.visibility_outlined,
                             size: 18,
                             color: WebC.zinc500,
                           ),
@@ -442,7 +536,10 @@ class _BalanceCardState extends State<_BalanceCard> {
                     ),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: WebC.fill5,
                         borderRadius: BorderRadius.circular(8),
@@ -451,17 +548,36 @@ class _BalanceCardState extends State<_BalanceCard> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Hisob kodi:', style: TextStyle(color: WebC.zinc400, fontSize: 14)),
+                          Text(
+                            'Hisob kodi:',
+                            style: TextStyle(color: WebC.zinc400, fontSize: 14),
+                          ),
                           const SizedBox(width: 8),
-                          Text(w.walletCode,
-                              style: TextStyle(
-                                  color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'monospace')),
+                          Text(
+                            w.walletCode,
+                            style: TextStyle(
+                              color: WebC.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: _copy,
                             child: _copied
-                                ? Text('nusxa olindi', style: TextStyle(color: WebC.emerald, fontSize: 12))
-                                : TIcon(TI.copy_rounded, size: 16, color: WebC.zinc400),
+                                ? Text(
+                                    'nusxa olindi',
+                                    style: TextStyle(
+                                      color: WebC.emerald,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                : TIcon(
+                                    TI.copy_rounded,
+                                    size: 16,
+                                    color: WebC.zinc400,
+                                  ),
                           ),
                         ],
                       ),
@@ -477,12 +593,12 @@ class _BalanceCardState extends State<_BalanceCard> {
   }
 
   TextStyle get _amountStyle => TextStyle(
-        color: WebC.white,
-        fontSize: 36,
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.8,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      );
+    color: WebC.white,
+    fontSize: 36,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.8,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 }
 
 // ── Star ─────────────────────────────────────────────────────────
@@ -548,11 +664,19 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
           ),
           const SizedBox(height: 8),
           Text.rich(
-            TextSpan(children: [
-              const TextSpan(text: "Buyurtmaga ariza yuboriş va navbatda yuqoriga çiqiş uçun kerak böladi. 1 "),
-              starSpan(size: 12),
-              TextSpan(text: " = ${groupDigits(_starPrice)} söm, hamyon balansingizdan yeçiladi."),
-            ]),
+            TextSpan(
+              children: [
+                const TextSpan(
+                  text:
+                      "Buyurtmaga ariza yuboriş va navbatda yuqoriga çiqiş uçun kerak böladi. 1 ",
+                ),
+                starSpan(size: 12),
+                TextSpan(
+                  text:
+                      " = ${groupDigits(_starPrice)} söm, hamyon balansingizdan yeçiladi.",
+                ),
+              ],
+            ),
             style: TextStyle(color: WebC.zinc500, fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 16),
@@ -573,12 +697,23 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
             runSpacing: 8,
             children: [
               for (final q in const [5, 10, 25, 50])
-                _Quick(label: '$q', star: true, onTap: () => setState(() => _stars.text = '$q')),
+                _Quick(
+                  label: '$q',
+                  star: true,
+                  onTap: () => setState(() => _stars.text = '$q'),
+                ),
             ],
           ),
-          if (_msg != null) ...[const SizedBox(height: 16), _Msg(ok: _msg!.$1, text: _msg!.$2)],
+          if (_msg != null) ...[
+            const SizedBox(height: 16),
+            _Msg(ok: _msg!.$1, text: _msg!.$2),
+          ],
           const SizedBox(height: 16),
-          WebButton(label: _busy ? '...' : 'Star sotib oliş', onPressed: _busy ? null : _submit, expand: true),
+          WebButton(
+            label: _busy ? '...' : 'Star sotib oliş',
+            onPressed: _busy ? null : _submit,
+            expand: true,
+          ),
         ],
       ),
     );
@@ -602,22 +737,42 @@ class _TopUpCta extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: WebC.cardBorder),
         ),
-        child: Row(children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(gradient: kBrandGradient, borderRadius: BorderRadius.circular(14)),
-            child: const Center(child: TIcon(TI.add_rounded, color: Colors.white, size: 22)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text("Hamyonni töldiriş", style: TextStyle(color: WebC.white, fontSize: 15.5, fontWeight: FontWeight.w700)),
-              Text('Click orqali — bir neça soniyada', style: TextStyle(color: WebC.zinc500, fontSize: 12.5)),
-            ]),
-          ),
-          TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
-        ]),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                gradient: kBrandGradient,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Center(
+                child: TIcon(TI.add_rounded, color: Colors.white, size: 22),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Hamyonni töldiriş",
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Click orqali — bir neça soniyada',
+                    style: TextStyle(color: WebC.zinc500, fontSize: 12.5),
+                  ),
+                ],
+              ),
+            ),
+            TIcon(TI.chevron_right_rounded, color: WebC.zinc500),
+          ],
+        ),
       ),
     );
   }
@@ -625,7 +780,10 @@ class _TopUpCta extends StatelessWidget {
 
 class _CardNumberFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final cut = digits.length > 16 ? digits.substring(0, 16) : digits;
     final buf = StringBuffer();
@@ -634,7 +792,10 @@ class _CardNumberFormatter extends TextInputFormatter {
       buf.write(cut[i]);
     }
     final text = buf.toString();
-    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 }
 
@@ -681,10 +842,19 @@ class _PayoutFormState extends State<_PayoutForm> {
       _msg = null;
     });
     try {
-      await WalletRepository().payout(amount: amount, card: _card.text, cardName: _cardName.text.trim());
+      await WalletRepository().payout(
+        amount: amount,
+        card: _card.text,
+        cardName: _cardName.text.trim(),
+      );
       if (!mounted) return;
       context.read<AuthBloc>().add(const AuthMeRefreshRequested());
-      setState(() => _msg = (true, "Mablağ hisobdan yeçildi va tez orada kartangizga ötkaziladi."));
+      setState(
+        () => _msg = (
+          true,
+          "Mablağ hisobdan yeçildi va tez orada kartangizga ötkaziladi.",
+        ),
+      );
       _card.clear();
       _cardName.clear();
       _amount.clear();
@@ -702,10 +872,19 @@ class _PayoutFormState extends State<_PayoutForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Kartaga yeçib oliş', style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(
+            'Kartaga yeçib oliş',
+            style: TextStyle(
+              color: WebC.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 8),
-          _Hint("Mablağ darhol hisobdan yeçiladi va kartangizga ötkaziladi. "
-              "Mavjud: ${groupDigits(widget.balance)} söm."),
+          _Hint(
+            "Mablağ darhol hisobdan yeçiladi va kartangizga ötkaziladi. "
+            "Mavjud: ${groupDigits(widget.balance)} söm.",
+          ),
           const SizedBox(height: 12),
           // saytdagidek: 5% komissiya ogohlantirishi
           Container(
@@ -713,23 +892,39 @@ class _PayoutFormState extends State<_PayoutForm> {
             decoration: BoxDecoration(
               color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.30)),
+              border: Border.all(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.30),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TIcon(TI.warning_amber_rounded, size: 18, color: AppColors.amber),
+                TIcon(
+                  TI.warning_amber_rounded,
+                  size: 18,
+                  color: AppColors.amber,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text.rich(
-                    TextSpan(children: [
-                      const TextSpan(
-                        text: 'Diqqat: kartaga yeçişda $kPayoutCommissionPercent% komissiya olinadi. ',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const TextSpan(text: "Masalan, 100 000 söm yeçsangiz, kartangizga 95 000 söm tuşadi."),
-                    ]),
-                    style: TextStyle(color: AppColors.amber, fontSize: 13, height: 1.4),
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text:
+                              'Diqqat: kartaga yeçişda $kPayoutCommissionPercent% komissiya olinadi. ',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const TextSpan(
+                          text:
+                              "Masalan, 100 000 söm yeçsangiz, kartangizga 95 000 söm tuşadi.",
+                        ),
+                      ],
+                    ),
+                    style: TextStyle(
+                      color: AppColors.amber,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
@@ -742,7 +937,9 @@ class _PayoutFormState extends State<_PayoutForm> {
             keyboardType: TextInputType.number,
             inputFormatters: [_CardNumberFormatter()],
             style: TextStyle(
-              color: AppColors.isLight ? const Color(0xFF1B1B1F) : const Color(0xFFE4E4E7),
+              color: AppColors.isLight
+                  ? const Color(0xFF1B1B1F)
+                  : const Color(0xFFE4E4E7),
               fontSize: 14,
               height: 1.5,
               fontFamily: 'monospace',
@@ -757,7 +954,10 @@ class _PayoutFormState extends State<_PayoutForm> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [const WebLabel('Karta egasi (ixtiyoriy)'), WebInput(controller: _cardName)],
+                  children: [
+                    const WebLabel('Karta egasi (ixtiyoriy)'),
+                    WebInput(controller: _cardName),
+                  ],
                 ),
               ),
               const SizedBox(width: 12),
@@ -766,7 +966,10 @@ class _PayoutFormState extends State<_PayoutForm> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const WebLabel("Summa (söm)"),
-                    WebInput(controller: _amount, keyboardType: TextInputType.number),
+                    WebInput(
+                      controller: _amount,
+                      keyboardType: TextInputType.number,
+                    ),
                   ],
                 ),
               ),
@@ -776,11 +979,17 @@ class _PayoutFormState extends State<_PayoutForm> {
             const SizedBox(height: 12),
             _CommissionBreakdown(amount: int.parse(_amount.text.trim())),
           ],
-          if (_msg != null) ...[const SizedBox(height: 12), _Msg(ok: _msg!.$1, text: _msg!.$2)],
+          if (_msg != null) ...[
+            const SizedBox(height: 12),
+            _Msg(ok: _msg!.$1, text: _msg!.$2),
+          ],
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerLeft,
-            child: WebButton(label: _busy ? '...' : 'Yeçib oliş', onPressed: _busy ? null : _submit),
+            child: WebButton(
+              label: _busy ? '...' : 'Yeçib oliş',
+              onPressed: _busy ? null : _submit,
+            ),
           ),
         ],
       ),
@@ -833,14 +1042,24 @@ class _PayoutRowState extends State<_PayoutRow> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text.rich(
-                  TextSpan(children: [
-                    TextSpan(text: formatSom(p.amount)),
-                    TextSpan(
-                      text: '  ${kPayoutStatusLabel[p.status] ?? p.status}',
-                      style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.w400),
-                    ),
-                  ]),
-                  style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500),
+                  TextSpan(
+                    children: [
+                      TextSpan(text: formatSom(p.amount)),
+                      TextSpan(
+                        text: '  ${kPayoutStatusLabel[p.status] ?? p.status}',
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  style: TextStyle(
+                    color: WebC.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -888,11 +1107,32 @@ class _TxnRow extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 8,
                   children: [
-                    Text(kTxnTypeLabel[txn.type] ?? txn.type,
-                        style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                    if (txn.method == 'DEMO') _tag('DEMO', const Color(0xFFFCD34D), const Color(0xFFF59E0B)),
-                    if (txn.reversed) _tag('BEKOR QILINGAN', const Color(0xFFF87171), const Color(0xFFEF4444)),
-                    if (failed) _tag('XATOLIK', const Color(0xFFF87171), const Color(0xFFEF4444)),
+                    Text(
+                      kTxnTypeLabel[txn.type] ?? txn.type,
+                      style: TextStyle(
+                        color: WebC.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (txn.method == 'DEMO')
+                      _tag(
+                        'DEMO',
+                        const Color(0xFFFCD34D),
+                        const Color(0xFFF59E0B),
+                      ),
+                    if (txn.reversed)
+                      _tag(
+                        'BEKOR QILINGAN',
+                        const Color(0xFFF87171),
+                        const Color(0xFFEF4444),
+                      ),
+                    if (failed)
+                      _tag(
+                        'XATOLIK',
+                        const Color(0xFFF87171),
+                        const Color(0xFFEF4444),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -920,10 +1160,16 @@ class _TxnRow extends StatelessWidget {
   }
 
   Widget _tag(String text, Color fg, Color bg) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(color: bg.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
-        child: Text(text, style: TextStyle(color: fg, fontSize: 10, fontWeight: FontWeight.w600)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: bg.withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(color: fg, fontSize: 10, fontWeight: FontWeight.w600),
+    ),
+  );
 }
 
 void _showReceipt(BuildContext context, WalletTransactionModel txn) {
@@ -939,7 +1185,7 @@ void _showReceipt(BuildContext context, WalletTransactionModel txn) {
               'FAILED' => "Xatolik — tölov amalga oşmadi",
               'CANCELLED' => 'Bekor qilingan',
               _ => 'Bajarildi',
-            }
+            },
     ),
     ('Usul', txn.method),
     if ((txn.note ?? '').isNotEmpty) ('Izoh', txn.note!),
@@ -951,8 +1197,14 @@ void _showReceipt(BuildContext context, WalletTransactionModel txn) {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(kTxnTypeLabel[txn.type] ?? txn.type,
-            style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(
+          kTxnTypeLabel[txn.type] ?? txn.type,
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 12),
         for (final r in rows)
           Padding(
@@ -960,8 +1212,19 @@ void _showReceipt(BuildContext context, WalletTransactionModel txn) {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 90, child: Text(r.$1, style: TextStyle(color: WebC.zinc500, fontSize: 13))),
-                Expanded(child: Text(r.$2, style: TextStyle(color: WebC.white, fontSize: 13))),
+                SizedBox(
+                  width: 90,
+                  child: Text(
+                    r.$1,
+                    style: TextStyle(color: WebC.zinc500, fontSize: 13),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    r.$2,
+                    style: TextStyle(color: WebC.white, fontSize: 13),
+                  ),
+                ),
               ],
             ),
           ),

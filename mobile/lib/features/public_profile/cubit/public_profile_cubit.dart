@@ -13,14 +13,18 @@ class PublicProfileState extends Equatable {
     this.status = PublicProfileStatus.loading,
     this.profile,
     this.error,
+    this.errorCode,
   });
 
   final PublicProfileStatus status;
   final PublicProfileModel? profile;
   final String? error;
 
+  /// Yuklaş xatosining HTTP kodi (404 → «Topilmadi»).
+  final int? errorCode;
+
   @override
-  List<Object?> get props => [status, profile, error];
+  List<Object?> get props => [status, profile, error, errorCode];
 }
 
 class PublicProfileCubit extends Cubit<PublicProfileState>
@@ -48,6 +52,7 @@ class PublicProfileCubit extends Cubit<PublicProfileState>
         PublicProfileState(
           status: PublicProfileStatus.failure,
           error: e.message,
+          errorCode: e.statusCode,
         ),
       );
     }

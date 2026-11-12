@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../../core/utils/format.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/order_model.dart';
@@ -202,53 +203,36 @@ class OrderListTileSkeleton extends StatelessWidget {
   }
 }
 
-/// Röyxat bösh / xato / topilmadi holati — markazda ikonka va matn.
+/// Röyxat böş / topilmadi holati — karta içida Tayyor-Man maskoti (140) va matn.
+/// Yuklaş xatosi uçun [ErrorState] (`card: true`).
 class ListMessage extends StatelessWidget {
   const ListMessage({
     super.key,
-    required this.icon,
+    required this.pose,
     required this.title,
     this.subtitle,
+    this.actionLabel,
+    this.actionIcon,
+    this.onAction,
   });
-  final TIData icon;
+  final MascotPose pose;
   final String title;
   final String? subtitle;
+  final String? actionLabel;
+  final TIData? actionIcon;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
-    return WebCard(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-      child: Column(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: WebC.fill5,
-              shape: BoxShape.circle,
-            ),
-            child: TIcon(icon, size: 22, color: WebC.zinc400),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: WebC.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: WebC.zinc500, fontSize: 13, height: 1.4),
-            ),
-          ],
-        ],
-      ),
+    return MascotState(
+      pose: pose,
+      title: title,
+      message: subtitle,
+      actionLabel: actionLabel,
+      actionIcon: actionIcon,
+      onAction: onAction,
+      size: 140,
+      card: true,
     );
   }
 }

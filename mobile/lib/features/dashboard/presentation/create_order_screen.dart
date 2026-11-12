@@ -5,6 +5,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/format.dart';
 import '../../../widgets/date_time_picker.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
@@ -64,6 +65,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             ? null
             : int.tryParse(_budget.text.trim()),
         deadline: _deadline,
+      );
+      if (!mounted) return;
+      await showMascotSuccess(
+        context,
+        title: 'Buyurtma yaratildi!',
+        message: "Tayyorlovçilar tez orada narx taklif qiladi.",
       );
       if (!mounted) return;
       // saytdagidek: yaratilgan buyurtma sahifasiga (replace — "orqaga" formaga qaytmasin)

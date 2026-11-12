@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { MAIN_SITE_URL, SMM_URL } from "@/lib/hub-nav";
 import { num } from "@/lib/format";
 import { platformOf } from "@/lib/platforms";
+import { Mascot } from "@/components/mascot";
 
 export const dynamic = "force-dynamic";
 const SMM_PLATFORMS = ["instagram", "telegram", "tiktok", "youtube", "facebook", "twitter"];
@@ -65,9 +66,15 @@ export default async function DashboardPage({
         </div>
       )}
       {topup && user && (
-        <div className="animate-rise rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
-          Click tölovi tekşirilmoqda. Tölov ötgan bölsa, balans bir neça soniyada
-          yangilanadi — sahifani yangilang.
+        <div className="animate-rise flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+          <Mascot pose="success" size={110} priority className="shrink-0" />
+          <div className="min-w-0">
+            <p className="font-semibold text-emerald-900">Rahmat! Tölov qabul qilinmoqda</p>
+            <p className="mt-1 text-sm">
+              Click tölovi tekşirilmoqda. Tölov ötgan bölsa, balans bir neça soniyada
+              yangilanadi — sahifani yangilang.
+            </p>
+          </div>
         </div>
       )}
 

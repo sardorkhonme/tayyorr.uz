@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 
 import { signOutToLoginAction } from "@/app/(hub)/actions";
-import { Icon } from "@/components/icons";
+import { Mascot } from "@/components/mascot";
 import { Logo } from "@/components/logo";
 
 /**
@@ -17,10 +17,8 @@ export function AccountNotFound() {
       <div className="w-full max-w-md text-center">
         <Logo className="text-3xl" />
         <div className="card mt-8 !rounded-3xl p-8">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-red-50 text-red-500">
-            <Icon name="user-x" className="h-8 w-8" />
-          </div>
-          <h1 className="mt-5 font-display text-2xl font-bold text-zinc-900">Bunday hisob mavjud emas</h1>
+          <Mascot pose="not-found" size={140} priority className="mx-auto" />
+          <h1 className="mt-3 font-display text-2xl font-bold text-zinc-900">Bunday hisob mavjud emas</h1>
           <p className="mt-2 leading-relaxed text-zinc-500">
             Hisobingiz tizimdan öçirilgan yoki topilmadi. Qaytadan kiriş yoki röyxatdan ötiş
             uçun quyidagi tugmani bosing.

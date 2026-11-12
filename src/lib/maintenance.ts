@@ -65,10 +65,10 @@ export function bearerUserId(req: Request): string | null {
 
 type Site = "app" | "plus" | "smm";
 
-const SITE: Record<Site, { name: string; mark: string; color: string }> = {
-  app: { name: "Tayyorr.uz", mark: "/logo-mark.png", color: "#6366f1" },
-  plus: { name: "tayyorr+", mark: "/plus-mark.png", color: "#8b5cf6" },
-  smm: { name: "Tayyorr SMM", mark: "/smm-mark.png", color: "#d946ef" },
+const SITE: Record<Site, { name: string; color: string }> = {
+  app: { name: "Tayyorr.uz", color: "#6366f1" },
+  plus: { name: "tayyorr+", color: "#8b5cf6" },
+  smm: { name: "Tayyorr SMM", color: "#d946ef" },
 };
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -82,16 +82,16 @@ function page(site: Site, message: string) {
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
 background:radial-gradient(700px circle at 50% 30%,${s.color}22,transparent 70%),#f7f7fb;color:#18181b}
 .c{max-width:440px;width:100%;text-align:center;background:#fff;border:1px solid #ececf2;border-radius:28px;padding:36px 28px;box-shadow:0 24px 60px -24px ${s.color}55}
-.m{width:76px;height:76px;margin:0 auto 18px;border-radius:22px;display:grid;place-items:center;background:#fff;box-shadow:0 10px 30px -12px ${s.color}88,0 0 0 1px #ececf2;animation:f 3s ease-in-out infinite}
-.m img{width:50px;height:50px;object-fit:contain}
+.m{display:block;width:200px;height:200px;margin:-8px auto 10px;object-fit:contain;animation:f 3.2s ease-in-out infinite}
 .g{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:#fff7ed;color:#c2410c;font-size:13px;font-weight:600}
 .g i{width:8px;height:8px;border-radius:9px;background:#f97316;animation:p 1.4s infinite}
 h1{margin:16px 0 8px;font-size:24px;line-height:1.25}p{margin:0;color:#52525b;line-height:1.6}
 a{display:inline-block;margin-top:24px;padding:12px 20px;border-radius:14px;background:${s.color};color:#fff;text-decoration:none;font-weight:600}
-@keyframes f{50%{transform:translateY(-6px)}}@keyframes p{50%{opacity:.3}}
-@media (prefers-color-scheme:dark){body{background:radial-gradient(700px circle at 50% 30%,${s.color}33,transparent 70%),#08080d;color:#f4f4f5}.c{background:#121219;border-color:#ffffff14}.m{background:#1b1b24;box-shadow:0 0 0 1px #ffffff14}p{color:#a1a1aa}.g{background:#f9731622;color:#fdba74}}
+@keyframes f{50%{transform:translateY(-7px)}}@keyframes p{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.m,.g i{animation:none}}
+@media (prefers-color-scheme:dark){body{background:radial-gradient(700px circle at 50% 30%,${s.color}33,transparent 70%),#08080d;color:#f4f4f5}.c{background:#121219;border-color:#ffffff14}p{color:#a1a1aa}.g{background:#f9731622;color:#fdba74}}
 </style></head><body><main class="c">
-<div class="m"><img src="${s.mark}" alt=""></div>
+<img class="m" src="/mascot/maintenance.webp" width="200" height="200" alt="" aria-hidden="true">
 <span class="g"><i></i>Texnik işlar</span>
 <h1>Tez orada qaytamiz</h1>
 <p>${esc(message)}</p>

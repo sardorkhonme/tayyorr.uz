@@ -5,6 +5,7 @@ import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { PlatformTransition } from "@/components/platform-transition";
 import { Providers } from "@/components/providers";
+import { OfflineOverlay } from "@/components/offline-overlay";
 import { ActivityTracker } from "@/components/activity-tracker";
 
 // sarlavhalar uchun asosiy (display) shrift — geometrik, lekin haddan
@@ -164,6 +165,7 @@ export default async function RootLayout({
         <Providers>{children}</Providers>
         <PlatformTransition theme="auto" />
         <ActivityTracker />
+        <OfflineOverlay />
       </body>
     </html>
   );

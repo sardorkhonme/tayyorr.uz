@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../core/theme/app_colors.dart';
+import 'mascot.dart';
 
 const _magenta = Color(0xFFD946EF);
 
@@ -46,6 +47,24 @@ class _IntroSplashState extends State<IntroSplash>
   void initState() {
     super.initState();
     _c.forward().whenComplete(_maybeExit);
+  }
+
+  bool _precached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // kiriş animatsiyasi paytida keyingi ekranlardagi maskotlar yuklab qöyiladi
+    if (!_precached) {
+      _precached = true;
+      precacheMascots(context, const [
+        MascotPose.onboard1,
+        MascotPose.onboard2,
+        MascotPose.onboard3,
+        MascotPose.welcome,
+        MascotPose.goodbye,
+      ]);
+    }
   }
 
   @override
@@ -388,17 +407,21 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Transform.scale(
-                        scale: hand,
-                        child: Transform.rotate(
-                          angle: wave,
-                          alignment: Alignment.bottomRight,
-                          child: const Text(
-                            '👋',
-                            style: TextStyle(fontSize: 64),
+                        scale: 0.8 + 0.2 * hand,
+                        child: Opacity(
+                          opacity: hand.clamp(0.0, 1.0),
+                          child: Transform.rotate(
+                            angle: wave * 0.12,
+                            alignment: Alignment.bottomCenter,
+                            child: const Mascot(
+                              MascotPose.welcome,
+                              size: 210,
+                              entrance: false,
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 8),
                       line(
                         l1,
                         Text(
@@ -523,23 +546,14 @@ class _SignOutScreenState extends State<SignOutScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Transform.scale(
-                    scale: 0.6 + 0.4 * a,
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.indigo.withValues(alpha: 0.12),
-                        border: Border.all(
-                          color: AppColors.indigo.withValues(alpha: 0.25),
-                        ),
-                      ),
-                      child: CustomPaint(
-                        painter: _DoorPainter(t, AppColors.textPrimary),
-                      ),
+                    scale: 0.8 + 0.2 * a,
+                    child: const Mascot(
+                      MascotPose.goodbye,
+                      size: 220,
+                      entrance: false,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -601,52 +615,4 @@ class _SignOutScreenState extends State<SignOutScreen>
       ),
     );
   }
-}
-
-/// Eşik va undan çiqib ketayotgan strelka (tsikl).
-class _DoorPainter extends CustomPainter {
-  _DoorPainter(this.t, this.color);
-  final double t;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    final p = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.6
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    // eşik ramkasi (çapda)
-    final door = Path()
-      ..moveTo(c.dx + 2, c.dy - 20)
-      ..lineTo(c.dx - 16, c.dy - 20)
-      ..lineTo(c.dx - 16, c.dy + 20)
-      ..lineTo(c.dx + 2, c.dy + 20);
-    canvas.drawPath(door, p);
-    // strelka — öngga surilib, xira tortadi
-    final e = Curves.easeInOutCubic.transform(t);
-    final dx = -4 + 14 * e;
-    final alpha = t < 0.75 ? 1.0 : (1 - (t - 0.75) / 0.25);
-    final ap = Paint()
-      ..color = AppColors.indigo.withValues(alpha: alpha)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.8
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final y = c.dy;
-    canvas.drawLine(Offset(c.dx - 6 + dx, y), Offset(c.dx + 14 + dx, y), ap);
-    canvas.drawPath(
-      Path()
-        ..moveTo(c.dx + 7 + dx, y - 7)
-        ..lineTo(c.dx + 14 + dx, y)
-        ..lineTo(c.dx + 7 + dx, y + 7),
-      ap,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _DoorPainter old) =>
-      old.t != t || old.color != color;
 }

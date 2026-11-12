@@ -4,7 +4,7 @@ import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_header_sliver.dart';
-import '../../../widgets/web_ui.dart';
+import '../../../widgets/mascot.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../data/order_model.dart';
@@ -167,15 +167,13 @@ class _MyOrdersViewState extends State<_MyOrdersView> {
                         : list.isEmpty
                         ? SliverToBoxAdapter(
                             child: state.status == DashboardStatus.failure
-                                ? ListMessage(
-                                    icon: TI.wifi_off_rounded,
-                                    title: "Yuklab bölmadi",
-                                    subtitle:
-                                        state.error ??
-                                        'Pastga tortib qayta uriniş mumkin.',
+                                ? ErrorState.from(
+                                    state.error,
+                                    () => context.read<DashboardCubit>().load(),
+                                    card: true,
                                   )
                                 : const ListMessage(
-                                    icon: TI.search_off_rounded,
+                                    pose: MascotPose.noResults,
                                     title: 'Heç narsa topilmadi',
                                     subtitle: "Boşqa söz bilan qidirib köring.",
                                   ),
@@ -200,164 +198,24 @@ class _MyOrdersViewState extends State<_MyOrdersView> {
   }
 }
 
-/// Hali buyurtma yo'q: rasm (widgetlarda chizilgan), qisqa matn va «Buyurtma yaratiş» tugmasi.
+/// Hali buyurtma yöq: Tayyor-Man (böş quti), qisqa matn va «Buyurtma yaratiş» tugmasi.
 class _EmptyOrders extends StatelessWidget {
   const _EmptyOrders({required this.onCreate});
   final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
-    return WebCard(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-      child: Column(
-        children: [
-          const _PaperStack(),
-          const SizedBox(height: 24),
-          Text(
-            "Hali buyurtma yöq",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: WebC.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Prezentatsiya, referat, kurs işi yoki diplom — vazifani yozing, "
-            "tayyorlovçilar narx taklif qiladi, siz eng maqbulini tanlaysiz.",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45),
-          ),
-          const SizedBox(height: 24),
-          WebButton(
-            label: 'Buyurtma yaratiş',
-            leading: TI.add_rounded,
-            expand: true,
-            onPressed: onCreate,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Ikki varaq qog'oz ustma-ust + indigo «+» nişoni.
-class _PaperStack extends StatelessWidget {
-  const _PaperStack();
-
-  @override
-  Widget build(BuildContext context) {
-    final light = AppColors.isLight;
-    final paper = light ? Colors.white : const Color(0xFF1A1A24);
-    final edge = light
-        ? Colors.black.withValues(alpha: 0.10)
-        : Colors.white.withValues(alpha: 0.12);
-    final line = light
-        ? Colors.black.withValues(alpha: 0.10)
-        : Colors.white.withValues(alpha: 0.14);
-
-    Widget sheet({
-      required double angle,
-      required Offset offset,
-      bool front = false,
-    }) {
-      return Transform.translate(
-        offset: offset,
-        child: Transform.rotate(
-          angle: angle,
-          child: Container(
-            width: 84,
-            height: 104,
-            padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
-            decoration: BoxDecoration(
-              color: paper,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: edge),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: light ? 0.08 : 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: front
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 34,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF818CF8).withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      for (final w in [56.0, 48.0, 54.0, 32.0]) ...[
-                        Container(
-                          width: w,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: line,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        const SizedBox(height: 7),
-                      ],
-                    ],
-                  )
-                : null,
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: 150,
-      height: 124,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          // yumshoq doira fon
-          Container(
-            width: 124,
-            height: 124,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(
-                0xFF6366F1,
-              ).withValues(alpha: light ? 0.08 : 0.12),
-            ),
-          ),
-          sheet(angle: -0.16, offset: const Offset(-14, 4)),
-          sheet(angle: 0.06, offset: const Offset(8, -2), front: true),
-          Positioned(
-            right: 8,
-            bottom: 0,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF6366F1),
-                border: Border.all(color: paper, width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF4F46E5).withValues(alpha: 0.45),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: const TIcon(TI.add_rounded, size: 20, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
+    return MascotState(
+      pose: MascotPose.emptyOrders,
+      title: "Hali buyurtma yöq",
+      message:
+          "Prezentatsiya, referat, kurs işi yoki diplom — vazifani yozing, "
+          "tayyorlovçilar narx taklif qiladi, siz eng maqbulini tanlaysiz.",
+      actionLabel: 'Buyurtma yaratiş',
+      actionIcon: TI.add_rounded,
+      onAction: onCreate,
+      size: 180,
+      card: true,
     );
   }
 }

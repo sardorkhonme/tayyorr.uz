@@ -8,6 +8,7 @@ import '../../../core/storage/local_storage.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/smm_api.dart';
 import '../data/smm_models.dart';
@@ -113,7 +114,10 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
               ),
             ),
             if (_error != null && g == null)
-              SmmEmpty(icon: TI.wifi_off_rounded, title: _error!)
+              ErrorState.from(_error, () {
+                setState(() => _error = null);
+                _load();
+              }, card: true)
             else if (g == null) ...[
               // qoidalar kartasi + 2 ustunli tavsiyalar — haqiqiy tuzilma
               Padding(

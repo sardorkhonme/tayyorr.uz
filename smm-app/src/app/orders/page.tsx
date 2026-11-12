@@ -10,6 +10,7 @@ import { num, som } from "@/lib/format";
 import { ACTIVE, progressOf, statusOf } from "@/lib/order-view";
 import { syncOrders } from "@/lib/orders";
 import { platformOf } from "@/lib/platforms";
+import { MascotState } from "@/components/mascot";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Buyurtmalarim" };
@@ -45,13 +46,15 @@ export default async function OrdersPage() {
       <p className="mt-2 text-zinc-500">Batafsil körish uçun buyurtmani bosing. Bajarilmagan qism uçun pul avtomatik qaytadi.</p>
 
       {orders.length === 0 ? (
-        <div className="card mt-8 !rounded-3xl px-6 py-16 text-center">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
-            <Icon name="package" className="h-8 w-8" />
-          </span>
-          <p className="mt-4 font-display text-xl font-bold text-zinc-900">Hali buyurtma yöq</p>
-          <p className="mt-2 text-zinc-500">Birinçi buyurtmangizni bir daqiqada bering.</p>
-          <a href="/" className="btn-primary mt-6">Xizmat tanlaş</a>
+        <div className="card mt-8 !rounded-3xl text-zinc-900">
+          <MascotState
+            pose="empty-orders"
+            size={200}
+            title="Hali buyurtma yöq"
+            message="Birinçi buyurtmangizni bir daqiqada bering."
+          >
+            <a href="/" className="btn-primary">Xizmat tanlaş</a>
+          </MascotState>
         </div>
       ) : (
         <>

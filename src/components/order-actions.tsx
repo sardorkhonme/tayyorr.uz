@@ -15,6 +15,7 @@ import {
 import { shortDateTime } from "@/lib/date";
 import type { ContractView } from "@/lib/contract-view";
 import { Icon, StarIcon } from "@/components/icons";
+import { MascotState } from "@/components/mascot";
 
 export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Körib çiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
@@ -455,7 +456,14 @@ export function OrderActions(props: Props) {
         <div className="flex flex-col gap-3">
           <h2 className="px-1 text-sm font-semibold text-white">Takliflar ({offers.length})</h2>
           {offers.length === 0 && (
-            <p className="card text-sm text-zinc-500">Hozirça taklif yöq.</p>
+            <div className="card">
+              <MascotState
+                pose="empty-offers"
+                size={120}
+                title="Hozirça taklif yöq"
+                message="Tayyorlovçilar takliflarini yuborişi bilan ular şu yerda paydo böladi."
+              />
+            </div>
           )}
           {offers.map((o) => (
             <div key={o.id} className="card flex flex-col gap-2">

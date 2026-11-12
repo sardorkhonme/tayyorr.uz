@@ -6,6 +6,7 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/time-ago";
 import { useLocale } from "@/components/locale-provider";
 import { Icon } from "@/components/icons";
+import { MascotState } from "@/components/mascot";
 import {
   FilterChip,
   FilterFooter,
@@ -187,9 +188,28 @@ export function OrdersBrowser({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card flex flex-col items-center gap-2 py-10 text-center text-sm text-zinc-500">
-          <Icon name="search" className="h-6 w-6 text-zinc-600" />
-          {orders.length === 0 ? t("orders.empty") : t("orders.noMatch")}
+        <div className="card">
+          {orders.length === 0 ? (
+            <MascotState
+              pose="empty-feed"
+              size={140}
+              title={t("orders.empty")}
+              message="Yangi buyurtmalar paydo bölişi bilan şu yerda körinadi."
+            />
+          ) : (
+            <MascotState
+              pose="no-results"
+              size={140}
+              title={t("orders.noMatch")}
+              message="Qidiruv sözini özgartirib yoki filtrni tozalab köring."
+            >
+              {filterActive && (
+                <button type="button" onClick={reset} className="btn-ghost">
+                  Filtrni tozalaş
+                </button>
+              )}
+            </MascotState>
+          )}
         </div>
       ) : (
         <ul className="flex flex-col gap-2.5">
@@ -263,38 +283,21 @@ function OrderCard({ o, showStatus }: { o: OrderRow; showStatus: boolean }) {
   );
 }
 
-/** Buyurtmachida hali buyurtma yo'q — do'stona illyustratsiya + tugma. */
+/** Buyurtmachida hali buyurtma yo'q — maskot + tugma. */
 function MyOrdersEmpty({ href }: { href: string }) {
   return (
-    <div className="card flex flex-col items-center px-6 py-12 text-center">
-      <svg
-        viewBox="0 0 160 140"
-        className="h-36 w-auto"
-        aria-hidden
-        fill="none"
+    <div className="card">
+      <MascotState
+        pose="empty-orders"
+        size={200}
+        title="Hali buyurtmangiz yöq"
+        message="Birinçi buyurtmangizni yarating — tayyorlovçilar takliflarini şu yerda körasiz."
       >
-        <ellipse cx="80" cy="126" rx="52" ry="7" fill="rgba(99,102,241,0.14)" />
-        <rect x="38" y="22" width="84" height="100" rx="12" fill="rgba(99,102,241,0.10)" stroke="#6366f1" strokeWidth="2.5" />
-        <rect x="60" y="14" width="40" height="16" rx="6" fill="#6366f1" />
-        <circle cx="80" cy="22" r="3" fill="#ffffff" />
-        <path d="M54 52h40M54 66h52M54 80h30" stroke="#818cf8" strokeWidth="4" strokeLinecap="round" opacity="0.55" />
-        <circle cx="114" cy="98" r="20" fill="#6366f1" />
-        <path d="M114 89v18M105 98h18" stroke="#ffffff" strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M24 40l4 4M28 40l-4 4" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="136" cy="34" r="3" fill="#a78bfa" opacity="0.7" />
-        <circle cx="22" cy="92" r="2.5" fill="#818cf8" opacity="0.7" />
-      </svg>
-      <h2 className="mt-5 text-lg font-semibold text-white">
-        Hali buyurtmangiz yöq
-      </h2>
-      <p className="mt-1.5 max-w-xs text-sm text-zinc-400">
-        Birinçi buyurtmangizni yarating — tayyorlovçilar takliflarini şu
-        yerda körasiz.
-      </p>
-      <Link href={href} className="btn-primary mt-6">
-        <Icon name="plus" className="h-4 w-4" />
-        Buyurtma yaratiş
-      </Link>
+        <Link href={href} className="btn-primary">
+          <Icon name="plus" className="h-4 w-4" />
+          Buyurtma yaratiş
+        </Link>
+      </MascotState>
     </div>
   );
 }

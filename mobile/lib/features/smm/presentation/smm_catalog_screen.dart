@@ -8,6 +8,7 @@ import '../../../core/ui/platform_icon.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/smm_api.dart';
 import '../data/smm_models.dart';
@@ -110,17 +111,10 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
           ),
         if (_error != null && c == null) ...[
           const SizedBox(height: 14),
-          SmmEmpty(
-            icon: TI.wifi_off_rounded,
-            title: _error!,
-            action: WebButton(
-              label: 'Qayta uriniş',
-              onPressed: () {
-                setState(() => _error = null);
-                _load(force: true);
-              },
-            ),
-          ),
+          ErrorState.from(_error, () {
+            setState(() => _error = null);
+            _load(force: true);
+          }, card: true),
         ] else if (c == null) ...[
           // haqiqiy ko'rinish: 1-qadam sarlavhasi + 3 ustunli platforma plitkalari
           const SizedBox(height: 22),
@@ -162,7 +156,7 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
       return const [
         SizedBox(height: 14),
         SmmEmpty(
-          icon: TI.hourglass_empty_rounded,
+          pose: MascotPose.emptyFeed,
           title: 'Xizmatlar tez orada qöşiladi',
         ),
       ];
@@ -303,8 +297,9 @@ class _SmmCatalogScreenState extends State<SmmCatalogScreen> {
         if (items.isEmpty) {
           out.add(
             const SmmEmpty(
-              icon: TI.search_off_rounded,
-              title: 'Hec nima topilmadi',
+              pose: MascotPose.noResults,
+              title: 'Heç narsa topilmadi',
+              text: 'Boşqa söz bilan qidirib köring.',
             ),
           );
         }

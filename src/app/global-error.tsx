@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon } from "@/components/icons";
+import { Mascot } from "@/components/mascot";
 
 export default function GlobalError({ reset }: { reset: () => void }) {
   return (
@@ -21,7 +21,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           padding: "1.5rem",
         }}
       >
-        <Icon name="alert" className="" width={64} height={64} style={{ color: "#fbbf24" }} />
+        <Mascot pose="error" size={200} priority />
         <h1 style={{ fontSize: "1.25rem", fontWeight: 600, color: "#fff" }}>
           Xatolik yuz berdi
         </h1>

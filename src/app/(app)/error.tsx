@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Icon } from "@/components/icons";
+import { Mascot } from "@/components/mascot";
 
 export default function AppError({
   error,
@@ -30,11 +30,7 @@ export default function AppError({
 
   return (
     <div className="flex min-h-[55vh] flex-col items-center justify-center gap-4 text-center">
-      <Icon
-        name={isUserNotFound ? "user" : "alert"}
-        className={`h-20 w-20 ${isUserNotFound ? "text-zinc-400" : "text-amber-400"}`}
-        strokeWidth={1.4}
-      />
+      <Mascot pose={isUserNotFound ? "not-found" : "error"} size={200} priority />
       <h1 className="text-xl font-semibold text-white">
         {isUserNotFound ? "Bunday hisob mavjud emas" : "Nimadir notöğri ketdi"}
       </h1>

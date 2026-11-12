@@ -1,10 +1,9 @@
-import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/ui/platform_icon.dart';
 import '../../../core/utils/format.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/smm_models.dart';
@@ -22,8 +21,18 @@ class GuaranteeBadge extends StatelessWidget {
     final c = ok ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: c.withValues(alpha: 0.13), borderRadius: BorderRadius.circular(99)),
-      child: Text('${ok ? '♻️' : '⚠️'} $label', style: TextStyle(color: ok ? const Color(0xFF059669) : const Color(0xFFD97706), fontSize: 12, fontWeight: FontWeight.w700)),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        '${ok ? '♻️' : '⚠️'} $label',
+        style: TextStyle(
+          color: ok ? const Color(0xFF059669) : const Color(0xFFD97706),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }
@@ -38,9 +47,18 @@ class VerdictBadge extends StatelessWidget {
     final c = ok ? const Color(0xFF10B981) : const Color(0xFFF43F5E);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: c.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(99)),
-      child: Text(ok ? '👍 Tavsiya etiladi' : '👎 Tavsiya etilmaydi',
-          style: TextStyle(color: ok ? const Color(0xFF059669) : const Color(0xFFE11D48), fontSize: 12, fontWeight: FontWeight.w700)),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        ok ? '👍 Tavsiya etiladi' : '👎 Tavsiya etilmaydi',
+        style: TextStyle(
+          color: ok ? const Color(0xFF059669) : const Color(0xFFE11D48),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }
@@ -53,13 +71,25 @@ class DiscountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: EdgeInsets.symmetric(horizontal: big ? 10 : 7, vertical: big ? 4 : 2),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFFF43F5E), Color(0xFFD946EF)]),
-          borderRadius: BorderRadius.circular(99),
-        ),
-        child: Text('−$pct%', style: TextStyle(color: Colors.white, fontSize: big ? 13 : 11, fontWeight: FontWeight.w800)),
-      );
+    padding: EdgeInsets.symmetric(
+      horizontal: big ? 10 : 7,
+      vertical: big ? 4 : 2,
+    ),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFFF43F5E), Color(0xFFD946EF)],
+      ),
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: Text(
+      '−$pct%',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: big ? 13 : 11,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
 }
 
 /// Platforma gradient kvadrati + belgisi.
@@ -70,11 +100,14 @@ class PlatformBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(gradient: p.gradient, borderRadius: BorderRadius.circular(size * 0.3)),
-        child: Center(child: PlatformIcon(p.key, size: size * 0.5)),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      gradient: p.gradient,
+      borderRadius: BorderRadius.circular(size * 0.3),
+    ),
+    child: Center(child: PlatformIcon(p.key, size: size * 0.5)),
+  );
 }
 
 class SmmTag extends StatelessWidget {
@@ -83,10 +116,14 @@ class SmmTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(color: WebC.fill5, borderRadius: BorderRadius.circular(8), border: Border.all(color: WebC.border)),
-        child: Text(text, style: TextStyle(color: WebC.zinc400, fontSize: 11.5)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: WebC.fill5,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: WebC.border),
+    ),
+    child: Text(text, style: TextStyle(color: WebC.zinc400, fontSize: 11.5)),
+  );
 }
 
 /// Xizmat kartochkasi — saytdagi ServiceCard: nom, teglar, tavsiya, kafolat, oraliq va 1000 ta narxi.
@@ -104,31 +141,54 @@ class SmmServiceTileSkeleton extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: WebC.cardBorder),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        if (withLabel) ...const [SBar(width: 130, height: 11), SizedBox(height: 7)],
-        const SBar(height: 15),
-        const SizedBox(height: 6),
-        const SBar(width: 170, height: 15),
-        const SizedBox(height: 12),
-        const Row(children: [SBar(width: 92, height: 22, borderRadius: 99), SizedBox(width: 6), SBar(width: 110, height: 22, borderRadius: 99)]),
-        const SizedBox(height: 14),
-        Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-          const Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SBar(width: 96, height: 19),
-              SizedBox(height: 6),
-              SBar(width: 150, height: 11),
-            ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (withLabel) ...const [
+            SBar(width: 130, height: 11),
+            SizedBox(height: 7),
+          ],
+          const SBar(height: 15),
+          const SizedBox(height: 6),
+          const SBar(width: 170, height: 15),
+          const SizedBox(height: 12),
+          const Row(
+            children: [
+              SBar(width: 92, height: 22, borderRadius: 99),
+              SizedBox(width: 6),
+              SBar(width: 110, height: 22, borderRadius: 99),
+            ],
           ),
-          const SBar(width: 78, height: 38, borderRadius: 12),
-        ]),
-      ]),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SBar(width: 96, height: 19),
+                    SizedBox(height: 6),
+                    SBar(width: 150, height: 11),
+                  ],
+                ),
+              ),
+              const SBar(width: 78, height: 38, borderRadius: 12),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
 class SmmServiceTile extends StatelessWidget {
-  const SmmServiceTile({super.key, required this.s, required this.onTap, this.label});
+  const SmmServiceTile({
+    super.key,
+    required this.s,
+    required this.onTap,
+    this.label,
+  });
   final SmmService s;
   final VoidCallback onTap;
   final String? label;
@@ -143,56 +203,133 @@ class SmmServiceTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: WebC.cardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: disc ? const Color(0xFFF43F5E).withValues(alpha: 0.45) : WebC.cardBorder, width: disc ? 1.5 : 1),
+          border: Border.all(
+            color: disc
+                ? const Color(0xFFF43F5E).withValues(alpha: 0.45)
+                : WebC.cardBorder,
+            width: disc ? 1.5 : 1,
+          ),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (label != null) ...[
-            Text(label!, style: TextStyle(color: WebC.zinc500, fontSize: 12, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-          ],
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(
-              child: Text(s.title, style: TextStyle(color: WebC.white, fontSize: 15.5, fontWeight: FontWeight.w700, height: 1.3)),
-            ),
-            if (disc) ...[const SizedBox(width: 8), DiscountBadge(s.discount)],
-          ]),
-          if (s.tags.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(spacing: 5, runSpacing: 5, children: [for (final t in s.tags.take(4)) SmmTag(t)]),
-          ],
-          const SizedBox(height: 10),
-          Wrap(spacing: 6, runSpacing: 6, children: [
-            VerdictBadge(ok: s.recommended),
-            GuaranteeBadge(label: s.guaranteeLabel, ok: s.guaranteeOk),
-          ]),
-          const SizedBox(height: 12),
-          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Text(som(s.rate),
-                      style: GoogleFonts.spaceGrotesk(
-                          color: disc ? const Color(0xFFF43F5E) : WebC.white, fontSize: 19, fontWeight: FontWeight.w700, letterSpacing: -0.3)),
-                  if (s.oldRate != null) ...[
-                    const SizedBox(width: 6),
-                    Text(groupDigits(s.oldRate!),
-                        style: TextStyle(color: WebC.zinc500, fontSize: 13, decoration: TextDecoration.lineThrough)),
-                  ],
-                ]),
-                Text('har 1000 tasi uçun · ${groupDigits(s.min)} – ${groupDigits(s.max)} ta',
-                    style: TextStyle(color: WebC.zinc500, fontSize: 12)),
-              ]),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFFD946EF)]),
-                borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (label != null) ...[
+              Text(
+                label!,
+                style: TextStyle(
+                  color: WebC.zinc500,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              child: const Text('Tanlaş', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+            ],
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    s.title,
+                    style: TextStyle(
+                      color: WebC.white,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                if (disc) ...[
+                  const SizedBox(width: 8),
+                  DiscountBadge(s.discount),
+                ],
+              ],
             ),
-          ]),
-        ]),
+            if (s.tags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 5,
+                runSpacing: 5,
+                children: [for (final t in s.tags.take(4)) SmmTag(t)],
+              ),
+            ],
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                VerdictBadge(ok: s.recommended),
+                GuaranteeBadge(label: s.guaranteeLabel, ok: s.guaranteeOk),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            som(s.rate),
+                            style: GoogleFonts.spaceGrotesk(
+                              color: disc
+                                  ? const Color(0xFFF43F5E)
+                                  : WebC.white,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          if (s.oldRate != null) ...[
+                            const SizedBox(width: 6),
+                            Text(
+                              groupDigits(s.oldRate!),
+                              style: TextStyle(
+                                color: WebC.zinc500,
+                                fontSize: 13,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      Text(
+                        'har 1000 tasi uçun · ${groupDigits(s.min)} – ${groupDigits(s.max)} ta',
+                        style: TextStyle(color: WebC.zinc500, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF6366F1),
+                        Color(0xFF8B5CF6),
+                        Color(0xFFD946EF),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Tanlaş',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -205,46 +342,82 @@ class SmmStepTitle extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Row(children: [
-        Container(
-          width: 26,
-          height: 26,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
-            shape: BoxShape.circle,
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 26,
+        height: 26,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
           ),
-          child: Center(child: Text('$n', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800))),
+          shape: BoxShape.circle,
         ),
-        const SizedBox(width: 10),
-        Text(text, style: TextStyle(color: WebC.white, fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
-      ]);
+        child: Center(
+          child: Text(
+            '$n',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Text(
+        text,
+        style: TextStyle(
+          color: WebC.white,
+          fontSize: 17,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.3,
+        ),
+      ),
+    ],
+  );
 }
 
-/// Bo'sh holat.
+/// Böş / topilmadi holati — karta içida Tayyor-Man maskoti (140), sarlavha, izoh va (ixtiyoriy) tugma.
 class SmmEmpty extends StatelessWidget {
-  const SmmEmpty({super.key, required this.icon, required this.title, this.text, this.action});
-  final TIData icon;
+  const SmmEmpty({
+    super.key,
+    required this.pose,
+    required this.title,
+    this.text,
+    this.action,
+  });
+  final MascotPose pose;
   final String title;
   final String? text;
   final Widget? action;
 
   @override
   Widget build(BuildContext context) => WebCard(
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-        child: Column(children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(color: AppColors.indigo.withValues(alpha: 0.12), shape: BoxShape.circle),
-            child: TIcon(icon, color: const Color(0xFF818CF8), size: 30),
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+    child: Column(
+      children: [
+        Mascot(pose, size: 140),
+        const SizedBox(height: 12),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: WebC.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(height: 14),
-          Text(title, textAlign: TextAlign.center, style: TextStyle(color: WebC.white, fontSize: 16, fontWeight: FontWeight.w700)),
-          if (text != null) ...[
-            const SizedBox(height: 6),
-            Text(text!, textAlign: TextAlign.center, style: TextStyle(color: WebC.zinc500, fontSize: 13.5, height: 1.4)),
-          ],
-          if (action != null) ...[const SizedBox(height: 16), action!],
-        ]),
-      );
+        ),
+        if (text != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            text!,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: WebC.zinc500, fontSize: 13.5, height: 1.4),
+          ),
+        ],
+        if (action != null) ...[const SizedBox(height: 16), action!],
+      ],
+    ),
+  );
 }

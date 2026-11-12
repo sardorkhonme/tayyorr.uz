@@ -11,6 +11,7 @@ import { SupportWidget } from "@/components/support-widget";
 import { currentUser } from "@/lib/session";
 import { THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { PushPrompt } from "@/components/push-prompt";
+import { OfflineOverlay } from "@/components/offline-overlay";
 import { ActivityTracker } from "@/components/activity-tracker";
 
 // shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
@@ -67,6 +68,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {u && <PushPrompt />}
         <PlatformTransition />
         <ActivityTracker />
+        <OfflineOverlay />
       </body>
     </html>
   );

@@ -8,6 +8,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/realtime/realtime_service.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/smm_api.dart';
 import '../data/smm_models.dart';
@@ -88,11 +89,7 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
         ),
         const SizedBox(height: 16),
         if (_error != null && d == null)
-          SmmEmpty(
-            icon: TI.wifi_off_rounded,
-            title: _error!,
-            action: WebButton(label: 'Qayta uriniş', onPressed: load),
-          )
+          ErrorState.from(_error, load, card: true)
         else if (d == null) ...[
           // haqiqiy ko'rinish: 2×2 statistika + buyurtma qatorlari
           GridView.count(
@@ -148,7 +145,7 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
           const SizedBox(height: 16),
           if (d.orders.isEmpty)
             SmmEmpty(
-              icon: TI.shopping_bag_outlined,
+              pose: MascotPose.emptyOrders,
               title: 'Hali buyurtma yöq',
               text: 'Xizmatni tanlang — bir neça daqiqada boşlanadi.',
               action: WebButton(

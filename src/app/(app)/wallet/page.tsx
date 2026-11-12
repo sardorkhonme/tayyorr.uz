@@ -13,6 +13,7 @@ import { PayoutCancelButton } from "@/components/payout-cancel-button";
 import { BalanceAmount } from "@/components/balance-amount";
 import { WalletCode } from "@/components/wallet-code";
 import { shortDateTime } from "@/lib/date";
+import { MascotState } from "@/components/mascot";
 import { expireStaleClickTopups, HIDE_UNFINISHED_TOPUPS } from "@/lib/wallet-pending";
 
 
@@ -159,7 +160,14 @@ export default async function WalletPage({
       <div>
         <h2 className="mb-3 px-1 text-base font-semibold text-white">Amallar tarixi</h2>
         {txns.length === 0 ? (
-          <div className="card text-sm text-zinc-500">Hozirça amallar yöq.</div>
+          <div className="card">
+            <MascotState
+              pose="wallet-empty"
+              size={130}
+              title="Hozirça amallar yöq"
+              message="Hisobni töldirsangiz yoki star sotib olsangiz, barça amallar şu yerda körinadi."
+            />
+          </div>
         ) : (
           <ul className="flex flex-col gap-2">
             {txns.map((tx) => {

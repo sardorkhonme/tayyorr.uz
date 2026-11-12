@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 import { shortDateTime } from "@/lib/date";
-import { Icon, StarIcon } from "@/components/icons";
+import { StarIcon } from "@/components/icons";
+import { MascotState } from "@/components/mascot";
 import {
   FilterChip,
   FilterFooter,
@@ -152,11 +153,32 @@ export function OffersBrowser({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card flex flex-col items-center gap-2 py-10 text-center text-sm text-zinc-500">
-          <Icon name="hand" className="h-6 w-6 text-zinc-600" />
-          {offers.length === 0
-            ? "Siz hali taklif yubormagansiz."
-            : "Bu filtr böyiça taklif topilmadi."}
+        <div className="card">
+          {offers.length === 0 ? (
+            <MascotState
+              pose="empty-offers"
+              size={140}
+              title="Siz hali taklif yubormagansiz"
+              message="Özingizga mos buyurtmani tanlab, birinçi taklifingizni yuboring."
+            >
+              <Link href="/dashboard" className="btn-primary">
+                Buyurtmalarni köriş
+              </Link>
+            </MascotState>
+          ) : (
+            <MascotState
+              pose="no-results"
+              size={140}
+              title="Mos taklif topilmadi"
+              message="Qidiruv sözini özgartirib yoki filtrni tozalab köring."
+            >
+              {active && (
+                <button type="button" onClick={reset} className="btn-ghost">
+                  Filtrni tozalaş
+                </button>
+              )}
+            </MascotState>
+          )}
         </div>
       ) : (
         <ul className="flex flex-col gap-2.5">

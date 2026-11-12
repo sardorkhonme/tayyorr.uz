@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/app_header_sliver.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import '../../announcements/announcement_banner.dart';
 import '../../auth/bloc/auth_bloc.dart';
@@ -378,22 +379,20 @@ class _DashboardViewState extends State<_DashboardView> {
                         : filtered.isEmpty
                         ? SliverToBoxAdapter(
                             child: state.status == DashboardStatus.failure
-                                ? ListMessage(
-                                    icon: TI.wifi_off_rounded,
-                                    title: "Yuklab bölmadi",
-                                    subtitle:
-                                        state.error ??
-                                        'Pastga tortib qayta uriniş mumkin.',
+                                ? ErrorState.from(
+                                    state.error,
+                                    () => context.read<DashboardCubit>().load(),
+                                    card: true,
                                   )
                                 : state.orders.isEmpty
                                 ? const ListMessage(
-                                    icon: TI.inventory_2_outlined,
+                                    pose: MascotPose.emptyFeed,
                                     title: "Hozirça oçiq buyurtma yöq",
                                     subtitle:
                                         "Yangi buyurtmalar şu yerda paydo böladi.",
                                   )
                                 : ListMessage(
-                                    icon: TI.search_off_rounded,
+                                    pose: MascotPose.noResults,
                                     title: 'Mos buyurtma topilmadi',
                                     subtitle: _filterActive
                                         ? "Filtrni özgartirib köring."

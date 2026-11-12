@@ -8,6 +8,7 @@ import { PlatformIcon } from "@/components/platform-icon";
 import { DiscountBadge, ServiceCard, type BoardService } from "@/components/service-card";
 import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
 import { PLATFORMS } from "@/lib/platforms";
+import { MascotState } from "@/components/mascot";
 
 export type { BoardService };
 
@@ -95,14 +96,13 @@ export function ServicesBoard({
 
   if (services.length === 0) {
     return (
-      <section id="start" className="card scroll-mt-24 !rounded-3xl px-6 py-16 text-center">
-        <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
-          <Icon name="clock" className="h-8 w-8" />
-        </span>
-        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Xizmatlar tez orada qöşiladi</p>
-        <p className="mx-auto mt-3 max-w-md text-zinc-500">
-          Hozir röyxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling.
-        </p>
+      <section id="start" className="card scroll-mt-24 !rounded-3xl text-zinc-900">
+        <MascotState
+          pose="maintenance"
+          size={200}
+          title="Xizmatlar tez orada qöşiladi"
+          message="Hozir röyxatni tayyorlayapmiz. Bir oz vaqtdan keyin qaytib keling."
+        />
       </section>
     );
   }
@@ -219,9 +219,27 @@ export function ServicesBoard({
             </div>
 
             {list.length === 0 ? (
-              <p className="card px-6 py-10 text-center text-zinc-500">
-                Heç narsa topilmadi
-              </p>
+              <div className="card text-zinc-900">
+                <MascotState
+                  pose="no-results"
+                  size={140}
+                  title="Heç narsa topilmadi"
+                  message={query.trim() ? `«${query.trim()}» böyiça xizmat yöq. Boşqa söz bilan qidirib köring.` : "Boşqa tur yoki tarmoqni tanlab köring."}
+                >
+                  {query.trim() && (
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => {
+                        setQuery("");
+                        setShown(PAGE);
+                      }}
+                    >
+                      Qidiruvni tozalaş
+                    </button>
+                  )}
+                </MascotState>
+              </div>
             ) : (
               <>
                 <div className="grid gap-4 lg:grid-cols-2">

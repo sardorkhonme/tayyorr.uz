@@ -12,6 +12,7 @@ import '../../../core/utils/format.dart';
 import '../../../widgets/app_header_sliver.dart';
 import '../../../widgets/confirm_dialog.dart';
 import '../../../widgets/date_time_picker.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/skeleton.dart';
 import '../../../widgets/web_page.dart';
 import '../../../widgets/web_ui.dart';
@@ -62,10 +63,14 @@ class _OrderDetailView extends StatelessWidget {
           if (state.status == OrderDetailStatus.failure) {
             return WebPage(
               children: [
-                ListMessage(
-                  icon: TI.search_off_rounded,
-                  title: 'Buyurtma topilmadi',
-                  subtitle: state.error ?? "U öçirilgan yoki sizga körinmaydi.",
+                ErrorState.from(
+                  state.error,
+                  () => context.read<OrderDetailCubit>().load(),
+                  statusCode: state.errorCode,
+                  notFoundTitle: 'Buyurtma topilmadi',
+                  notFoundMessage: "U öçirilgan yoki sizga körinmaydi.",
+                  notFoundActionLabel: 'Ortga',
+                  notFoundAction: () => Navigator.of(context).maybePop(),
                 ),
               ],
             );
@@ -1196,7 +1201,7 @@ class _OrderActionsState extends State<_OrderActions> {
       ),
       if (o.offers.isEmpty)
         const ListMessage(
-          icon: TI.hourglass_empty_rounded,
+          pose: MascotPose.emptyOffers,
           title: "Hozirça taklif yöq",
           subtitle:
               "Tayyorlovçilar narx taklif qilişi bilan şu yerda körinadi.",

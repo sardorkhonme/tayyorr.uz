@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { GlowPointer } from "@/components/glow-pointer";
 import { PlatformTransition } from "@/components/platform-transition";
+import { OfflineOverlay } from "@/components/offline-overlay";
 import { ActivityTracker } from "@/components/activity-tracker";
 
 // shrift loyihaning o'zida — build Google Fonts'ga bog'liq bo'lmasin
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <PlatformTransition />
         <ActivityTracker />
+        <OfflineOverlay />
       </body>
     </html>
   );

@@ -13,33 +13,40 @@ class OrderDetailState extends Equatable {
     this.status = OrderDetailStatus.initial,
     this.order,
     this.error,
+    this.errorCode,
     this.busy = false,
   });
 
   final OrderDetailStatus status;
   final OrderDetailModel? order;
   final String? error;
+
+  /// Yuklaş xatosining HTTP kodi (404 → «Topilmadi»).
+  final int? errorCode;
   final bool busy;
 
   OrderDetailState copyWith({
     OrderDetailStatus? status,
     OrderDetailModel? order,
     String? error,
+    int? errorCode,
     bool? busy,
   }) {
     return OrderDetailState(
       status: status ?? this.status,
       order: order ?? this.order,
       error: error,
+      errorCode: errorCode,
       busy: busy ?? this.busy,
     );
   }
 
   @override
-  List<Object?> get props => [status, order, error, busy];
+  List<Object?> get props => [status, order, error, errorCode, busy];
 }
 
-class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetailState> {
+class OrderDetailCubit extends Cubit<OrderDetailState>
+    with SafeEmit<OrderDetailState> {
   OrderDetailCubit(this._repo, this.orderId) : super(const OrderDetailState());
 
   final OrderDetailRepository _repo;
@@ -51,14 +58,29 @@ class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetail
       final order = await _repo.fetchOrder(orderId);
       emit(state.copyWith(status: OrderDetailStatus.success, order: order));
     } on ApiException catch (e) {
-      emit(state.copyWith(status: OrderDetailStatus.failure, error: e.message));
+      emit(
+        state.copyWith(
+          status: OrderDetailStatus.failure,
+          error: e.message,
+          errorCode: e.statusCode,
+        ),
+      );
     }
   }
 
-  Future<bool> submitOffer({required int price, String? message, int? stars}) async {
+  Future<bool> submitOffer({
+    required int price,
+    String? message,
+    int? stars,
+  }) async {
     emit(state.copyWith(busy: true, error: null));
     try {
-      await _repo.submitOffer(orderId, price: price, message: message, stars: stars);
+      await _repo.submitOffer(
+        orderId,
+        price: price,
+        message: message,
+        stars: stars,
+      );
       await load();
       return true;
     } on ApiException catch (e) {
@@ -115,10 +137,21 @@ class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetail
     }
   }
 
-  Future<bool> sendContract({required String preparerId, required int amount, String? note, DateTime? deadline}) async {
+  Future<bool> sendContract({
+    required String preparerId,
+    required int amount,
+    String? note,
+    DateTime? deadline,
+  }) async {
     emit(state.copyWith(busy: true, error: null));
     try {
-      await _repo.sendContract(orderId, preparerId: preparerId, amount: amount, note: note, deadline: deadline);
+      await _repo.sendContract(
+        orderId,
+        preparerId: preparerId,
+        amount: amount,
+        note: note,
+        deadline: deadline,
+      );
       await load();
       return true;
     } on ApiException catch (e) {
@@ -127,7 +160,11 @@ class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetail
     }
   }
 
-  Future<bool> respondToContract(String contractId, {required String action, String? reason}) async {
+  Future<bool> respondToContract(
+    String contractId, {
+    required String action,
+    String? reason,
+  }) async {
     emit(state.copyWith(busy: true, error: null));
     try {
       await _repo.respondToContract(contractId, action: action, reason: reason);
@@ -139,7 +176,10 @@ class OrderDetailCubit extends Cubit<OrderDetailState> with SafeEmit<OrderDetail
     }
   }
 
-  Future<bool> requestRevision({required String reason, required DateTime deadline}) async {
+  Future<bool> requestRevision({
+    required String reason,
+    required DateTime deadline,
+  }) async {
     emit(state.copyWith(busy: true, error: null));
     try {
       await _repo.requestRevision(orderId, reason: reason, deadline: deadline);

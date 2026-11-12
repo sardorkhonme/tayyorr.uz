@@ -1,14 +1,12 @@
 import Link from "next/link";
 
+import { Mascot } from "@/components/mascot";
+
 export default function AppNotFound() {
   return (
     <div className="flex min-h-[55vh] flex-col items-center justify-center gap-4 text-center">
-      <div className="relative">
-        <span className="text-[5rem] font-bold leading-none text-white/10">
-          404
-        </span>
-      </div>
-      <h1 className="-mt-4 text-xl font-semibold text-white">
+      <Mascot pose="not-found" size={200} priority />
+      <h1 className="text-xl font-semibold text-white">
         Sahifa topilmadi
       </h1>
       <p className="max-w-xs text-sm text-zinc-500">

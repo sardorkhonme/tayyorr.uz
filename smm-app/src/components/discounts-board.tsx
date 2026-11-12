@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Icon } from "@/components/icons";
 import { OrderDialog } from "@/components/order-dialog";
 import { ServiceCard, type BoardService } from "@/components/service-card";
 import { KINDS, kindOf, splitServiceName } from "@/lib/kinds";
 import { PLATFORMS } from "@/lib/platforms";
+import { MascotState } from "@/components/mascot";
 
 const PAGE = 12;
 
@@ -43,17 +43,17 @@ export function DiscountsBoard({
 
   if (services.length === 0) {
     return (
-      <section className="card !rounded-3xl px-6 py-16 text-center">
-        <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-rose-500">
-          <Icon name="tag" className="h-8 w-8" />
-        </span>
-        <p className="mt-4 font-display text-2xl font-bold text-zinc-900">Hozirça çegirmalar yöq</p>
-        <p className="mx-auto mt-3 max-w-md text-zinc-500">
-          Yangi çegirmalar tez-tez qöşiladi — kuzatib boring. Hozirça barça xizmatlarni körişingiz mumkin.
-        </p>
-        <Link href="/" className="btn-primary mt-6 inline-flex">
-          Barça xizmatlar
-        </Link>
+      <section className="card !rounded-3xl text-zinc-900">
+        <MascotState
+          pose="empty-discounts"
+          size={200}
+          title="Hozirça çegirmalar yöq"
+          message="Yangi çegirmalar tez-tez qöşiladi — kuzatib boring. Hozirça barça xizmatlarni körişingiz mumkin."
+        >
+          <Link href="/" className="btn-primary">
+            Barça xizmatlar
+          </Link>
+        </MascotState>
       </section>
     );
   }

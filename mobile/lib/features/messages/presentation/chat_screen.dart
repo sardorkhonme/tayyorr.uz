@@ -22,6 +22,7 @@ import '../../../core/media/media_cache.dart';
 import '../../../core/navigation/open_internal.dart';
 import '../../../core/notifications/message_notifier.dart';
 import '../../../widgets/link_text.dart';
+import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import 'chat_composer.dart';
 import 'chat_media.dart';
@@ -34,7 +35,13 @@ import '../data/message_model.dart';
 import '../data/messages_repository.dart';
 
 class ChatScreen extends StatelessWidget {
-  const ChatScreen({super.key, required this.conversationId, required this.other, this.scope = 'uz', this.embedded = false});
+  const ChatScreen({
+    super.key,
+    required this.conversationId,
+    required this.other,
+    this.scope = 'uz',
+    this.embedded = false,
+  });
 
   final String conversationId;
   final ChatOtherUser other;
@@ -48,14 +55,19 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ChatCubit(MessagesRepository(scope: scope), conversationId)..load(),
+      create: (_) =>
+          ChatCubit(MessagesRepository(scope: scope), conversationId)..load(),
       child: _ChatView(initialOther: other, scope: scope, embedded: embedded),
     );
   }
 }
 
 class _ChatView extends StatefulWidget {
-  const _ChatView({required this.initialOther, this.scope = 'uz', this.embedded = false});
+  const _ChatView({
+    required this.initialOther,
+    this.scope = 'uz',
+    this.embedded = false,
+  });
   final ChatOtherUser initialOther;
   final String scope;
   final bool embedded;
@@ -102,12 +114,20 @@ class _ChatViewState extends State<_ChatView> {
     final id = messages[index].stableKey;
     // Xabar hali qurilmagan (ekrandan uzoqda) bo'lsa — taxminiy joyga
     // sakrab, keyin aniq joylashtiramiz.
-    for (var attempt = 0; attempt < 4 && _itemKeys[id]?.currentContext == null; attempt++) {
+    for (
+      var attempt = 0;
+      attempt < 4 && _itemKeys[id]?.currentContext == null;
+      attempt++
+    ) {
       if (!_scrollController.hasClients) return;
       final pos = _scrollController.position;
       // ro'yxat teskari: oxirgi xabar — 0 pozitsiyada
-      final frac = messages.length <= 1 ? 0.0 : (messages.length - 1 - index) / (messages.length - 1);
-      _scrollController.jumpTo((pos.maxScrollExtent * frac).clamp(0.0, pos.maxScrollExtent));
+      final frac = messages.length <= 1
+          ? 0.0
+          : (messages.length - 1 - index) / (messages.length - 1);
+      _scrollController.jumpTo(
+        (pos.maxScrollExtent * frac).clamp(0.0, pos.maxScrollExtent),
+      );
       await WidgetsBinding.instance.endOfFrame;
     }
     final ctx = _itemKeys[id]?.currentContext;
@@ -134,7 +154,9 @@ class _ChatViewState extends State<_ChatView> {
     MessageNotifier.instance.clearFor(_conversationId);
     _contractTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       final n = context.read<ChatCubit>().state.activeContracts.length;
-      if (n > 1 && mounted) setState(() => _contractIndex = (_contractIndex + 1) % n);
+      if (n > 1 && mounted) {
+        setState(() => _contractIndex = (_contractIndex + 1) % n);
+      }
     });
   }
 
@@ -177,12 +199,22 @@ class _ChatViewState extends State<_ChatView> {
     if (pending != null) {
       // mahalliy fayl xabarning doimiy kesh kalitiga (clientId) — qayta yuklanmaydi
       await MediaCache.instance.adopt(pending.localKey, clientId, pending.name);
-      fileModel = ChatFileModel(name: pending.name, type: pending.type, size: pending.size, url: '');
+      fileModel = ChatFileModel(
+        name: pending.name,
+        type: pending.type,
+        size: pending.size,
+        url: '',
+      );
     }
     _markFresh(clientId);
     _known.add(clientId);
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-    await cubit.sendOptimistic(clientId: clientId, body: text, file: pending?.prepared, fileModel: fileModel);
+    await cubit.sendOptimistic(
+      clientId: clientId,
+      body: text,
+      file: pending?.prepared,
+      fileModel: fileModel,
+    );
   }
 
   /// Fayl tanlash — darhol yuborilmaydi: yuklanadi va ko'rib chiqish uchun ko'rsatiladi.
@@ -190,7 +222,11 @@ class _ChatViewState extends State<_ChatView> {
     final result = await FilePicker.platform.pickFiles(withData: true);
     final file = result?.files.single;
     if (file == null || file.bytes == null) return;
-    await _stage(file.bytes!, file.name, mimeForExt((file.extension ?? '').toLowerCase()));
+    await _stage(
+      file.bytes!,
+      file.name,
+      mimeForExt((file.extension ?? '').toLowerCase()),
+    );
   }
 
   /// Ovozli xabar yozib olindi — u ham avval ko'rib chiqiladi (eshitib ko'rish mumkin).
@@ -210,7 +246,12 @@ class _ChatViewState extends State<_ChatView> {
     }
     final key = 'local-${DateTime.now().microsecondsSinceEpoch}';
     await MediaCache.instance.putLocal(key, name, bytes);
-    final pending = PendingAttachment(localKey: key, name: name, type: type, size: bytes.length);
+    final pending = PendingAttachment(
+      localKey: key,
+      name: name,
+      type: type,
+      size: bytes.length,
+    );
     final token = CancelToken();
     if (!mounted) return;
     setState(() {
@@ -218,21 +259,32 @@ class _ChatViewState extends State<_ChatView> {
       _uploadToken = token;
     });
     try {
-      final prepared = await MessagesRepository(scope: widget.scope).uploadChatFile(
-        context.read<ChatCubit>().conversationId,
-        bytes: bytes,
-        filename: name,
-        contentType: type,
-        cancelToken: token,
-        onProgress: (p) {
-          if (mounted && identical(_pending, pending)) setState(() => pending.progress = p);
-        },
-      );
-      if (mounted && identical(_pending, pending)) setState(() => pending.prepared = prepared);
+      final prepared = await MessagesRepository(scope: widget.scope)
+          .uploadChatFile(
+            context.read<ChatCubit>().conversationId,
+            bytes: bytes,
+            filename: name,
+            contentType: type,
+            cancelToken: token,
+            onProgress: (p) {
+              if (mounted && identical(_pending, pending)) {
+                setState(() => pending.progress = p);
+              }
+            },
+          );
+      if (mounted && identical(_pending, pending)) {
+        setState(() => pending.prepared = prepared);
+      }
     } catch (e) {
-      if (token.isCancelled || !mounted || !identical(_pending, pending)) return;
+      if (token.isCancelled || !mounted || !identical(_pending, pending)) {
+        return;
+      }
       setState(() => _pending = null);
-      showToast(context, "Faylni yuklab bölmadi — qayta urinib köring", kind: ToastKind.error);
+      showToast(
+        context,
+        "Faylni yuklab bölmadi — qayta urinib köring",
+        kind: ToastKind.error,
+      );
     }
   }
 
@@ -248,7 +300,9 @@ class _ChatViewState extends State<_ChatView> {
       body: AuroraBackground(
         child: SafeArea(
           child: BlocConsumer<ChatCubit, ChatState>(
-            listenWhen: (p, c) => c.messages.length != p.messages.length || (c.error != null && c.error != p.error),
+            listenWhen: (p, c) =>
+                c.messages.length != p.messages.length ||
+                (c.error != null && c.error != p.error),
             // yangi xabar kelganda pastga tushamiz — faqat foydalanuvchi pastda
             // turgan bo'lsa yoki xabar o'ziniki bo'lsa (eski xabarlarni o'qiyotganda sakratmaymiz)
             listener: (context, state) {
@@ -261,29 +315,44 @@ class _ChatViewState extends State<_ChatView> {
               for (final m in state.messages) {
                 if (_known.add(m.stableKey) && !first) _markFresh(m.stableKey);
               }
-              final nearBottom = !_scrollController.hasClients || _scrollController.offset < 300;
-              final mineLast = state.messages.isNotEmpty && state.messages.last.mine;
+              final nearBottom =
+                  !_scrollController.hasClients ||
+                  _scrollController.offset < 300;
+              final mineLast =
+                  state.messages.isNotEmpty && state.messages.last.mine;
               if (nearBottom || mineLast) {
-                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => _scrollToBottom(),
+                );
               }
             },
             builder: (context, state) {
               final other = state.other ?? widget.initialOther;
               return Column(
                 children: [
-                  _ChatHeader(other: other, blockedByMe: state.blockedByMe, embedded: widget.embedded),
+                  _ChatHeader(
+                    other: other,
+                    blockedByMe: state.blockedByMe,
+                    embedded: widget.embedded,
+                  ),
                   if (state.activeContracts.isNotEmpty)
                     _PinnedContractCard(
-                      order: state.activeContracts[_contractIndex % state.activeContracts.length],
+                      order:
+                          state.activeContracts[_contractIndex %
+                              state.activeContracts.length],
                       total: state.activeContracts.length,
                       index: _contractIndex % state.activeContracts.length,
-                      onCycle: () =>
-                          setState(() => _contractIndex = (_contractIndex + 1) % state.activeContracts.length),
+                      onCycle: () => setState(
+                        () => _contractIndex =
+                            (_contractIndex + 1) % state.activeContracts.length,
+                      ),
                     ),
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        if ((state.status == ChatStatus.loading || state.status == ChatStatus.initial) && state.messages.isEmpty) {
+                        if ((state.status == ChatStatus.loading ||
+                                state.status == ChatStatus.initial) &&
+                            state.messages.isEmpty) {
                           return Padding(
                             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                             // xabarlar pastdan joylashadi (reverse ro'yxat) — skelet ham pastda
@@ -303,9 +372,15 @@ class _ChatViewState extends State<_ChatView> {
                             ),
                           );
                         }
-                        if (state.status == ChatStatus.failure && state.messages.isEmpty) {
+                        if (state.status == ChatStatus.failure &&
+                            state.messages.isEmpty) {
                           return Center(
-                            child: Text(state.error ?? 'Xatolik', style: const TextStyle(color: AppColors.textMuted)),
+                            child: SingleChildScrollView(
+                              child: ErrorState.from(
+                                state.error,
+                                () => context.read<ChatCubit>().load(),
+                              ),
+                            ),
                           );
                         }
                         if (state.blockedMe && !other.isSupport) {
@@ -331,41 +406,62 @@ class _ChatViewState extends State<_ChatView> {
                         // reverse — Telegramdagidek ro'yxat pastdan boshlanadi:
                         // rasm/video yuklanib balandlik o'zgarsa ham oxirgi
                         // xabar doim ko'rinib turadi.
-                        return Stack(children: [
-                          ListView.builder(
-                          controller: _scrollController,
-                          reverse: true,
-                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                          itemCount: state.messages.length,
-                          itemBuilder: (context, i) {
-                            final m = state.messages[state.messages.length - 1 - i];
-                            final k = m.stableKey;
-                            return KeyedSubtree(
-                              key: _keyFor(k),
-                              // chapga surib — javob berish (Telegramdagidek)
-                              child: ChatAppear(
-                                animate: _fresh.contains(k),
-                                fromRight: m.mine,
-                                child: SwipeToReply(
-                                enabled: !m.deleted && !m.system && !m.isLocal,
-                                onReply: () => context.read<ChatCubit>().setReplyTo(m),
-                                child: FlashHighlight(
-                                flashKey: _flashId == k ? _flashTick : null,
-                                child: _MessageBubble(
-                                  message: m,
-                                  pinnedOrderId:
-                                      state.activeContracts.isNotEmpty ? state.activeContracts.first.id : null,
-                                  onReplyTap: _jumpTo,
-                                ),
+                        return Stack(
+                          children: [
+                            ListView.builder(
+                              controller: _scrollController,
+                              reverse: true,
+                              padding: const EdgeInsets.fromLTRB(
+                                14,
+                                12,
+                                14,
+                                12,
                               ),
+                              itemCount: state.messages.length,
+                              itemBuilder: (context, i) {
+                                final m = state
+                                    .messages[state.messages.length - 1 - i];
+                                final k = m.stableKey;
+                                return KeyedSubtree(
+                                  key: _keyFor(k),
+                                  // chapga surib — javob berish (Telegramdagidek)
+                                  child: ChatAppear(
+                                    animate: _fresh.contains(k),
+                                    fromRight: m.mine,
+                                    child: SwipeToReply(
+                                      enabled:
+                                          !m.deleted && !m.system && !m.isLocal,
+                                      onReply: () => context
+                                          .read<ChatCubit>()
+                                          .setReplyTo(m),
+                                      child: FlashHighlight(
+                                        flashKey: _flashId == k
+                                            ? _flashTick
+                                            : null,
+                                        child: _MessageBubble(
+                                          message: m,
+                                          pinnedOrderId:
+                                              state.activeContracts.isNotEmpty
+                                              ? state.activeContracts.first.id
+                                              : null,
+                                          onReplyTap: _jumpTo,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            // yuqoriga chiqilganda — pastga tushish tugmasi
+                            Positioned(
+                              right: 14,
+                              bottom: 12,
+                              child: ChatScrollButtons(
+                                controller: _scrollController,
                               ),
-                              ),
-                            );
-                          },
-                        ),
-                          // yuqoriga chiqilganda — pastga tushish tugmasi
-                          Positioned(right: 14, bottom: 12, child: ChatScrollButtons(controller: _scrollController)),
-                        ]);
+                            ),
+                          ],
+                        );
                       },
                     ),
                   ),
@@ -374,8 +470,13 @@ class _ChatViewState extends State<_ChatView> {
                       onTap: () => _jumpTo(state.replyTo!.id),
                       child: _ReplyBanner(message: state.replyTo!),
                     ),
-                  if (!state.blockedMe && !state.blockedByMe && _pending != null)
-                    PendingAttachmentBar(pending: _pending!, onCancel: _cancelPending),
+                  if (!state.blockedMe &&
+                      !state.blockedByMe &&
+                      _pending != null)
+                    PendingAttachmentBar(
+                      pending: _pending!,
+                      onCancel: _cancelPending,
+                    ),
                   if (!state.blockedMe && !state.blockedByMe)
                     ChatComposer(
                       controller: _controller,
@@ -389,7 +490,8 @@ class _ChatViewState extends State<_ChatView> {
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: OutlinedButton(
-                        onPressed: () => context.read<ChatCubit>().toggleBlock(),
+                        onPressed: () =>
+                            context.read<ChatCubit>().toggleBlock(),
                         child: const Text('Blokdan çiqariş'),
                       ),
                     ),
@@ -404,7 +506,11 @@ class _ChatViewState extends State<_ChatView> {
 }
 
 class _ChatHeader extends StatelessWidget {
-  const _ChatHeader({required this.other, required this.blockedByMe, this.embedded = false});
+  const _ChatHeader({
+    required this.other,
+    required this.blockedByMe,
+    this.embedded = false,
+  });
   final ChatOtherUser other;
   final bool blockedByMe;
   final bool embedded;
@@ -420,7 +526,9 @@ class _ChatHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final online = other.lastSeenAt != null && DateTime.now().difference(other.lastSeenAt!).inMinutes < 2;
+    final online =
+        other.lastSeenAt != null &&
+        DateTime.now().difference(other.lastSeenAt!).inMinutes < 2;
     // Saytdagi chat-room sarlavhasi: ‹ matnli tugma, 36px avatar, ism,
     // holat nuqtasi va 32x32 chegarali ⋮ tugma; pastda nozik chiziq.
     // suyuq shisha sarlavha (asosiy header bilan bir uslubda)
@@ -437,106 +545,159 @@ class _ChatHeader extends StatelessWidget {
               strong: true,
               onTap: () => Navigator.of(context).pop(),
               semanticLabel: 'Orqaga',
-              child: TIcon(TI.arrow_back_ios_new_rounded, size: 19, color: AppColors.textPrimary),
+              child: TIcon(
+                TI.arrow_back_ios_new_rounded,
+                size: 19,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(width: 8),
           ],
           Expanded(
             child: LiquidGlass(
-        borderRadius: BorderRadius.circular(26),
-        strong: true,
-        padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-        child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: other.isSupport
-                  ? null
-                  : () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute(builder: (_) => PublicProfileScreen(userId: other.id))),
+              borderRadius: BorderRadius.circular(26),
+              strong: true,
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
               child: Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: WebC.border),
-                    ),
-                    child: UserAvatar(imageUrl: other.image, initial: _initial(other.name), size: 36),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          other.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: WebC.white, fontSize: 14, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 2),
-                        if (other.isSupport)
-                          Text("Qöllab-quvvatlaş", style: TextStyle(color: WebC.emerald, fontSize: 12))
-                        else
-                          Row(
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: online ? WebC.emerald : WebC.zinc600,
-                                ),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: other.isSupport
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    PublicProfileScreen(userId: other.id),
                               ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  _presence(other.lastSeenAt),
+                            ),
+                      child: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: WebC.border),
+                            ),
+                            child: UserAvatar(
+                              imageUrl: other.image,
+                              initial: _initial(other.name),
+                              size: 36,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  other.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: online ? WebC.emerald : WebC.zinc500, fontSize: 12),
+                                  style: TextStyle(
+                                    color: WebC.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
+                                const SizedBox(height: 2),
+                                if (other.isSupport)
+                                  Text(
+                                    "Qöllab-quvvatlaş",
+                                    style: TextStyle(
+                                      color: WebC.emerald,
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                else
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 6,
+                                        height: 6,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: online
+                                              ? WebC.emerald
+                                              : WebC.zinc600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          _presence(other.lastSeenAt),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: online
+                                                ? WebC.emerald
+                                                : WebC.zinc500,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (!other.isSupport)
+                    GestureDetector(
+                      onTap: () async {
+                        final v = await showAppSheet<String>(
+                          context,
+                          builder: (ctx) => Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppSheetAction(
+                                icon: TI.flag_outlined,
+                                label: 'Şikoyat qiliş',
+                                onTap: () => Navigator.of(ctx).pop('report'),
+                              ),
+                              AppSheetAction(
+                                icon: blockedByMe
+                                    ? TI.lock_open_rounded
+                                    : TI.block_rounded,
+                                label: blockedByMe
+                                    ? 'Blokdan çiqariş'
+                                    : 'Bloklaş',
+                                onTap: () => Navigator.of(ctx).pop('block'),
+                              ),
+                              AppSheetAction(
+                                icon: TI.delete_outline_rounded,
+                                label: 'Suhbatni öçiriş',
+                                danger: true,
+                                onTap: () => Navigator.of(ctx).pop('delete'),
                               ),
                             ],
                           ),
-                      ],
+                        );
+                        if (v != null && context.mounted) {
+                          _onMenuSelect(context, v);
+                        }
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.tint(0.07),
+                        ),
+                        child: TIcon(
+                          TI.more_horiz_rounded,
+                          size: 20,
+                          color: WebC.zinc300,
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
-          ),
-          if (!other.isSupport)
-            GestureDetector(
-              onTap: () async {
-                final v = await showAppSheet<String>(
-                  context,
-                  builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
-                    AppSheetAction(icon: TI.flag_outlined, label: 'Şikoyat qiliş', onTap: () => Navigator.of(ctx).pop('report')),
-                    AppSheetAction(
-                      icon: blockedByMe ? TI.lock_open_rounded : TI.block_rounded,
-                      label: blockedByMe ? 'Blokdan çiqariş' : 'Bloklaş',
-                      onTap: () => Navigator.of(ctx).pop('block'),
-                    ),
-                    AppSheetAction(icon: TI.delete_outline_rounded, label: 'Suhbatni öçiriş', danger: true, onTap: () => Navigator.of(ctx).pop('delete')),
-                  ]),
-                );
-                if (v != null && context.mounted) _onMenuSelect(context, v);
-              },
-              child: Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.tint(0.07)),
-                child: TIcon(TI.more_horiz_rounded, size: 20, color: WebC.zinc300),
-              ),
-            ),
-        ],
-      ),
-      ),
           ),
         ],
       ),
@@ -568,7 +729,10 @@ class _ChatHeader extends StatelessWidget {
   }
 }
 
-Future<void> _showReportDialog(BuildContext context, {String? messageId}) async {
+Future<void> _showReportDialog(
+  BuildContext context, {
+  String? messageId,
+}) async {
   final cubit = context.read<ChatCubit>();
   final text = TextEditingController();
   await showAppSheet(
@@ -579,22 +743,40 @@ Future<void> _showReportDialog(BuildContext context, {String? messageId}) async 
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Nima sodir bölganini yozing (kamida 10 belgi). Şikoyat administratorga yuboriladi.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5, height: 1.4)),
+          Text(
+            'Nima sodir bölganini yozing (kamida 10 belgi). Şikoyat administratorga yuboriladi.',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13.5,
+              height: 1.4,
+            ),
+          ),
           const SizedBox(height: 14),
           AppTextField(label: 'Şikoyat matni', controller: text, maxLines: 4),
           const SizedBox(height: 16),
-          ListenableBuilder(listenable: text, builder: (_, __) => AppDialogButton(
-            label: 'Yuboriş',
-            danger: true,
-            onTap: text.text.trim().length < 10
-                ? null
-                : () async {
-                    Navigator.of(sheetContext).pop();
-                    final ok = await cubit.report(text.text.trim(), messageId: messageId);
-                    if (ok && context.mounted) showToast(context, 'Şikoyat yuborildi', kind: ToastKind.success);
-                  },
-          )),
+          ListenableBuilder(
+            listenable: text,
+            builder: (_, __) => AppDialogButton(
+              label: 'Yuboriş',
+              danger: true,
+              onTap: text.text.trim().length < 10
+                  ? null
+                  : () async {
+                      Navigator.of(sheetContext).pop();
+                      final ok = await cubit.report(
+                        text.text.trim(),
+                        messageId: messageId,
+                      );
+                      if (ok && context.mounted) {
+                        showToast(
+                          context,
+                          'Şikoyat yuborildi',
+                          kind: ToastKind.success,
+                        );
+                      }
+                    },
+            ),
+          ),
         ],
       ),
     ),
@@ -607,7 +789,12 @@ String _initial(String name) {
 }
 
 class _PinnedContractCard extends StatelessWidget {
-  const _PinnedContractCard({required this.order, required this.total, required this.index, required this.onCycle});
+  const _PinnedContractCard({
+    required this.order,
+    required this.total,
+    required this.index,
+    required this.onCycle,
+  });
   final ChatContractOrderRef order;
   final int total;
   final int index;
@@ -618,8 +805,11 @@ class _PinnedContractCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
       child: GestureDetector(
-        onTap: () =>
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: order.id))),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => OrderDetailScreen(orderId: order.id),
+          ),
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: BackdropFilter(
@@ -629,11 +819,17 @@ class _PinnedContractCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.indigo.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.indigo.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppColors.indigo.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  const TIcon(TI.push_pin_rounded, size: 16, color: AppColors.indigo),
+                  const TIcon(
+                    TI.push_pin_rounded,
+                    size: 16,
+                    color: AppColors.indigo,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -643,41 +839,59 @@ class _PinnedContractCard extends StatelessWidget {
                           order.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         Text.rich(
-                          TextSpan(children: [
-                            if (order.deadline != null) ...[
-                              const WidgetSpan(
-                                alignment: PlaceholderAlignment.middle,
-                                child: Padding(
-                                  padding: EdgeInsets.only(right: 3),
-                                  child: TIcon(TI.schedule_rounded, size: 12, color: AppColors.textMuted),
-                                ),
-                              ),
-                              TextSpan(text: '${shortDateTime(order.deadline!)} · '),
-                            ],
-                            if (order.badgeKind != null)
-                              WidgetSpan(
-                                alignment: PlaceholderAlignment.middle,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 3),
-                                  child: TIcon(
-                                    switch (order.badgeKind) {
-                                      'contract' => TI.description_outlined,
-                                      'disputed' => TI.balance_rounded,
-                                      _ => TI.warning_amber_rounded,
-                                    },
-                                    size: 12,
-                                    color: AppColors.textMuted,
+                          TextSpan(
+                            children: [
+                              if (order.deadline != null) ...[
+                                const WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 3),
+                                    child: TIcon(
+                                      TI.schedule_rounded,
+                                      size: 12,
+                                      color: AppColors.textMuted,
+                                    ),
                                   ),
                                 ),
+                                TextSpan(
+                                  text: '${shortDateTime(order.deadline!)} · ',
+                                ),
+                              ],
+                              if (order.badgeKind != null)
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 3),
+                                    child: TIcon(
+                                      switch (order.badgeKind) {
+                                        'contract' => TI.description_outlined,
+                                        'disputed' => TI.balance_rounded,
+                                        _ => TI.warning_amber_rounded,
+                                      },
+                                      size: 12,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                ),
+                              TextSpan(
+                                text:
+                                    '${order.badge}${total > 1 ? " · ${index + 1}/$total" : ""}',
                               ),
-                            TextSpan(text: '${order.badge}${total > 1 ? " · ${index + 1}/$total" : ""}'),
-                          ]),
+                            ],
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -685,18 +899,29 @@ class _PinnedContractCard extends StatelessWidget {
                   if (total > 1)
                     IconButton(
                       onPressed: onCycle,
-                      icon: const TIcon(TI.swap_horiz_rounded, size: 18, color: AppColors.textMuted),
+                      icon: const TIcon(
+                        TI.swap_horiz_rounded,
+                        size: 18,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   const SizedBox(width: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.indigo.withValues(alpha: 0.22),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: const Text(
                       "Işni köriş",
-                      style: TextStyle(color: AppColors.indigo, fontSize: 11.5, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: AppColors.indigo,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -721,7 +946,9 @@ class _ReplyBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.tint(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: const Border(left: BorderSide(color: AppColors.indigo, width: 3)),
+        border: const Border(
+          left: BorderSide(color: AppColors.indigo, width: 3),
+        ),
       ),
       child: Row(
         children: [
@@ -731,15 +958,24 @@ class _ReplyBanner extends StatelessWidget {
               children: [
                 const Text(
                   'Javob berilmoqda',
-                  style: TextStyle(color: AppColors.indigo, fontSize: 11, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    color: AppColors.indigo,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   message.deleted
                       ? "öçirilgan xabar"
-                      : (message.body.isNotEmpty ? message.body : (message.file?.name ?? 'xabar')),
+                      : (message.body.isNotEmpty
+                            ? message.body
+                            : (message.file?.name ?? 'xabar')),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12.5,
+                  ),
                 ),
               ],
             ),
@@ -763,6 +999,7 @@ class _MessageBubble extends StatefulWidget {
     this.onReplyTap,
   });
   final ChatMessageModel message;
+
   /// Eski (buyurtmasi yozilmagan) tizim xabarlari uchun zaxira — faol shartnoma
   final String? pinnedOrderId;
 
@@ -789,16 +1026,28 @@ class _MessageBubbleState extends State<_MessageBubble> {
       showAppSheet(
         context,
         title: 'Xabar yuborilmadi',
-        builder: (ctx) => Column(mainAxisSize: MainAxisSize.min, children: [
-          AppSheetAction(icon: TI.refresh_rounded, label: 'Qayta yuboriş', onTap: () {
-            Navigator.of(ctx).pop();
-            cubit.retry(message.clientId!);
-          }),
-          AppSheetAction(icon: TI.delete_outline_rounded, label: 'Öçiriş', danger: true, onTap: () {
-            Navigator.of(ctx).pop();
-            cubit.discard(message.clientId!);
-          }),
-        ]),
+        builder: (ctx) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppSheetAction(
+              icon: TI.refresh_rounded,
+              label: 'Qayta yuboriş',
+              onTap: () {
+                Navigator.of(ctx).pop();
+                cubit.retry(message.clientId!);
+              },
+            ),
+            AppSheetAction(
+              icon: TI.delete_outline_rounded,
+              label: 'Öçiriş',
+              danger: true,
+              onTap: () {
+                Navigator.of(ctx).pop();
+                cubit.discard(message.clientId!);
+              },
+            ),
+          ],
+        ),
       );
       return;
     }
@@ -812,20 +1061,40 @@ class _MessageBubbleState extends State<_MessageBubble> {
       rect: rect,
       preview: SizedBox(width: rect.width, child: preview),
       alignRight: m.mine,
-      myReaction: m.reactions.where((r) => r.mine).map((r) => r.emoji).firstOrNull,
+      myReaction: m.reactions
+          .where((r) => r.mine)
+          .map((r) => r.emoji)
+          .firstOrNull,
       seen: 0,
       reactionsCount: 0,
       showInfo: false,
       actions: [
         const FamilyPopupAction('reply', TI.reply_rounded, 'Javob beriş'),
-        if (m.body.isNotEmpty) const FamilyPopupAction('copy', TI.copy_rounded, 'Nusxa oliş'),
+        if (m.body.isNotEmpty)
+          const FamilyPopupAction('copy', TI.copy_rounded, 'Nusxa oliş'),
         if (m.file != null)
-          FamilyPopupAction('save', TI.download_rounded, m.file!.isImage || m.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş'),
+          FamilyPopupAction(
+            'save',
+            TI.download_rounded,
+            m.file!.isImage || m.file!.isVideo
+                ? 'Galereyaga saqlaş'
+                : 'Yuklab oliş',
+          ),
         if (m.mine) ...[
           const FamilyPopupAction('edit', TI.edit_outlined, 'Tahrirlaş'),
-          const FamilyPopupAction('delete', TI.delete_outline_rounded, 'Öçiriş', danger: true),
+          const FamilyPopupAction(
+            'delete',
+            TI.delete_outline_rounded,
+            'Öçiriş',
+            danger: true,
+          ),
         ] else
-          const FamilyPopupAction('report', TI.flag_outlined, 'Şikoyat qiliş', danger: true),
+          const FamilyPopupAction(
+            'report',
+            TI.flag_outlined,
+            'Şikoyat qiliş',
+            danger: true,
+          ),
       ],
     );
     if (v == null || !mounted || !context.mounted) return;
@@ -857,7 +1126,11 @@ class _MessageBubbleState extends State<_MessageBubble> {
     }
   }
 
-  void _showEditSheet(BuildContext context, ChatCubit cubit, ChatMessageModel message) {
+  void _showEditSheet(
+    BuildContext context,
+    ChatCubit cubit,
+    ChatMessageModel message,
+  ) {
     final controller = TextEditingController(text: message.body);
     showAppSheet(
       context,
@@ -896,9 +1169,13 @@ class _MessageBubbleState extends State<_MessageBubble> {
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.8,
+          ),
           decoration: BoxDecoration(
-            color: mine ? AppColors.indigo.withValues(alpha: 0.85) : AppColors.tint(0.06),
+            color: mine
+                ? AppColors.indigo.withValues(alpha: 0.85)
+                : AppColors.tint(0.06),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.cardBorder),
           ),
@@ -906,18 +1183,36 @@ class _MessageBubbleState extends State<_MessageBubble> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(message.body, style: TextStyle(color: bubbleTextColor, fontSize: 13.5, height: 1.4)),
+              Text(
+                message.body,
+                style: TextStyle(
+                  color: bubbleTextColor,
+                  fontSize: 13.5,
+                  height: 1.4,
+                ),
+              ),
               if ((message.orderId ?? pinnedOrderId) != null) ...[
                 const SizedBox(height: 8),
-                Divider(color: mine ? Colors.white24 : AppColors.cardBorder, height: 1),
+                Divider(
+                  color: mine ? Colors.white24 : AppColors.cardBorder,
+                  height: 1,
+                ),
                 const SizedBox(height: 8),
                 GestureDetector(
-                  onTap: () => Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: (message.orderId ?? pinnedOrderId)!))),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => OrderDetailScreen(
+                        orderId: (message.orderId ?? pinnedOrderId)!,
+                      ),
+                    ),
+                  ),
                   child: Text(
                     'Buyurtmani köriş ›',
-                    style: TextStyle(color: bubbleTextColor, fontSize: 12.5, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: bubbleTextColor,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -947,14 +1242,25 @@ class _MessageBubbleState extends State<_MessageBubble> {
             _ReplyQuote(
               reply: message.replyTo!,
               mine: mine,
-              onTap: onReplyTap == null ? null : () => onReplyTap!(message.replyTo!.id),
+              onTap: onReplyTap == null
+                  ? null
+                  : () => onReplyTap!(message.replyTo!.id),
             ),
-          if (message.file != null) ChatAttachment(file: message.file!, cacheKey: message.stableKey, mine: mine),
+          if (message.file != null)
+            ChatAttachment(
+              file: message.file!,
+              cacheKey: message.stableKey,
+              mine: mine,
+            ),
           if (!message.deleted && message.body.isNotEmpty) ...[
             if (message.file != null) const SizedBox(height: 6),
             LinkText(
               message.body,
-              style: TextStyle(color: mine ? Colors.white : WebC.zinc200, fontSize: 14, height: 1.45),
+              style: TextStyle(
+                color: mine ? Colors.white : WebC.zinc200,
+                fontSize: 14,
+                height: 1.45,
+              ),
               linkColor: mine ? Colors.white : WebC.indigoSoft,
             ),
           ],
@@ -963,15 +1269,24 @@ class _MessageBubbleState extends State<_MessageBubble> {
             GestureDetector(
               onTap: () => openInternalUrl(context, message.action!.url),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 9,
+                ),
                 decoration: BoxDecoration(
-                  color: mine ? Colors.white.withValues(alpha: 0.15) : AppColors.indigo.withValues(alpha: 0.15),
+                  color: mine
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : AppColors.indigo.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TIcon(TI.account_balance_wallet_outlined, size: 16, color: mine ? Colors.white : WebC.indigoSoft),
+                    TIcon(
+                      TI.account_balance_wallet_outlined,
+                      size: 16,
+                      color: mine ? Colors.white : WebC.indigoSoft,
+                    ),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
@@ -991,7 +1306,11 @@ class _MessageBubbleState extends State<_MessageBubble> {
           if (message.deleted)
             Text(
               "öçirilgan xabar",
-              style: TextStyle(color: timeColor, fontStyle: FontStyle.italic, fontSize: 14),
+              style: TextStyle(
+                color: timeColor,
+                fontStyle: FontStyle.italic,
+                fontSize: 14,
+              ),
             ),
           const SizedBox(height: 2),
           Row(
@@ -1007,12 +1326,20 @@ class _MessageBubbleState extends State<_MessageBubble> {
                 if (message.status == ChatSendStatus.pending)
                   TIcon(TI.schedule_rounded, size: 13, color: timeColor)
                 else if (message.status == ChatSendStatus.failed)
-                  const TIcon(TI.error_outline_rounded, size: 13, color: Color(0xFFFDA4AF))
+                  const TIcon(
+                    TI.error_outline_rounded,
+                    size: 13,
+                    color: Color(0xFFFDA4AF),
+                  )
                 else
                   TIcon(
-                    message.readAt != null ? TI.done_all_rounded : TI.done_rounded,
+                    message.readAt != null
+                        ? TI.done_all_rounded
+                        : TI.done_rounded,
                     size: 14,
-                    color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
+                    color: message.readAt != null
+                        ? const Color(0xFF7DD3FC)
+                        : timeColor,
                   ),
               ],
             ],
@@ -1043,23 +1370,32 @@ class _MessageBubbleState extends State<_MessageBubble> {
                 ),
                 color: WebC.fill10,
               ),
-              child: Text('⋮', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1)),
+              child: Text(
+                '⋮',
+                style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1),
+              ),
             ),
           );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
-        crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: mine
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           LayoutBuilder(
             builder: (context, c) {
               return Row(
-                mainAxisAlignment: mine ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisAlignment: mine
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (mine) ...[menuBtn, const SizedBox(width: 6)],
                   ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: c.maxWidth * 0.86 - 34),
+                    constraints: BoxConstraints(
+                      maxWidth: c.maxWidth * 0.86 - 34,
+                    ),
                     child: IntrinsicWidth(child: bubble),
                   ),
                   if (!mine) ...[const SizedBox(width: 6), menuBtn],
@@ -1070,19 +1406,48 @@ class _MessageBubbleState extends State<_MessageBubble> {
           if (message.status == ChatSendStatus.failed)
             Padding(
               padding: const EdgeInsets.only(top: 5, right: 34),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                const TIcon(TI.error_outline_rounded, size: 14, color: Color(0xFFF43F5E)),
-                const SizedBox(width: 4),
-                const Text('Yuborilmadi', style: TextStyle(color: Color(0xFFF43F5E), fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(width: 10),
-                _RetryPill(label: 'Qayta yuboriş', icon: TI.refresh_rounded, onTap: () => context.read<ChatCubit>().retry(message.clientId!)),
-                const SizedBox(width: 6),
-                _RetryPill(label: 'Öçiriş', icon: TI.delete_outline_rounded, danger: true, onTap: () => context.read<ChatCubit>().discard(message.clientId!)),
-              ]),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const TIcon(
+                    TI.error_outline_rounded,
+                    size: 14,
+                    color: Color(0xFFF43F5E),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Yuborilmadi',
+                    style: TextStyle(
+                      color: Color(0xFFF43F5E),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _RetryPill(
+                    label: 'Qayta yuboriş',
+                    icon: TI.refresh_rounded,
+                    onTap: () =>
+                        context.read<ChatCubit>().retry(message.clientId!),
+                  ),
+                  const SizedBox(width: 6),
+                  _RetryPill(
+                    label: 'Öçiriş',
+                    icon: TI.delete_outline_rounded,
+                    danger: true,
+                    onTap: () =>
+                        context.read<ChatCubit>().discard(message.clientId!),
+                  ),
+                ],
+              ),
             ),
           if (message.reactions.isNotEmpty && !message.deleted)
             Padding(
-              padding: EdgeInsets.only(top: 4, left: mine ? 0 : 4, right: mine ? 34 : 0),
+              padding: EdgeInsets.only(
+                top: 4,
+                left: mine ? 0 : 4,
+                right: mine ? 34 : 0,
+              ),
               child: _ReactionChips(
                 reactions: message.reactions,
                 alignRight: mine,
@@ -1113,17 +1478,25 @@ class _ReplyQuote extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
-      decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: mine ? const Color(0xFFA5B4FC) : WebC.indigo, width: 2)),
-      ),
-      child: Text(
-        reply.deleted ? "öçirilgan xabar" : reply.text,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: mine ? const Color(0xFFC7D2FE) : WebC.zinc400, fontSize: 12),
-      ),
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.only(left: 8, top: 2, bottom: 2),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: mine ? const Color(0xFFA5B4FC) : WebC.indigo,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Text(
+          reply.deleted ? "öçirilgan xabar" : reply.text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: mine ? const Color(0xFFC7D2FE) : WebC.zinc400,
+            fontSize: 12,
+          ),
+        ),
       ),
     );
   }
@@ -1131,7 +1504,11 @@ class _ReplyQuote extends StatelessWidget {
 
 /// Pufakcha ostidagi reaksiyalar (Family'dagidek): emoji + son; meniki — ajratilgan. Bosilsa — almashtiriladi.
 class _ReactionChips extends StatelessWidget {
-  const _ReactionChips({required this.reactions, required this.onTap, this.alignRight = false});
+  const _ReactionChips({
+    required this.reactions,
+    required this.onTap,
+    this.alignRight = false,
+  });
   final List<MessageReaction> reactions;
   final void Function(String emoji) onTap;
   final bool alignRight;
@@ -1153,20 +1530,34 @@ class _ReactionChips extends StatelessWidget {
               duration: const Duration(milliseconds: 180),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: r.mine ? const Color(0xFF6366F1).withValues(alpha: 0.22) : AppColors.tint(0.06),
+                color: r.mine
+                    ? const Color(0xFF6366F1).withValues(alpha: 0.22)
+                    : AppColors.tint(0.06),
                 borderRadius: BorderRadius.circular(99),
-                border: Border.all(color: r.mine ? const Color(0xFF818CF8) : AppColors.cardBorder),
+                border: Border.all(
+                  color: r.mine
+                      ? const Color(0xFF818CF8)
+                      : AppColors.cardBorder,
+                ),
               ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(r.emoji, style: const TextStyle(fontSize: 14, height: 1.2)),
-                const SizedBox(width: 4),
-                Text('${r.count}',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    r.emoji,
+                    style: const TextStyle(fontSize: 14, height: 1.2),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${r.count}',
                     style: TextStyle(
                       color: r.mine ? WebC.indigoSoft : AppColors.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                    )),
-              ]),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
       ],
@@ -1175,7 +1566,12 @@ class _ReactionChips extends StatelessWidget {
 }
 
 class _RetryPill extends StatelessWidget {
-  const _RetryPill({required this.label, required this.icon, required this.onTap, this.danger = false});
+  const _RetryPill({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.danger = false,
+  });
   final String label;
   final TIData icon;
   final VoidCallback onTap;
@@ -1193,11 +1589,21 @@ class _RetryPill extends StatelessWidget {
           borderRadius: BorderRadius.circular(99),
           border: Border.all(color: c.withValues(alpha: 0.4)),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          TIcon(icon, size: 13, color: c),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w600)),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TIcon(icon, size: 13, color: c),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: c,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
