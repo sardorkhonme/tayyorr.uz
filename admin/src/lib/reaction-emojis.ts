@@ -3,7 +3,7 @@
  * Ro'yxat «Tayyorr's Family» guruhidagi (lib/family.ts → FAMILY_EMOJIS) va ilovadagi bilan bir xil.
  * Bir xil fayl to'rt loyihada: src, admin, plus, smm-app (lib/reaction-emojis.ts).
  */
-export const REACTION_EMOJIS = ["👍", "👎", "💖", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
+export const REACTION_EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
 
 /** Xabar ostidagi reaksiya: emoji, soni, men bosganmi va bosganlar id'lari (50 tagacha). */
 export interface ReactionChip {

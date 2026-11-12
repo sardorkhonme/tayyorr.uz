@@ -10,7 +10,7 @@ export { REACTION_EMOJIS, type ReactionChip };
  * Bir xil fayl to'rt loyihada: src, admin, plus, smm-app (lib/reactions.ts).
  */
 
-const LEGACY: Record<string, string> = { LIKE: "👍", DISLIKE: "👎" };
+const LEGACY: Record<string, string> = { LIKE: "👍", DISLIKE: "👎", "💖": "❤️" }; // eski 💖 → oddiy qizil ❤️
 export const toEmoji = (v: string) => LEGACY[v] ?? v;
 
 /** Reaksiyalarni emoji bo'yicha guruhlaydi (tartib — tanlov panelidagidek). */
@@ -51,7 +51,7 @@ export function parseReactionInput(body: unknown): { emoji: string | null; toggl
   const b = body as { emoji?: unknown; value?: unknown };
   if ("emoji" in b) {
     if (b.emoji === null) return { emoji: null, toggle: false };
-    if (typeof b.emoji === "string" && REACTION_EMOJIS.includes(b.emoji)) return { emoji: b.emoji, toggle: true };
+    if (typeof b.emoji === "string" && REACTION_EMOJIS.includes(toEmoji(b.emoji))) return { emoji: toEmoji(b.emoji), toggle: true };
     return null;
   }
   if (b.value === null) return { emoji: null, toggle: false };

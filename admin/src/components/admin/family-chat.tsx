@@ -13,7 +13,7 @@ import { shortDate } from "@/lib/date";
 import { prepareFamilyFile, type PreparedChatFile } from "@/lib/upload-client";
 
 /** Ilova bilan bir xil reaksiyalar (lib/family.ts → FAMILY_EMOJIS). */
-const EMOJIS = ["👍", "👎", "💖", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
+const EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
 const POLL_MS = 4000;
 const MAX_FILE = 50 * 1024 * 1024;
 

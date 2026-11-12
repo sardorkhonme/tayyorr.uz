@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' show GlassBackdropGroup;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
@@ -25,9 +24,15 @@ class AppHeaderSliver extends StatelessWidget {
     final light = Theme.of(context).brightness == Brightness.light;
     final root = ShellRootScope.of(context);
     if (root == ServiceKind.plus) {
-      return SliverPersistentHeader(pinned: true, delegate: _FadeDelegate(top, light));
+      return SliverPersistentHeader(
+        pinned: true,
+        delegate: _FadeDelegate(top, light),
+      );
     }
-    return SliverPersistentHeader(pinned: true, delegate: _HeaderDelegate(top, light));
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _HeaderDelegate(top, light),
+    );
   }
 }
 
@@ -43,10 +48,15 @@ class _FadeDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => topInset + 8;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => _statusFade(topInset);
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => _statusFade(topInset);
 
   @override
-  bool shouldRebuild(covariant _FadeDelegate old) => old.topInset != topInset || old.light != light;
+  bool shouldRebuild(covariant _FadeDelegate old) =>
+      old.topInset != topInset || old.light != light;
 }
 
 /// Soat/batareya qatori ostidagi soya — sahifa fonidan shaffofga (kontent soat ostida ko'rinmaydi).
@@ -56,7 +66,11 @@ Widget _statusFade(double topInset) => IgnorePointer(
       gradient: LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [AppColors.bg, AppColors.bg.withValues(alpha: 0.85), AppColors.bg.withValues(alpha: 0)],
+        colors: [
+          AppColors.bg,
+          AppColors.bg.withValues(alpha: 0.85),
+          AppColors.bg.withValues(alpha: 0),
+        ],
         stops: const [0, 0.6, 1],
       ),
     ),
@@ -78,18 +92,32 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _extent;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     // soat/batareya qatori ostida — sahifa fonidan shaffofga o'tuvchi soya (kontent u yerda ko'rinmaydi)
     return Stack(
       children: [
-        Positioned(left: 0, right: 0, top: 0, height: topInset + 34, child: _statusFade(topInset)),
-        Padding(padding: EdgeInsets.fromLTRB(12, topInset + 12, 12, 4), child: const WebHeaderBar()),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: topInset + 34,
+          child: _statusFade(topInset),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(12, topInset + 12, 12, 4),
+          child: const WebHeaderBar(),
+        ),
       ],
     );
   }
 
   @override
-  bool shouldRebuild(covariant _HeaderDelegate old) => old.topInset != topInset || old.light != light;
+  bool shouldRebuild(covariant _HeaderDelegate old) =>
+      old.topInset != topInset || old.light != light;
 }
 
 /// Headerning o'zi (sliver'siz) — iOS 26 navigatsiya qatori: alohida suzuvchi shisha kapsulalar
@@ -115,9 +143,17 @@ class WebHeaderBar extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TIcon(TI.arrow_back_ios_new_rounded, size: 17, color: AppColors.textPrimary),
+              TIcon(
+                TI.arrow_back_ios_new_rounded,
+                size: 17,
+                color: AppColors.textPrimary,
+              ),
               const SizedBox(width: 4),
-              Image.asset('assets/plus-mark.png', height: 24, filterQuality: FilterQuality.high),
+              Image.asset(
+                'assets/plus-mark.png',
+                height: 24,
+                filterQuality: FilterQuality.high,
+              ),
             ],
           ),
         ),
@@ -128,42 +164,45 @@ class WebHeaderBar extends StatelessWidget {
         width: h,
         onTap: () => Navigator.of(context).maybePop(),
         semanticLabel: 'Orqaga',
-        child: TIcon(TI.arrow_back_ios_new_rounded, size: 19, color: AppColors.textPrimary),
+        child: TIcon(
+          TI.arrow_back_ios_new_rounded,
+          size: 19,
+          color: AppColors.textPrimary,
+        ),
       );
     }
     return SizedBox(
       height: _HeaderDelegate.barHeight,
-      child: GlassBackdropGroup(
-        child: Row(
-          children: [
-            if (lead != null) ...[lead, const SizedBox(width: 8)],
-            Flexible(
-              child: GlassTap(
-                height: h,
-                onTap: () => switch (service) {
-                  ServiceKind.uz => openUzSection(AppSection.dashboard),
-                  ServiceKind.smm => openSmm(0),
-                  ServiceKind.plus => openHub(),
+      child: Row(
+        children: [
+          if (lead != null) ...[lead, const SizedBox(width: 8)],
+          Flexible(
+            child: GlassTap(
+              height: h,
+              onTap: () => switch (service) {
+                ServiceKind.uz => openUzSection(AppSection.dashboard),
+                ServiceKind.smm => openSmm(0),
+                ServiceKind.plus => openHub(),
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: switch (service) {
+                  ServiceKind.uz => const AppLogo(height: 20),
+                  ServiceKind.smm => const BrandLogo.smm(),
+                  ServiceKind.plus => const BrandLogo.plus(),
                 },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: switch (service) {
-                    ServiceKind.uz => const AppLogo(height: 20),
-                    ServiceKind.smm => const BrandLogo.smm(),
-                    ServiceKind.plus => const BrandLogo.plus(),
-                  },
-                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 /// Bo'limga o'tish (Tayyorr.uz qobig'ida).
-void goToSection(BuildContext context, AppSection section) => openUzSection(section);
+void goToSection(BuildContext context, AppSection section) =>
+    openUzSection(section);
 
 /// tayyorr+ va Tayyorr SMM logolari (belgi + yozuv).
 class BrandLogo extends StatelessWidget {
@@ -173,11 +212,21 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.spaceGrotesk(fontSize: 19, height: 1.1, fontWeight: FontWeight.w700, letterSpacing: -0.4, color: AppColors.textPrimary);
+    final style = GoogleFonts.spaceGrotesk(
+      fontSize: 19,
+      height: 1.1,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.4,
+      color: AppColors.textPrimary,
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(smm ? 'assets/smm-mark.png' : 'assets/plus-mark.png', height: 28, filterQuality: FilterQuality.high),
+        Image.asset(
+          smm ? 'assets/smm-mark.png' : 'assets/plus-mark.png',
+          height: 28,
+          filterQuality: FilterQuality.high,
+        ),
         const SizedBox(width: 7),
         Flexible(
           child: Text.rich(

@@ -17,7 +17,9 @@ import { FAMILY_CHANNEL, signal } from "@/lib/realtime";
 export const FAMILY_NAME = "Tayyorr’s Family";
 export const FILE_TTL_MS = 5 * 24 * 3600 * 1000;
 /** Ruxsat etilgan reaksiyalar (ilovadagi tanlov bilan bir xil). */
-export const FAMILY_EMOJIS = ["👍", "👎", "💖", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
+export const FAMILY_EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
+/** Eski 💖 (bazada va eski ilovalarda) → oddiy qizil ❤️. */
+export const familyEmoji = (e: string) => (e === "💖" ? "❤️" : e);
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz").replace(/\/+$/, "");
 
 export const BRAND_LOGIN = "tayyorr.uz";
@@ -192,7 +194,10 @@ async function mentionMap(rows: { mentions: string[] }[]) {
 /** Reaksiyalarni emoji bo'yicha guruhlaydi. */
 function reactionSummary(rs: { userId: string; emoji: string }[]) {
   const map = new Map<string, string[]>();
-  for (const r of rs) map.set(r.emoji, [...(map.get(r.emoji) ?? []), r.userId]);
+  for (const r of rs) {
+    const e = familyEmoji(r.emoji);
+    map.set(e, [...(map.get(e) ?? []), r.userId]);
+  }
   return [...map.entries()].map(([emoji, users]) => ({ emoji, count: users.length, users: users.slice(0, 50) }));
 }
 

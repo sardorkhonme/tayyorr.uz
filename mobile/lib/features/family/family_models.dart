@@ -44,7 +44,7 @@ class FamilyReply {
 }
 
 /// Guruhdagi reaksiyalar (serverdagi FAMILY_EMOJIS bilan bir xil).
-const kFamilyEmojis = ['👍', '👎', '💖', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
+const kFamilyEmojis = ['👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
 
 class FamilyReaction {
   const FamilyReaction({required this.emoji, required this.count, required this.users});

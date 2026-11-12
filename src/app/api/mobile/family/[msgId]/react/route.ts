@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { FAMILY_EMOJIS, familyInclude, familySignal, toFamilyClients } from "@/lib/family";
+import { FAMILY_EMOJIS, familyEmoji, familyInclude, familySignal, toFamilyClients } from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { scopedApiError } from "@/lib/restriction-scope";
@@ -19,6 +19,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ msgId: 
   const me = auth.userId;
   const { msgId } = await params;
   const parsed = schema.safeParse(await req.json().catch(() => null));
+  if (parsed.success && parsed.data.emoji) parsed.data.emoji = familyEmoji(parsed.data.emoji);
   if (!parsed.success || (parsed.data.emoji && !FAMILY_EMOJIS.includes(parsed.data.emoji))) {
     return mobileJson({ error: "Notöğri reaksiya" }, { status: 400 });
   }
@@ -33,7 +34,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ msgId: 
   const key = { messageId_userId: { messageId: msgId, userId: me } };
   const cur = await db.familyReaction.findUnique({ where: key, select: { emoji: true } });
   const emoji = parsed.data.emoji;
-  if (!emoji || cur?.emoji === emoji) {
+  if (!emoji || (cur && familyEmoji(cur.emoji) === emoji)) {
     await db.familyReaction.deleteMany({ where: { messageId: msgId, userId: me } });
   } else {
     await db.familyReaction.upsert({ where: key, update: { emoji, createdAt: new Date() }, create: { messageId: msgId, userId: me, emoji } });

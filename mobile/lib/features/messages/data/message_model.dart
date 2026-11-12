@@ -84,7 +84,7 @@ class MessageReaction {
 }
 
 /// Reaksiyalar ro'yxati — Family guruhidagi va saytdagi bilan bir xil.
-const kReactionEmojis = ['👍', '👎', '💖', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
+const kReactionEmojis = ['👍', '👎', '❤️', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
 
 class ChatFileModel {
   final String name;
