@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
@@ -246,15 +248,18 @@ class SwipeToReply extends StatefulWidget {
 class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderStateMixin {
   static const _threshold = 64.0;
   static const _max = 96.0;
-  late final AnimationController _back = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
-  double _dx = 0;
+
+  /// Qaytish — yengil «prujina» (biroz o'tib ketib, joyiga tushadi).
+  late final AnimationController _back = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+  double _raw = 0; // barmoq haqiqatda qancha surdi
+  double _dx = 0; // pufakcha qancha siljigan (qarshilik bilan)
   double _from = 0;
   bool _armed = false;
 
   @override
   void initState() {
     super.initState();
-    _back.addListener(() => setState(() => _dx = _from * (1 - Curves.easeOutCubic.transform(_back.value))));
+    _back.addListener(() => setState(() => _dx = _from * (1 - Curves.easeOutBack.transform(_back.value))));
   }
 
   @override
@@ -263,11 +268,24 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
     super.dispose();
   }
 
+  /// Rezina: qancha ko'p tortilsa, shuncha kam siljiydi.
+  static double _rubber(double x, double limit) => limit * (1 - math.exp(-x / limit));
+
   void _update(DragUpdateDetails d) {
-    if (_back.isAnimating) _back.stop();
-    // faqat chapga; chegaradan keyin qarshilik
-    var next = (_dx + d.delta.dx).clamp(-_max * 1.4, 0.0);
-    if (next < -_max) next = -_max - (-next - _max) * 0.35;
+    if (_back.isAnimating) {
+      _back.stop();
+      _raw = _dx;
+    }
+    _raw += d.delta.dx;
+    double next;
+    if (_raw <= 0) {
+      // chapga — javob: chegaragacha deyarli erkin, keyin qarshilik
+      final x = -_raw;
+      next = -(x <= _threshold ? x : _threshold + _rubber(x - _threshold, _max - _threshold));
+    } else {
+      // o'ngga — hech narsa qilmaydi, faqat o'ynoqi qarshilik bilan biroz siljiydi
+      next = _rubber(_raw, 34);
+    }
     final armed = -next >= _threshold;
     if (armed && !_armed) HapticFeedback.lightImpact();
     setState(() {
@@ -279,6 +297,7 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
   void _end([DragEndDetails? _]) {
     if (_armed) widget.onReply();
     _armed = false;
+    _raw = 0;
     _from = _dx;
     _back.forward(from: 0);
   }
@@ -286,9 +305,10 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     if (!widget.enabled) return widget.child;
-    final p = (-_dx / _threshold).clamp(0.0, 1.0);
+    final p = (-_dx / _threshold).clamp(0.0, 1.0); // faqat chapga surganda belgi ko'rinadi
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
+      onHorizontalDragStart: (_) => _raw = _dx,
       onHorizontalDragUpdate: _update,
       onHorizontalDragEnd: _end,
       onHorizontalDragCancel: _end,

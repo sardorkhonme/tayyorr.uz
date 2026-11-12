@@ -73,7 +73,7 @@ class ApiClient {
       final msg = (body is Map && body['error'] is String)
           ? body['error'] as String
           : _fallbackMessage(e);
-      throw ApiException(msg, statusCode: e.response?.statusCode);
+      throw ApiException(msg, statusCode: e.response?.statusCode, restricted: body is Map && body['restricted'] == true);
     }
   }
 

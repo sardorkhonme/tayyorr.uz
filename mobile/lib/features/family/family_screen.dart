@@ -12,6 +12,7 @@ import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../core/media/media_cache.dart';
 import '../../core/network/api_exception.dart';
+import '../../core/notifications/message_notifier.dart';
 import '../../core/realtime/realtime_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/ui/app_dialogs.dart';
@@ -31,6 +32,7 @@ import '../messages/presentation/chat_widgets.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../public_profile/presentation/public_profile_screen.dart';
 import 'family_entry.dart';
+import 'family_info_screen.dart';
 import 'family_models.dart';
 import 'family_popup.dart';
 import 'family_repository.dart';
@@ -88,6 +90,9 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
 
   /// Tahrirlanayotgan o'z xabarim.
   FamilyMessage? _editing;
+
+  /// Guruhga yozish cheklangan bo'lsa — sababi (yozish maydoni o'rniga ko'rsatiladi).
+  String? _blocked;
   Timer? _byTimer;
   String? _uid;
 
@@ -266,6 +271,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       final msgs = list(r['messages']);
       setState(() {
         _me = me;
+        _blocked = r['writeBlocked'] as String?;
         _members = (r['members'] as num?)?.toInt() ?? _members;
         _online = (r['online'] as num?)?.toInt() ?? _online;
         _loading = false;
@@ -533,6 +539,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   // ───────────────────────── yuborish ─────────────────────────
 
   Future<void> _send({bool notifyAll = false, DateTime? at}) async {
+    if (_blocked != null) return showToast(context, _blocked!, kind: ToastKind.error);
     if (_editing != null) return _saveEdit();
     final pending = _pending;
     if (pending != null && !pending.ready) return;
@@ -605,15 +612,36 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       // realtime oldinroq kelgan bo'lsa — o'sha joyda yangilanadi, dublikat bo'lmaydi
       setState(() => _upsert(m.copyWith(clientId: clientId, mine: true)));
       _outbox.remove(clientId);
+      MessageNotifier.instance.playSent();
       if (o.notifyAll) showToast(context, 'Hammaga bildirib yuborildi', kind: ToastKind.success);
     } catch (e) {
       if (!mounted) return;
       // realtime orqali yetib kelgan bo'lsa — xato emas
       if (!_messages.any((x) => x.clientId == clientId && !x.isLocal)) {
+        if (_handleRestricted(e)) {
+          // cheklangan — yuborib bo'lmaydi: mahalliy xabar olib tashlanadi
+          _outbox.remove(clientId);
+          setState(() => _messages.removeWhere((x) => x.clientId == clientId && x.isLocal));
+          return;
+        }
         setState(() => mark(FamilySendStatus.failed));
         if (e is ApiException) showToast(context, e.message, kind: ToastKind.error);
       }
     }
+  }
+
+  /// Cheklov (403 `restricted`) — xabar matni toast bilan, yozish maydoni qulflanadi.
+  bool _handleRestricted(Object e) {
+    if (e is! ApiException || !e.restricted) return false;
+    if (mounted) {
+      setState(() {
+        _blocked = e.message;
+        _editing = null;
+        _replyTo = null;
+      });
+      showToast(context, e.message, kind: ToastKind.error);
+    }
+    return true;
   }
 
   /// Animatsiya bir marta o'ynaydi — keyin (ro'yxatdan chiqib-kirsa ham) qayta o'ynamaydi.
@@ -661,7 +689,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
         setState(() => _upsert(m.withMine(true)));
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || _handleRestricted(e)) return;
       if (_text.text.isEmpty) _text.text = text;
       setState(() {
         _replyTo ??= reply;
@@ -703,6 +731,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       if (!mounted) return;
       final j = _indexOf(m);
       if (j >= 0) setState(() => _messages[j] = before);
+      if (_handleRestricted(e)) return;
       showToast(context, e is ApiException ? e.message : "Tahrirlab bölmadi", kind: ToastKind.error);
     }
   }
@@ -846,7 +875,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   }
 
   void _setReply(FamilyMessage m) {
-    if (m.deleted) return;
+    if (m.deleted || _blocked != null) return;
     setState(() => _replyTo = m);
     _focus.requestFocus();
   }
@@ -874,9 +903,9 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       seen: cur.seen,
       reactionsCount: reactions,
       actions: [
-        const FamilyPopupAction('reply', TI.reply_rounded, 'Javob beriş'),
+        if (_blocked == null) const FamilyPopupAction('reply', TI.reply_rounded, 'Javob beriş'),
         if (cur.body.isNotEmpty) const FamilyPopupAction('copy', TI.copy_rounded, 'Nusxa oliş'),
-        if (mine && cur.body.isNotEmpty)
+        if (mine && cur.body.isNotEmpty && _blocked == null)
           const FamilyPopupAction('edit', TI.edit_outlined, 'Tahrirlaş'),
         if (cur.file != null)
           FamilyPopupAction('save', TI.download_rounded, cur.file!.isImage || cur.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş'),
@@ -913,6 +942,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
   /// Reaksiya: darhol (optimistik) ko'rsatiladi, keyin server javobi bilan almashtiriladi.
   Future<void> _react(String id, String emoji) async {
     final me = _me;
+    if (_blocked != null) return showToast(context, _blocked!, kind: ToastKind.error);
     final i = _messages.indexWhere((x) => x.id == id);
     if (me == null || i < 0) return;
     final before = _messages[i];
@@ -924,6 +954,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
     } catch (e) {
       if (!mounted) return;
       setState(() => _upsert(before));
+      if (_handleRestricted(e)) return;
       showToast(context, e is ApiException ? e.message : "Reaksiya qöyib bölmadi", kind: ToastKind.error);
     }
   }
@@ -1108,7 +1139,14 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
       body: AuroraBackground(
         child: SafeArea(
           child: Column(children: [
-            _Header(onBack: () => Navigator.of(context).maybePop(), members: _members, online: _online),
+            _Header(
+              onBack: () => Navigator.of(context).maybePop(),
+              members: _members,
+              online: _online,
+              onInfo: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => FamilyInfoScreen(members: _members, online: _online)),
+              ),
+            ),
             if (pinned != null)
               _PinnedBar(
                 message: pinned,
@@ -1143,6 +1181,9 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
                   ),
                 ),
               ),
+            if (_blocked != null)
+              _LockedBar(text: _blocked!)
+            else ...[
             if (_editing != null)
               _ReplyBanner(message: _editing!, editing: true, onClose: _cancelEdit, onTap: () => _jumpTo(_editing!.id))
             else if (_replyTo != null)
@@ -1175,6 +1216,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
                       )
                     : null,
               ),
+            ],
           ]),
         ),
       ),
@@ -1255,7 +1297,7 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
                 animate: _fresh.contains(k),
                 fromRight: mine,
                 child: SwipeToReply(
-                  enabled: !m.isLocal,
+                  enabled: !m.isLocal && _blocked == null,
                   onReply: () => _setReply(m),
                   child: FlashHighlight(
                     flashKey: _flashId == k ? _flashTick : null,
@@ -1321,8 +1363,11 @@ class _FamilyScreenState extends State<FamilyScreen> with WidgetsBindingObserver
 // ───────────────────────── vidjetlar ─────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onBack, this.members, this.online});
+  const _Header({required this.onBack, this.members, this.online, this.onInfo});
   final VoidCallback onBack;
+
+  /// Belgi / nom bosilganda — «Guruh haqida».
+  final VoidCallback? onInfo;
   final int? members;
   final int? online;
 
@@ -1341,6 +1386,11 @@ class _Header extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onInfo,
+            child: Row(children: [
         const FamilyMark(size: 36),
         const SizedBox(width: 12),
         Expanded(
@@ -1360,6 +1410,9 @@ class _Header extends StatelessWidget {
                 ],
               ]),
           ]),
+        ),
+            ]),
+          ),
         ),
       ]),
     );
@@ -1948,6 +2001,36 @@ class _MiniButton extends StatelessWidget {
           Text(label, style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w600)),
         ]),
       ),
+    );
+  }
+}
+
+/// Guruhga yozish cheklangan — yozish maydoni o'rnida sokin panel.
+class _LockedBar extends StatelessWidget {
+  const _LockedBar({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.isLight ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF0B0B12).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: WebC.border),
+      ),
+      child: Row(children: [
+        Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: WebC.fill10, borderRadius: BorderRadius.circular(10)),
+          child: TIcon(TI.lock_rounded, size: 17, color: WebC.zinc400),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Text(text, style: TextStyle(color: WebC.zinc400, fontSize: 13.5, height: 1.4))),
+      ]),
     );
   }
 }

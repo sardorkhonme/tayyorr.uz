@@ -249,6 +249,7 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     try {
       final msg = await _repo.sendMessage(conversationId, body: o.body, replyToId: o.replyToId, file: o.file);
       _outbox.remove(clientId);
+      MessageNotifier.instance.playSent();
       final list = List.of(state.messages);
       var i = list.indexWhere((x) => x.clientId == clientId);
       if (i < 0) i = list.indexWhere((x) => x.id == msg.id);
@@ -261,6 +262,12 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     } on ApiException catch (e) {
       // so'rov paytida xabar boshqa yo'l bilan (so'rab turish) yetib kelgan bo'lsa — xato emas
       if (state.messages.any((x) => x.clientId == clientId && !x.isLocal)) return;
+      if (e.restricted) {
+        // cheklangan — qayta yuborishning ma'nosi yo'q: xabar olib tashlanadi, sababi ko'rsatiladi
+        discard(clientId);
+        emit(state.copyWith(error: e.message));
+        return;
+      }
       _setStatus(clientId, ChatSendStatus.failed);
       emit(state.copyWith(error: e.message));
     } catch (_) {

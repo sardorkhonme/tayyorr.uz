@@ -102,6 +102,25 @@ class MessageNotifier {
     } catch (_) {}
   }
 
+  AudioPlayer? _send;
+  DateTime _lastSend = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Telegramdagidek qisqa yumshoq «pik» — o'z xabarim yuborilganda (server qabul qilganda).
+  /// Kutilmaydi (UI to'xtamaydi); jim rejimda tizim media ovozi o'chiq bo'lsa — eshitilmaydi.
+  void playSent() {
+    final now = DateTime.now();
+    if (now.difference(_lastSend) < const Duration(milliseconds: 250)) return;
+    _lastSend = now;
+    () async {
+      try {
+        final p = _send ??= AudioPlayer()..setAsset('assets/sounds/send.wav');
+        await p.seek(Duration.zero);
+        await p.setVolume(0.5);
+        await p.play();
+      } catch (_) {}
+    }();
+  }
+
   /// Yangi xabar(lar) haqida bildirishnoma — har suhbat uchun bitta (yangilanib turadi).
   Future<void> showMessage(ConversationModel c) async {
     if (kIsWeb) return;

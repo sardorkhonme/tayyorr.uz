@@ -246,10 +246,14 @@ class _ChatViewState extends State<_ChatView> {
       body: AuroraBackground(
         child: SafeArea(
           child: BlocConsumer<ChatCubit, ChatState>(
-            listenWhen: (p, c) => c.messages.length != p.messages.length,
+            listenWhen: (p, c) => c.messages.length != p.messages.length || (c.error != null && c.error != p.error),
             // yangi xabar kelganda pastga tushamiz — faqat foydalanuvchi pastda
             // turgan bo'lsa yoki xabar o'ziniki bo'lsa (eski xabarlarni o'qiyotganda sakratmaymiz)
             listener: (context, state) {
+              // xato (masalan cheklov) — server matni bilan
+              if (state.error != null && state.status == ChatStatus.success) {
+                showToast(context, state.error!, kind: ToastKind.error);
+              }
               // yangi kelganlar — paydo bo'lish animatsiyasi (birinchi yuklashda emas)
               final first = _known.isEmpty;
               for (final m in state.messages) {
