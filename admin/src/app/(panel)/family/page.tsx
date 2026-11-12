@@ -114,6 +114,7 @@ export default async function AdminFamily({ searchParams }: { searchParams: Prom
               </div>
               <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px]">
                 {m.pinnedAt && <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-amber-300">Qadalgan</span>}
+                {m.editedAt && <span className="rounded-full bg-white/5 px-2 py-0.5 text-zinc-300">Tahrirlangan {shortDateTime(m.editedAt)}</span>}
                 {m.notifyAll && <span className="rounded-full bg-violet-400/15 px-2 py-0.5 text-violet-300">Hammaga bildirilgan</span>}
                 {m.scheduled && (
                   <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-sky-300">
@@ -141,6 +142,18 @@ export default async function AdminFamily({ searchParams }: { searchParams: Prom
                 </a>
               )}
               {m.body && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-zinc-200">{m.body}</p>}
+              {m.editHistory.length > 0 && (
+                <details className="mt-1.5 text-xs text-zinc-500">
+                  <summary className="cursor-pointer hover:text-zinc-300">Oldingi matnlar ({m.editHistory.length})</summary>
+                  <ol className="mt-1.5 flex flex-col gap-1.5 border-l border-white/10 pl-3">
+                    {m.editHistory.map((b, i) => (
+                      <li key={i} className="whitespace-pre-wrap break-words text-zinc-400">
+                        {b || "—"}
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              )}
               {url && (
                 <div className="mt-2">
                   {isImage ? (

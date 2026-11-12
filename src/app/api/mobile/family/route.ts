@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       take: 200,
       include: familyInclude,
     });
-    return mobileJson({ messages: await toFamilyClients(rows, { meId: me }) });
+    return mobileJson({ messages: await toFamilyClients(rows, { meId: me, viewerIsAdmin: (await familyRole(me)).isAdmin }) });
   }
 
   const rows = await db.familyMessage.findMany({
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
   });
   const hasMore = rows.length > PAGE;
   const page = rows.slice(0, PAGE).reverse();
-  if (before) return mobileJson({ messages: await toFamilyClients(page, { meId: me }), hasMore });
+  if (before) return mobileJson({ messages: await toFamilyClients(page, { meId: me, viewerIsAdmin: (await familyRole(me)).isAdmin }), hasMore });
 
   const { user, isAdmin } = await familyRole(me);
   const member = await db.familyMember.upsert({ where: { userId: me }, update: {}, create: { userId: me } });
@@ -97,12 +97,12 @@ export async function GET(req: Request) {
     // sarlavha: «N aʼzo · M onlayn»
     members: presence.members,
     online: presence.online,
-    messages: await toFamilyClients(page, { meId: me }),
+    messages: await toFamilyClients(page, { meId: me, viewerIsAdmin: isAdmin }),
     hasMore,
-    pinned: await toFamilyClients(pinned, { meId: me }),
+    pinned: await toFamilyClients(pinned, { meId: me, viewerIsAdmin: isAdmin }),
     mentionIds: mentionRows.map((r) => r.id),
     lastReadAt: member.lastReadAt.getTime(),
-    scheduled: await toFamilyClients(mine, { meId: me }),
+    scheduled: await toFamilyClients(mine, { meId: me, viewerIsAdmin: isAdmin }),
     // eng yaqin rejalashtirilgan xabar vaqti — ilova shu paytda qayta so'raydi (o'shanda yuboriladi)
     nextAt: next ? next.sendAt.getTime() : null,
   });
@@ -115,6 +115,8 @@ const sendSchema = z.object({
   notifyAll: z.boolean().optional(),
   /** rejalashtirish (ms) — kelajakda bo'lsa */
   sendAt: z.number().int().optional(),
+  /** ilovadagi vaqtinchalik id — javobda va realtime'da qaytadi */
+  clientId: z.string().max(64).optional(),
   file: z
     .object({
       key: z.string().min(1).startsWith("family/"),
@@ -181,8 +183,8 @@ export async function POST(req: Request) {
     },
     include: familyInclude,
   });
-  if (!scheduled) await dispatchFamily(row);
+  if (!scheduled) await dispatchFamily(row, d.clientId);
 
-  const [m] = await toFamilyClients([row], { meId: me });
-  return mobileJson({ message: m }, { status: 201 });
+  const [m] = await toFamilyClients([row], { meId: me, viewerIsAdmin: isAdmin });
+  return mobileJson({ message: { ...m, ...(d.clientId ? { clientId: d.clientId } : {}) } }, { status: 201 });
 }

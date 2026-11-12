@@ -874,6 +874,10 @@ model FamilyMessage {
   scheduled    Boolean   @default(false)
   dispatchedAt DateTime?
 
+  // tahrirlash: oxirgi vaqt va oldingi matnlar (admin panelda ko'rinadi — shikoyatlar uchun)
+  editedAt    DateTime?
+  editHistory String[]  @default([])
+
   deletedAt   DateTime?
   deletedById String?
 

@@ -17,7 +17,7 @@ import { FAMILY_CHANNEL, signal } from "@/lib/realtime";
 export const FAMILY_NAME = "Tayyorr’s Family";
 export const FILE_TTL_MS = 5 * 24 * 3600 * 1000;
 /** Ruxsat etilgan reaksiyalar (ilovadagi tanlov bilan bir xil). */
-export const FAMILY_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "🙏", "👏"];
+export const FAMILY_EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://app.tayyorr.uz").replace(/\/+$/, "");
 
 export const BRAND_LOGIN = "tayyorr.uz";
@@ -143,6 +143,11 @@ export interface FamilyClientMessage {
   sendAt: number;
   updatedAt: number;
   deleted: boolean;
+  edited: boolean;
+  /** yuborgan ilova bergan vaqtinchalik id (optimistik xabarni o'rnida almashtirish uchun) */
+  clientId?: string;
+  /** faqat guruh adminlariga: «Tayyorr.uz» / «Support» nomidan yozilganda — aslida kim yozgani */
+  by?: { id: string; name: string; login: string | null };
   /** faqat admin panel uchun */
   admin?: { senderId: string; senderName: string; senderLogin: string | null; as: string; deletedAt: number | null; createdAt: number; fileKey: string | null };
 }
@@ -194,7 +199,7 @@ async function seenCounter(rows: FamilyRow[]) {
 
 export async function toFamilyClients(
   rows: FamilyRow[],
-  opts: { meId?: string; forAdmin?: boolean; noSeen?: boolean } = {},
+  opts: { meId?: string; forAdmin?: boolean; noSeen?: boolean; viewerIsAdmin?: boolean } = {},
 ): Promise<FamilyClientMessage[]> {
   const [logins, authors, seenOf] = await Promise.all([
     mentionMap(rows),
@@ -230,6 +235,8 @@ export async function toFamilyClients(
         sendAt: m.sendAt.getTime(),
         updatedAt: m.updatedAt.getTime(),
         deleted,
+        edited: !!m.editedAt,
+        ...(opts.viewerIsAdmin && m.as !== "self" ? { by: { id: m.sender.id, name: displayName(m.sender), login: m.sender.login } } : {}),
         ...(opts.forAdmin
           ? {
               admin: {
@@ -272,9 +279,9 @@ export function familySignal(e: "new" | "upd" | "del", data: { id: string; m?: F
 }
 
 /** Xabar ko'rinadigan bo'lganda: realtime + kerakli bildirishnomalar (javobdan keyin, fonda). */
-export async function dispatchFamily(row: FamilyRow) {
+export async function dispatchFamily(row: FamilyRow, clientId?: string) {
   const [client] = await toFamilyClients([row], { noSeen: true });
-  familySignal("new", { id: row.id, m: client });
+  familySignal("new", { id: row.id, m: clientId ? { ...client, clientId } : client });
 
   const author = client.author;
   const text = snippet(row, 140);
