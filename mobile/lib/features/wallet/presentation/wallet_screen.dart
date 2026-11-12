@@ -607,7 +607,7 @@ class _TopUpCta extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(gradient: kBrandGradient, borderRadius: BorderRadius.circular(14)),
-            child: const Center(child: TIcon(TI.add_rounded, color: Colors.white, size: 24)),
+            child: const Center(child: TIcon(TI.add_rounded, color: Colors.white, size: 22)),
           ),
           const SizedBox(width: 12),
           Expanded(

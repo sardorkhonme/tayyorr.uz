@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { toEmoji } from "@/lib/reactions";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
 import { BroadcastConsole } from "@/components/admin/broadcast-console";
 import { WelcomeBackfill } from "@/components/admin/welcome-backfill";
@@ -27,10 +28,10 @@ export default async function AdminBroadcast() {
   const stat = (id: string) => ({
     readCount: msgs.filter((m) => m.broadcastId === id && m.readAt).length,
     likeCount: reactions.filter(
-      (r) => r.message.broadcastId === id && r.value === "LIKE",
+      (r) => r.message.broadcastId === id && toEmoji(r.value) === "👍",
     ).length,
     dislikeCount: reactions.filter(
-      (r) => r.message.broadcastId === id && r.value === "DISLIKE",
+      (r) => r.message.broadcastId === id && toEmoji(r.value) === "👎",
     ).length,
   });
 

@@ -429,7 +429,7 @@ class _SaleBanner extends StatelessWidget {
           boxShadow: [BoxShadow(color: const Color(0xFFF43F5E).withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 10), spreadRadius: -10)],
         ),
         child: Row(children: [
-          const TIcon(TI.local_offer_rounded, color: Colors.white, size: 26),
+          const TIcon(TI.local_offer_rounded, color: Colors.white, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

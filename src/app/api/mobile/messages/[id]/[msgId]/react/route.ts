@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { getConversationForUser } from "@/lib/chat";
 import { publishToConversation } from "@/lib/chat-bus";
+import { applyReaction, parseReactionInput, reactionResponse } from "@/lib/reactions";
 
 export { OPTIONS } from "@/lib/mobile-cors";
 
-const schema = z.object({ value: z.enum(["LIKE", "DISLIKE"]).nullable() });
-
-/** Xabarga like/dislike qo'yish yoki olib tashlash — web bilan bir xil mantiq. */
+/** Xabarga emoji reaksiya (Family'dagidek; eski ilovaning LIKE/DISLIKE'i ham) — web bilan bir xil mantiq. */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string; msgId: string }> },
@@ -24,33 +22,23 @@ export async function POST(
   const conv = await getConversationForUser(id, me);
   if (!conv) return mobileJson({ error: "Suhbat topilmadi" }, { status: 404 });
 
-  const parsed = schema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return mobileJson({ error: "Notöğri" }, { status: 400 });
+  const input = parseReactionInput(await req.json().catch(() => null));
+  if (!input) return mobileJson({ error: "Notöğri" }, { status: 400 });
 
   const msg = await db.message.findUnique({ where: { id: msgId } });
-  if (!msg || msg.conversationId !== id) {
+  if (!msg || msg.conversationId !== id || msg.deletedAt) {
     return mobileJson({ error: "Xabar topilmadi" }, { status: 404 });
   }
 
-  if (parsed.data.value === null) {
-    await db.messageReaction
-      .delete({ where: { messageId_userId: { messageId: msgId, userId: me } } })
-      .catch(() => {});
-  } else {
-    await db.messageReaction.upsert({
-      where: { messageId_userId: { messageId: msgId, userId: me } },
-      update: { value: parsed.data.value },
-      create: { messageId: msgId, userId: me, value: parsed.data.value },
-    });
-  }
+  const rows = await applyReaction(msgId, me, input);
+  const res = reactionResponse(rows, me);
+  publishToConversation(id, {
+    type: "reaction",
+    messageId: msgId,
+    like: res.like,
+    dislike: res.dislike,
+    reactions: res.reactions.map(({ emoji, count, users }) => ({ emoji, count, users })),
+  });
 
-  await db.message.update({ where: { id: msgId }, data: { body: msg.body } });
-
-  const reactions = await db.messageReaction.findMany({ where: { messageId: msgId } });
-  const like = reactions.filter((r) => r.value === "LIKE").length;
-  const dislike = reactions.filter((r) => r.value === "DISLIKE").length;
-
-  publishToConversation(id, { type: "reaction", messageId: msgId, like, dislike });
-
-  return mobileJson({ like, dislike, mine: parsed.data.value });
+  return mobileJson(res);
 }

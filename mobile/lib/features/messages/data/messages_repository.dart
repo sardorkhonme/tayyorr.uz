@@ -61,9 +61,10 @@ class MessagesRepository {
     await _api.delete('/mobile/messages/$conversationId/$msgId');
   }
 
-  Future<ReactionSummary> react(String conversationId, String msgId, String? value) async {
-    final res = await _api.post('/mobile/messages/$conversationId/$msgId/react', data: {'value': value});
-    return ReactionSummary(like: res['like'] as int, dislike: res['dislike'] as int, mine: res['mine'] as String?);
+  /// Emoji reaksiya (o'sha emoji qayta bosilsa — server olib tashlaydi). Natija — xabarning yangi reaksiyalari.
+  Future<List<MessageReaction>> react(String conversationId, String msgId, String emoji) async {
+    final res = await _api.post('/mobile/messages/$conversationId/$msgId/react', data: {'emoji': emoji});
+    return MessageReaction.listFromJson(Map<String, dynamic>.from(res as Map));
   }
 
   Future<void> block(String conversationId, {required bool block}) async {

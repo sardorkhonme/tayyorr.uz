@@ -59,6 +59,7 @@ export async function PATCH(
     return tx.message.update({
       where: { id: msgId },
       data: { body: nextBody, editedAt: new Date() },
+      include: { reactions: true },
     });
   });
 

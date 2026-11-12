@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { sendMobileNotice } from "@/lib/mobile-push";
 import { sendPlusPush } from "@/lib/push";
 import { presignPrivate, putPrivate } from "@/lib/r2";
+import { applyReaction, reactionChips, type ReactionChip } from "@/lib/reactions";
 import { notifyAdmins } from "@/lib/telegram";
 import { randomUUID } from "crypto";
 
@@ -51,7 +52,15 @@ async function getConversation(userId: string, create: boolean) {
 }
 
 export type SupportFile = { name: string; type: string; size: number; url: string; downloadUrl: string };
-export type SupportMessage = { id: string; mine: boolean; body: string; createdAt: string; file: SupportFile | null };
+export type SupportMessage = {
+  id: string;
+  mine: boolean;
+  body: string;
+  createdAt: string;
+  file: SupportFile | null;
+  /** emoji reaksiyalar (Family'dagidek) */
+  reactions: ReactionChip[];
+};
 
 /** Fayl uchun vaqtinchalik havolalar (ko'rish + yuklab olish) — tayyorr.uz chatidagi kabi 1 soat. */
 async function fileOf(m: { fileKey: string | null; fileName: string | null; fileType: string | null; fileSize: number | null }) {
@@ -74,7 +83,18 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
     where: { conversationId: conv.id, deletedAt: null, ...VISIBLE_HERE },
     orderBy: { createdAt: "desc" },
     take: 60,
-    select: { id: true, senderId: true, body: true, createdAt: true, readAt: true, fileKey: true, fileName: true, fileType: true, fileSize: true },
+    select: {
+      id: true,
+      senderId: true,
+      body: true,
+      createdAt: true,
+      readAt: true,
+      fileKey: true,
+      fileName: true,
+      fileType: true,
+      fileSize: true,
+      reactions: { select: { userId: true, value: true }, orderBy: { createdAt: "asc" } },
+    },
   });
   const unreadRows = rows.filter((m) => m.senderId === supportId && !m.readAt);
   const unread = unreadRows.length;
@@ -98,6 +118,7 @@ export async function listSupportMessages(userId: string, markRead: boolean) {
         body: stripTag(m.body),
         createdAt: m.createdAt.toISOString(),
         file: await fileOf(m).catch(() => null),
+        reactions: reactionChips(m.reactions, userId),
       })),
     ),
   };
@@ -168,5 +189,19 @@ export async function sendSupportMessage(
     body: text,
     createdAt: m.createdAt.toISOString(),
     file: await fileOf(m).catch(() => null),
+    reactions: [],
   } satisfies SupportMessage;
+}
+
+/** Support suhbatidagi xabarga emoji reaksiya (o'sha emoji qayta bosilsa — olib tashlanadi). */
+export async function reactSupportMessage(userId: string, messageId: string, input: { emoji: string | null; toggle: boolean }) {
+  const { conv } = await getConversation(userId, false);
+  if (!conv || conv.hiddenFromUsersAt) return null;
+  const msg = await db.message.findFirst({
+    where: { id: messageId, conversationId: conv.id, deletedAt: null, ...VISIBLE_HERE },
+    select: { id: true },
+  });
+  if (!msg) return null;
+  const rows = await applyReaction(messageId, userId, input);
+  return reactionChips(rows, userId);
 }

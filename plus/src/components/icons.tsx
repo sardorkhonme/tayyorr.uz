@@ -6,6 +6,7 @@ import type { SVGProps } from "react";
 
 export type IconName =
   | "home"
+  | "book"
   | "rocket"
   | "package"
   | "external"
@@ -41,6 +42,12 @@ export type IconName =
   | "file";
 
 const PATHS: Record<IconName, React.ReactNode> = {
+  book: (
+    <>
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15.5H5.5A1.5 1.5 0 0 0 4 21V5.5Z" />
+      <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15.5h5.5A1.5 1.5 0 0 1 20 21V5.5Z" />
+    </>
+  ),
   home: (
     <>
       <path d="M3.5 10.5 12 3.5l8.5 7" />

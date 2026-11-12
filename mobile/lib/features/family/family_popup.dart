@@ -26,6 +26,7 @@ class FamilyPopupAction {
 
 /// Xabar bosilganda: orqa fon xiralashadi, xabar o'z joyida «ko'tariladi», tepasida reaksiyalar,
 /// pastida amallar va «Kördi / Reaksiyalar» qatori. Natija: amal id'si, `emoji:<e>`, `people:seen|reactions`.
+/// Oddiy suhbatlarda ham ishlatiladi (`showInfo: false` — «Kördi / Reaksiyalar» qatorisiz).
 Future<String?> showFamilyPopup(
   BuildContext context, {
   required Rect rect,
@@ -36,6 +37,7 @@ Future<String?> showFamilyPopup(
   required int seen,
   required int reactionsCount,
   bool canReact = true,
+  bool showInfo = true,
 }) {
   HapticFeedback.selectionClick();
   return Navigator.of(context, rootNavigator: true).push<String>(PageRouteBuilder(
@@ -54,6 +56,7 @@ Future<String?> showFamilyPopup(
       seen: seen,
       reactionsCount: reactionsCount,
       canReact: canReact,
+      showInfo: showInfo,
     ),
   ));
 }
@@ -69,6 +72,7 @@ class _FamilyPopup extends StatelessWidget {
     required this.seen,
     required this.reactionsCount,
     required this.canReact,
+    this.showInfo = true,
   });
   final Animation<double> animation;
   final Rect rect;
@@ -79,6 +83,7 @@ class _FamilyPopup extends StatelessWidget {
   final int seen;
   final int reactionsCount;
   final bool canReact;
+  final bool showInfo;
 
   static const _barH = 52.0;
   static const _cell = 36.0;
@@ -90,7 +95,7 @@ class _FamilyPopup extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final pad = MediaQuery.paddingOf(context);
-    final infoRows = 1 + (reactionsCount > 0 ? 1 : 0);
+    final infoRows = showInfo ? 1 + (reactionsCount > 0 ? 1 : 0) : 0;
     final menuH = actions.length * 46.0 + infoRows * 44.0 + 12;
     final barH = canReact ? _barH : 0.0;
     final minTop = pad.top + 12;
@@ -180,7 +185,7 @@ class _FamilyPopup extends StatelessWidget {
                 child: ScaleTransition(
                   scale: pop,
                   alignment: alignRight ? Alignment.topRight : Alignment.topLeft,
-                  child: _Menu(actions: actions, seen: seen, reactionsCount: reactionsCount),
+                  child: _Menu(actions: actions, seen: seen, reactionsCount: reactionsCount, showInfo: showInfo),
                 ),
               ),
             ),
@@ -240,10 +245,11 @@ class _EmojiBar extends StatelessWidget {
 }
 
 class _Menu extends StatelessWidget {
-  const _Menu({required this.actions, required this.seen, required this.reactionsCount});
+  const _Menu({required this.actions, required this.seen, required this.reactionsCount, this.showInfo = true});
   final List<FamilyPopupAction> actions;
   final int seen;
   final int reactionsCount;
+  final bool showInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -276,10 +282,12 @@ class _Menu extends StatelessWidget {
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isLight ? 0.12 : 0.4), blurRadius: 24, offset: const Offset(0, 8))],
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        row(TI.visibility_outlined, 'Kördi: $seen', () => Navigator.of(context).pop('people:seen'), info: true),
-        if (reactionsCount > 0)
-          row(TI.favorite_rounded, 'Reaksiyalar: $reactionsCount', () => Navigator.of(context).pop('people:reactions'), info: true),
-        Divider(height: 1, color: WebC.border),
+        if (showInfo) ...[
+          row(TI.visibility_outlined, 'Kördi: $seen', () => Navigator.of(context).pop('people:seen'), info: true),
+          if (reactionsCount > 0)
+            row(TI.favorite_rounded, 'Reaksiyalar: $reactionsCount', () => Navigator.of(context).pop('people:reactions'), info: true),
+          Divider(height: 1, color: WebC.border),
+        ],
         for (final a in actions) row(a.icon, a.label, () => Navigator.of(context).pop(a.id), danger: a.danger),
       ]),
     );

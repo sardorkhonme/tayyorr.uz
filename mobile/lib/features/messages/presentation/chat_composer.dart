@@ -82,7 +82,7 @@ class PendingAttachmentBar extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(shape: BoxShape.circle, color: WebC.fill10),
-                  child: TIcon(TI.close_rounded, size: 16, color: WebC.zinc300),
+                  child: TIcon(TI.close_rounded, size: 14, color: WebC.zinc300),
                 ),
               ),
               const SizedBox(height: 6),

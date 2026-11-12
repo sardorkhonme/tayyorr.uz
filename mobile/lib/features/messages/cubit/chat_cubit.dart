@@ -232,7 +232,6 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
               text: reply.body.isNotEmpty ? reply.body : (reply.file?.name ?? 'xabar'),
               deleted: reply.deleted,
             ),
-      reactions: const ReactionSummary(like: 0, dislike: 0),
       file: fileModel,
       clientId: clientId,
       status: ChatSendStatus.pending,
@@ -338,30 +337,23 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     }
   }
 
-  Future<void> react(String msgId, String? value) async {
+  /// Emoji reaksiya (Family'dagidek): o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi.
+  Future<void> react(String msgId, String emoji) async {
     // optimistik yangilash
     final prevMessages = state.messages;
     emit(state.copyWith(messages: [
       for (final m in state.messages)
-        if (m.id == msgId)
-          m.copyWith(
-            reactions: ReactionSummary(
-              like: value == 'LIKE'
-                  ? m.reactions.like + (m.reactions.mine == 'LIKE' ? 0 : 1)
-                  : m.reactions.like - (m.reactions.mine == 'LIKE' ? 1 : 0),
-              dislike: value == 'DISLIKE'
-                  ? m.reactions.dislike + (m.reactions.mine == 'DISLIKE' ? 0 : 1)
-                  : m.reactions.dislike - (m.reactions.mine == 'DISLIKE' ? 1 : 0),
-              mine: value,
-            ),
-          )
-        else
-          m,
+        if (m.id == msgId) m.copyWith(reactions: MessageReaction.toggle(m.reactions, emoji)) else m,
     ]));
     try {
-      await _repo.react(conversationId, msgId, value);
+      final next = await _repo.react(conversationId, msgId, emoji);
+      if (isClosed) return;
+      emit(state.copyWith(messages: [
+        for (final m in state.messages)
+          if (m.id == msgId) m.copyWith(reactions: next) else m,
+      ]));
     } catch (_) {
-      emit(state.copyWith(messages: prevMessages));
+      if (!isClosed) emit(state.copyWith(messages: prevMessages));
     }
   }
 

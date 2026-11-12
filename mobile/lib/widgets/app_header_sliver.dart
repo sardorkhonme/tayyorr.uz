@@ -1,11 +1,10 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../core/navigation/services.dart';
 import '../core/theme/app_colors.dart';
+import '../core/ui/liquid_glass.dart';
 import '../features/home/section_cubit.dart';
 import 'app_logo.dart';
 import 'web_ui.dart';
@@ -52,18 +51,18 @@ class _FadeDelegate extends SliverPersistentHeaderDelegate {
 
 /// Soat/batareya qatori ostidagi soya — sahifa fonidan shaffofga (kontent soat ostida ko'rinmaydi).
 Widget _statusFade(double topInset) => IgnorePointer(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.bg, AppColors.bg.withValues(alpha: 0.85), AppColors.bg.withValues(alpha: 0)],
-            stops: const [0, 0.6, 1],
-          ),
-        ),
-        child: SizedBox(height: topInset + 34, width: double.infinity),
+  child: DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [AppColors.bg, AppColors.bg.withValues(alpha: 0.85), AppColors.bg.withValues(alpha: 0)],
+        stops: const [0, 0.6, 1],
       ),
-    );
+    ),
+    child: SizedBox(height: topInset + 34, width: double.infinity),
+  ),
+);
 
 class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   _HeaderDelegate(this.topInset, this.light);
@@ -81,10 +80,12 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     // soat/batareya qatori ostida — sahifa fonidan shaffofga o'tuvchi soya (kontent u yerda ko'rinmaydi)
-    return Stack(children: [
-      Positioned(left: 0, right: 0, top: 0, height: topInset + 34, child: _statusFade(topInset)),
-      Padding(padding: EdgeInsets.fromLTRB(12, topInset + 12, 12, 4), child: const WebHeaderBar()),
-    ]);
+    return Stack(
+      children: [
+        Positioned(left: 0, right: 0, top: 0, height: topInset + 34, child: _statusFade(topInset)),
+        Padding(padding: EdgeInsets.fromLTRB(12, topInset + 12, 12, 4), child: const WebHeaderBar()),
+      ],
+    );
   }
 
   @override
@@ -99,64 +100,69 @@ class WebHeaderBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final service = ServiceScope.of(context);
     final atRoot = ShellRootScope.of(context) != null;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-        child: Container(
-          height: _HeaderDelegate.barHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: WebC.headerBar,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.isLight ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.10)),
-          ),
-          child: Row(children: [
-            if (atRoot)
-              // xizmatning asosiy bo'limida — tayyorr+ (bosh sahifa) ga qaytish: orqaga belgisi + tayyorr+ logosi
-              GestureDetector(
-                onTap: openHub,
-                child: Container(
-                  height: 38,
-                  padding: const EdgeInsets.only(left: 6, right: 8),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: WebC.fill5, border: Border.all(color: WebC.border)),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+    // iOS 26 uslubidagi suyuq shisha: kontent ostidan xira ko'rinib o'tadi
+    return LiquidGlass(
+      borderRadius: BorderRadius.circular(22),
+      blur: 26,
+      height: _HeaderDelegate.barHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          if (atRoot)
+            // xizmatning asosiy bo'limida — tayyorr+ (bosh sahifa) ga qaytish: orqaga belgisi + tayyorr+ logosi
+            GestureDetector(
+              onTap: openHub,
+              child: Container(
+                height: 38,
+                padding: const EdgeInsets.only(left: 6, right: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: WebC.fill5,
+                  border: Border.all(color: WebC.border),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     TIcon(TI.arrow_back_ios_new_rounded, size: 16, color: WebC.zinc300),
                     const SizedBox(width: 3),
                     Image.asset('assets/plus-mark.png', height: 22, filterQuality: FilterQuality.high),
-                  ]),
-                ),
-              )
-            else if (ModalRoute.of(context)?.canPop ?? false)
-              GestureDetector(
-                onTap: () => Navigator.of(context).maybePop(),
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: WebC.fill5, border: Border.all(color: WebC.border)),
-                  child: Center(child: TIcon(TI.arrow_back_ios_new_rounded, size: 18, color: WebC.zinc300)),
+                  ],
                 ),
               ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => switch (service) {
-                    ServiceKind.uz => openUzSection(AppSection.dashboard),
-                    ServiceKind.smm => openSmm(0),
-                    ServiceKind.plus => openHub(),
-                  },
-                  child: switch (service) {
-                    ServiceKind.uz => const AppLogo(height: 20),
-                    ServiceKind.smm => const BrandLogo.smm(),
-                    ServiceKind.plus => const BrandLogo.plus(),
-                  },
+            )
+          else if (ModalRoute.of(context)?.canPop ?? false)
+            GestureDetector(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: WebC.fill5,
+                  border: Border.all(color: WebC.border),
                 ),
+                child: Center(child: TIcon(TI.arrow_back_ios_new_rounded, size: 18, color: WebC.zinc300)),
               ),
             ),
-          ]),
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: () => switch (service) {
+                  ServiceKind.uz => openUzSection(AppSection.dashboard),
+                  ServiceKind.smm => openSmm(0),
+                  ServiceKind.plus => openHub(),
+                },
+                child: switch (service) {
+                  ServiceKind.uz => const AppLogo(height: 20),
+                  ServiceKind.smm => const BrandLogo.smm(),
+                  ServiceKind.plus => const BrandLogo.plus(),
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -174,19 +180,38 @@ class BrandLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = GoogleFonts.spaceGrotesk(fontSize: 19, height: 1.1, fontWeight: FontWeight.w700, letterSpacing: -0.4, color: AppColors.textPrimary);
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Image.asset(smm ? 'assets/smm-mark.png' : 'assets/plus-mark.png', height: 28, filterQuality: FilterQuality.high),
-      const SizedBox(width: 7),
-      Flexible(
-        child: Text.rich(
-          smm
-              ? const TextSpan(text: 'Tayyorr ', children: [TextSpan(text: 'SMM', style: TextStyle(color: Color(0xFFD946EF)))])
-              : const TextSpan(text: 'tayyorr', children: [TextSpan(text: '+', style: TextStyle(color: Color(0xFFD946EF)))]),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: style,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(smm ? 'assets/smm-mark.png' : 'assets/plus-mark.png', height: 28, filterQuality: FilterQuality.high),
+        const SizedBox(width: 7),
+        Flexible(
+          child: Text.rich(
+            smm
+                ? const TextSpan(
+                    text: 'Tayyorr ',
+                    children: [
+                      TextSpan(
+                        text: 'SMM',
+                        style: TextStyle(color: Color(0xFFD946EF)),
+                      ),
+                    ],
+                  )
+                : const TextSpan(
+                    text: 'tayyorr',
+                    children: [
+                      TextSpan(
+                        text: '+',
+                        style: TextStyle(color: Color(0xFFD946EF)),
+                      ),
+                    ],
+                  ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 }

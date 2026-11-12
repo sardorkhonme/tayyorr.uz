@@ -3,7 +3,7 @@ description: "tayyorr.uz — talabalar uchun platforma"
 publish_to: "none"
 # Versiya ikki raqamli: 1.1, 1.2 … (katta.kichik). Build raqami = katta*100 + kichik —
 # server (admin → Mobil ilova) shu raqam bilan eskirgan ilovani aniqlaydi. Har yangilanishda ikkalasini oshiring.
-version: 1.11.0+111
+version: 1.12.0+112
 
 environment:
   sdk: ^3.11.0
@@ -73,7 +73,7 @@ flutter:
     - assets/smm-mark.png
     - assets/pay/
     - assets/sounds/tin.wav
-    - assets/sounds/send.wav
+    - assets/sounds/send.mp3
 
 flutter_launcher_icons:
   android: true

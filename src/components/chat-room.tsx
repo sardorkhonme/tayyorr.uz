@@ -22,18 +22,13 @@ import { MessageSourceBadge } from "@/components/message-source-badge";
 import { isForeignSource, type MessageSource } from "@/lib/message-source";
 import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { flashMessage } from "@/lib/flash-message";
+import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
 
 interface ReplyPreview {
   id: string;
   authorId: string;
   text: string;
   deleted: boolean;
-}
-
-interface Reactions {
-  like: number;
-  dislike: number;
-  mine: "LIKE" | "DISLIKE" | null;
 }
 
 interface Msg {
@@ -58,7 +53,8 @@ interface Msg {
   /** qabul qiluvchi o'qigan vaqt (✓✓) */
   readAt?: number | null;
   replyTo?: ReplyPreview | null;
-  reactions?: Reactions;
+  /** emoji reaksiyalar (Family'dagidek) */
+  reactions?: ReactionChip[];
   file?: ChatFile | null;
 }
 
@@ -271,7 +267,7 @@ export function ChatRoom({
   function openMenu(m: Msg, btn: HTMLElement) {
     const r = btn.getBoundingClientRect();
     const W = 184;
-    const H = (m.mine ? 150 : 96) + 44; // + reaksiya paneli
+    const H = (m.mine ? 150 : 96) + 84; // + reaksiya paneli (10 ta emoji, 2 qator)
     const M = 8;
     let left = r.right - W;
     if (left < M) left = M;
@@ -348,14 +344,7 @@ export function ChatRoom({
           setMessages((prev) =>
             prev.map((x) =>
               x.id === data.messageId
-                ? {
-                    ...x,
-                    reactions: {
-                      like: data.like,
-                      dislike: data.dislike,
-                      mine: x.reactions?.mine ?? null,
-                    },
-                  }
+                ? { ...x, reactions: Array.isArray(data.reactions) ? withMine(data.reactions, meId) : x.reactions }
                 : x,
             ),
           );
@@ -562,21 +551,11 @@ export function ChatRoom({
     setReport({ suspectId: m.senderId, messageId: m.id });
   }
 
-  async function react(m: Msg, value: "LIKE" | "DISLIKE") {
-    const cur = m.reactions ?? { like: 0, dislike: 0, mine: null };
-    const next = cur.mine === value ? null : value;
+  /** Reaksiya (Family'dagidek): o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi. */
+  async function react(m: Msg, emoji: string) {
     // optimistik
     setMessages((prev) =>
-      prev.map((x) => {
-        if (x.id !== m.id) return x;
-        const r = { ...cur };
-        if (cur.mine === "LIKE") r.like--;
-        if (cur.mine === "DISLIKE") r.dislike--;
-        if (next === "LIKE") r.like++;
-        if (next === "DISLIKE") r.dislike++;
-        r.mine = next;
-        return { ...x, reactions: r };
-      }),
+      prev.map((x) => (x.id === m.id ? { ...x, reactions: toggleReaction(x.reactions, emoji, meId) } : x)),
     );
     try {
       const res = await fetch(
@@ -584,17 +563,13 @@ export function ChatRoom({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ value: next }),
+          body: JSON.stringify({ emoji }),
         },
       );
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && Array.isArray(data.reactions)) {
         setMessages((prev) =>
-          prev.map((x) =>
-            x.id === m.id
-              ? { ...x, reactions: { like: data.like, dislike: data.dislike, mine: data.mine } }
-              : x,
-          ),
+          prev.map((x) => (x.id === m.id ? { ...x, reactions: data.reactions } : x)),
         );
       }
     } catch {
@@ -967,8 +942,7 @@ export function ChatRoom({
                 );
               }
               const showMenu = !m.pending && !m.deleted;
-              const hasReactions =
-                (m.reactions?.like ?? 0) > 0 || (m.reactions?.dislike ?? 0) > 0;
+              const hasReactions = !!m.reactions?.length;
               const MenuBtn = showMenu ? (
                 <button
                   type="button"
@@ -1044,19 +1018,14 @@ export function ChatRoom({
 
                       {hasReactions && (
                         <div className="flex flex-wrap gap-1.5 pt-1">
-                          {(["LIKE", "DISLIKE"] as const).map((v) => {
-                            const n =
-                              v === "LIKE"
-                                ? m.reactions?.like ?? 0
-                                : m.reactions?.dislike ?? 0;
-                            if (n === 0) return null;
-                            const on = m.reactions?.mine === v;
+                          {m.reactions!.map((r) => {
+                            const on = r.mine;
                             return (
                               <button
-                                key={v}
+                                key={r.emoji}
                                 type="button"
-                                onClick={() => react(m, v)}
-                                className={`backdrop-blur-sm flex items-center gap-1 rounded-full px-2 py-1 text-sm transition ${
+                                onClick={() => react(m, r.emoji)}
+                                className={`backdrop-blur-sm flex items-center gap-1 rounded-full px-2 py-0.5 text-sm transition ${
                                   on
                                     ? m.mine
                                       ? "bg-white/25 text-white ring-1 ring-white/40"
@@ -1066,11 +1035,8 @@ export function ChatRoom({
                                       : "bg-white/10 text-zinc-200"
                                 }`}
                               >
-                                <Icon
-                                  name={v === "LIKE" ? "thumbs-up" : "thumbs-down"}
-                                  className="h-4 w-4"
-                                />
-                                <span className="text-xs font-medium">{n}</span>
+                                <span className="text-base leading-none">{r.emoji}</span>
+                                <span className="text-xs font-medium">{r.count}</span>
                               </button>
                             );
                           })}
@@ -1295,23 +1261,23 @@ export function ChatRoom({
               className="menu-panel fixed z-[71] w-[184px] overflow-hidden rounded-xl border border-white/10 bg-[#14141b] text-sm shadow-2xl shadow-black/50"
               style={{ left: menu.left, top: menu.top }}
             >
-              <div className="flex gap-1 border-b border-white/10 p-1.5">
-                {(["LIKE", "DISLIKE"] as const).map((v) => {
-                  const on = menu.msg.reactions?.mine === v;
+              <div className="grid grid-cols-5 gap-0.5 border-b border-white/10 p-1.5">
+                {REACTION_EMOJIS.map((e) => {
+                  const on = !!menu.msg.reactions?.some((r) => r.mine && r.emoji === e);
                   return (
                     <button
-                      key={v}
+                      key={e}
                       type="button"
                       onClick={() => {
-                        react(menu.msg, v);
+                        react(menu.msg, e);
                         setMenu(null);
                       }}
-                      className={`backdrop-blur-sm flex flex-1 items-center justify-center rounded-lg py-2 transition ${
-                        on ? "bg-indigo-500/30 text-white" : "text-zinc-300 hover:bg-white/10"
+                      className={`flex h-8 items-center justify-center rounded-lg text-lg transition hover:scale-110 ${
+                        on ? "bg-indigo-500/30" : "hover:bg-white/10"
                       }`}
-                      aria-label={v === "LIKE" ? "Yoqdi" : "Yoqmadi"}
+                      aria-label={e}
                     >
-                      <Icon name={v === "LIKE" ? "thumbs-up" : "thumbs-down"} className="h-5 w-5" />
+                      {e}
                     </button>
                   );
                 })}

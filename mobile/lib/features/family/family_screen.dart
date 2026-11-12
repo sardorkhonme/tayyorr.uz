@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
+import 'package:tayyorr_app/core/ui/liquid_glass.dart';
 
 import '../../core/media/media_cache.dart';
 import '../../core/network/api_exception.dart';
@@ -1373,10 +1374,14 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 10, 12, 10),
-      decoration: BoxDecoration(color: WebC.headerBar, border: Border(bottom: BorderSide(color: WebC.border))),
-      child: Row(children: [
+    // suyuq shisha sarlavha (asosiy header bilan bir uslubda)
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      child: LiquidGlass(
+        borderRadius: BorderRadius.circular(22),
+        strong: true,
+        padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+        child: Row(children: [
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onBack,
@@ -1415,6 +1420,7 @@ class _Header extends StatelessWidget {
           ),
         ),
       ]),
+      ),
     );
   }
 }
@@ -1904,7 +1910,7 @@ class _IdentityRow extends StatelessWidget {
               gradient: selected ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]) : null,
               border: selected ? null : Border.all(color: AppColors.tint(0.25), width: 1.6),
             ),
-            child: selected ? const TIcon(TI.check_rounded, size: 14, color: Colors.white) : null,
+            child: selected ? const TIcon(TI.check_rounded, size: 12, color: Colors.white) : null,
           ),
         ]),
       ),

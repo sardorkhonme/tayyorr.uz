@@ -6,7 +6,7 @@ import '../../core/navigation/services.dart';
 import '../../core/ui/gradient_bottom_bar.dart';
 import '../../widgets/aurora_background.dart';
 import '../auth/bloc/auth_bloc.dart';
-import '../guide/guide_screen.dart';
+import '../guide/guide_hub_screen.dart';
 import '../profile/presentation/profile_screen.dart';
 import '../wallet/presentation/wallet_screen.dart';
 import '../family/family_repository.dart';
@@ -45,7 +45,7 @@ class PlusShell extends StatelessWidget {
                     const WalletScreen(),
                     // faqat ochiq turganda quriladi (fonda so'rab turmasin)
                     i == 2 ? const PlusMessagesTab() : const SizedBox.shrink(),
-                    const GuideScreen(),
+                    const GuideHubScreen(),
                     const ProfileScreen(),
                   ],
                 ),

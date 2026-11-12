@@ -403,7 +403,7 @@ class _VideoAttachment extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.45),
                     border: Border.all(color: Colors.white24),
                   ),
-                  child: const TIcon(TI.play_arrow_rounded, color: Colors.white, size: 32),
+                  child: const TIcon(TI.play_arrow_rounded, color: Colors.white, size: 26),
                 ),
               ),
               Positioned(
@@ -556,7 +556,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                             child: TIcon(
                               c.value.isPlaying ? TI.pause_rounded : TI.play_arrow_rounded,
                               color: Colors.white,
-                              size: 40,
+                              size: 34,
                             ),
                           ),
                         ),
@@ -730,7 +730,7 @@ class _AudioAttachmentState extends State<AudioAttachment> {
                                     child: ProgressRing(value: p, size: 36, stroke: 2.6, color: fg),
                                   ),
                                 )
-                              : TIcon(playing ? TI.pause_rounded : TI.play_arrow_rounded, color: fg, size: 28),
+                              : TIcon(playing ? TI.pause_rounded : TI.play_arrow_rounded, color: fg, size: 22),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -877,7 +877,7 @@ class _DocAttachmentState extends State<_DocAttachment> {
                       )
                     : _cached
                     ? TIcon(TI.insert_drive_file_rounded, color: fg, size: 22)
-                    : TIcon(TI.arrow_downward_rounded, color: fg, size: 24),
+                    : TIcon(TI.arrow_downward_rounded, color: fg, size: 22),
               ),
             ),
             const SizedBox(width: 10),

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin";
+import { reactionChips, toEmoji } from "@/lib/reactions";
 
 function personName(u: {
   firstName: string | null;
@@ -13,7 +14,7 @@ function personName(u: {
   return full || u.name || u.login || "Foydalanuvçi";
 }
 
-/** Bitta xabarga kim 👍 / 👎 bosgan. */
+/** Bitta xabarga kim qaysi reaksiyani bosgan (emoji bo'yicha; eski likes/dislikes ham). */
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string; msgId: string }> },
@@ -45,9 +46,9 @@ export async function GET(
     },
   });
 
-  const shape = (v: "LIKE" | "DISLIKE") =>
+  const shape = (emoji: string) =>
     rows
-      .filter((r) => r.value === v)
+      .filter((r) => toEmoji(r.value) === emoji)
       .map((r) => ({
         id: r.user.id,
         name: personName(r.user),
@@ -55,5 +56,11 @@ export async function GET(
         avatar: r.user.avatarUrl ?? r.user.image ?? null,
       }));
 
-  return NextResponse.json({ likes: shape("LIKE"), dislikes: shape("DISLIKE") });
+  const groups = reactionChips(rows.map((r) => ({ userId: r.user.id, value: r.value }))).map((c) => ({
+    emoji: c.emoji,
+    count: c.count,
+    users: shape(c.emoji),
+  }));
+
+  return NextResponse.json({ groups, likes: shape("👍"), dislikes: shape("👎") });
 }

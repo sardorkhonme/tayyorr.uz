@@ -296,7 +296,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
       const SizedBox(height: 12),
       WebCard(
         child: Row(children: [
-          const TIcon(TI.support_agent_rounded, color: Color(0xFF10B981), size: 26),
+          const TIcon(TI.support_agent_rounded, color: Color(0xFF10B981), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -353,7 +353,7 @@ class _SmmOrderDetailScreenState extends State<SmmOrderDetailScreen> {
                   shape: BoxShape.circle,
                   color: steps[i].$2 ? (i == 3 && o.failed ? const Color(0xFFF43F5E) : const Color(0xFF10B981)) : WebC.fill10,
                 ),
-                child: steps[i].$2 ? TIcon(i == 3 && o.failed ? TI.close_rounded : TI.check_rounded, size: 14, color: Colors.white) : null,
+                child: steps[i].$2 ? TIcon(i == 3 && o.failed ? TI.close_rounded : TI.check_rounded, size: 12, color: Colors.white) : null,
               ),
               if (i < steps.length - 1) Container(width: 2, height: 18, color: steps[i + 1].$2 ? const Color(0xFF10B981) : WebC.fill10),
             ]),

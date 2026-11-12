@@ -11,7 +11,7 @@ import {
   otherUserId,
   blockState,
 } from "@/lib/chat";
-import { toClientMessages, toClientMessage } from "@/lib/chat-messages";
+import { toClientMessages, toClientMessage, toMobileMessage } from "@/lib/chat-messages";
 import { deliverMessage } from "@/lib/chat-notify";
 import { getRestriction, restrictionText } from "@/lib/restriction";
 import { getSupportUserId } from "@/lib/support";
@@ -68,7 +68,7 @@ export async function GET(
   ]);
   const hidden = bs.blockedMe && !other?.isSupport;
 
-  const messages = await toClientMessages(rows, me);
+  const messages = (await toClientMessages(rows, me)).map(toMobileMessage);
 
   return mobileJson({
     conversation: { id: conv.id, orderId: conv.orderId },
@@ -152,7 +152,7 @@ export async function POST(
   });
   await deliverMessage(msg);
 
-  return mobileJson({ message: await toClientMessage(msg, me) }, { status: 201 });
+  return mobileJson({ message: toMobileMessage(await toClientMessage(msg, me)) }, { status: 201 });
 }
 
 /** Foydalanuvchi suhbatni ikki tomondan o'chiradi (adminda saqlanadi) — web bilan bir xil. */

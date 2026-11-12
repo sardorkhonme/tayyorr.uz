@@ -158,7 +158,7 @@ class _GuideScreenState extends State<GuideScreen> {
           width: 46,
           height: 46,
           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(14)),
-          child: const TIcon(TI.play_circle_fill_rounded, color: Colors.white, size: 28),
+          child: const TIcon(TI.play_circle_fill_rounded, color: Colors.white, size: 24),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -332,7 +332,7 @@ class _GuideScreenState extends State<GuideScreen> {
   Widget _helpCard() {
     return WebCard(
       child: Row(children: [
-        TIcon(TI.support_agent_rounded, color: WebC.indigoSoft, size: 26),
+        TIcon(TI.support_agent_rounded, color: WebC.indigoSoft, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -386,7 +386,7 @@ class _GuideScreenState extends State<GuideScreen> {
                 border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
               child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                TIcon(TI.play_arrow_rounded, color: Colors.white, size: 26),
+                TIcon(TI.play_arrow_rounded, color: Colors.white, size: 22),
                 SizedBox(width: 4),
                 Text("Köriş", style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
               ]),

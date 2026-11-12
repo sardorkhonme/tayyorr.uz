@@ -188,7 +188,7 @@ class _ServiceCard extends StatelessWidget {
                 Container(
                   width: 54,
                   height: 54,
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -413,7 +413,7 @@ class _SoonCard extends StatelessWidget {
               color: WebC.fill5,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: TIcon(TI.auto_awesome_rounded, color: WebC.zinc400),
+            child: TIcon(TI.auto_awesome_rounded, color: WebC.zinc400, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(

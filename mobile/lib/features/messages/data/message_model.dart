@@ -23,21 +23,68 @@ class ReplyPreviewModel {
   }
 }
 
-class ReactionSummary {
-  final int like;
-  final int dislike;
-  final String? mine; // 'LIKE' | 'DISLIKE' | null
+/// Xabar ostidagi emoji reaksiya («Tayyorr's Family»dagidek): emoji, soni, men bosganmi.
+class MessageReaction {
+  final String emoji;
+  final int count;
+  final bool mine;
 
-  const ReactionSummary({required this.like, required this.dislike, this.mine});
+  const MessageReaction({required this.emoji, required this.count, this.mine = false});
 
-  factory ReactionSummary.fromJson(Map<String, dynamic> json) {
-    return ReactionSummary(
-      like: (json['like'] as num?)?.toInt() ?? 0,
-      dislike: (json['dislike'] as num?)?.toInt() ?? 0,
-      mine: json['mine'] as String?,
-    );
+  factory MessageReaction.fromJson(Map<String, dynamic> json) => MessageReaction(
+        emoji: json['emoji'] as String? ?? '',
+        count: (json['count'] as num?)?.toInt() ?? 0,
+        mine: json['mine'] as bool? ?? false,
+      );
+
+  /// Server: `emojiReactions` — [{emoji, count, mine}]; eski server — `reactions: {like, dislike, mine}`.
+  static List<MessageReaction> listFromJson(Map<String, dynamic> json) {
+    final list = json['emojiReactions'] ?? json['reactions'];
+    if (list is List) {
+      return [
+        for (final r in list)
+          if (r is Map) MessageReaction.fromJson(Map<String, dynamic>.from(r)),
+      ].where((r) => r.emoji.isNotEmpty && r.count > 0).toList();
+    }
+    if (list is Map) {
+      final like = (list['like'] as num?)?.toInt() ?? 0;
+      final dislike = (list['dislike'] as num?)?.toInt() ?? 0;
+      return [
+        if (like > 0) MessageReaction(emoji: '👍', count: like, mine: list['mine'] == 'LIKE'),
+        if (dislike > 0) MessageReaction(emoji: '👎', count: dislike, mine: list['mine'] == 'DISLIKE'),
+      ];
+    }
+    return const [];
+  }
+
+  /// Optimistik yangilash: o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi.
+  static List<MessageReaction> toggle(List<MessageReaction> list, String emoji) {
+    final cur = list.where((r) => r.mine).map((r) => r.emoji).firstOrNull;
+    final next = cur == emoji ? null : emoji;
+    final out = <MessageReaction>[
+      for (final r in list)
+        if (r.mine) MessageReaction(emoji: r.emoji, count: r.count - 1) else r,
+    ].where((r) => r.count > 0).toList();
+    if (next != null) {
+      final i = out.indexWhere((r) => r.emoji == next);
+      if (i >= 0) {
+        out[i] = MessageReaction(emoji: next, count: out[i].count + 1, mine: true);
+      } else {
+        out.add(MessageReaction(emoji: next, count: 1, mine: true));
+      }
+    }
+    int rank(String e) {
+      final k = kReactionEmojis.indexOf(e);
+      return k < 0 ? 99 : k;
+    }
+
+    out.sort((a, b) => rank(a.emoji).compareTo(rank(b.emoji)));
+    return out;
   }
 }
+
+/// Reaksiyalar ro'yxati — Family guruhidagi va saytdagi bilan bir xil.
+const kReactionEmojis = ['👍', '👎', '💖', '😂', '😮', '😢', '😡', '🔥', '🙏', '👏'];
 
 class ChatFileModel {
   final String name;
@@ -89,7 +136,7 @@ class ChatMessageModel {
   final bool edited;
   final bool deleted;
   final ReplyPreviewModel? replyTo;
-  final ReactionSummary reactions;
+  final List<MessageReaction> reactions;
   final ChatFileModel? file;
 
   /// Qabul qiluvchi o'qigan vaqt (epoch ms) — ✓✓ uchun.
@@ -116,7 +163,7 @@ class ChatMessageModel {
     required this.edited,
     required this.deleted,
     this.replyTo,
-    required this.reactions,
+    this.reactions = const [],
     this.file,
     this.readAt,
     this.clientId,
@@ -127,7 +174,7 @@ class ChatMessageModel {
     String? body,
     bool? edited,
     bool? deleted,
-    ReactionSummary? reactions,
+    List<MessageReaction>? reactions,
     String? clientId,
     ChatSendStatus? status,
     int? updatedAt,
@@ -173,9 +220,7 @@ class ChatMessageModel {
       edited: json['edited'] as bool? ?? false,
       deleted: json['deleted'] as bool? ?? false,
       replyTo: json['replyTo'] != null ? ReplyPreviewModel.fromJson(json['replyTo'] as Map<String, dynamic>) : null,
-      reactions: json['reactions'] != null
-          ? ReactionSummary.fromJson(json['reactions'] as Map<String, dynamic>)
-          : const ReactionSummary(like: 0, dislike: 0),
+      reactions: MessageReaction.listFromJson(json),
       file: json['file'] != null ? ChatFileModel.fromJson(json['file'] as Map<String, dynamic>) : null,
       readAt: (json['readAt'] as num?)?.toInt(),
     );

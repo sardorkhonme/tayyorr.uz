@@ -5,15 +5,15 @@ import '../../features/messages/data/message_model.dart';
 import '../../features/messages/data/messages_repository.dart';
 import '../../features/messages/presentation/chat_screen.dart';
 import '../../widgets/skeleton.dart';
-import '../../widgets/web_ui.dart';
+import '../ui/liquid_glass.dart';
 import '../ui/app_dialogs.dart';
 import 'services.dart';
 
 String _scopeOf(ServiceKind k) => switch (k) {
-      ServiceKind.plus => 'plus',
-      ServiceKind.smm => 'smm',
-      ServiceKind.uz => 'uz',
-    };
+  ServiceKind.plus => 'plus',
+  ServiceKind.smm => 'smm',
+  ServiceKind.uz => 'uz',
+};
 
 Future<ConversationModel?> _supportConversation() async {
   final list = await MessagesRepository().fetchConversations();
@@ -28,7 +28,11 @@ Future<void> openSupportChat(BuildContext context) async {
     final c = await _supportConversation();
     if (!context.mounted) return;
     if (c != null) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChatScreen(conversationId: c.id, other: c.other, scope: scope)));
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(conversationId: c.id, other: c.other, scope: scope),
+        ),
+      );
       return;
     }
     openUzSection(AppSection.messages);
@@ -83,36 +87,46 @@ class _SupportChatTabState extends State<SupportChatTab> {
     }
     // çat ochilguncha — çat ekranining o'zi kabi: sarlavha (avatar + ism), pastdan pufakchalar, yozish maydoni
     return SafeArea(
-      child: Column(children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
-          decoration: BoxDecoration(color: WebC.headerBar, border: Border(bottom: BorderSide(color: WebC.border))),
-          child: const Row(children: [
-            SCircle(size: 36),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SBar(width: 130, height: 14),
-                SizedBox(height: 6),
-                SBar(width: 70, height: 10),
-              ]),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+            child: LiquidGlass(
+              borderRadius: BorderRadius.circular(22),
+              strong: true,
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+              child: const Row(
+                children: [
+                  SCircle(size: 36),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [SBar(width: 130, height: 14), SizedBox(height: 6), SBar(width: 70, height: 10)],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ]),
-        ),
-        const Expanded(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
-            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-              SBubble(widthFraction: 0.55),
-              SizedBox(height: 10),
-              SBubble(widthFraction: 0.4, mine: true),
-              SizedBox(height: 10),
-              SBubble(widthFraction: 0.6),
-            ]),
           ),
-        ),
-        const Padding(padding: EdgeInsets.fromLTRB(12, 0, 12, 12), child: SBar(height: 48, borderRadius: 24)),
-      ]),
+          const Expanded(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(14, 12, 14, 12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  SBubble(widthFraction: 0.55),
+                  SizedBox(height: 10),
+                  SBubble(widthFraction: 0.4, mine: true),
+                  SizedBox(height: 10),
+                  SBubble(widthFraction: 0.6),
+                ],
+              ),
+            ),
+          ),
+          const Padding(padding: EdgeInsets.fromLTRB(12, 0, 12, 12), child: SBar(height: 48, borderRadius: 24)),
+        ],
+      ),
     );
   }
 }

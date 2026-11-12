@@ -235,6 +235,7 @@ class _RoundFab extends StatelessWidget {
 
 /// Telegramdagidek: xabarni chapga surib javob berish. Pufakcha chapga siljiydi, o'ngda «javob»
 /// belgisi paydo bo'ladi; chegaradan o'tganda titraydi, qo'yib yuborilganda — [onReply].
+/// O'ngga surilsa — ekrandan ortga qaytadi (chapda «ortga» belgisi chiqadi).
 class SwipeToReply extends StatefulWidget {
   const SwipeToReply({super.key, required this.child, required this.onReply, this.enabled = true});
   final Widget child;
@@ -255,6 +256,8 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
   double _dx = 0; // pufakcha qancha siljigan (qarshilik bilan)
   double _from = 0;
   bool _armed = false;
+  bool _backArmed = false; // o'ngga yetarlicha surildi — qo'yib yuborilsa ortga qaytadi
+  static const _backThreshold = 56.0;
 
   @override
   void initState() {
@@ -283,20 +286,25 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
       final x = -_raw;
       next = -(x <= _threshold ? x : _threshold + _rubber(x - _threshold, _max - _threshold));
     } else {
-      // o'ngga — hech narsa qilmaydi, faqat o'ynoqi qarshilik bilan biroz siljiydi
-      next = _rubber(_raw, 34);
+      // o'ngga — ortga qaytish: chegaragacha erkin, keyin qarshilik
+      next = _raw <= _backThreshold ? _raw : _backThreshold + _rubber(_raw - _backThreshold, 40);
     }
     final armed = -next >= _threshold;
-    if (armed && !_armed) HapticFeedback.lightImpact();
+    final backArmed = next >= _backThreshold;
+    if ((armed && !_armed) || (backArmed && !_backArmed)) HapticFeedback.lightImpact();
     setState(() {
       _dx = next;
       _armed = armed;
+      _backArmed = backArmed;
     });
   }
 
-  void _end([DragEndDetails? _]) {
+  void _end([DragEndDetails? d]) {
     if (_armed) widget.onReply();
+    final fling = (d?.primaryVelocity ?? 0) > 900 && _dx > 16;
+    if (_backArmed || fling) Navigator.of(context).maybePop();
     _armed = false;
+    _backArmed = false;
     _raw = 0;
     _from = _dx;
     _back.forward(from: 0);
@@ -306,6 +314,7 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     if (!widget.enabled) return widget.child;
     final p = (-_dx / _threshold).clamp(0.0, 1.0); // faqat chapga surganda belgi ko'rinadi
+    final pb = (_dx / _backThreshold).clamp(0.0, 1.0); // o'ngga — «ortga» belgisi
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragStart: (_) => _raw = _dx,
@@ -328,6 +337,25 @@ class _SwipeToReplyState extends State<SwipeToReply> with SingleTickerProviderSt
                   color: _armed ? const Color(0xFF6366F1) : WebC.fill10,
                 ),
                 child: TIcon(TI.reply_rounded, size: 18, color: _armed ? Colors.white : WebC.zinc300),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          left: 6,
+          child: Opacity(
+            opacity: pb,
+            child: Transform.scale(
+              scale: 0.6 + 0.4 * pb,
+              child: Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _backArmed ? const Color(0xFF6366F1) : WebC.fill10,
+                ),
+                child: TIcon(TI.arrow_back_ios_new_rounded, size: 18, color: _backArmed ? Colors.white : WebC.zinc300),
               ),
             ),
           ),

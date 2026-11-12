@@ -273,7 +273,7 @@ class _LogoFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         color: Colors.white,
-        padding: const EdgeInsets.all(7),
+        padding: const EdgeInsets.all(9),
         child: Image.asset('assets/logo-mark.png', filterQuality: FilterQuality.high),
       );
 }

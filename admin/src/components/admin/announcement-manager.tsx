@@ -47,6 +47,47 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 
+const AUDIENCE: { value: Banner["role"]; label: string; hint: string }[] = [
+  { value: "", label: "Hammaga", hint: "tayyorr.uz va Tayyorr SMM — hamma foydalanuvçilarga" },
+  { value: "ORDERER", label: "Buyurtmaçilarga", hint: "tayyorr.uz — faqat buyurtma beruvçilar" },
+  { value: "PREPARER", label: "Tayyorlovçilarga", hint: "tayyorr.uz — faqat tayyorlovçilar" },
+  { value: "SMM", label: "Tayyorr SMM'da", hint: "Tayyorr SMM bölimi (ilova va sayt)" },
+];
+
+/** E'lon auditoriyasi — ommaviy xabardagi platforma tanlovi uslubida (bittasi tanlanadi). */
+function AudiencePicker({ value, onChange }: { value: Banner["role"]; onChange: (v: Banner["role"]) => void }) {
+  const cur = AUDIENCE.find((o) => o.value === value) ?? AUDIENCE[0];
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {AUDIENCE.map((o) => {
+          const on = o.value === value;
+          return (
+            <label
+              key={o.value || "all"}
+              title={o.hint}
+              className={`inline-flex cursor-pointer select-none items-center gap-1.5 rounded-lg border px-2.5 py-1 font-medium transition ${
+                on
+                  ? "border-indigo-400/60 bg-indigo-500/15 text-white"
+                  : "border-white/10 bg-white/[0.03] text-zinc-400 hover:text-white"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 accent-indigo-500"
+                checked={on}
+                onChange={() => onChange(o.value)}
+              />
+              {o.label}
+            </label>
+          );
+        })}
+      </div>
+      <span className="text-[11px] text-zinc-500">{cur.hint}</span>
+    </div>
+  );
+}
+
 function Fields({
   v,
   set,
@@ -83,20 +124,11 @@ function Fields({
           onChange={(e) => set({ buttonUrl: e.target.value })}
         />
       </div>
+      <div className="flex flex-col gap-2 text-sm">
+        <span className="text-zinc-400">Kimga körinadi:</span>
+        <AudiencePicker value={v.role} onChange={(role) => set({ role })} />
+      </div>
       <div className="flex flex-wrap items-center gap-4">
-        <label className="flex items-center gap-2 text-sm text-zinc-300">
-          Kimga:
-          <select
-            className="input"
-            value={v.role}
-            onChange={(e) => set({ role: e.target.value as Banner["role"] })}
-          >
-            <option value="">Hammaga</option>
-            <option value="ORDERER">Buyurtmaçilarga</option>
-            <option value="PREPARER">Tayyorlovçilarga</option>
-            <option value="SMM">Tayyorr SMM'da</option>
-          </select>
-        </label>
         <label className="flex items-center gap-2 text-sm text-zinc-300">
           <input
             type="checkbox"

@@ -130,7 +130,7 @@ class MessageNotifier {
     _lastSend = now;
     () async {
       try {
-        final p = _send ??= _systemPlayer('assets/sounds/send.wav');
+        final p = _send ??= _systemPlayer('assets/sounds/send.mp3');
         await p.seek(Duration.zero);
         await p.setVolume(1.0);
         await p.play();

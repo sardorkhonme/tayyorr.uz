@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import { toEmoji } from "@/lib/reactions";
 import { adminApiGuard } from "@/lib/admin";
 import { getSupportUserId } from "@/lib/support";
 
@@ -55,9 +56,9 @@ export async function GET(
         select: { userId: true, value: true },
       })
     : [];
-  const likeIds = reactions.filter((r) => r.value === "LIKE").map((r) => r.userId);
+  const likeIds = reactions.filter((r) => toEmoji(r.value) === "👍").map((r) => r.userId);
   const dislikeIds = reactions
-    .filter((r) => r.value === "DISLIKE")
+    .filter((r) => toEmoji(r.value) === "👎")
     .map((r) => r.userId);
 
   const allIds = [...new Set([...readIds, ...likeIds, ...dislikeIds])];

@@ -1,4 +1,5 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
+import 'package:tayyorr_app/core/ui/liquid_glass.dart';
 import '../../../core/ui/app_dialogs.dart';
 import 'dart:async';
 import 'dart:io';
@@ -27,6 +28,7 @@ import 'chat_media.dart';
 import 'chat_widgets.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../public_profile/presentation/public_profile_screen.dart';
+import '../../family/family_popup.dart' show FamilyPopupAction, showFamilyPopup;
 import '../cubit/chat_cubit.dart';
 import '../data/message_model.dart';
 import '../data/messages_repository.dart';
@@ -421,13 +423,14 @@ class _ChatHeader extends StatelessWidget {
     final online = other.lastSeenAt != null && DateTime.now().difference(other.lastSeenAt!).inMinutes < 2;
     // Saytdagi chat-room sarlavhasi: ‹ matnli tugma, 36px avatar, ism,
     // holat nuqtasi va 32x32 chegarali ⋮ tugma; pastda nozik chiziq.
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: WebC.headerBar,
-        border: Border(bottom: BorderSide(color: WebC.border)),
-      ),
-      child: Row(
+    // suyuq shisha sarlavha (asosiy header bilan bir uslubda)
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      child: LiquidGlass(
+        borderRadius: BorderRadius.circular(22),
+        strong: true,
+        padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+        child: Row(
         children: [
           if (!embedded) ...[
             GestureDetector(
@@ -532,6 +535,7 @@ class _ChatHeader extends StatelessWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -749,7 +753,7 @@ class _ReplyBanner extends StatelessWidget {
   }
 }
 
-class _MessageBubble extends StatelessWidget {
+class _MessageBubble extends StatefulWidget {
   const _MessageBubble({
     required this.message,
     this.pinnedOrderId,
@@ -762,7 +766,19 @@ class _MessageBubble extends StatelessWidget {
   /// Iqtibos (javob berilgan xabar) bosilganda — o'sha xabarga o'tish.
   final void Function(String messageId)? onReplyTap;
 
-  void _openMenu(BuildContext context) {
+  @override
+  State<_MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends State<_MessageBubble> {
+  /// Popup xabarni o'z joyida «ko'tarishi» uchun — pufakcha o'lchami va joyi.
+  final _bubbleKey = GlobalKey();
+
+  ChatMessageModel get message => widget.message;
+  String? get pinnedOrderId => widget.pinnedOrderId;
+  void Function(String messageId)? get onReplyTap => widget.onReplyTap;
+
+  Future<void> _openMenu(BuildContext context, Widget preview) async {
     if (message.deleted) return;
     final cubit = context.read<ChatCubit>();
     if (message.isLocal) {
@@ -783,99 +799,59 @@ class _MessageBubble extends StatelessWidget {
       );
       return;
     }
-    showAppSheet(
+    // «Tayyorr's Family»dagidek: xira fon, xabar o'z joyida, tepada 10 ta reaksiya, pastda amallar
+    final box = _bubbleKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    final m = message;
+    final v = await showFamilyPopup(
       context,
-      builder: (sheetContext) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _ReactionButton(
-                icon: TI.thumb_up_alt_rounded,
-                active: message.reactions.mine == 'LIKE',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  cubit.react(message.id, message.reactions.mine == 'LIKE' ? null : 'LIKE');
-                },
-              ),
-              const SizedBox(width: 28),
-              _ReactionButton(
-                icon: TI.thumb_down_alt_rounded,
-                active: message.reactions.mine == 'DISLIKE',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  cubit.react(message.id, message.reactions.mine == 'DISLIKE' ? null : 'DISLIKE');
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          AppSheetAction(
-            icon: TI.reply_rounded,
-            label: 'Javob beriş',
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              cubit.setReplyTo(message);
-            },
-          ),
-          if (message.file != null)
-            AppSheetAction(
-              icon: TI.download_rounded,
-              label: message.file!.isImage || message.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş',
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                saveChatFile(context, message.file!, message.stableKey);
-              },
-            ),
-          if (message.body.isNotEmpty)
-            AppSheetAction(
-              icon: TI.copy_rounded,
-              label: 'Nusxa oliş',
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                Clipboard.setData(ClipboardData(text: message.body));
-                showToast(context, 'Nusxalandi', kind: ToastKind.success);
-              },
-            ),
-          if (message.mine) ...[
-            AppSheetAction(
-              icon: TI.edit_outlined,
-              label: 'Tahrirlaş',
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _showEditSheet(context, cubit, message);
-              },
-            ),
-            AppSheetAction(
-              icon: TI.delete_outline_rounded,
-              label: 'Öçiriş',
-              danger: true,
-              onTap: () async {
-                Navigator.of(sheetContext).pop();
-                final ok = await confirmDialog(
-                  context,
-                  title: "Öçirilsinmi?",
-                  message: "Xabar ikkala tomondan ham öçiriladi.",
-                  confirmLabel: "Ha, öçiriş",
-                  icon: TI.delete_outline_rounded,
-                );
-                if (ok == true) cubit.deleteMessage(message.id);
-              },
-            ),
-          ] else
-            AppSheetAction(
-              icon: TI.flag_outlined,
-              label: 'Şikoyat qiliş',
-              danger: true,
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                _showReportDialog(context, messageId: message.id);
-              },
-            ),
-        ],
-      ),
+      rect: rect,
+      preview: SizedBox(width: rect.width, child: preview),
+      alignRight: m.mine,
+      myReaction: m.reactions.where((r) => r.mine).map((r) => r.emoji).firstOrNull,
+      seen: 0,
+      reactionsCount: 0,
+      showInfo: false,
+      actions: [
+        const FamilyPopupAction('reply', TI.reply_rounded, 'Javob beriş'),
+        if (m.body.isNotEmpty) const FamilyPopupAction('copy', TI.copy_rounded, 'Nusxa oliş'),
+        if (m.file != null)
+          FamilyPopupAction('save', TI.download_rounded, m.file!.isImage || m.file!.isVideo ? 'Galereyaga saqlaş' : 'Yuklab oliş'),
+        if (m.mine) ...[
+          const FamilyPopupAction('edit', TI.edit_outlined, 'Tahrirlaş'),
+          const FamilyPopupAction('delete', TI.delete_outline_rounded, 'Öçiriş', danger: true),
+        ] else
+          const FamilyPopupAction('report', TI.flag_outlined, 'Şikoyat qiliş', danger: true),
+      ],
     );
+    if (v == null || !mounted || !context.mounted) return;
+    if (v.startsWith('emoji:')) {
+      cubit.react(m.id, v.substring(6));
+      return;
+    }
+    switch (v) {
+      case 'reply':
+        cubit.setReplyTo(m);
+      case 'copy':
+        Clipboard.setData(ClipboardData(text: m.body));
+        showToast(context, 'Nusxalandi', kind: ToastKind.success);
+      case 'save':
+        saveChatFile(context, m.file!, m.stableKey);
+      case 'edit':
+        _showEditSheet(context, cubit, m);
+      case 'delete':
+        final ok = await confirmDialog(
+          context,
+          title: "Öçirilsinmi?",
+          message: "Xabar ikkala tomondan ham öçiriladi.",
+          confirmLabel: "Ha, öçiriş",
+          icon: TI.delete_outline_rounded,
+        );
+        if (ok == true) cubit.deleteMessage(m.id);
+      case 'report':
+        if (context.mounted) _showReportDialog(context, messageId: m.id);
+    }
   }
 
   void _showEditSheet(BuildContext context, ChatCubit cubit, ChatMessageModel message) {
@@ -951,10 +927,106 @@ class _MessageBubble extends StatelessWidget {
     // Saytdagidek: pufakcha eni 86% gacha, 16px burchak; yonida 28x28 ⋮
     // tugma (meniki — chapda, boshqaniki — o'ngda), vaqt o'ng tomonda.
     final timeColor = mine ? const Color(0xFFC7D2FE) : WebC.zinc500;
+    final bubbleBody = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: mine ? const Color(0xFF4F39F6) : WebC.fill5,
+        borderRadius: BorderRadius.circular(16),
+        border: message.status == ChatSendStatus.failed
+            ? Border.all(color: const Color(0xFFF43F5E), width: 1.5)
+            : (mine ? null : Border.all(color: WebC.border)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (message.replyTo != null)
+            _ReplyQuote(
+              reply: message.replyTo!,
+              mine: mine,
+              onTap: onReplyTap == null ? null : () => onReplyTap!(message.replyTo!.id),
+            ),
+          if (message.file != null) ChatAttachment(file: message.file!, cacheKey: message.stableKey, mine: mine),
+          if (!message.deleted && message.body.isNotEmpty) ...[
+            if (message.file != null) const SizedBox(height: 6),
+            LinkText(
+              message.body,
+              style: TextStyle(color: mine ? Colors.white : WebC.zinc200, fontSize: 14, height: 1.45),
+              linkColor: mine ? Colors.white : WebC.indigoSoft,
+            ),
+          ],
+          if (message.action != null && !message.deleted) ...[
+            const SizedBox(height: 6),
+            GestureDetector(
+              onTap: () => openInternalUrl(context, message.action!.url),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  color: mine ? Colors.white.withValues(alpha: 0.15) : AppColors.indigo.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TIcon(TI.account_balance_wallet_outlined, size: 16, color: mine ? Colors.white : WebC.indigoSoft),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        '${message.action!.label} ›',
+                        style: TextStyle(
+                          color: mine ? Colors.white : WebC.indigoSoft,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          if (message.deleted)
+            Text(
+              "öçirilgan xabar",
+              style: TextStyle(color: timeColor, fontStyle: FontStyle.italic, fontSize: 14),
+            ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                '${message.edited && !message.deleted ? 'tahrirlangan · ' : ''}${_time(message.createdAtDate)}',
+                style: TextStyle(color: timeColor, fontSize: 10),
+              ),
+              // Telegramdagidek: ✓ — yetkazildi, ✓✓ — o'qildi
+              if (mine && !message.deleted) ...[
+                const SizedBox(width: 3),
+                if (message.status == ChatSendStatus.pending)
+                  TIcon(TI.schedule_rounded, size: 13, color: timeColor)
+                else if (message.status == ChatSendStatus.failed)
+                  const TIcon(TI.error_outline_rounded, size: 13, color: Color(0xFFFDA4AF))
+                else
+                  TIcon(
+                    message.readAt != null ? TI.done_all_rounded : TI.done_rounded,
+                    size: 14,
+                    color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
+                  ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+    // bosish yoki bosib turish — popup (Family'dagidek)
+    final bubble = GestureDetector(
+      onTap: () => _openMenu(context, bubbleBody),
+      onLongPress: () => _openMenu(context, bubbleBody),
+      child: KeyedSubtree(key: _bubbleKey, child: bubbleBody),
+    );
     final menuBtn = message.deleted
         ? const SizedBox(width: 28)
         : GestureDetector(
-            onTap: () => _openMenu(context),
+            onTap: () => _openMenu(context, bubbleBody),
             child: Container(
               width: 28,
               height: 28,
@@ -971,100 +1043,6 @@ class _MessageBubble extends StatelessWidget {
               child: Text('⋮', style: TextStyle(color: WebC.zinc300, fontSize: 14, height: 1)),
             ),
           );
-    final bubble = GestureDetector(
-      onLongPress: () => _openMenu(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: mine ? const Color(0xFF4F39F6) : WebC.fill5,
-          borderRadius: BorderRadius.circular(16),
-          border: message.status == ChatSendStatus.failed
-              ? Border.all(color: const Color(0xFFF43F5E), width: 1.5)
-              : (mine ? null : Border.all(color: WebC.border)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (message.replyTo != null)
-              _ReplyQuote(
-                reply: message.replyTo!,
-                mine: mine,
-                onTap: onReplyTap == null ? null : () => onReplyTap!(message.replyTo!.id),
-              ),
-            if (message.file != null) ChatAttachment(file: message.file!, cacheKey: message.stableKey, mine: mine),
-            if (!message.deleted && message.body.isNotEmpty) ...[
-              if (message.file != null) const SizedBox(height: 6),
-              LinkText(
-                message.body,
-                style: TextStyle(color: mine ? Colors.white : WebC.zinc200, fontSize: 14, height: 1.45),
-                linkColor: mine ? Colors.white : WebC.indigoSoft,
-              ),
-            ],
-            if (message.action != null && !message.deleted) ...[
-              const SizedBox(height: 6),
-              GestureDetector(
-                onTap: () => openInternalUrl(context, message.action!.url),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                  decoration: BoxDecoration(
-                    color: mine ? Colors.white.withValues(alpha: 0.15) : AppColors.indigo.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TIcon(TI.account_balance_wallet_outlined, size: 16, color: mine ? Colors.white : WebC.indigoSoft),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          '${message.action!.label} ›',
-                          style: TextStyle(
-                            color: mine ? Colors.white : WebC.indigoSoft,
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-            if (message.deleted)
-              Text(
-                "öçirilgan xabar",
-                style: TextStyle(color: timeColor, fontStyle: FontStyle.italic, fontSize: 14),
-              ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  '${message.edited && !message.deleted ? 'tahrirlangan · ' : ''}${_time(message.createdAtDate)}',
-                  style: TextStyle(color: timeColor, fontSize: 10),
-                ),
-                // Telegramdagidek: ✓ — yetkazildi, ✓✓ — o'qildi
-                if (mine && !message.deleted) ...[
-                  const SizedBox(width: 3),
-                  if (message.status == ChatSendStatus.pending)
-                    TIcon(TI.schedule_rounded, size: 13, color: timeColor)
-                  else if (message.status == ChatSendStatus.failed)
-                    const TIcon(TI.error_outline_rounded, size: 13, color: Color(0xFFFDA4AF))
-                  else
-                    TIcon(
-                      message.readAt != null ? TI.done_all_rounded : TI.done_rounded,
-                      size: 14,
-                      color: message.readAt != null ? const Color(0xFF7DD3FC) : timeColor,
-                    ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
@@ -1099,16 +1077,13 @@ class _MessageBubble extends StatelessWidget {
                 _RetryPill(label: 'Öçiriş', icon: TI.delete_outline_rounded, danger: true, onTap: () => context.read<ChatCubit>().discard(message.clientId!)),
               ]),
             ),
-          if (message.reactions.like > 0 || message.reactions.dislike > 0)
+          if (message.reactions.isNotEmpty && !message.deleted)
             Padding(
               padding: EdgeInsets.only(top: 4, left: mine ? 0 : 4, right: mine ? 34 : 0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (message.reactions.like > 0) _ReactionCountPill(icon: TI.thumb_up_alt_outlined, count: message.reactions.like),
-                  if (message.reactions.like > 0 && message.reactions.dislike > 0) const SizedBox(width: 6),
-                  if (message.reactions.dislike > 0) _ReactionCountPill(icon: TI.thumb_down_alt_outlined, count: message.reactions.dislike),
-                ],
+              child: _ReactionChips(
+                reactions: message.reactions,
+                alignRight: mine,
+                onTap: (e) => context.read<ChatCubit>().react(message.id, e),
               ),
             ),
         ],
@@ -1151,50 +1126,47 @@ class _ReplyQuote extends StatelessWidget {
   }
 }
 
-class _ReactionButton extends StatelessWidget {
-  const _ReactionButton({required this.icon, required this.active, required this.onTap});
-  final TIData icon;
-  final bool active;
-  final VoidCallback onTap;
+/// Pufakcha ostidagi reaksiyalar (Family'dagidek): emoji + son; meniki — ajratilgan. Bosilsa — almashtiriladi.
+class _ReactionChips extends StatelessWidget {
+  const _ReactionChips({required this.reactions, required this.onTap, this.alignRight = false});
+  final List<MessageReaction> reactions;
+  final void Function(String emoji) onTap;
+  final bool alignRight;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: active ? AppColors.indigo.withValues(alpha: 0.2) : AppColors.tint(0.05),
-          shape: BoxShape.circle,
-        ),
-        child: TIcon(icon, size: 22, color: active ? AppColors.indigo : AppColors.textSecondary),
-      ),
-    );
-  }
-}
-
-class _ReactionCountPill extends StatelessWidget {
-  const _ReactionCountPill({required this.icon, required this.count});
-  final TIData icon;
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.tint(0.06),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TIcon(icon, size: 13, color: AppColors.textSecondary),
-          const SizedBox(width: 4),
-          Text('$count', style: TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-        ],
-      ),
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      alignment: alignRight ? WrapAlignment.end : WrapAlignment.start,
+      children: [
+        for (final r in reactions)
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onTap(r.emoji);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: r.mine ? const Color(0xFF6366F1).withValues(alpha: 0.22) : AppColors.tint(0.06),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: r.mine ? const Color(0xFF818CF8) : AppColors.cardBorder),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(r.emoji, style: const TextStyle(fontSize: 14, height: 1.2)),
+                const SizedBox(width: 4),
+                Text('${r.count}',
+                    style: TextStyle(
+                      color: r.mine ? WebC.indigoSoft : AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    )),
+              ]),
+            ),
+          ),
+      ],
     );
   }
 }

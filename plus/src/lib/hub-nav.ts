@@ -25,6 +25,7 @@ export const HUB_NAV: HubLink[] = [
   { href: "/", label: "Asosiy", icon: "home" },
   { href: "/wallet", label: "Hamyon", icon: "wallet", auth: true },
   { href: "/account", label: "Hisoblar", icon: "users", auth: true },
+  { href: "/qollanma", label: "Qöllanma", icon: "book" },
 ];
 
 export function isActive(pathname: string, href: string) {

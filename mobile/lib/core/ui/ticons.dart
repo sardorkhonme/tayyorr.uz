@@ -42,10 +42,15 @@ class TIcon extends StatelessWidget {
         '${i.duo ? 'fill-opacity="0.22" ' : ''}'
         'stroke="#000" stroke-width="${i.fill ? 1.2 : 1.8}" stroke-linecap="round" stroke-linejoin="round">'
         '${i.body}</svg>';
+    // Material Icon kabi: tashqi SizedBox qattiq cheklovda (masalan alignment'siz
+    // Container(width: 40, height: 40)) kattalashsa ham, belgi o'zi `size` da, markazda qoladi —
+    // aks holda ikonka butun qutini to'ldirib, chetiga tegib qolardi.
     return SizedBox(
       width: s,
       height: s,
-      child: SvgPicture.string(svg, width: s, height: s, colorFilter: ColorFilter.mode(c, BlendMode.srcIn)),
+      child: Center(
+        child: SvgPicture.string(svg, width: s, height: s, colorFilter: ColorFilter.mode(c, BlendMode.srcIn)),
+      ),
     );
   }
 }

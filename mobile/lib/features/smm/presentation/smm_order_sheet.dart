@@ -213,7 +213,7 @@ class _OrderFormState extends State<_OrderForm> {
             shape: BoxShape.circle,
             gradient: LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
           ),
-          child: const TIcon(TI.check_rounded, color: Colors.white, size: 42),
+          child: const TIcon(TI.check_rounded, color: Colors.white, size: 38),
         ),
         const SizedBox(height: 16),
         Text('Buyurtma qabul qilindi!', style: TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w800)),

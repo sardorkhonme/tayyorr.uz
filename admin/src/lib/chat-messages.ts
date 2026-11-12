@@ -2,20 +2,9 @@ import type { Message, MessageReaction } from "@prisma/client";
 import { splitSource, stripSource, type MessageSource } from "@/lib/message-source";
 import { db } from "@/lib/db";
 import { PRIVATE_BUCKET, presignGet } from "@/lib/r2";
+import { legacySummary, reactionChips, type ReactionChip } from "@/lib/reactions";
 
 type WithReactions = Message & { reactions?: MessageReaction[] };
-
-function reactionSummary(m: WithReactions, meId: string) {
-  const rs = m.reactions ?? [];
-  return {
-    like: rs.filter((r) => r.value === "LIKE").length,
-    dislike: rs.filter((r) => r.value === "DISLIKE").length,
-    mine: (rs.find((r) => r.userId === meId)?.value ?? null) as
-      | "LIKE"
-      | "DISLIKE"
-      | null,
-  };
-}
 
 export interface ReplyPreview {
   id: string;
@@ -42,7 +31,8 @@ export interface ClientMessage {
   deleted: boolean;
   readAt: number | null;
   replyTo: ReplyPreview | null;
-  reactions: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
+  /** emoji reaksiyalar (Family'dagidek) — [{ emoji, count, mine, users }] */
+  reactions: ReactionChip[];
   file: null | {
     name: string;
     type: string;
@@ -111,7 +101,7 @@ export async function toClientMessage(
     deleted,
     readAt: m.readAt ? m.readAt.getTime() : null,
     replyTo: await replyPreview(m.replyToId),
-    reactions: reactionSummary(m as WithReactions, meId),
+    reactions: deleted && !opts.forAdmin ? [] : reactionChips((m as WithReactions).reactions, meId),
     file,
   };
 }
@@ -122,6 +112,14 @@ export function toClientMessages(
   opts: { forAdmin?: boolean } = {},
 ) {
   return Promise.all(list.map((m) => toClientMessage(m, meId, opts)));
+}
+
+/**
+ * Mobil ilova uchun: eski ilovalar (1.11 gacha) `reactions` ni { like, dislike, mine } deb o'qiydi —
+ * shuning uchun u o'z shaklida qoladi, emoji reaksiyalar esa `emojiReactions` da.
+ */
+export function toMobileMessage(m: ClientMessage) {
+  return { ...m, reactions: legacySummary(m.reactions), emojiReactions: m.reactions };
 }
 
 /** SSE bus uchun (mine'siz). O'chirilgan xabar mazmunsiz. */

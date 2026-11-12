@@ -52,6 +52,8 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
           background: false,
           onRefresh: _load,
           children: [
+            const WebBackLink(),
+            const SizedBox(height: 8),
             Row(children: [
               Container(
                 width: 52,
@@ -241,7 +243,7 @@ class _SmmGuideScreenState extends State<SmmGuideScreen> {
             AnimatedRotation(
               turns: open ? 0.125 : 0,
               duration: const Duration(milliseconds: 200),
-              child: TIcon(TI.add_rounded, color: open ? const Color(0xFF818CF8) : WebC.zinc500),
+              child: TIcon(TI.add_rounded, color: open ? const Color(0xFF818CF8) : WebC.zinc500, size: 20),
             ),
           ]),
           AnimatedSize(

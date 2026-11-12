@@ -627,7 +627,7 @@ final _sourceOptions = [
         ),
       ),
       child: const Center(
-        child: TIcon(TI.camera_alt, color: Colors.white, size: 16),
+        child: TIcon(TI.camera_alt, color: Colors.white, size: 15),
       ),
     ),
   ),
@@ -658,7 +658,7 @@ final _sourceOptions = [
         ),
       ),
       child: const Center(
-        child: TIcon(TI.auto_awesome, color: Colors.white, size: 16),
+        child: TIcon(TI.auto_awesome, color: Colors.white, size: 15),
       ),
     ),
   ),
@@ -673,7 +673,7 @@ final _sourceOptions = [
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const GoogleLogo(size: 19),
+      child: const GoogleLogo(size: 15),
     ),
   ),
   _SourceOptionItem(
@@ -687,7 +687,7 @@ final _sourceOptions = [
         color: const Color(0xFF0D9488),
       ),
       child: const Center(
-        child: TIcon(TI.people_alt_rounded, color: Colors.white, size: 16),
+        child: TIcon(TI.people_alt_rounded, color: Colors.white, size: 15),
       ),
     ),
   ),

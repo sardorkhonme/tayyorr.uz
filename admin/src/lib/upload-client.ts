@@ -156,3 +156,11 @@ export function prepareBroadcastFile(
     onProgress,
   );
 }
+
+/** Admin: «Tayyorr's Family» guruhiga (Support nomidan) fayl. */
+export function prepareFamilyFile(
+  file: File,
+  onProgress: (pct: number) => void,
+) {
+  return prepareVia("/api/admin/family/upload-presign", {}, file, onProgress);
+}

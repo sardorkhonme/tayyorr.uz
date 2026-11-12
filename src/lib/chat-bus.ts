@@ -35,7 +35,14 @@ type ChatEvent =
   | { type: "message"; message: SerializedMessage }
   | { type: "edit"; message: SerializedMessage }
   | { type: "delete"; messageId: string; updatedAt: string }
-  | { type: "reaction"; messageId: string; like: number; dislike: number }
+  | {
+      type: "reaction";
+      messageId: string;
+      like: number;
+      dislike: number;
+      /** emoji reaksiyalar («mine» — har bir klient `users` dan o'zi aniqlaydi) */
+      reactions: { emoji: string; count: number; users: string[] }[];
+    }
   | { type: "read"; by: string; at: string };
 
 const g = globalThis as unknown as { __chatBus?: EventEmitter };

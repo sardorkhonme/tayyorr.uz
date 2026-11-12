@@ -8,9 +8,9 @@ import { Linkify } from "@/components/linkify";
 import { smartTime } from "@/lib/date";
 import { MessageSourceBadge } from "@/components/message-source-badge";
 import type { MessageSource } from "@/lib/message-source";
-import { Icon } from "@/components/icons";
 import { flashMessage } from "@/lib/flash-message";
 import { useRealtime } from "@/lib/use-realtime";
+import type { ReactionChip } from "@/lib/reaction-emojis";
 
 interface Msg {
   id: string;
@@ -23,7 +23,8 @@ interface Msg {
   deleted: boolean;
   mine: boolean; // = perspektiva foydalanuvchisi (o'ng tomon)
   replyTo: { id: string; authorId: string; text: string; deleted: boolean } | null;
-  reactions?: { like: number; dislike: number; mine: "LIKE" | "DISLIKE" | null };
+  /** emoji reaksiyalar — `users`: kim bosgan (id'lar) */
+  reactions?: ReactionChip[];
   file: ChatFile | null;
 }
 
@@ -108,11 +109,9 @@ export function AdminConversationView({
               x.id === data.messageId
                 ? {
                     ...x,
-                    reactions: {
-                      like: data.like,
-                      dislike: data.dislike,
-                      mine: x.reactions?.mine ?? null,
-                    },
+                    reactions: Array.isArray(data.reactions)
+                      ? (data.reactions as ReactionChip[]).map((r) => ({ ...r, mine: !!r.users?.includes(right.id) }))
+                      : x.reactions,
                   }
                 : x,
             ),
@@ -241,21 +240,23 @@ export function AdminConversationView({
                       <Linkify text={m.body} mine={m.mine} />
                     </div>
                   )}
-                  {m.reactions &&
-                    (m.reactions.like > 0 || m.reactions.dislike > 0) && (
-                      <div className="flex gap-1.5 pt-1">
-                        {m.reactions.like > 0 && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                            <Icon name="thumbs-up" className="h-3.5 w-3.5" /> {m.reactions.like}
+                  {!!m.reactions?.length && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {m.reactions.map((r) => {
+                        const who = (r.users ?? []).map(nameOf).join(", ");
+                        return (
+                          <span
+                            key={r.emoji}
+                            title={who}
+                            className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs"
+                          >
+                            <span className="text-sm leading-none">{r.emoji}</span> {r.count}
+                            {who && <span className="max-w-[160px] truncate opacity-70">· {who}</span>}
                           </span>
-                        )}
-                        {m.reactions.dislike > 0 && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                            <Icon name="thumbs-down" className="h-3.5 w-3.5" /> {m.reactions.dislike}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
+                  )}
                   <div
                     className={`text-right text-[10px] ${
                       m.mine && !m.deleted ? "text-indigo-200" : "text-zinc-500"

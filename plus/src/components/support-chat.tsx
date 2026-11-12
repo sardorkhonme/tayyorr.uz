@@ -7,9 +7,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatFileView, type ChatFile } from "@/components/chat-file";
 import { Icon } from "@/components/icons";
 import { Linkify } from "@/components/linkify";
+import { REACTION_EMOJIS, toggleReaction, type ReactionChip } from "@/lib/reaction-emojis";
 import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 
-type Msg = { id: string; mine: boolean; body: string; createdAt: string; file?: ChatFile | null; fileAt?: number };
+type Msg = {
+  id: string;
+  mine: boolean;
+  body: string;
+  createdAt: string;
+  file?: ChatFile | null;
+  fileAt?: number;
+  reactions?: ReactionChip[];
+};
 
 /** Fayl havolasi 1 soat amal qiladi — 45 daqiqagacha eskisini ishlatamiz. */
 const FILE_URL_TTL = 45 * 60 * 1000;
@@ -75,6 +84,21 @@ export function SupportChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  // reaksiya tanlovi ochiq xabar (Family'dagidek 10 ta emoji)
+  const [picker, setPicker] = useState<string | null>(null);
+  useEffect(() => {
+    if (!picker) return;
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as Element).closest?.("[data-reaction-picker]")) setPicker(null);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPicker(null);
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [picker]);
   const fileRef = useRef<HTMLInputElement>(null);
   // tanlangan rasm (yuborishdan oldin ko'rinadi)
   const [image, setImage] = useState<{ file: File; preview: string } | null>(null);
@@ -120,6 +144,21 @@ export function SupportChat({
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs.length]);
+
+  /** Reaksiya: o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi. */
+  async function react(m: Msg, emoji: string) {
+    setPicker(null);
+    setMsgs((list) => list.map((x) => (x.id === m.id ? { ...x, reactions: toggleReaction(x.reactions, emoji) } : x)));
+    const res = await fetch("/api/support/react", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ messageId: m.id, emoji }),
+    }).catch(() => null);
+    const data = await res?.json().catch(() => null);
+    if (res?.ok && data?.reactions) {
+      setMsgs((list) => list.map((x) => (x.id === m.id ? { ...x, reactions: data.reactions } : x)));
+    } else void load();
+  }
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -184,8 +223,8 @@ export function SupportChat({
                 </p>
               </div>
             )}
-            {msgs.map((m) => (
-              <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"}`}>
+            {msgs.map((m, i) => (
+              <div key={m.id} className={`group relative flex items-end gap-1 ${m.mine ? "flex-row-reverse" : ""}`}>
                 <div
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed shadow-sm ${
                     m.mine
@@ -206,6 +245,64 @@ export function SupportChat({
                   <p className={`mt-0.5 text-right text-[10px] ${m.mine ? "text-indigo-100" : "text-zinc-400"}`}>
                     {timeFmt.format(new Date(m.createdAt))}
                   </p>
+                  {!!m.reactions?.length && (
+                    <div className="-mx-1 mt-1 flex flex-wrap gap-1">
+                      {m.reactions.map((r) => (
+                        <button
+                          key={r.emoji}
+                          type="button"
+                          onClick={() => react(m, r.emoji)}
+                          className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-sm transition ${
+                            r.mine
+                              ? m.mine
+                                ? "bg-white/30 ring-1 ring-white/60"
+                                : "bg-indigo-100 ring-1 ring-indigo-300"
+                              : m.mine
+                                ? "bg-white/15 hover:bg-white/25"
+                                : "bg-zinc-100 hover:bg-zinc-200"
+                          }`}
+                        >
+                          <span>{r.emoji}</span>
+                          <span className={`text-xs font-semibold ${m.mine ? "text-white" : "text-zinc-600"}`}>{r.count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="relative shrink-0 self-center" data-reaction-picker>
+                  <button
+                    type="button"
+                    onClick={() => setPicker((p) => (p === m.id ? null : m.id))}
+                    aria-label="Reaksiya bildiriş"
+                    title="Reaksiya"
+                    className={`grid h-7 w-7 place-items-center rounded-full text-base text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600 ${
+                      picker === m.id ? "bg-zinc-100 opacity-100" : "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+                    }`}
+                  >
+                    ☺
+                  </button>
+                  {picker === m.id && (
+                    <div
+                      className={`animate-pop absolute z-10 grid ${i < 2 ? "top-full mt-1" : "bottom-full mb-1"} w-[212px] grid-cols-5 gap-0.5 rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl shadow-zinc-900/10 ${
+                        m.mine ? "right-0" : "left-0"
+                      }`}
+                    >
+                      {REACTION_EMOJIS.map((e) => {
+                        const on = m.reactions?.some((r) => r.mine && r.emoji === e);
+                        return (
+                          <button
+                            key={e}
+                            type="button"
+                            onClick={() => react(m, e)}
+                            aria-label={e}
+                            className={`grid h-9 w-9 place-items-center rounded-xl text-xl transition hover:scale-110 hover:bg-zinc-100 ${on ? "bg-indigo-100" : ""}`}
+                          >
+                            {e}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
