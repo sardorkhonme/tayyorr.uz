@@ -1,5 +1,6 @@
 "use client";
 
+import { playSent } from "@/components/send-sound";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -294,6 +295,7 @@ export function FamilyChat() {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Yuborilmadi");
+      playSent();
       stickRef.current = true;
       memory.release();
       if (d.message?.id) sentIds.current.add(d.message.id);

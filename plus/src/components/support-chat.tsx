@@ -1,5 +1,6 @@
 "use client";
 
+import { playSent } from "@/components/send-sound";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -323,6 +324,7 @@ export function SupportChat({
     setSending(false);
     sendingRef.current = false;
     if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib köring");
+    playSent();
     setText("");
     setImage(null);
     setReplyTo(null);

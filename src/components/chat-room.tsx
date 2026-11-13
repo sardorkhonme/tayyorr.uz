@@ -1,5 +1,6 @@
 "use client";
 
+import { playSent } from "@/components/send-sound";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -690,6 +691,7 @@ export function ChatRoom({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Yuborilmadi");
+      playSent();
       // optimistik xabarni real bilan JOYIDA almashtiramiz — DOM elementi
       // o'zgarmaydi, shuning uchun blur animatsiyasi qayta ishlamaydi
       const real = data.message as Msg;
