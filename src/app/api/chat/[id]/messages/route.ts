@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { chatActor, conversationForActor } from "@/lib/chat-actor";
@@ -95,7 +95,8 @@ export async function POST(
     file: parsed.data.file ?? null,
   });
 
-  await deliverMessage(msg);
+  // bildirişnomalar (push, Telegram, real vaqt) — javobdan keyin: yuboruvçi kutib qolmasin
+  after(() => deliverMessage(msg).catch(() => {}));
 
   return NextResponse.json({ message: await toClientMessage(msg, me) });
 }

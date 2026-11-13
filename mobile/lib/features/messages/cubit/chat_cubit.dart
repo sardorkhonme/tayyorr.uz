@@ -296,7 +296,17 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
         error: null,
       ),
     );
-    await _deliver(clientId);
+    await _enqueue(clientId);
+  }
+
+  /// Yuboriş navbati — xabarlar yozilgan tartibda, bittadan ketadi (parallel yuborilsa server
+  /// ularni qaysi biri oldin yetib kelsa şu tartibda saqlaydi va ketma-ketlik aralaşib ketadi).
+  Future<void> _sendChain = Future.value();
+
+  Future<void> _enqueue(String clientId) {
+    final next = _sendChain.then((_) => _deliver(clientId)).catchError((_) {});
+    _sendChain = next;
+    return next;
   }
 
   Future<void> _deliver(String clientId) async {

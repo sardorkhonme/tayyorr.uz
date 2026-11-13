@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { adminApiGuard } from "@/lib/admin";
@@ -119,7 +119,7 @@ export async function POST(req: Request) {
     },
     include: familyInclude,
   });
-  await dispatchFamily(row);
+  after(() => dispatchFamily(row).catch(() => {}));
 
   const [m] = await toFamilyClients([row], { forAdmin: true, noSeen: true });
   return NextResponse.json({ message: m }, { status: 201 });

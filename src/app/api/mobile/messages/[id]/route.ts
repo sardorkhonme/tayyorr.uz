@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -150,7 +150,8 @@ export async function POST(
     replyToId: parsed.data.replyToId ?? null,
     file: parsed.data.file ?? null,
   });
-  await deliverMessage(msg);
+  // bildirişnomalar (push, Telegram, real vaqt) — javobdan keyin: yuboruvçi kutib qolmasin
+  after(() => deliverMessage(msg).catch(() => {}));
 
   return mobileJson({ message: toMobileMessage(await toClientMessage(msg, me)) }, { status: 201 });
 }

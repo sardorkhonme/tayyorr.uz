@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -199,7 +199,8 @@ export async function POST(req: Request) {
     },
     include: familyInclude,
   });
-  if (!scheduled) await dispatchFamily(row, d.clientId);
+  // tarqatiş (real vaqt, push) — javobdan keyin: yuboruvçi kutib qolmasin
+  if (!scheduled) after(() => dispatchFamily(row, d.clientId).catch(() => {}));
 
   const [m] = await toFamilyClients([row], { meId: me, viewerIsAdmin: isAdmin });
   return mobileJson({ message: { ...m, ...(d.clientId ? { clientId: d.clientId } : {}) } }, { status: 201 });

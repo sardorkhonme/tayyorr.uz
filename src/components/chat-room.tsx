@@ -648,6 +648,15 @@ export function ChatRoom({
     }
   }
 
+  // yuboriş navbati — xabarlar yozilgan tartibda bittadan ketadi (parallel ketsa server
+  // ularni qaysi biri oldin yetsa şu tartibda saqlaydi va ketma-ketlik aralaşadi)
+  const sendChainRef = useRef<Promise<unknown>>(Promise.resolve());
+  function queued<T>(fn: () => Promise<T>): Promise<T> {
+    const p = sendChainRef.current.then(fn, fn);
+    sendChainRef.current = p.catch(() => {});
+    return p;
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const body = text.trim();
@@ -689,7 +698,7 @@ export function ChatRoom({
     setReplyingTo(null);
     setPeerRead(false);
 
-    const tmpId = `tmp-${Date.now()}`;
+    const tmpId = `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     merge([
       {
         id: tmpId,
@@ -709,7 +718,7 @@ export function ChatRoom({
     ]);
 
     try {
-      const res = await fetch(apiUrl(`/api/chat/${conversationId}/messages`), {
+      const res = await queued(() => fetch(apiUrl(`/api/chat/${conversationId}/messages`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -725,7 +734,7 @@ export function ChatRoom({
               }
             : undefined,
         }),
-      });
+      }));
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Yuborilmadi");
       playSent();

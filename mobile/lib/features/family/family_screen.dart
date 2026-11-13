@@ -866,7 +866,16 @@ class _FamilyScreenState extends State<FamilyScreen>
       _messages.add(local);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-    await _deliver(clientId);
+    await _enqueue(clientId);
+  }
+
+  /// Yuboriş navbati — xabarlar yozilgan tartibda bittadan ketadi (aralaşib ketmasin).
+  Future<void> _sendChain = Future.value();
+
+  Future<void> _enqueue(String clientId) {
+    final next = _sendChain.then((_) => _deliver(clientId)).catchError((_) {});
+    _sendChain = next;
+    return next;
   }
 
   /// Optimistik xabarni serverga yuborish (qayta yuborishda ham).

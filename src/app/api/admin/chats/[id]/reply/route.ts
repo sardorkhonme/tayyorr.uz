@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -55,7 +55,7 @@ export async function POST(
     file: parsed.data.file ?? null,
   });
 
-  await deliverMessage(msg);
+  after(() => deliverMessage(msg).catch(() => {}));
 
   return NextResponse.json({ message: await toClientMessage(msg, supportId) });
 }
