@@ -6,6 +6,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../storage/local_storage.dart';
+
 import '../../app.dart';
 import '../../features/family/family_entry.dart';
 import '../../features/family/family_repository.dart';
@@ -116,12 +118,18 @@ class MessageNotifier {
   }
 
   AudioPlayer? _send;
+  // telefon karnayida past çastotalar yöqoladi — ovoz ingiçka eşitiladi; fayl özgarmaydi,
+  // çalayotganda ekvalayzer basni kötaradi, loudness enhancer balandlikni biroz oşiradi
+  final _sendEq = AndroidEqualizer();
+  final _sendLoud = AndroidLoudnessEnhancer();
+  bool _sendFxReady = false;
   DateTime _lastSend = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Tizim ovozi sifatida chalinadigan pleyer (media emas): Android'da «tizim» ovoz balandligiga
   /// bo'ysunadi, jim/tebranish rejimida eshitilmaydi, musiqani to'xtatmaydi (audio focus olmaydi).
-  AudioPlayer _systemPlayer(String asset, {bool media = false}) {
+  AudioPlayer _systemPlayer(String asset, {bool media = false, AudioPipeline? pipeline}) {
     final p = AudioPlayer(
+      audioPipeline: pipeline,
       handleInterruptions: false,
       androidApplyAudioAttributes: false,
       handleAudioSessionActivation: false,
@@ -142,10 +150,30 @@ class MessageNotifier {
   void playSent() {
     final now = DateTime.now();
     if (now.difference(_lastSend) < const Duration(milliseconds: 250)) return;
+    // profil → sozlamalarda öçirilgan bölsa — jim
+    if (!LocalStorage.instance.sendSound) return;
     _lastSend = now;
     () async {
       try {
-        final p = _send ??= _systemPlayer('assets/sounds/send.mp3', media: true);
+        final p = _send ??= _systemPlayer(
+          'assets/sounds/send.mp3',
+          media: true,
+          pipeline: AudioPipeline(androidAudioEffects: [_sendEq, _sendLoud]),
+        );
+        if (!_sendFxReady && defaultTargetPlatform == TargetPlatform.android) {
+          _sendFxReady = true;
+          try {
+            await _sendLoud.setTargetGain(3.0); // dB
+            await _sendLoud.setEnabled(true);
+            final params = await _sendEq.parameters;
+            for (final b in params.bands) {
+              // ~60–250 Hz: +6 dB (tana/bas), ~1 kHz atrofi: 0, yuqorisi: -1 dB (çiyillamasin)
+              final g = b.centerFrequency <= 300 ? 6.0 : (b.centerFrequency >= 6000 ? -1.0 : 0.0);
+              await b.setGain(g.clamp(params.minDecibels, params.maxDecibels));
+            }
+            await _sendEq.setEnabled(true);
+          } catch (_) {}
+        }
         await p.seek(Duration.zero);
         await p.setVolume(1.0);
         await p.play();

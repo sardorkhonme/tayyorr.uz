@@ -72,6 +72,11 @@ class LocalStorage {
       _box?.get('smmGuideRead', defaultValue: false) as bool? ?? false;
   Future<void> setSmmGuideRead() async => _box?.put('smmGuideRead', true);
 
+  /// Xabar yuboriş ovozi (profil → sozlamalar). Standart — yoqilgan.
+  bool get sendSound =>
+      _box?.get('sendSound', defaultValue: true) as bool? ?? true;
+  Future<void> setSendSound(bool v) async => _box?.put('sendSound', v);
+
   /// tayyorr+ dagi guruh kartasi ko'rinadimi (admin sozlamasi; oxirgi javob — sakramasligi uchun).
   bool get familyHub =>
       _box?.get('familyHub', defaultValue: true) as bool? ?? true;

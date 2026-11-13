@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { saveAccountAction } from "@/app/account/actions";
 import { AccountEditor } from "@/components/account-editor";
 import { SignOutLink } from "@/components/sign-out-link";
+import { SendSoundToggle } from "@/components/send-sound-toggle";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { getAccount } from "@/lib/account";
 import { loginUrl, PLUS_URL, sessionUserId } from "@/lib/session";
@@ -32,6 +33,14 @@ export default async function AccountPage() {
           <p className="mt-1 text-sm text-zinc-500">Yoruğ yoki qoronği mavzu — Tayyorr SMM, tayyorr+ va Tayyorr.uz da bir xil.</p>
         </div>
         <ThemeSwitcher />
+      </section>
+
+      <section className="card flex flex-col gap-4 !rounded-3xl p-6">
+        <div>
+          <h2 className="font-display text-lg font-bold text-zinc-900">Sozlamalar</h2>
+          <p className="mt-1 text-sm text-zinc-500">Tayyorr SMM, tayyorr+ va Tayyorr.uz da bir xil.</p>
+        </div>
+        <SendSoundToggle />
       </section>
 
       <SignOutLink

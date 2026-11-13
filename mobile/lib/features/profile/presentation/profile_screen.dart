@@ -1,4 +1,7 @@
 import '../../../core/ui/app_dialogs.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/notifications/message_notifier.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../core/app_config.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 import '../../../core/app_info.dart';
@@ -103,9 +106,44 @@ class _AppSettings extends StatelessWidget {
           const ThemeToggle(),
           const SizedBox(height: 16),
           Container(height: 1, color: WebC.border),
+          const SizedBox(height: 12),
+          const _SendSoundSetting(),
+          const SizedBox(height: 12),
+          Container(height: 1, color: WebC.border),
           const SizedBox(height: 4),
           const _UpdateCheck(),
         ],
+      ),
+    );
+  }
+}
+
+/// «Xabar yuboriş ovozi» — öçirib-yoqiş (qurilmada saqlanadi).
+class _SendSoundSetting extends StatefulWidget {
+  const _SendSoundSetting();
+
+  @override
+  State<_SendSoundSetting> createState() => _SendSoundSettingState();
+}
+
+class _SendSoundSettingState extends State<_SendSoundSetting> {
+  bool _on = LocalStorage.instance.sendSound;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SettingRow(
+      icon: TI.chat_bubble_rounded,
+      color: const Color(0xFF34D399),
+      title: 'Xabar yuboriş ovozi',
+      subtitle: 'Xabar yuborilganda qisqa ovoz',
+      trailing: Switch.adaptive(
+        value: _on,
+        activeTrackColor: AppColors.indigo,
+        onChanged: (v) {
+          setState(() => _on = v);
+          LocalStorage.instance.setSendSound(v);
+          if (v) MessageNotifier.instance.playSent();
+        },
       ),
     );
   }

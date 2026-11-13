@@ -134,6 +134,23 @@ function fmtTime(ms: number) {
 
 const MAX_FILE = 100 * 1024 * 1024;
 
+/**
+ * Real-time orqali kelgan özim yuborgan xabarga mos kutilayotgan optimistik (tmp-…) xabar:
+ * bir xil matn + fayl nomi, 2 daqiqa oraliqda; bir neçtasi bölsa — eng eskisi (yuboriş tartibi).
+ */
+function matchPending(map: Map<string, Msg>, real: Msg, meId: string): Msg | null {
+  if (real.system || !(real.mine || real.senderId === meId)) return null;
+  let best: Msg | null = null;
+  for (const x of map.values()) {
+    if (!x.pending || !x.id.startsWith("tmp-")) continue;
+    if ((x.body ?? "") !== (real.body ?? "")) continue;
+    if ((x.file?.name ?? null) !== (real.file?.name ?? null)) continue;
+    if (Math.abs(real.createdAt - x.createdAt) > 120_000) continue;
+    if (!best || x.createdAt < best.createdAt) best = x;
+  }
+  return best;
+}
+
 export function ChatRoom({
   conversationId,
   meId,
@@ -335,12 +352,32 @@ export function ChatRoom({
       for (const m of incoming) {
         const t = m.updatedAt || m.createdAt;
         if (t > sinceRef.current) sinceRef.current = t;
-        if (m.deleted) map.delete(m.id); // foydalanuvchida yo'qoladi
-        else map.set(m.id, { ...map.get(m.id), ...m, file: stableFile(m.id, m.file) });
+        if (m.deleted) {
+          map.delete(m.id); // foydalanuvchida yo'qoladi
+          continue;
+        }
+        let base = map.get(m.id);
+        // real-time (SSE / so'rov) özim yuborgan xabarni POST javobidan OLDIN keltirsa — uni kutilayotgan
+        // optimistik pufakça bilan birlaştiramiz: ikkinçi pufakça qöşilmaydi, React kaliti öşa (tmp-…),
+        // element qayta yaratilmaydi va yuboriş animatsiyasi qayta işlamaydi
+        if (!base && !m.pending) {
+          const tmp = matchPending(map, m, meId);
+          if (tmp) {
+            map.delete(tmp.id);
+            base = tmp;
+          }
+        }
+        map.set(m.id, {
+          ...base,
+          ...m,
+          key: m.key ?? base?.key,
+          pending: m.pending,
+          file: stableFile(m.id, m.file),
+        });
       }
       return [...map.values()].sort((a, b) => a.createdAt - b.createdAt);
     });
-  }, [stableFile]);
+  }, [stableFile, meId]);
 
   const applyDelete = useCallback((id: string, updatedAt: number) => {
     setMessages((prev) => prev.filter((m) => m.id !== id));
@@ -698,18 +735,28 @@ export function ChatRoom({
       const t = real.updatedAt || real.createdAt;
       if (t > sinceRef.current) sinceRef.current = t;
       setMessages((prev) => {
-        let replaced = false;
-        const next = prev
-          // SSE allaqachon real xabarni qo'shgan bo'lsa — dublikatni olib tashlaymiz
-          .filter((m) => m.id !== real.id)
-          .map((m) => {
-            if (m.id === tmpId) {
-              replaced = true;
-              return { ...real, file: stableFile(real.id, real.file), key: tmpId };
-            }
-            return m;
-          });
-        if (!replaced) next.push({ ...real, file: stableFile(real.id, real.file), key: tmpId });
+        const fresh = (m: Msg | undefined): Msg => ({
+          ...m,
+          ...real,
+          key: m?.key ?? tmpId,
+          pending: false,
+          file: stableFile(real.id, real.file),
+        });
+        const existing = prev.find((m) => m.id === real.id);
+        let next: Msg[];
+        if (existing) {
+          // real-time allaqaçon keltirgan (va odatda şu optimistik pufakça bilan birlaştirgan) — JOYIDA yangilaymiz.
+          // U boşqa kutilayotgan pufakçani egallagan bölsa (bir xil matn ketma-ket), biznikini qoldiramiz —
+          // uning öz real xabari kelganda birlaşadi; aks holda (moslanmay qolgan) optimistik nusxani olib taşlaymiz.
+          const otherTmp = !!existing.key && existing.key !== tmpId && existing.key.startsWith("tmp-");
+          next = prev
+            .filter((m) => otherTmp || m.id !== tmpId)
+            .map((m) => (m.id === real.id ? fresh(m) : m));
+        } else if (prev.some((m) => m.id === tmpId)) {
+          next = prev.map((m) => (m.id === tmpId ? fresh(m) : m));
+        } else {
+          next = [...prev, fresh(undefined)];
+        }
         return next.sort((a, b) => a.createdAt - b.createdAt);
       });
     } catch (e2) {

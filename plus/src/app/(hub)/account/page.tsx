@@ -5,6 +5,7 @@ import { currentUser } from "@/auth";
 import { AccountEditor } from "@/components/account-editor";
 import { Icon } from "@/components/icons";
 import { SignOutButton } from "@/components/sign-out-button";
+import { SendSoundToggle } from "@/components/send-sound-toggle";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { getAccount } from "@/lib/account";
 import { db } from "@/lib/db";
@@ -75,6 +76,14 @@ export default async function AccountPage() {
           <p className="mt-1 text-sm text-zinc-500">Yoruğ yoki qoronği mavzu — tayyorr+, Tayyorr.uz va Tayyorr SMM da bir xil.</p>
         </div>
         <ThemeSwitcher />
+      </section>
+
+      <section className="card flex flex-col gap-4 !rounded-3xl p-6">
+        <div>
+          <h2 className="font-display text-lg font-bold text-zinc-900">Sozlamalar</h2>
+          <p className="mt-1 text-sm text-zinc-500">tayyorr+, Tayyorr.uz va Tayyorr SMM da bir xil.</p>
+        </div>
+        <SendSoundToggle />
       </section>
 
       <SignOutButton

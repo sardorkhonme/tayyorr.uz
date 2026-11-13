@@ -7,6 +7,7 @@ import { ProfileForm } from "@/components/profile-form";
 import { AccountForm } from "@/components/account-form";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeSegmented } from "@/components/theme-toggle";
+import { SendSoundToggle } from "@/components/send-sound-toggle";
 import { HeaderSetter, type HeaderAction } from "@/components/page-header";
 import { getVersionLabel } from "@/lib/app-version";
 
@@ -93,6 +94,14 @@ export default async function ProfilePage() {
           </p>
         </div>
         <ThemeSegmented />
+      </section>
+
+      <section className="card flex flex-col gap-3">
+        <div>
+          <h2 className="font-semibold text-white">Sozlamalar</h2>
+          <p className="mt-0.5 text-xs text-zinc-500">app.tayyorr.uz, tayyorr+ va Tayyorr SMM da bir xil.</p>
+        </div>
+        <SendSoundToggle />
       </section>
 
       <ProfileForm
