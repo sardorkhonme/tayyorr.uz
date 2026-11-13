@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 /** Xush kelibsiz xabarini olmay qolganlarga (rolga qarab) yuborish. */
 export function WelcomeBackfill() {
@@ -18,7 +19,14 @@ export function WelcomeBackfill() {
   }, []);
 
   async function run() {
-    if (!count || !window.confirm(`${count} ta foydalanuvçiga xuş kelibsiz xabari (rolga qarab 2 ta) yuborilsinmi?`)) return;
+    if (
+      !count ||
+      !(await appConfirm({
+        message: `${count} ta foydalanuvçiga xuş kelibsiz xabari (rolga qarab 2 ta) yuborilsinmi?`,
+        confirmText: "Yuboriş",
+      }))
+    )
+      return;
     setBusy(true);
     setErr(null);
     let total = 0;

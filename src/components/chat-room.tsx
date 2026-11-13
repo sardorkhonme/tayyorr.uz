@@ -29,6 +29,7 @@ import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
 import { ConfirmDeleteDialog, SelectCheck, SelectTrashButton, useMsgSelection } from "@/components/msg-select";
+import { appConfirm } from "@/components/app-dialog";
 
 interface ReplyPreview {
   id: string;
@@ -245,9 +246,12 @@ export function ChatRoom({
   async function deleteConversation() {
     setHdrMenu(null);
     if (
-      !window.confirm(
-        "Suhbat ikkala tomondan ham öçiriladi. Davom etilsinmi?",
-      )
+      !(await appConfirm({
+        title: "Suhbatni öçiriş",
+        message: "Suhbat ikkala tomondan ham öçiriladi. Davom etilsinmi?",
+        confirmText: "Öçiriş",
+        danger: true,
+      }))
     )
       return;
     try {
@@ -290,7 +294,8 @@ export function ChatRoom({
   // xabarlarni tanlaş (bir nechtasini birdan öçiriş) — faqat öz xabarlari
   const sel = useMsgSelection();
   const [confirmBulk, setConfirmBulk] = useState(false);
-  const canSelect = (m: Msg) => m.mine && !m.pending && !m.deleted && !m.system;
+  // admin panelda (Support nomidan) — barça xabarlar, oddiy foydalanuvçida — faqat özimniki
+  const canSelect = (m: Msg) => (m.mine || asSupport) && !m.pending && !m.deleted && !m.system;
 
   function openMenu(m: Msg, btn: HTMLElement) {
     const r = btn.getBoundingClientRect();
@@ -685,7 +690,15 @@ export function ChatRoom({
 
   async function del(m: Msg) {
     setMenu(null);
-    if (!window.confirm("Xabar ikkala tomondan ham öçirilsinmi?")) return;
+    if (
+      !(await appConfirm({
+        title: "Xabarni öçiriş",
+        message: "Xabar ikkala tomondan ham öçirilsinmi?",
+        confirmText: "Öçiriş",
+        danger: true,
+      }))
+    )
+      return;
     applyDelete(m.id, Date.now());
     try {
       const res = await fetch(apiUrl(`/api/chat/${conversationId}/messages/${m.id}`), {
@@ -1140,7 +1153,7 @@ export function ChatRoom({
                   } ${sel.active ? `-mx-2 cursor-pointer select-none px-2 py-0.5 ${picked ? "bg-indigo-500/15" : ""}` : ""}`}
                 >
                   <div className={`flex max-w-[86%] items-end gap-1.5 ${sel.active ? "[&>div_*]:pointer-events-none" : ""}`}>
-                    {m.mine && (sel.active ? selectable && <SelectCheck on={picked} /> : MenuBtn)}
+                    {sel.active ? selectable && <SelectCheck on={picked} /> : m.mine && MenuBtn}
 
                     <div
                       className={`min-w-0 space-y-1 rounded-2xl px-3.5 py-2 text-sm [overflow-wrap:anywhere] ${

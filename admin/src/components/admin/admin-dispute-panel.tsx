@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { localInputToIso, toLocalInput } from "@/components/contract-panel";
 import { Icon } from "@/components/icons";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 /** Nizo bo'yicha admin qarori: bekor qilish / davom ettirish / yakunlash. */
 export function AdminDisputePanel({
@@ -38,7 +39,15 @@ export function AdminDisputePanel({
         : decision === "COMPLETE"
           ? `Iş yakunlanadi, ${amount.toLocaleString()} söm tayyorlovçiga ötadi.`
           : "Şartnoma davom etadi.";
-    if (!window.confirm(`${text} Tasdiqlaysizmi?`)) return;
+    if (
+      !(await appConfirm({
+        title: "Qarorni tasdiqlaş",
+        message: `${text} Tasdiqlaysizmi?`,
+        danger: decision === "CANCEL",
+        confirmText: "Tasdiqlaş",
+      }))
+    )
+      return;
     setBusy(true);
     setErr(null);
     try {

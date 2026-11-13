@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { Icon } from "@/components/icons";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 type U = { id: string; name: string | null; firstName: string | null; lastName: string | null; login: string | null; avatarUrl: string | null; image: string | null };
 
@@ -54,9 +55,22 @@ export function MaintenanceForm({ initial, initialUsers }: { initial: { on: bool
     }
   }
 
-  function toggle() {
-    if (!on && users.length === 0 && !confirm("Ruxsat röyxati böş — saytga heç kim (siz ham) kira olmaydi. Baribir yoqilsinmi?")) return;
-    if (on && !confirm("Texnik işlar rejimi öçirilsinmi? Sayt hamma uçun oçiladi.")) return;
+  async function toggle() {
+    if (
+      !on &&
+      users.length === 0 &&
+      !(await appConfirm({
+        message: "Ruxsat röyxati böş — saytga heç kim (siz ham) kira olmaydi. Baribir yoqilsinmi?",
+        confirmText: "Yoqiş",
+        danger: true,
+      }))
+    )
+      return;
+    if (
+      on &&
+      !(await appConfirm({ message: "Texnik işlar rejimi öçirilsinmi? Sayt hamma uçun oçiladi.", confirmText: "Öçiriş" }))
+    )
+      return;
     void save({ on: !on }, on ? "Öçirildi — sayt hamma uçun işlayapti" : "Yoqildi — ~10 soniyada saytlar yopiladi");
   }
 

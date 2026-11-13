@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 type Role = "ORDERER" | "PREPARER";
 export type AdminGuideVideo = { id: string; title: string; url: string };
@@ -98,7 +99,10 @@ function Row({ role, v, index, total }: { role: Role; v: AdminGuideVideo; index:
           <button
             type="button"
             disabled={busy}
-            onClick={() => confirm("Video öçirilsinmi?") && run(() => api("DELETE", undefined, `?role=${role}&id=${encodeURIComponent(v.id)}`))}
+            onClick={async () => {
+              if (await appConfirm({ message: "Video öçirilsinmi?", confirmText: "Öçiriş", danger: true }))
+                run(() => api("DELETE", undefined, `?role=${role}&id=${encodeURIComponent(v.id)}`));
+            }}
             className="ml-auto rounded-lg bg-red-500/15 px-3 py-1.5 text-red-300 hover:bg-red-500/25 disabled:opacity-40"
           >
             Öçiriş

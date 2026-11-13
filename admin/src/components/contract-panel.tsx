@@ -6,6 +6,7 @@ import { shortDateTime } from "@/lib/date";
 import type { ContractView } from "@/lib/contract-view";
 import { Icon } from "@/components/icons";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 /** ISO -> <input type="datetime-local"> qiymati (brauzer vaqti bilan). */
 export function toLocalInput(iso: string | null | undefined): string {
@@ -149,11 +150,14 @@ export function ContractPanel({
                 <button
                   className="btn-primary"
                   disabled={busy}
-                  onClick={() => {
+                  onClick={async () => {
                     if (
-                      window.confirm(
-                        `Şartnoma bekor qilinadi va ${c.amount.toLocaleString()} söm buyurtmaçiga qaytariladi. Rozimisiz?`,
-                      )
+                      await appConfirm({
+                        title: "Şartnoma bekor qilinsinmi?",
+                        message: `Şartnoma bekor qilinadi va ${c.amount.toLocaleString()} söm buyurtmaçiga qaytariladi. Rozimisiz?`,
+                        confirmText: "Roziman",
+                        danger: true,
+                      })
                     ) {
                       call(`/api/contracts/${c.id}`, "POST", { action: "APPROVE_CANCEL" });
                     }
@@ -214,8 +218,14 @@ export function ContractPanel({
               <button
                 className="btn-ghost text-red-300"
                 disabled={busy}
-                onClick={() => {
-                  if (window.confirm("Qaroringiz özgarmaydimi? Masala administratorga yuboriladi va u yakuniy qaror qabul qiladi.")) {
+                onClick={async () => {
+                  if (
+                    await appConfirm({
+                      title: "Qaroringiz özgarmaydimi?",
+                      message: "Masala administratorga yuboriladi va u yakuniy qaror qabul qiladi.",
+                      confirmText: "Tasdiqlaş",
+                    })
+                  ) {
                     call(`/api/contracts/${c.id}`, "POST", { action: "INSIST_CANCEL" });
                   }
                 }}
@@ -249,11 +259,13 @@ export function ContractPanel({
             <button
               className="btn-primary"
               disabled={busy}
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  window.confirm(
-                    `Iş yakunlanadi va ${c.amount.toLocaleString()} söm töliq tayyorlovçiga ötadi. Davom etilsinmi?`,
-                  )
+                  await appConfirm({
+                    title: "Işni yakunlaş",
+                    message: `Iş yakunlanadi va ${c.amount.toLocaleString()} söm töliq tayyorlovçiga ötadi. Davom etilsinmi?`,
+                    confirmText: "Yakunlaş",
+                  })
                 ) {
                   call(`/api/orders/${orderId}/finalize`, "POST");
                 }

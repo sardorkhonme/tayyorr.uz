@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 export function ClickPaymentActions({
   txnId,
@@ -36,9 +37,12 @@ export function ClickPaymentActions({
 
   async function reverseViaClick() {
     if (
-      !confirm(
-        "Click orqali tölov qaytariladi (kartaga) va hamyondan ham ayiriladi. Davom etilsinmi?",
-      )
+      !(await appConfirm({
+        title: "Tölovni qaytariş",
+        message: "Click orqali tölov qaytariladi (kartaga) va hamyondan ham ayiriladi. Davom etilsinmi?",
+        confirmText: "Qaytariş",
+        danger: true,
+      }))
     )
       return;
     setBusy(true);

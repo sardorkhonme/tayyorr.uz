@@ -15,6 +15,7 @@ import { type MessageSource } from "@/lib/message-source";
 import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { MessageSourceBadge } from "@/components/message-source-badge";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm, appPrompt } from "@/components/app-dialog";
 
 interface Item {
   id: string;
@@ -98,7 +99,13 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
 
   async function editItem(it: Item) {
     setMenu(null);
-    const next = window.prompt("Xabar matnini tahrirlang:", it.body);
+    const next = await appPrompt({
+      title: "Xabarni tahrirlaş",
+      message: "Xabar matnini tahrirlang:",
+      defaultValue: it.body,
+      confirmText: "Saqlaş",
+      multiline: true,
+    });
     if (next == null) return;
     const body = next.trim();
     if (!body || body === it.body) return;
@@ -154,7 +161,14 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
 
   async function delItem(id: string) {
     setMenu(null);
-    if (!window.confirm("Bu ommaviy xabar barça foydalanuvçilardan öçiriladi. Davom etilsinmi?"))
+    if (
+      !(await appConfirm({
+        title: "Ommaviy xabarni öçiriş",
+        message: "Bu ommaviy xabar barça foydalanuvçilardan öçiriladi. Davom etilsinmi?",
+        confirmText: "Öçiriş",
+        danger: true,
+      }))
+    )
       return;
     try {
       const res = await fetch(`/api/admin/broadcast/${id}`, { method: "DELETE" });
@@ -189,11 +203,14 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
     const body = text.trim();
     if ((!body && !attachment) || uploading) return;
     if (
-      !window.confirm(
-        count != null
-          ? `${count} ta foydalanuvçiga yuborilsinmi?`
-          : "Filtrga mos hammaga yuborilsinmi?",
-      )
+      !(await appConfirm({
+        title: "Xabar yuborilsinmi?",
+        message:
+          count != null
+            ? `${count} ta foydalanuvçiga yuborilsinmi?`
+            : "Filtrga mos hammaga yuborilsinmi?",
+        confirmText: "Yuboriş",
+      }))
     )
       return;
     const file = attachment;

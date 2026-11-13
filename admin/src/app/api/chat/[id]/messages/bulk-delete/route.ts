@@ -32,7 +32,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (rows.length !== ids.length) {
     return NextResponse.json({ error: "Xabar topilmadi" }, { status: 404 });
   }
-  if (rows.some((m) => m.senderId !== me)) {
+  // admin panel (Support nomidan, admin sessiyasi tekşirilgan) — suhbatdagi istalgan xabarni öçira oladi
+  if (!actor.support && rows.some((m) => m.senderId !== me)) {
     return NextResponse.json({ error: "Faqat öz xabaringizni öçira olasiz" }, { status: 403 });
   }
   const todo = rows.filter((m) => !m.deletedAt).map((m) => m.id);

@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/icons";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 type Method = "crypto" | "card" | "other";
 const METHODS: Record<Method, string> = { crypto: "Kripto (USDT)", card: "Karta", other: "Boşqa" };
@@ -236,7 +237,10 @@ export function ProviderDeposits({ deposits, defaults, today }: { deposits: Depo
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => confirm("Şu yozuv öçirilsinmi?") && call({ method: "DELETE" }, `/api/admin/finance/deposits?id=${d.id}`)}
+                  onClick={async () => {
+                    if (await appConfirm({ message: "Şu yozuv öçirilsinmi?", confirmText: "Öçiriş", danger: true }))
+                      call({ method: "DELETE" }, `/api/admin/finance/deposits?id=${d.id}`);
+                  }}
                   aria-label="Öçiriş"
                   className="grid h-8 w-8 place-items-center rounded-lg text-zinc-500 transition hover:bg-red-500/10 hover:text-red-300"
                 >
@@ -282,7 +286,14 @@ export function OwnerWithdrawals({ items, today, available }: { items: Withdrawa
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (n > available && !confirm(`Bu summa sizniki deb hisoblangan puldan (${nf.format(Math.max(available, 0))} söm) köp. Baribir yozilsinmi?`)) return;
+    if (
+      n > available &&
+      !(await appConfirm({
+        message: `Bu summa sizniki deb hisoblangan puldan (${nf.format(Math.max(available, 0))} söm) köp. Baribir yozilsinmi?`,
+        confirmText: "Yoziş",
+      }))
+    )
+      return;
     const ok = await call({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ date, amount: n, note: note || undefined }) });
     if (ok) {
       setAmount("");
@@ -342,7 +353,10 @@ export function OwnerWithdrawals({ items, today, available }: { items: Withdrawa
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => confirm("Şu yozuv öçirilsinmi?") && call({ method: "DELETE" }, `/api/admin/finance/withdrawals?id=${w.id}`)}
+                onClick={async () => {
+                  if (await appConfirm({ message: "Şu yozuv öçirilsinmi?", confirmText: "Öçiriş", danger: true }))
+                    call({ method: "DELETE" }, `/api/admin/finance/withdrawals?id=${w.id}`);
+                }}
                 aria-label="Öçiriş"
                 className="grid h-8 w-8 place-items-center rounded-lg text-zinc-500 transition hover:bg-red-500/10 hover:text-red-300"
               >

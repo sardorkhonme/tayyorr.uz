@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm, appPrompt } from "@/components/app-dialog";
 
 export function AdminPostButton({
   url,
@@ -28,10 +29,18 @@ export function AdminPostButton({
   const [err, setErr] = useFlashState<string | null>(null);
 
   async function run() {
-    if (confirmText && !window.confirm(confirmText)) return;
+    if (
+      confirmText &&
+      !(await appConfirm({
+        message: confirmText,
+        danger: method === "DELETE" || /öçir|bloklan/i.test(confirmText),
+        confirmText: method === "DELETE" || /öçir/i.test(confirmText) ? "Öçiriş" : "Tasdiqlaş",
+      }))
+    )
+      return;
     let payload: unknown = body;
     if (promptReason) {
-      const reason = window.prompt(promptReason);
+      const reason = await appPrompt({ message: promptReason, placeholder: "Sabab", confirmText: "Yuboriş" });
       if (!reason || !reason.trim()) return;
       payload = { ...(typeof body === "object" && body ? body : {}), reason: reason.trim() };
     }

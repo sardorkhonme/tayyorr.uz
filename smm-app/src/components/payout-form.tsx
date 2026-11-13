@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Icon } from "@/components/icons";
 import { num, som } from "@/lib/format";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm, appAlert } from "@/components/app-dialog";
 
 const COMMISSION = 5; // src/lib/payout.ts bilan bir xil
 const MIN = 1_000;
@@ -141,13 +142,22 @@ export function PayoutCancelButton({ id }: { id: string }) {
       type="button"
       disabled={busy}
       onClick={async () => {
-        if (!window.confirm("Sörovni bekor qilasizmi? Pul hamyonga qaytadi.")) return;
+        if (
+          !(await appConfirm({
+            title: "Sörovni bekor qilasizmi?",
+            message: "Pul hamyonga qaytadi.",
+            confirmText: "Ha, bekor qiliş",
+            cancelText: "Yöq",
+            danger: true,
+          }))
+        )
+          return;
         setBusy(true);
         const res = await fetch(`/api/wallet/payout/${id}/cancel`, { method: "POST" }).catch(() => null);
         setBusy(false);
         if (!res?.ok) {
           const d = await res?.json().catch(() => null);
-          window.alert(d?.error ?? "Bekor qilib bölmadi");
+          await appAlert({ title: "Xatolik", message: d?.error ?? "Bekor qilib bölmadi" });
         }
         router.refresh();
       }}

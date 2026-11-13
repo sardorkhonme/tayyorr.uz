@@ -19,6 +19,7 @@ import { Icon, StarIcon } from "@/components/icons";
 import { MascotState } from "@/components/mascot";
 import { errorText, fetchJson } from "@/components/fetch-json";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Körib çiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
@@ -752,8 +753,15 @@ export function OrderActions(props: Props) {
           <button
             className="btn-ghost"
             disabled={busy}
-            onClick={() => {
-              if (window.confirm("Buyurtma bekor qilinsinmi?")) {
+            onClick={async () => {
+              if (
+                await appConfirm({
+                  message: "Buyurtma bekor qilinsinmi?",
+                  confirmText: "Ha, bekor qilinsin",
+                  cancelText: "Yöq",
+                  danger: true,
+                })
+              ) {
                 call(`/api/orders/${orderId}`, "PATCH", { status: "CANCELLED" });
               }
             }}

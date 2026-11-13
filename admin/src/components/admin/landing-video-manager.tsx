@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 export interface Video {
   id: string;
@@ -68,7 +69,7 @@ function Row({ v }: { v: Video }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("Video öçirilsinmi?")) return;
+    if (!(await appConfirm({ message: "Video öçirilsinmi?", confirmText: "Öçiriş", danger: true }))) return;
     setBusy(true);
     await fetch(`/api/admin/landing-video/${v.id}`, { method: "DELETE" });
     router.refresh();

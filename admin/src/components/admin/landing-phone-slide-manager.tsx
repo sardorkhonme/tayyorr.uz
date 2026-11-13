@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 export interface PhoneSlide {
   id: string;
@@ -71,7 +72,7 @@ function Row({ s }: { s: PhoneSlide }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("Slayd öçirilsinmi?")) return;
+    if (!(await appConfirm({ message: "Slayd öçirilsinmi?", confirmText: "Öçiriş", danger: true }))) return;
     setBusy(true);
     await fetch(`/api/admin/landing-phone-slide/${s.id}`, { method: "DELETE" });
     router.refresh();

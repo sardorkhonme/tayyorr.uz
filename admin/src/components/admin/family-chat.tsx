@@ -16,6 +16,7 @@ import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
 import { ConfirmDeleteDialog, SelectCheck, SelectTrashButton, useMsgSelection } from "@/components/msg-select";
+import { appConfirm } from "@/components/app-dialog";
 
 /** Ilova bilan bir xil reaksiyalar (lib/family.ts → FAMILY_EMOJIS). */
 const EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
@@ -330,12 +331,27 @@ export function FamilyChat() {
 
   const react = (m: Msg, emoji: string) =>
     act(`/api/admin/family/messages/${m.id}/react`, { method: "POST", body: JSON.stringify({ emoji }) });
-  const pin = (m: Msg, pinned: boolean) => {
-    const notify = pinned && window.confirm("Hammaga bildiriş yuborilsinmi? (Bekor — jimgina qadaladi)");
+  const pin = async (m: Msg, pinned: boolean) => {
+    const notify =
+      pinned &&
+      (await appConfirm({
+        title: "Hammaga bildiriş yuborilsinmi?",
+        message: "Bekor qilinsa — jimgina qadaladi.",
+        confirmText: "Bildiriş yuboriş",
+        cancelText: "Jimgina qadaş",
+      }));
     return act(`/api/admin/family/messages/${m.id}`, { method: "PATCH", body: JSON.stringify({ pinned, notify }) });
   };
-  const del = (m: Msg) => {
-    if (!window.confirm("Xabar guruhdan öçirilsinmi? (Admin panelda «öçirilgan» bölib qoladi)")) return;
+  const del = async (m: Msg) => {
+    if (
+      !(await appConfirm({
+        title: "Xabar guruhdan öçirilsinmi?",
+        message: "Admin panelda «öçirilgan» bölib qoladi.",
+        confirmText: "Öçiriş",
+        danger: true,
+      }))
+    )
+      return;
     return act(`/api/admin/family/messages/${m.id}`, { method: "DELETE" });
   };
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/icons";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 /**
  * "Akkauntiga kirish" — yangi oynada shu foydalanuvchi sifatida tayyorr+ ochiladi (tekshirish uchun).
@@ -15,9 +16,11 @@ export function ImpersonateButton({ userId, name, compact = false }: { userId: s
 
   async function open() {
     if (
-      !confirm(
-        `${name} akkauntiga kirasizmi?\n\nYangi oynada uning nomidan tayyorr+, Tayyorr.uz va SMM oçiladi. Bu brauzerda saytga özingizning akkauntingiz bilan kirgan bölsangiz, u almaşadi — tekşirişdan keyin «Çiqiş»ni bosing. Inkognito oyna qulayroq.`,
-      )
+      !(await appConfirm({
+        title: `${name} akkauntiga kirasizmi?`,
+        message: `Yangi oynada uning nomidan tayyorr+, Tayyorr.uz va SMM oçiladi. Bu brauzerda saytga özingizning akkauntingiz bilan kirgan bölsangiz, u almaşadi — tekşirişdan keyin «Çiqiş»ni bosing. Inkognito oyna qulayroq.`,
+        confirmText: "Kiriş",
+      }))
     )
       return;
     const w = window.open("about:blank", "_blank");

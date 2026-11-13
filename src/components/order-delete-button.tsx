@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { useFlashState } from "@/components/flash-status";
+import { appConfirm } from "@/components/app-dialog";
 
 export function OrderDeleteButton({ orderId }: { orderId: string }) {
   const router = useRouter();
@@ -12,9 +13,13 @@ export function OrderDeleteButton({ orderId }: { orderId: string }) {
 
   async function del() {
     if (
-      !window.confirm(
-        "Buyurtma öçirilsinmi? Boşqalarga körinmaydi, lekin sizda «öçirilgan» holatida qoladi. Faol şartnomadagi mablağ qaytariladi.",
-      )
+      !(await appConfirm({
+        title: "Buyurtma öçirilsinmi?",
+        message:
+          "Boşqalarga körinmaydi, lekin sizda «öçirilgan» holatida qoladi. Faol şartnomadagi mablağ qaytariladi.",
+        confirmText: "Öçiriş",
+        danger: true,
+      }))
     )
       return;
     setBusy(true);

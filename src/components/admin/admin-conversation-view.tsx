@@ -11,6 +11,7 @@ import type { MessageSource } from "@/lib/message-source";
 import { flashMessage } from "@/lib/flash-message";
 import { useRealtime } from "@/lib/use-realtime";
 import type { ReactionChip } from "@/lib/reaction-emojis";
+import { appConfirm } from "@/components/app-dialog";
 
 interface Msg {
   id: string;
@@ -151,7 +152,7 @@ export function AdminConversationView({
   }, [conversationId, right.id]);
 
   async function delMsg(msgId: string) {
-    if (!window.confirm("Bu xabar butunlay öçiriladi. Davom etilsinmi?")) return;
+    if (!(await appConfirm({ title: "Xabarni öçiriş", message: "Bu xabar butunlay öçiriladi. Davom etilsinmi?", confirmText: "Öçiriş", danger: true }))) return;
     setDeleting(msgId);
     try {
       const res = await fetch(`/api/admin/messages/${msgId}`, { method: "DELETE" });

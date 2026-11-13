@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { appConfirm } from "@/components/app-dialog";
 
 export interface Faq {
   id: string;
@@ -84,7 +85,7 @@ function Row({ f }: { f: Faq }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("Öçirilsinmi?")) return;
+    if (!(await appConfirm({ message: "Savol öçirilsinmi?", confirmText: "Öçiriş", danger: true }))) return;
     setBusy(true);
     await fetch(`/api/admin/landing-faq/${f.id}`, { method: "DELETE" });
     router.refresh();

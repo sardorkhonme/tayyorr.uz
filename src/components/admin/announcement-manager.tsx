@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { AnnouncementBanner } from "@/components/announcement-banner";
+import { appConfirm } from "@/components/app-dialog";
 
 export interface Banner {
   id: string;
@@ -210,7 +211,7 @@ function Row({ b }: { b: Banner }) {
     router.refresh();
   }
   async function del() {
-    if (!confirm("Öçirilsinmi?")) return;
+    if (!(await appConfirm({ message: "Eʼlon öçirilsinmi?", confirmText: "Öçiriş", danger: true }))) return;
     setBusy(true);
     await fetch(`/api/admin/announcement/${b.id}`, { method: "DELETE" });
     router.refresh();
