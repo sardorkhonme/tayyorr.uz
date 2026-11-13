@@ -12,6 +12,7 @@ import { REACTION_EMOJIS, toggleReaction, type ReactionChip } from "@/lib/reacti
 import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
+import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
 
 type Msg = {
   id: string;
@@ -221,11 +222,16 @@ export function SupportChat({
     setImage({ file: f, preview: URL.createObjectURL(f) });
   }
 
+  // birinçi javob kelgunça joy tiklanmaydi (keyin — qoldirilgan joyda oçiladi)
+  const [loaded, setLoaded] = useState(false);
   const load = useCallback(async () => {
     if (!loggedIn) return;
     const res = await fetch("/api/support?open=1", { cache: "no-store" }).catch(() => null);
     const data = await res?.json().catch(() => null);
-    if (res?.ok && data) setMsgs((prev) => keepFileUrls(prev, data.messages ?? []));
+    if (res?.ok && data) {
+      setMsgs((prev) => keepFileUrls(prev, data.messages ?? []));
+      setLoaded(true);
+    }
   }, [loggedIn]);
 
   // real-time: yangi javob kelsa darhol
@@ -251,18 +257,32 @@ export function SupportChat({
 
   // «↓» tugmasi: yuqoriga aylantirilganda çiqadi, kelgan javoblar sonini körsatadi
   const down = useScrollDown(listRef, msgs, { keyOf: (m) => m.id, isMine: (m) => !!m.mine });
+  // qayta oçilganda — qoldirilgan joyda (xabar + masofa), birinçi marta yoki pastda qoldirilgan bölsa — pastda
+  const memory = useChatMemory({
+    ref: listRef,
+    storeKey: "support",
+    prefix: "sm-",
+    ready: loaded,
+    onRestored: () => down.sync(),
+  });
+  // yangi xabar: özim yuborgan — «suyuq» sakraş, support javobi — yumşoq pop
+  const enterCls = useEnterAnim(memory.restored);
+  const sentIds = useRef(new Set<string>());
+  const sendingRef = useRef(false);
   const firstScroll = useRef(true);
-  // yangi xabar: birinçi yuklanişda — darhol pastga; keyin — pastda turgan bölsa yoki özi yozgan bölsa silliq,
-  // yuqorida öqiyotgan bölsa — joyida qoladi (tugmada yangilar soni)
+  // yangi xabar: birinçi yuklanişda — joy useChatMemory'da tiklanadi; keyin — pastda turgan bölsa yoki özi yozgan
+  // bölsa silliq, yuqorida öqiyotgan bölsa — joyida qoladi (tugmada yangilar soni)
   useEffect(() => {
     const el = listRef.current;
     if (!el || !msgs.length) return;
     if (firstScroll.current) {
       firstScroll.current = false;
-      el.scrollTop = el.scrollHeight;
       return;
     }
-    if (!down.isAway() || msgs[msgs.length - 1]?.mine) down.scrollDown();
+    if (!down.isAway() || msgs[msgs.length - 1]?.mine) {
+      memory.release();
+      down.scrollDown();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msgs.length]);
 
@@ -286,6 +306,7 @@ export function SupportChat({
     const body = text.trim();
     if ((!body && !image) || sending) return;
     setSending(true);
+    sendingRef.current = true;
     setError("");
     let req: RequestInit;
     if (image) {
@@ -300,11 +321,13 @@ export function SupportChat({
     const res = await fetch("/api/support", req).catch(() => null);
     const data = await res?.json().catch(() => null);
     setSending(false);
+    sendingRef.current = false;
     if (!res?.ok) return setError(data?.error ?? "Yuborilmadi, qayta urinib köring");
     setText("");
     setImage(null);
     setReplyTo(null);
-    setMsgs((m) => [...m, { ...data.message, fileAt: Date.now() }]);
+    if (data.message?.id) sentIds.current.add(data.message.id);
+    setMsgs((m) => (m.some((x) => x.id === data.message.id) ? m : [...m, { ...data.message, fileAt: Date.now() }]));
   }
 
   return (
@@ -364,6 +387,7 @@ export function SupportChat({
               down.onScroll();
             }}
             className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4"
+            style={memory.hideStyle}
           >
             {msgs.length === 0 && (
               <div className="mx-auto mt-6 max-w-[260px] text-center">
@@ -377,7 +401,7 @@ export function SupportChat({
               </div>
             )}
             {msgs.map((m) => (
-              <div key={m.id} id={`sm-${m.id}`} className={`group relative flex items-end gap-1 ${m.mine ? "flex-row-reverse" : ""}`}>
+              <div key={m.id} id={`sm-${m.id}`} className={`${enterCls(m.id, Date.parse(m.createdAt) || 0, m.mine && (sentIds.current.has(m.id) || sendingRef.current) ? "send" : "pop")} group relative flex items-end gap-1 ${m.mine ? "flex-row-reverse" : ""}`}>
                 <div
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed shadow-sm ${
                     m.mine

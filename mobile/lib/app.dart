@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/notifications/message_notifier.dart';
 import 'core/storage/local_storage.dart';
 import 'core/update/update_overlay.dart';
 import 'core/theme/app_theme.dart';
@@ -73,6 +74,12 @@ class TayyorrApp extends StatelessWidget {
                   // login/parol (yoki Google, ro'yxatdan ötiş) bilan endigina kirdi — salomlaşiş animatsiyasi
                   if (state.status == AuthStatus.authenticated) {
                     _RootGate.pendingWelcome = _welcomeName(state);
+                    // çiqib turgan paytda kelgan öqilmaganlar — fonda kelgandek bildirişnoma
+                    // (ilova işga tuşganda emas — faqat kirgandan keyin)
+                    Future.delayed(
+                      const Duration(seconds: 2),
+                      MessageNotifier.instance.notifyUnreadAfterLogin,
+                    );
                   }
                   // chiqib, qayta kirganda bosh sahifadan boshlansin
                   if (state.status == AuthStatus.unauthenticated) {

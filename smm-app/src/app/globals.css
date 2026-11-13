@@ -438,3 +438,48 @@ html.dark .theme-thumb {
   86% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* ---- çat xabarlari animatsiyalari (chat-memory.ts) ----
+   chat-appear — çat oçilganda körinib turgan xabarlar (pastdan yuqoriga ketma-ket, JS kiçik keçikiş beradi);
+   chat-send   — özim yuborgan xabar: composerdan siqilgan holda çiqib, cözilib kötariladi, oşib ketib, joyiga
+                 «suyuq» tebranib tuşadi (Telegramdagidek);
+   chat-pop    — boşqalarning yangi xabari: yumşoq paydo bölish. */
+@keyframes chat-appear {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.chat-appear {
+  animation: chat-appear 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes chat-send {
+  0% { opacity: 0; transform: translateY(56px) scale(0.78, 0.42); }
+  14% { opacity: 1; }
+  36% { transform: translateY(-7px) scale(0.93, 1.1); }
+  54% { transform: translateY(2px) scale(1.06, 0.93); }
+  70% { transform: translateY(-1px) scale(0.98, 1.035); }
+  85% { transform: translateY(0) scale(1.012, 0.99); }
+  100% { opacity: 1; transform: none; }
+}
+.chat-send {
+  animation: chat-send 0.5s cubic-bezier(0.3, 0.75, 0.35, 1) both;
+  transform-origin: 100% 100%;
+}
+
+@keyframes chat-pop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.94); }
+  60% { opacity: 1; transform: translateY(-1px) scale(1.012); }
+  100% { opacity: 1; transform: none; }
+}
+.chat-pop {
+  animation: chat-pop 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: 0% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-appear,
+  .chat-send,
+  .chat-pop {
+    animation: none !important;
+  }
+}

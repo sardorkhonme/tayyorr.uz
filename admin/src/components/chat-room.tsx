@@ -25,6 +25,7 @@ import { flashMessage } from "@/lib/flash-message";
 import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
 import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
+import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
 
 interface ReplyPreview {
   id: string;
@@ -285,6 +286,24 @@ export function ChatRoom({
   const nearBottomRef = useRef(true);
   // «↓» tugmasi: yuqoriga aylantirilganda çiqadi, kelgan xabarlar sonini körsatadi
   const scrollDown = useScrollDown(scrollRef, messages, { keyOf: (m) => m.key ?? m.id, isMine: (m) => m.mine });
+  // qayta oçilganda — qoldirilgan joyda (xabar + masofa); birinçi marta — birinçi öqilmagan xabarda yoki pastda
+  const [firstUnreadId] = useState(
+    () => initialMessages.find((m) => !m.deleted && !m.mine && !m.readAt)?.id ?? null,
+  );
+  const memory = useChatMemory({
+    ref: scrollRef,
+    storeKey: asSupport ? `s:${conversationId}` : conversationId,
+    prefix: "msg-",
+    ready: true,
+    firstUnreadId,
+    onRestored: () => {
+      const el = scrollRef.current;
+      if (el) nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+      scrollDown.sync();
+    },
+  });
+  // yangi xabar: özim yuborgan — «suyuq» sakraş, boşqalarniki — yumşoq pop (dastlabkilar — animatsiyasiz)
+  const enterCls = useEnterAnim(memory.restored);
   const prevLenRef = useRef(initialMessages.filter((m) => !m.deleted).length);
   const sinceRef = useRef<number>(
     initialMessages.reduce((m, x) => Math.max(m, x.updatedAt || x.createdAt), 0),
@@ -439,12 +458,6 @@ export function ChatRoom({
     markRead();
   }, [markRead]);
 
-  // birinchi ochilganda pastga
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, []);
-
   // yangi xabar qo'shilgandagina pastga tushamiz (reaksiya/tahrir emas)
   useEffect(() => {
     const el = scrollRef.current;
@@ -453,6 +466,7 @@ export function ChatRoom({
     const lastMine = messages[messages.length - 1]?.mine;
     prevLenRef.current = messages.length;
     if (grew && (nearBottomRef.current || lastMine)) {
+      memory.release();
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }
   }, [messages]);
@@ -899,6 +913,7 @@ export function ChatRoom({
             scrollDown.onScroll();
           }}
           className="h-full overflow-y-auto"
+          style={memory.hideStyle}
         >
           <div className="mx-auto max-w-3xl space-y-2 px-3 pb-36 pt-4 sm:px-4">
             {messages.length === 0 && (
@@ -911,7 +926,8 @@ export function ChatRoom({
                 return (
                   <div
                     key={m.key ?? m.id}
-                    className={`blur-in flex ${m.mine ? "justify-end" : "justify-start"}`}
+                    id={`msg-${m.id}`}
+                    className={`flex ${enterCls(m.key ?? m.id, m.createdAt, "pop")} ${m.mine ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-[86%] overflow-hidden rounded-2xl text-sm ${
@@ -963,7 +979,7 @@ export function ChatRoom({
                 <div
                   key={m.key ?? m.id}
                   id={`msg-${m.id}`}
-                  className={`blur-in group flex rounded-2xl transition ${
+                  className={`${enterCls(m.key ?? m.id, m.createdAt, (m.key ?? m.id).startsWith("tmp-") ? "send" : "pop")} group flex rounded-2xl transition ${
                     m.mine ? "justify-end" : "justify-start"
                   }`}
                 >

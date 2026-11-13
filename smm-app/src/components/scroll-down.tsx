@@ -67,7 +67,17 @@ export function useScrollDown<T>(
   /** Foydalanuvçi hozir pastdan uzoqdami (avtomatik pastga tuşiş kerakmi — shu bilan tekşiriladi). */
   const isAway = useCallback(() => awayRef.current, []);
 
-  return { away, unread, onScroll, scrollDown, isAway };
+  /** Joy dastur tomonidan tiklanganda (çat qoldirilgan joyda oçildi) — tugma holatini hozirgi joyga moslaydi. */
+  const sync = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    lastTop.current = el.scrollTop;
+    const far = el.scrollHeight - el.scrollTop - el.clientHeight > threshold;
+    setAwayBoth(far);
+    if (!far) setUnread(0);
+  }, [ref, threshold]);
+
+  return { away, unread, onScroll, scrollDown, isAway, sync };
 }
 
 /** Suzuvçi tugmalar ustuni (pastdan yuqoriga, 8px oraliq) — bir-birini heç qaçon yopmaydi. */

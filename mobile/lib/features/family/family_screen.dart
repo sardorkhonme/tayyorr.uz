@@ -30,6 +30,7 @@ import '../../widgets/web_ui.dart';
 import '../messages/data/message_model.dart';
 import '../messages/presentation/chat_composer.dart';
 import '../messages/presentation/chat_media.dart';
+import '../messages/presentation/chat_position.dart';
 import '../messages/presentation/chat_widgets.dart';
 import '../auth/bloc/auth_bloc.dart';
 import '../public_profile/presentation/public_profile_screen.dart';
@@ -48,7 +49,8 @@ import '../../widgets/app_header_sliver.dart' show kHeaderGap, kHeaderSide;
 class FamilyScreen extends StatefulWidget {
   const FamilyScreen({super.key, this.openMention = false});
 
-  /// Röyxatdagi «Sizni belgilaşdi» qatoridan oçilganda — darhol birinçi öqilmagan belgilaşga.
+  /// Röyxatdagi «@N» belgisi bosilganda — darhol birinçi öqilmagan belgilaşga
+  /// (aks holda — oxirgi turgan joydan oçiladi).
   final bool openMention;
 
   /// Ochiq bo'lsa — guruh bildirishnomalari ko'rsatilmaydi.
@@ -59,7 +61,7 @@ class FamilyScreen extends StatefulWidget {
 }
 
 class _FamilyScreenState extends State<FamilyScreen>
-    with WidgetsBindingObserver, RouteSettleMixin {
+    with WidgetsBindingObserver, RouteSettleMixin, TickerProviderStateMixin {
   final _repo = FamilyRepository.instance;
   final _live = RealtimeService.family();
   StreamSubscription<RealtimeEvent>? _sub;
@@ -85,8 +87,25 @@ class _FamilyScreenState extends State<FamilyScreen>
   final List<String> _mentionQueue = [];
   final Set<String> _mentionSeen = {};
 
-  /// Oçilişda birinçi belgilaşga sakraş kerakmi (yuklanib bölguncha kutadi).
+  /// Oçilişda birinçi belgilaşga sakraş kerakmi (yuklanib bölguncha kutadi) — faqat «@N» bosilganda.
   late bool _pendingMentionJump = widget.openMention;
+
+  /// Oxirgi turgan joy (qayta oçilganda aynan şu joydan).
+  late final ChatScrollMemory _memory;
+
+  /// Oçilişdagi xabarlar paydo bölişi (bir marta).
+  late final _reveal = ChatRevealSequence(this);
+
+  /// Röyxat kerakli joyga qöyilgan — ungaça körinmaydi (sakraş körinmasin).
+  bool _positioned = false;
+  bool _restoreStarted = false;
+  Timer? _revealSafety;
+
+  /// Serverdagi «oxirgi öqilgan» vaqt — birinçi öqilmagan xabarni topiş uçun.
+  int? _lastReadAt;
+
+  /// Birinçi serverdan yuklaş tugadi (muvaffaqiyatli yoki yöq).
+  final _loadedOnce = Completer<void>();
 
   /// Yuqorida turganda kelgan yangi xabarlar — «↓» tugmasidagi son.
   int _unseen = 0;
@@ -148,6 +167,18 @@ class _FamilyScreenState extends State<FamilyScreen>
     _live.connected.addListener(_onConnected);
     _live.start();
     _uid = context.read<AuthBloc>().state.user?.id;
+    _memory =
+        ChatScrollMemory(
+          chatKey: 'family:${_uid ?? ''}',
+          controller: _scroll,
+          listKey: _listKey,
+        )..bind(
+          items: () => [
+            for (final m in _messages)
+              (key: m.stableKey, id: m.isLocal ? null : m.id),
+          ],
+          keyOf: (k) => _keys[k],
+        );
     _enter();
     _startOnline();
     // @ taklifi darhol çiqsin: boşlang'iç röyxat oldindan (keşda bölsa — fonda yangilanadi)
@@ -199,6 +230,9 @@ class _FamilyScreenState extends State<FamilyScreen>
 
   @override
   void dispose() {
+    _memory.dispose();
+    _revealSafety?.cancel();
+    _reveal.dispose();
     _saveCache();
     _byTimer?.cancel();
     FamilyScreen.isOpen = false;
@@ -220,6 +254,11 @@ class _FamilyScreenState extends State<FamilyScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState s) {
+    if (s == AppLifecycleState.paused || s == AppLifecycleState.inactive) {
+      // ilova fonga ketdi / yopildi — joy darhol saqlanadi
+      if (_positioned) _memory.capture();
+      _memory.flush();
+    }
     if (s == AppLifecycleState.paused) {
       _saveCache();
       _live.stop();
@@ -333,6 +372,7 @@ class _FamilyScreenState extends State<FamilyScreen>
         }
         // ehtiyot: mening xabarimga javob ham belgilaş (server ham uni `mentions` ga qöşadi)
         final lastRead = (r['lastReadAt'] as num?)?.toInt();
+        _lastReadAt ??= lastRead;
         if (lastRead != null) {
           for (final m in _messages) {
             if (m.sendAtMs > lastRead &&
@@ -349,23 +389,89 @@ class _FamilyScreenState extends State<FamilyScreen>
       _armNext((r['nextAt'] as num?)?.toInt());
       if (initial) _scheduleRead();
       _saveCache();
+      if (!_loadedOnce.isCompleted) _loadedOnce.complete();
       if (_pendingMentionJump) {
         _pendingMentionJump = false;
         if (_mentionQueue.isNotEmpty) unawaited(_jumpToFirstMention());
       }
     } on ApiException catch (e) {
+      if (!_loadedOnce.isCompleted) _loadedOnce.complete();
       if (!mounted) return;
       setState(() {
         _loading = false;
         _error = friendlyError(e);
       });
     } catch (_) {
+      if (!_loadedOnce.isCompleted) _loadedOnce.complete();
       if (!mounted) return;
       setState(() {
         _loading = false;
         _error = "Yuklab bölmadi — internetni tekşiring";
       });
     }
+  }
+
+  /// Oçilganda: saqlangan joyga (topilmasa eskiroq sahifalarni yuklab), bölmasa birinçi öqilmaganga,
+  /// u ham bölmasa — pastga. Keyin xabarlar ketma-ket paydo böladi. Belgilaş / qadalgan / javobga
+  /// özi sakramaydi — faqat «@» bosilganda.
+  Future<void> _restore() async {
+    _revealSafety = Timer(const Duration(milliseconds: 1800), _startReveal);
+    if (widget.openMention) {
+      // «@N» bosilgan — birinçi belgilaşga (_load işlaydi), joy tiklanmaydi
+      if (mounted) _startReveal();
+      return;
+    }
+    try {
+      final s = _memory.saved;
+      final needServer =
+          s == null ||
+          (!s.bottom && s.id != null && !_messages.any((m) => m.id == s.id));
+      if (needServer) {
+        await _loadedOnce.future.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () {},
+        );
+      }
+      if (!mounted) return;
+      await _memory.restore(
+        order: () => [for (final m in _messages) m.stableKey],
+        keyForId: (id) {
+          for (final m in _messages) {
+            if (m.id == id) return m.stableKey;
+          }
+          return null;
+        },
+        firstUnreadKey: () {
+          final at = _lastReadAt;
+          if (at == null) return null;
+          for (final m in _messages) {
+            if (!m.isLocal && !_isMine(m) && m.sendAtMs > at) {
+              return m.stableKey;
+            }
+          }
+          return null;
+        },
+        loadOlder: () async {
+          while (_loadingOlder && mounted) {
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+          }
+          if (!mounted || !_hasMore) return false;
+          await _loadOlder();
+          return true;
+        },
+      );
+    } catch (_) {}
+    if (mounted) _startReveal();
+  }
+
+  void _startReveal() {
+    _revealSafety?.cancel();
+    if (_positioned || !mounted) return;
+    final slots = _memory.visibleSlots([
+      for (final m in _messages) m.stableKey,
+    ]);
+    setState(() => _positioned = true);
+    _reveal.start(slots);
   }
 
   /// Uzilishdan / fondan qaytganda — o'zgarganlar.
@@ -479,7 +585,7 @@ class _FamilyScreenState extends State<FamilyScreen>
       }
       if (e == 'new' && isNew && !mine && !nearBottom) _unseen++;
     });
-    if (e == 'new' && isNew) {
+    if (e == 'new' && isNew && _positioned) {
       if (nearBottom || mine) {
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
       }
@@ -1827,52 +1933,71 @@ class _FamilyScreenState extends State<FamilyScreen>
       );
     }
     final count = _messages.length + (_hasMore ? 1 : 0);
+    if (!_restoreStarted) {
+      _restoreStarted = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _restore());
+    }
     return Stack(
       children: [
-        ListView.builder(
-          key: _listKey,
-          controller: _scroll,
-          reverse: true,
-          padding: const EdgeInsets.fromLTRB(10, 12, 12, 12),
-          itemCount: count,
-          itemBuilder: (context, i) {
-            if (i >= _messages.length) {
-              // eskilari yuklanmoqda
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: _SkelRow(widthFraction: 0.5),
-              );
-            }
-            final idx = _messages.length - 1 - i;
-            final m = _messages[idx];
-            final mine = _isMine(m);
-            final f = _flags(idx);
-            final k = m.stableKey;
-            return Column(
-              key: _keyFor(k),
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (f.newDay) _DayChip(date: m.sendAt),
-                ChatAppear(
-                  animate: _fresh.contains(k),
-                  fromRight: mine,
-                  child: SwipeToReply(
-                    enabled: !m.isLocal && _blocked == null,
-                    onReply: () => _setReply(m),
-                    child: FlashHighlight(
-                      flashKey: _flashId == k ? _flashTick : null,
-                      child: _bubble(
-                        m,
-                        mine,
-                        f,
-                        bubbleKey: _bubbleKeys.putIfAbsent(k, GlobalKey.new),
+        NotificationListener<ScrollNotification>(
+          onNotification: _memory.onNotification,
+          child: Opacity(
+            opacity: _positioned ? 1 : 0,
+            child: ListView.builder(
+              key: _listKey,
+              controller: _scroll,
+              reverse: true,
+              padding: const EdgeInsets.fromLTRB(10, 12, 12, 12),
+              itemCount: count,
+              itemBuilder: (context, i) {
+                if (i >= _messages.length) {
+                  // eskilari yuklanmoqda
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: _SkelRow(widthFraction: 0.5),
+                  );
+                }
+                final idx = _messages.length - 1 - i;
+                final m = _messages[idx];
+                final mine = _isMine(m);
+                final f = _flags(idx);
+                final k = m.stableKey;
+                return Column(
+                  key: _keyFor(k),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (f.newDay) _DayChip(date: m.sendAt),
+                    ChatReveal(
+                      animation: _reveal.of(k),
+                      child: ChatAppear(
+                        animate: _fresh.contains(k),
+                        fromRight: mine,
+                        fly:
+                            m.clientId != null &&
+                            _myClientIds.contains(m.clientId),
+                        child: SwipeToReply(
+                          enabled: !m.isLocal && _blocked == null,
+                          onReply: () => _setReply(m),
+                          child: FlashHighlight(
+                            flashKey: _flashId == k ? _flashTick : null,
+                            child: _bubble(
+                              m,
+                              mine,
+                              f,
+                              bubbleKey: _bubbleKeys.putIfAbsent(
+                                k,
+                                GlobalKey.new,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            );
-          },
+                  ],
+                );
+              },
+            ),
+          ),
         ),
         Positioned(
           right: 14,

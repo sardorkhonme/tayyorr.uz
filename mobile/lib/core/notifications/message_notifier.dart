@@ -8,7 +8,10 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../app.dart';
 import '../../features/family/family_entry.dart';
+import '../../features/family/family_repository.dart';
+import '../../features/family/family_screen.dart';
 import '../../features/messages/data/message_model.dart';
+import '../../features/messages/data/messages_repository.dart';
 import '../../features/messages/presentation/chat_screen.dart';
 
 /// Yangi xabarlar uchun bildirishnoma va "tin" ovozi.
@@ -49,7 +52,9 @@ class MessageNotifier {
         onDidReceiveNotificationResponse: (r) => _openFromPayload(r.payload),
       );
       await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.createNotificationChannel(_channel);
       _ready = true;
 
@@ -57,7 +62,10 @@ class MessageNotifier {
       final launch = await _plugin.getNotificationAppLaunchDetails();
       if (launch?.didNotificationLaunchApp ?? false) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          Future.delayed(const Duration(seconds: 2), () => _openFromPayload(launch!.notificationResponse?.payload));
+          Future.delayed(
+            const Duration(seconds: 2),
+            () => _openFromPayload(launch!.notificationResponse?.payload),
+          );
         });
       }
     } catch (e) {
@@ -71,7 +79,9 @@ class MessageNotifier {
     await init();
     try {
       final r = await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.areNotificationsEnabled();
       return r ?? true;
     } catch (_) {
@@ -85,7 +95,9 @@ class MessageNotifier {
     await init();
     try {
       await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.requestNotificationsPermission();
     } catch (_) {}
   }
@@ -146,7 +158,9 @@ class MessageNotifier {
     if (kIsWeb) return;
     await init();
     if (!_ready) return;
-    final body = (c.lastMessageBody ?? '').trim().isEmpty ? '📎 Fayl' : c.lastMessageBody!.trim();
+    final body = (c.lastMessageBody ?? '').trim().isEmpty
+        ? '📎 Fayl'
+        : c.lastMessageBody!.trim();
     final title = c.unread > 1 ? '${c.other.name} (${c.unread})' : c.other.name;
     try {
       await _plugin.show(
@@ -162,6 +176,66 @@ class MessageNotifier {
           'image': c.other.image,
           'support': c.other.isSupport,
         }),
+      );
+    } catch (e) {
+      debugPrint('bildirişnoma körsatilmadi: $e');
+    }
+  }
+
+  /// Qayta kirgandan keyin (çiqib-kirganda): öqilmagan xabarlar — fonda kelgandek tizim bildirişnomasi
+  /// (suhbatlar, support, Family). Ruxsat bölmasa — heç narsa; tizimda allaqaçon turgani
+  /// (push körsatgan) — takrorlanmaydi.
+  Future<void> notifyUnreadAfterLogin() async {
+    if (kIsWeb) return;
+    if (!await isPermissionGranted()) return;
+    if (!_ready) return;
+    final ids = <int>{};
+    final tags = <String>{};
+    var familyShown = false;
+    try {
+      for (final a in await _plugin.getActiveNotifications()) {
+        if (a.id != null) ids.add(a.id!);
+        final t = a.tag;
+        if (t != null) tags.add(t);
+        if ((t ?? '').startsWith('family') ||
+            (a.payload ?? '').contains('"family":true')) {
+          familyShown = true;
+        }
+      }
+    } catch (_) {}
+    try {
+      final list = await MessagesRepository().fetchConversations();
+      for (final c in list) {
+        if (c.unread <= 0 ||
+            c.lastMessageMine == true ||
+            activeConversationId == c.id ||
+            ids.contains(c.id.hashCode & 0x7fffffff) ||
+            tags.contains(c.id)) {
+          continue;
+        }
+        await showMessage(c);
+      }
+    } catch (_) {}
+    try {
+      final fs = FamilySummary.instance;
+      await fs.refresh(force: true);
+      final v = fs.value.value;
+      if (familyShown ||
+          FamilyScreen.isOpen ||
+          (v.unread <= 0 && v.mentions <= 0)) {
+        return;
+      }
+      final body = v.mentions > 0
+          ? (v.mentions == 1
+                ? 'Sizni belgilaşdi'
+                : 'Sizni belgilaşdi · ${v.mentions} ta')
+          : '${v.unread >= 99 ? '99+' : v.unread} ta yangi xabar';
+      await _plugin.show(
+        id: 'family-unread'.hashCode & 0x7fffffff,
+        title: kFamilyName,
+        body: body,
+        notificationDetails: _details(body, scope: 'plus'),
+        payload: jsonEncode({'family': true}),
       );
     } catch (e) {
       debugPrint('bildirişnoma körsatilmadi: $e');
@@ -210,7 +284,11 @@ class MessageNotifier {
   }
 
   /// «Tayyorr's Family» guruhidan (belgilash, javob, «hammaga bildirish», qadash) — ilova ochiq paytda.
-  Future<void> showFamily({required String messageId, required String title, required String body}) async {
+  Future<void> showFamily({
+    required String messageId,
+    required String title,
+    required String body,
+  }) async {
     if (kIsWeb) return;
     await init();
     if (!_ready) return;
@@ -235,21 +313,25 @@ class MessageNotifier {
     }
     final id = data['conversationId'] as String?;
     if (id == null) return;
-    _openFromPayload(jsonEncode({
-      'id': id,
-      'scope': _scope(data['scope']),
-      'otherId': data['otherId'] ?? '',
-      'name': data['name'] ?? '',
-      'login': data['login'],
-      'image': data['image'],
-      'support': data['support'] == '1',
-    }));
+    _openFromPayload(
+      jsonEncode({
+        'id': id,
+        'scope': _scope(data['scope']),
+        'otherId': data['otherId'] ?? '',
+        'name': data['name'] ?? '',
+        'login': data['login'],
+        'image': data['image'],
+        'support': data['support'] == '1',
+      }),
+    );
   }
 
   /// Xizmat: 'uz' (Tayyorr.uz), 'plus' (tayyorr+), 'smm' — bildirishnoma belgisi va qaysi bo'limda ochish.
-  static String _scope(Object? v) => v == 'family' ? 'plus' : (v == 'plus' || v == 'smm' ? v as String : 'uz');
+  static String _scope(Object? v) =>
+      v == 'family' ? 'plus' : (v == 'plus' || v == 'smm' ? v as String : 'uz');
 
-  NotificationDetails _details(String body, {String scope = 'uz'}) => NotificationDetails(
+  NotificationDetails _details(String body, {String scope = 'uz'}) =>
+      NotificationDetails(
         android: AndroidNotificationDetails(
           // har xizmatning o'z belgisi (katta ikonka)
           largeIcon: DrawableResourceAndroidBitmap('notif_$scope'),
@@ -275,19 +357,25 @@ class MessageNotifier {
       }
       final id = d['id'] as String;
       if (activeConversationId == id) return;
-      navigatorKey.currentState?.push(MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          conversationId: id,
-          scope: d['scope'] as String? ?? 'uz',
-          other: ChatOtherUser(
-            id: d['otherId'] as String,
-            name: d['name'] as String? ?? '',
-            login: (d['login'] as String?)?.isEmpty ?? true ? null : d['login'] as String?,
-            image: (d['image'] as String?)?.isEmpty ?? true ? null : d['image'] as String?,
-            isSupport: d['support'] == true,
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            conversationId: id,
+            scope: d['scope'] as String? ?? 'uz',
+            other: ChatOtherUser(
+              id: d['otherId'] as String,
+              name: d['name'] as String? ?? '',
+              login: (d['login'] as String?)?.isEmpty ?? true
+                  ? null
+                  : d['login'] as String?,
+              image: (d['image'] as String?)?.isEmpty ?? true
+                  ? null
+                  : d['image'] as String?,
+              isSupport: d['support'] == true,
+            ),
           ),
         ),
-      ));
+      );
     } catch (_) {}
   }
 }

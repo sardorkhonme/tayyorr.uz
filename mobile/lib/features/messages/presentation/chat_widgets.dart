@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
 import 'package:tayyorr_app/core/ui/ticons.dart';
 
@@ -480,15 +481,20 @@ class _SwipeToReplyState extends State<SwipeToReply>
 /// Yangi xabar paydo bölişi: 220ms ease-out — biroz pastdan kötarilib, şaffofdan çiqadi. Faqat bir marta
 /// ([animate] true bölib qurilganda) — keyingi qayta qurilişlarda (server javobi bilan almaşganda)
 /// qayta öynamaydi. Daraxt tuzilmasi özgarmaydi (pufakça holati / videolar qayta yaratilmaydi).
+///
+/// [fly] — öz yuborgan xabarim (Telegramdagidek): yoziş maydonidan «uçib» çiqadi — avval biroz
+/// ezilgan va kiçik, harakatlanganda çözilib, joyidan sal öşib ketib, prujinadek (rezinadek) tinçlanadi.
 class ChatAppear extends StatefulWidget {
   const ChatAppear({
     super.key,
     required this.animate,
     required this.child,
     this.fromRight = false,
+    this.fly = false,
   });
   final bool animate;
   final bool fromRight;
+  final bool fly;
   final Widget child;
 
   @override
@@ -499,19 +505,42 @@ class _ChatAppearState extends State<ChatAppear>
     with SingleTickerProviderStateMixin {
   AnimationController? _c;
   late final Animation<double> _a;
+  bool _fly = false;
+
+  // ζ≈0.55 — ~12% öşib ketadi, ~0.5s da tinçlanadi
+  static const _spring = SpringDescription(
+    mass: 1,
+    stiffness: 300,
+    damping: 19,
+  );
 
   @override
   void initState() {
     super.initState();
-    if (widget.animate) {
-      final c = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 220),
-      );
+    if (!widget.animate) return;
+    if (widget.fly) {
+      _fly = true;
+      final c = AnimationController.unbounded(vsync: this);
       _c = c;
-      _a = CurvedAnimation(parent: c, curve: Curves.easeOut);
-      c.forward();
+      _a = c;
+      c.animateWith(
+        SpringSimulation(
+          _spring,
+          0,
+          1,
+          0,
+          tolerance: const Tolerance(distance: 0.003, velocity: 0.05),
+        ),
+      );
+      return;
     }
+    final c = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    _c = c;
+    _a = CurvedAnimation(parent: c, curve: Curves.easeOut);
+    c.forward();
   }
 
   @override
@@ -523,7 +552,36 @@ class _ChatAppearState extends State<ChatAppear>
   @override
   Widget build(BuildContext context) {
     // animatsiyasiz yaratilgan — heç qanday qöşimça qatlam yöq (tarixdagi xabarlar arzon)
-    if (_c == null) return widget.child;
+    final c = _c;
+    if (c == null) return widget.child;
+    if (_fly) {
+      return AnimatedBuilder(
+        animation: c,
+        child: widget.child,
+        builder: (context, child) {
+          final p = c.value;
+          final done = c.status != AnimationStatus.forward;
+          // tezlik bilan çöziladi (yuqoriga uçganda böyiga), qaytişda — ezilib kengayadi
+          final v = done ? 0.0 : (c.velocity / 12).clamp(-1.0, 1.0);
+          final squash = (1 - p).clamp(0.0, 1.0) * 0.2;
+          final grow = 0.84 + 0.16 * p;
+          final stretch = 0.16 * v;
+          final sy = grow * (1 - squash) * (1 + stretch);
+          final sx = grow * (1 + squash * 0.55) * (1 - stretch * 0.5);
+          return Opacity(
+            opacity: (p / 0.25).clamp(0.0, 1.0),
+            child: Transform(
+              alignment: widget.fromRight
+                  ? Alignment.bottomRight
+                  : Alignment.bottomLeft,
+              transform: Matrix4.diagonal3Values(sx, sy, 1)
+                ..setTranslationRaw(0, 44 * (1 - p), 0),
+              child: child,
+            ),
+          );
+        },
+      );
+    }
     return FadeTransition(
       opacity: _a,
       child: AnimatedBuilder(

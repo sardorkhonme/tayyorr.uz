@@ -27,6 +27,7 @@ import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import 'chat_composer.dart';
 import 'chat_media.dart';
+import 'chat_position.dart';
 import 'chat_widgets.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../../public_profile/presentation/public_profile_screen.dart';
@@ -281,9 +282,25 @@ class _ChatView extends StatefulWidget {
   State<_ChatView> createState() => _ChatViewState();
 }
 
-class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
+class _ChatViewState extends State<_ChatView>
+    with RouteSettleMixin, TickerProviderStateMixin, WidgetsBindingObserver {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  final _listKey = GlobalKey();
+
+  /// Oxirgi turgan joy (qayta oçilganda aynan şu joydan).
+  late final ChatScrollMemory _memory;
+
+  /// Oçilişdagi xabarlar paydo bölişi (bir marta).
+  late final _reveal = ChatRevealSequence(this);
+
+  /// Röyxat kerakli joyga qöyilgan — ungaça körinmaydi (sakraş körinmasin).
+  bool _positioned = false;
+  bool _restoreStarted = false;
+  Timer? _revealSafety;
+
+  /// Şu ekrandan yuborilgan xabarlar — «uçib» çiqadi.
+  final _flyKeys = <String>{};
   // tanlangan / yozib olingan, hali yuborilmagan fayl (ko'rib chiqish uchun)
   PendingAttachment? _pending;
   CancelToken? _uploadToken;
@@ -378,6 +395,19 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
     MessageNotifier.instance.activeConversationId = _conversationId;
     MessageNotifier.instance.clearFor(_conversationId);
     _scrollController.addListener(_onScroll);
+    _memory =
+        ChatScrollMemory(
+          chatKey: _conversationId,
+          controller: _scrollController,
+          listKey: _listKey,
+        )..bind(
+          items: () => [
+            for (final m in _msgs)
+              (key: m.stableKey, id: m.isLocal ? null : m.id),
+          ],
+          keyOf: (k) => _itemKeys[k],
+        );
+    WidgetsBinding.instance.addObserver(this);
     _contractTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       final n = context.read<ChatCubit>().state.activeContracts.length;
       if (n > 1 && mounted) {
@@ -391,10 +421,58 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
     if (MessageNotifier.instance.activeConversationId == _conversationId) {
       MessageNotifier.instance.activeConversationId = null;
     }
+    WidgetsBinding.instance.removeObserver(this);
+    _memory.dispose();
+    _revealSafety?.cancel();
+    _reveal.dispose();
     _controller.dispose();
     _scrollController.dispose();
     _contractTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState s) {
+    // ilova fonga ketdi / yopildi — joy darhol saqlanadi
+    if (s == AppLifecycleState.paused || s == AppLifecycleState.inactive) {
+      if (_positioned) _memory.capture();
+      _memory.flush();
+    }
+  }
+
+  List<ChatMessageModel> get _msgs => context.read<ChatCubit>().state.messages;
+
+  /// Oçilganda: saqlangan joyga (yoki birinçi öqilmaganga, bölmasa — pastga), keyin paydo bölish.
+  Future<void> _restore() async {
+    _revealSafety = Timer(const Duration(milliseconds: 1500), _startReveal);
+    try {
+      await _memory.restore(
+        order: () => [for (final m in _msgs) m.stableKey],
+        keyForId: (id) {
+          for (final m in _msgs) {
+            if (m.id == id) return m.stableKey;
+          }
+          return null;
+        },
+        firstUnreadKey: () {
+          for (final m in _msgs) {
+            if (!m.mine && !m.system && !m.isLocal && m.readAt == null) {
+              return m.stableKey;
+            }
+          }
+          return null;
+        },
+      );
+    } catch (_) {}
+    if (mounted) _startReveal();
+  }
+
+  void _startReveal() {
+    _revealSafety?.cancel();
+    if (_positioned || !mounted) return;
+    final slots = _memory.visibleSlots([for (final m in _msgs) m.stableKey]);
+    setState(() => _positioned = true);
+    _reveal.start(slots);
   }
 
   void _scrollToBottom() {
@@ -433,6 +511,7 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
       );
     }
     _markFresh(clientId);
+    _flyKeys.add(clientId);
     _known.add(clientId);
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     await cubit.sendOptimistic(
@@ -545,18 +624,21 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
               final wasSeeded = _seeded;
               if (_seeded && added.length <= 6) added.forEach(_markFresh);
               if (state.status == ChatStatus.success) _seeded = true;
+              // oçiliş joyi hali tiklanmagan — saqlangan joyni buzmaymiz
+              if (!_positioned) return;
               final nearBottom =
                   !_scrollController.hasClients ||
                   _scrollController.offset < 300;
-              final mineLast =
-                  state.messages.isNotEmpty && state.messages.last.mine;
-              if (nearBottom || mineLast) {
+              final keys = added.toSet();
+              final mineNew = state.messages.any(
+                (m) => m.mine && keys.contains(m.stableKey),
+              );
+              if (nearBottom || mineNew) {
                 if (_unseen > 0) setState(() => _unseen = 0);
                 WidgetsBinding.instance.addPostFrameCallback(
                   (_) => _scrollToBottom(),
                 );
               } else if (wasSeeded && added.isNotEmpty) {
-                final keys = added.toSet();
                 final incoming = state.messages
                     .where((m) => keys.contains(m.stableKey) && !m.mine)
                     .length;
@@ -661,53 +743,77 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
                           // reverse — Telegramdagidek ro'yxat pastdan boshlanadi:
                           // rasm/video yuklanib balandlik o'zgarsa ham oxirgi
                           // xabar doim ko'rinib turadi.
+                          if (!_restoreStarted) {
+                            _restoreStarted = true;
+                            WidgetsBinding.instance.addPostFrameCallback(
+                              (_) => _restore(),
+                            );
+                          }
                           return Stack(
                             children: [
-                              ListView.builder(
-                                controller: _scrollController,
-                                reverse: true,
-                                padding: const EdgeInsets.fromLTRB(
-                                  14,
-                                  12,
-                                  14,
-                                  12,
-                                ),
-                                itemCount: state.messages.length,
-                                itemBuilder: (context, i) {
-                                  final m = state
-                                      .messages[state.messages.length - 1 - i];
-                                  final k = m.stableKey;
-                                  return KeyedSubtree(
-                                    key: _keyFor(k),
-                                    // chapga surib — javob berish (Telegramdagidek)
-                                    child: ChatAppear(
-                                      animate: _fresh.contains(k),
-                                      fromRight: m.mine,
-                                      child: SwipeToReply(
-                                        enabled:
-                                            !m.deleted &&
-                                            !m.system &&
-                                            !m.isLocal,
-                                        onReply: () => context
-                                            .read<ChatCubit>()
-                                            .setReplyTo(m),
-                                        child: FlashHighlight(
-                                          flashKey: _flashId == k
-                                              ? _flashTick
-                                              : null,
-                                          child: _MessageBubble(
-                                            message: m,
-                                            pinnedOrderId:
-                                                state.activeContracts.isNotEmpty
-                                                ? state.activeContracts.first.id
-                                                : null,
-                                            onReplyTap: _jumpTo,
+                              NotificationListener<ScrollNotification>(
+                                onNotification: _memory.onNotification,
+                                child: Opacity(
+                                  opacity: _positioned ? 1 : 0,
+                                  child: ListView.builder(
+                                    key: _listKey,
+                                    controller: _scrollController,
+                                    reverse: true,
+                                    padding: const EdgeInsets.fromLTRB(
+                                      14,
+                                      12,
+                                      14,
+                                      12,
+                                    ),
+                                    itemCount: state.messages.length,
+                                    itemBuilder: (context, i) {
+                                      final m =
+                                          state.messages[state.messages.length -
+                                              1 -
+                                              i];
+                                      final k = m.stableKey;
+                                      return KeyedSubtree(
+                                        key: _keyFor(k),
+                                        // chapga surib — javob berish (Telegramdagidek)
+                                        child: ChatReveal(
+                                          animation: _reveal.of(k),
+                                          child: ChatAppear(
+                                            animate: _fresh.contains(k),
+                                            fromRight: m.mine,
+                                            fly: _flyKeys.contains(k),
+                                            child: SwipeToReply(
+                                              enabled:
+                                                  !m.deleted &&
+                                                  !m.system &&
+                                                  !m.isLocal,
+                                              onReply: () => context
+                                                  .read<ChatCubit>()
+                                                  .setReplyTo(m),
+                                              child: FlashHighlight(
+                                                flashKey: _flashId == k
+                                                    ? _flashTick
+                                                    : null,
+                                                child: _MessageBubble(
+                                                  message: m,
+                                                  pinnedOrderId:
+                                                      state
+                                                          .activeContracts
+                                                          .isNotEmpty
+                                                      ? state
+                                                            .activeContracts
+                                                            .first
+                                                            .id
+                                                      : null,
+                                                  onReplyTap: _jumpTo,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  );
-                                },
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
                               // yuqoriga chiqilganda — pastga tushish tugmasi
                               Positioned(

@@ -13,6 +13,7 @@ import { shortDate } from "@/lib/date";
 import { prepareFamilyFile, type PreparedChatFile } from "@/lib/upload-client";
 import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
+import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
 
 /** Ilova bilan bir xil reaksiyalar (lib/family.ts → FAMILY_EMOJIS). */
 const EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
@@ -197,6 +198,25 @@ export function FamilyChat() {
     if (stickRef.current) el.scrollTop = el.scrollHeight;
   }, [msgs]);
 
+  // qayta oçilganda — qoldirilgan joyda (langar eskiroq sahifada bölsa — yuklab topiladi), aks holda pastda
+  const loadOlderRef = useRef<() => Promise<boolean>>(async () => false);
+  const memory = useChatMemory({
+    ref: scrollRef,
+    storeKey: "family",
+    prefix: "fm-",
+    ready: !loading,
+    loadMore: () => loadOlderRef.current(),
+    onRestored: () => {
+      const el = scrollRef.current;
+      if (el) stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+      down.sync();
+    },
+  });
+  // yangi xabar: özim yuborgan — «suyuq» sakraş, boşqalarniki — yumşoq pop
+  const enterCls = useEnterAnim(memory.restored);
+  const sentIds = useRef(new Set<string>());
+  const sendingRef = useRef(false);
+
   function onScroll() {
     const el = scrollRef.current;
     if (!el) return;
@@ -205,9 +225,9 @@ export function FamilyChat() {
     if (el.scrollTop < 60 && hasMore && !loadingOld) void loadOlder();
   }
 
-  async function loadOlder() {
+  async function loadOlder(): Promise<boolean> {
     const first = msgs[0];
-    if (!first) return;
+    if (!first) return false;
     setLoadingOld(true);
     try {
       const res = await fetch(`/api/admin/family/messages?before=${first.sendAt}`, { cache: "no-store" });
@@ -217,11 +237,16 @@ export function FamilyChat() {
         if (el) keepOffset.current = el.scrollHeight - el.scrollTop;
         setHasMore(d.hasMore);
         absorb(d.messages);
+        return !!d.hasMore;
       }
+      return false;
+    } catch {
+      return false;
     } finally {
       setLoadingOld(false);
     }
   }
+  loadOlderRef.current = loadOlder;
 
   function jumpTo(id: string) {
     const el = document.getElementById(`fm-${id}`);
@@ -254,6 +279,7 @@ export function FamilyChat() {
     const body = text.trim();
     if ((!body && !attachment) || sending || uploading) return;
     setSending(true);
+    sendingRef.current = true;
     setErr(null);
     try {
       const res = await fetch("/api/admin/family/messages", {
@@ -269,6 +295,8 @@ export function FamilyChat() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Yuborilmadi");
       stickRef.current = true;
+      memory.release();
+      if (d.message?.id) sentIds.current.add(d.message.id);
       absorb([d.message]);
       setText("");
       setReplyTo(null);
@@ -278,6 +306,7 @@ export function FamilyChat() {
       setErr(e instanceof Error ? e.message : "Yuborilmadi");
     } finally {
       setSending(false);
+      sendingRef.current = false;
     }
   }
 
@@ -357,7 +386,7 @@ export function FamilyChat() {
 
       {/* ---- xabarlar ---- */}
       <div className="relative flex min-h-0 flex-1 flex-col">
-      <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto bg-[#0b0b12]/40 px-2 py-3 sm:px-4">
+      <div ref={scrollRef} onScroll={onScroll} style={memory.hideStyle} className="min-h-0 flex-1 overflow-y-auto bg-[#0b0b12]/40 px-2 py-3 sm:px-4">
         {loading && <p className="mt-10 text-center text-sm text-zinc-500">Yuklanmoqda…</p>}
         {!loading && msgs.length === 0 && <p className="mt-10 text-center text-sm text-zinc-500">Hali xabar yöq.</p>}
         {hasMore && (
@@ -381,7 +410,7 @@ export function FamilyChat() {
                   <span className="rounded-full bg-white/[0.06] px-3 py-1 text-[11px] font-medium text-zinc-400">{dayLabel(m.sendAt)}</span>
                 </div>
               )}
-              <div id={`fm-${m.id}`} className={`group flex items-end gap-2 rounded-xl px-1 ${grouped ? "mt-0.5" : "mt-2.5"} ${mine ? "flex-row-reverse" : ""}`}>
+              <div id={`fm-${m.id}`} className={`${enterCls(m.id, m.sendAt, mine && (sentIds.current.has(m.id) || sendingRef.current) ? "send" : "pop")} group flex items-end gap-2 rounded-xl px-1 ${grouped ? "mt-0.5" : "mt-2.5"} ${mine ? "flex-row-reverse" : ""}`}>
                 {!mine && (grouped ? <span className="w-8 shrink-0" /> : <Avatar a={m.author} />)}
                 <div className={`flex max-w-[min(78%,560px)] flex-col ${mine ? "items-end" : "items-start"}`}>
                   <div

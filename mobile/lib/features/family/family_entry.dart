@@ -17,7 +17,8 @@ const double kConvAvatar = 48;
 const double kConvGap = 12;
 
 /// Guruhni ochish (istalgan joydan, bildirishnomadan ham). Ochiq bo'lsa — qayta ochilmaydi.
-/// [toMention] — oçilişi bilan birinçi öqilmagan belgilaşga sakraydi.
+/// Odatda — oxirgi turgan joydan oçiladi; [toMention] (faqat «@N» belgisi bosilganda) —
+/// birinçi öqilmagan belgilaşga sakraydi.
 Future<void> openFamily([BuildContext? context, bool toMention = false]) async {
   if (FamilyScreen.isOpen) return;
   final nav = context != null
@@ -62,7 +63,8 @@ class FamilyMark extends StatelessWidget {
   }
 }
 
-/// O'qilmaganlar / @belgilashlar nishonchalari.
+/// O'qilmaganlar / @belgilashlar nishonchalari. «@N» — alohida tugma: bosilsa birinçi
+/// öqilmagan belgilaşga oçiladi (qatorning özi — oxirgi turgan joydan).
 class _Badges extends StatelessWidget {
   const _Badges();
 
@@ -74,36 +76,47 @@ class _Badges extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (v.mentions > 0) ...[
-            Container(
-              height: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => openFamily(context, true),
+              child: Padding(
+                // barmoq uçun kattaroq bosiş maydoni
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 4,
                 ),
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const TIcon(
-                    TI.alternate_email_rounded,
-                    size: 13,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    '${v.mentions}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                child: Container(
+                  height: 24,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
                     ),
+                    borderRadius: BorderRadius.circular(99),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const TIcon(
+                        TI.alternate_email_rounded,
+                        size: 13,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${v.mentions}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 2),
           ],
           if (v.unread > 0)
             Container(
@@ -245,7 +258,8 @@ class FamilyHubCard extends StatelessWidget {
 }
 
 /// Xabarlar ro'yxatining tepasida qadalgan qator. Öqilmagan belgilaş (@nik yoki mening
-/// xabarimga javob) bölsa — «Sizni belgilaşdi» va bosilganda töppa-töğri birinçisiga.
+/// xabarimga javob) bölsa — «Sizni belgilaşdi». Qator bosilsa — oxirgi turgan joydan,
+/// «@N» belgisi bosilsa — birinçi öqilmagan belgilaşga.
 class FamilyListRow extends StatelessWidget {
   const FamilyListRow({super.key});
 
@@ -259,7 +273,7 @@ class FamilyListRow extends StatelessWidget {
 
   Widget _row(BuildContext context, int mentions) {
     return GestureDetector(
-      onTap: () => openFamily(context, mentions > 0),
+      onTap: () => openFamily(context),
       child: Container(
         padding: kConvRowPadding,
         decoration: BoxDecoration(
