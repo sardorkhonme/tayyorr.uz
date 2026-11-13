@@ -51,8 +51,14 @@ export async function GET(req: Request) {
     return mobileJson({ messages: await toFamilyClients(rows, { meId: me, viewerIsAdmin: (await familyRole(me)).isAdmin }) });
   }
 
+  // sahifalar — öçirilganlarsiz (ilova ularni baribir körsatmaydi; aks holda «yana bor» deb, böş
+  // sahifalar uçun yuklaş belgisi qotib qolardi). Öçirişlar ?since= orqali yetib boradi.
   const rows = await db.familyMessage.findMany({
-    where: { ...visibleFamily(), ...(before ? { sendAt: { lt: new Date(before) } } : {}) },
+    where: {
+      ...visibleFamily(),
+      deletedAt: null,
+      ...(before ? { sendAt: { lt: new Date(before), lte: new Date() } } : {}),
+    },
     orderBy: { sendAt: "desc" },
     take: PAGE + 1,
     include: familyInclude,
