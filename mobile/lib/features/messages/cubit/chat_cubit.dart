@@ -80,11 +80,9 @@ class ChatState extends Equatable {
 
 class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
   ChatCubit(this._repo, this.conversationId)
-    // xotiradagi kesh — suhbatga qayta kirganda xabarlar darhol (shimmersiz)
-    : super(
-        _cache[conversationId]?.copyWith(status: ChatStatus.success) ??
-            const ChatState(),
-      );
+    // har safar serverdan yangidan yuklanadi (eski kesh körsatilmaydi — öçirilgan xabarlar
+    // bir lahza paydo bölib, keyin yöqolib qolmasin); yuklanguncha shimmer
+    : super(const ChatState());
 
   /// Suhbatlar keshi (faqat ilova ishlab turgan paytda) — faqat yuborilgan xabarlar.
   static final _cache = <String, ChatState>{};

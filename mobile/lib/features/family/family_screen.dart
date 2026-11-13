@@ -187,30 +187,10 @@ class _FamilyScreenState extends State<FamilyScreen>
     }
   }
 
-  /// Kirish: keshdagi xabarlar darhol (shimmersiz), keyin faqat yangilari / o'zgarganlari.
+  /// Kirish: har safar serverdan yangidan yuklanadi (eski kesh körsatilmaydi — öçirilgan xabarlar
+  /// bir lahza paydo bölib, keyin yöqolib qolmasin); yuklanguncha shimmer.
   Future<void> _enter() async {
-    final uid = _uid;
-    final cache = FamilyCache.instance;
-    if (uid != null &&
-        (cache.has(uid) || await cache.restore(uid)) &&
-        mounted &&
-        _messages.isEmpty) {
-      setState(() {
-        _me ??= cache.me;
-        _messages = List.of(cache.messages);
-        _pinned = List.of(cache.pinned);
-        _hasMore = cache.hasMore;
-        _maxUpdated = cache.maxUpdated;
-        _members ??= cache.members;
-        _online ??= cache.online;
-        _loading = false;
-      });
-      await _catchUp();
-      await _load();
-      _scheduleRead();
-    } else {
-      await _load(initial: true);
-    }
+    await _load(initial: true);
   }
 
   void _saveCache() {
