@@ -450,6 +450,37 @@ class ChatCubit extends Cubit<ChatState> with SafeEmit<ChatState> {
     }
   }
 
+  /// Tanlangan xabarlarni bittada öçiriş — optimistik, xato bölsa faqat şular qaytariladi.
+  Future<void> deleteMessages(Set<String> ids) async {
+    if (ids.isEmpty) return;
+    final before = {
+      for (final m in state.messages)
+        if (ids.contains(m.id)) m.id: m,
+    };
+    final now = DateTime.now().millisecondsSinceEpoch;
+    emit(
+      state.copyWith(
+        messages: [
+          for (final m in state.messages)
+            if (ids.contains(m.id))
+              m.copyWith(body: '', deleted: true, updatedAt: now)
+            else
+              m,
+        ],
+      ),
+    );
+    try {
+      await _repo.deleteMessages(conversationId, ids.toList());
+    } catch (e) {
+      emit(
+        state.copyWith(
+          messages: [for (final m in state.messages) before[m.id] ?? m],
+          error: friendlyError(e),
+        ),
+      );
+    }
+  }
+
   /// Emoji reaksiya (Family'dagidek): o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi.
   Future<void> react(String msgId, String emoji) async {
     // optimistik yangilash

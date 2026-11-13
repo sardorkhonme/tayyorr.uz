@@ -544,6 +544,7 @@ class _FamilyScreenState extends State<FamilyScreen>
   }
 
   void _remove(String id) {
+    _selected.remove(id);
     _messages.removeWhere((x) => x.id == id);
     _pinned.removeWhere((x) => x.id == id);
     _scheduled.removeWhere((x) => x.id == id);
@@ -1379,6 +1380,8 @@ class _FamilyScreenState extends State<FamilyScreen>
             cur.pinned ? TI.push_pin_outlined : TI.push_pin_rounded,
             cur.pinned ? 'Qadaşdan oliş' : 'Qadaş',
           ),
+        if (_canSelect(cur))
+          const FamilyPopupAction('select', TI.check_rounded, 'Tanlaş'),
         if (mine || _isAdmin)
           const FamilyPopupAction(
             'delete',
@@ -1413,6 +1416,8 @@ class _FamilyScreenState extends State<FamilyScreen>
         _startEdit(cur);
       case 'pin':
         _togglePin(cur);
+      case 'select':
+        _toggleSelect(cur);
       case 'delete':
         _delete(cur);
       case 'report':
@@ -1506,6 +1511,58 @@ class _FamilyScreenState extends State<FamilyScreen>
       if (mounted) showToast(context, friendlyError(e), kind: ToastKind.error);
     } catch (_) {
       if (mounted) showToast(context, "Bajarib bölmadi", kind: ToastKind.error);
+    }
+  }
+
+  /// Tanlangan (öçiriş uçun) xabarlar: öz xabarlari, admin — istalgani.
+  final _selected = <String>{};
+  bool get _selecting => _selected.isNotEmpty;
+
+  bool _canSelect(FamilyMessage m) =>
+      !m.isLocal && !m.deleted && (_isMine(m) || _isAdmin);
+
+  void _toggleSelect(FamilyMessage m) {
+    if (!_canSelect(m)) {
+      showToast(context, 'Faqat öz xabaringizni tanlay olasiz');
+      return;
+    }
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (!_selected.remove(m.id)) _selected.add(m.id);
+    });
+  }
+
+  void _clearSelection() => setState(_selected.clear);
+
+  /// Tanlanganlarni bittada öçiriş — optimistik, xato bölsa qaytariladi.
+  Future<void> _deleteSelected() async {
+    final ids = {..._selected};
+    if (ids.isEmpty) return;
+    final ok = await confirmDialog(
+      context,
+      title: '${ids.length} ta xabarni öçirasizmi?',
+      message: 'Xabarlar guruhdagi hamma uçun öçiriladi.',
+      confirmLabel: 'Öçiriş',
+      cancelLabel: 'Bekor qiliş',
+      icon: TI.delete_outline_rounded,
+      danger: true,
+    );
+    if (ok != true || !mounted) return;
+    final removed = _messages.where((x) => ids.contains(x.id)).toList();
+    setState(() {
+      _selected.clear();
+      ids.forEach(_remove);
+    });
+    try {
+      await _repo.deleteMany(ids.toList());
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => removed.forEach(_upsert));
+      showToast(
+        context,
+        e is ApiException ? friendlyError(e) : "Öçirib bölmadi",
+        kind: ToastKind.error,
+      );
     }
   }
 
@@ -1723,153 +1780,183 @@ class _FamilyScreenState extends State<FamilyScreen>
   @override
   Widget build(BuildContext context) {
     final pinned = _pinned.isEmpty ? null : _pinned[_pinIndex % _pinned.length];
-    return Scaffold(
-      body: AuroraBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _Header(
-                onBack: () => Navigator.of(context).maybePop(),
-                members: _members,
-                online: _online,
-                onInfo: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        FamilyInfoScreen(members: _members, online: _online),
-                  ),
-                ),
-              ),
-              if (pinned != null)
-                _PinnedBar(
-                  message: pinned,
-                  index: _pinIndex % _pinned.length,
-                  total: _pinned.length,
-                  onTap: () {
-                    _jumpTo(pinned.id);
-                    if (_pinned.length > 1) {
-                      setState(
-                        () => _pinIndex = (_pinIndex + 1) % _pinned.length,
-                      );
-                    }
-                  },
-                ),
-              // skelet → xabarlar: yumşoq almaşadi (tarix sakramasdan paydo böladi)
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  switchInCurve: Curves.easeOut,
-                  switchOutCurve: Curves.easeIn,
-                  child: KeyedSubtree(
-                    key: ValueKey(_showSkeleton),
-                    child: _body(),
-                  ),
-                ),
-              ),
-              if (_suggest.isNotEmpty)
-                _SuggestPanel(items: _suggest, onPick: _insertMention),
-              if (_scheduled.isNotEmpty)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: _showScheduled,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: WebC.indigoFill,
-                        borderRadius: BorderRadius.circular(99),
-                        border: Border.all(
-                          color: const Color(0xFF818CF8).withValues(alpha: 0.4),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TIcon(
-                            TI.schedule_rounded,
-                            size: 15,
-                            color: WebC.indigoSoft,
+    // tanlaş rejimida «orqaga» — avval tanlovdan çiqadi
+    return PopScope(
+      canPop: !_selecting,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _selecting) _clearSelection();
+      },
+      child: Scaffold(
+        body: AuroraBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: _selecting
+                      ? Padding(
+                          key: const ValueKey('sel'),
+                          padding: const EdgeInsets.fromLTRB(
+                            kHeaderSide,
+                            6,
+                            kHeaderSide,
+                            6,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Rejalaştirilgan: ${_scheduled.length} · ${shortDateTime(_scheduled.first.sendAt)}',
-                            style: TextStyle(
-                              color: WebC.indigoSoft,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
+                          child: ChatSelectionBar(
+                            count: _selected.length,
+                            onClose: _clearSelection,
+                            onDelete: _deleteSelected,
+                          ),
+                        )
+                      : _Header(
+                          key: const ValueKey('norm'),
+                          onBack: () => Navigator.of(context).maybePop(),
+                          members: _members,
+                          online: _online,
+                          onInfo: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => FamilyInfoScreen(
+                                members: _members,
+                                online: _online,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                ),
+                if (pinned != null)
+                  _PinnedBar(
+                    message: pinned,
+                    index: _pinIndex % _pinned.length,
+                    total: _pinned.length,
+                    onTap: () {
+                      _jumpTo(pinned.id);
+                      if (_pinned.length > 1) {
+                        setState(
+                          () => _pinIndex = (_pinIndex + 1) % _pinned.length,
+                        );
+                      }
+                    },
+                  ),
+                // skelet → xabarlar: yumşoq almaşadi (tarix sakramasdan paydo böladi)
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    child: KeyedSubtree(
+                      key: ValueKey(_showSkeleton),
+                      child: _body(),
                     ),
                   ),
                 ),
-              if (_blocked != null)
-                _LockedBar(text: _blocked!)
-              else ...[
-                if (_editing != null)
-                  _ReplyBanner(
-                    message: _editing!,
-                    editing: true,
-                    onClose: _cancelEdit,
-                    onTap: () => _jumpTo(_editing!.id),
-                  )
-                else if (_replyTo != null)
-                  _ReplyBanner(
-                    message: _replyTo!,
-                    onClose: () => setState(() => _replyTo = null),
-                    onTap: () => _jumpTo(_replyTo!.id),
-                  ),
-                if (_pending != null)
-                  PendingAttachmentBar(
-                    pending: _pending!,
-                    onCancel: _cancelPending,
-                  ),
-                // kirishi bilanoq yozish mumkin (ma'lumot yuklanishini kutmaydi)
-                ChatComposer(
-                  controller: _text,
-                  focusNode: _focus,
-                  onSend: () => _send(),
-                  onSendLongPress: _sendMenu,
-                  onAttach: _editing != null ? null : _pickFile,
-                  onRecorded: _onRecorded,
-                  hasAttachment: _pending != null,
-                  attachmentReady: _pending?.ready ?? false,
-                  leading: _isAdmin && _identity != null
-                      ? GestureDetector(
-                          onTap: _chooseIdentity,
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: _as == 'self'
-                                  ? null
-                                  : const LinearGradient(
-                                      colors: [
-                                        Color(0xFF8B5CF6),
-                                        Color(0xFF3B82F6),
-                                      ],
-                                    ),
-                              border: _as == 'self'
-                                  ? Border.all(color: WebC.border)
-                                  : null,
-                            ),
-                            child: UserAvatar(
-                              imageUrl: _identity!.image,
-                              initial: _identity!.initial,
-                              size: 36,
-                            ),
+                if (_suggest.isNotEmpty)
+                  _SuggestPanel(items: _suggest, onPick: _insertMention),
+                if (_scheduled.isNotEmpty)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      onTap: _showScheduled,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: WebC.indigoFill,
+                          borderRadius: BorderRadius.circular(99),
+                          border: Border.all(
+                            color: const Color(
+                              0xFF818CF8,
+                            ).withValues(alpha: 0.4),
                           ),
-                        )
-                      : null,
-                ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TIcon(
+                              TI.schedule_rounded,
+                              size: 15,
+                              color: WebC.indigoSoft,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Rejalaştirilgan: ${_scheduled.length} · ${shortDateTime(_scheduled.first.sendAt)}',
+                              style: TextStyle(
+                                color: WebC.indigoSoft,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                if (_blocked != null)
+                  _LockedBar(text: _blocked!)
+                else ...[
+                  if (_editing != null)
+                    _ReplyBanner(
+                      message: _editing!,
+                      editing: true,
+                      onClose: _cancelEdit,
+                      onTap: () => _jumpTo(_editing!.id),
+                    )
+                  else if (_replyTo != null)
+                    _ReplyBanner(
+                      message: _replyTo!,
+                      onClose: () => setState(() => _replyTo = null),
+                      onTap: () => _jumpTo(_replyTo!.id),
+                    ),
+                  if (_pending != null)
+                    PendingAttachmentBar(
+                      pending: _pending!,
+                      onCancel: _cancelPending,
+                    ),
+                  // kirishi bilanoq yozish mumkin (ma'lumot yuklanishini kutmaydi)
+                  ChatComposer(
+                    controller: _text,
+                    focusNode: _focus,
+                    onSend: () => _send(),
+                    onSendLongPress: _sendMenu,
+                    onAttach: _editing != null ? null : _pickFile,
+                    onRecorded: _onRecorded,
+                    hasAttachment: _pending != null,
+                    attachmentReady: _pending?.ready ?? false,
+                    leading: _isAdmin && _identity != null
+                        ? GestureDetector(
+                            onTap: _chooseIdentity,
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: _as == 'self'
+                                    ? null
+                                    : const LinearGradient(
+                                        colors: [
+                                          Color(0xFF8B5CF6),
+                                          Color(0xFF3B82F6),
+                                        ],
+                                      ),
+                                border: _as == 'self'
+                                    ? Border.all(color: WebC.border)
+                                    : null,
+                              ),
+                              child: UserAvatar(
+                                imageUrl: _identity!.image,
+                                initial: _identity!.initial,
+                                size: 36,
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -1985,17 +2072,24 @@ class _FamilyScreenState extends State<FamilyScreen>
                             m.clientId != null &&
                             _myClientIds.contains(m.clientId),
                         child: SwipeToReply(
-                          enabled: !m.isLocal && _blocked == null,
+                          enabled:
+                              !_selecting && !m.isLocal && _blocked == null,
                           onReply: () => _setReply(m),
-                          child: FlashHighlight(
-                            flashKey: _flashId == k ? _flashTick : null,
-                            child: _bubble(
-                              m,
-                              mine,
-                              f,
-                              bubbleKey: _bubbleKeys.putIfAbsent(
-                                k,
-                                GlobalKey.new,
+                          child: SelectableMessageRow(
+                            active: _selecting,
+                            selected: _selected.contains(m.id),
+                            selectable: _canSelect(m),
+                            onTap: () => _toggleSelect(m),
+                            child: FlashHighlight(
+                              flashKey: _flashId == k ? _flashTick : null,
+                              child: _bubble(
+                                m,
+                                mine,
+                                f,
+                                bubbleKey: _bubbleKeys.putIfAbsent(
+                                  k,
+                                  GlobalKey.new,
+                                ),
                               ),
                             ),
                           ),
@@ -2086,7 +2180,13 @@ class _FamilyScreenState extends State<FamilyScreen>
 // ───────────────────────── vidjetlar ─────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onBack, this.members, this.online, this.onInfo});
+  const _Header({
+    super.key,
+    required this.onBack,
+    this.members,
+    this.online,
+    this.onInfo,
+  });
   final VoidCallback onBack;
 
   /// Belgi / nom bosilganda — «Guruh haqida».

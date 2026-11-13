@@ -84,6 +84,14 @@ class MessagesRepository {
     await _api.delete('/mobile/messages/$conversationId/$msgId');
   }
 
+  /// Bir nechta xabarni bittada öçiriş (har biri — faqat öz xabari).
+  Future<void> deleteMessages(String conversationId, List<String> ids) async {
+    await _api.post(
+      '/mobile/messages/$conversationId/bulk-delete',
+      data: {'ids': ids},
+    );
+  }
+
   /// Emoji reaksiya (o'sha emoji qayta bosilsa — server olib tashlaydi). Natija — xabarning yangi reaksiyalari.
   Future<List<MessageReaction>> react(
     String conversationId,

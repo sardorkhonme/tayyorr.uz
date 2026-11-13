@@ -64,6 +64,10 @@ class FamilyRepository {
 
   Future<void> delete(String id) => _api.delete('/mobile/family/$id');
 
+  /// Bir nechta xabarni bittada öçiriş (öz xabari yoki admin — istalganini).
+  Future<void> deleteMany(List<String> ids) =>
+      _api.post('/mobile/family/bulk-delete', data: {'ids': ids});
+
   /// O'z xabarini tahrirlash (matn).
   Future<FamilyMessage> edit(String id, String body) async {
     final r = await _api.post(

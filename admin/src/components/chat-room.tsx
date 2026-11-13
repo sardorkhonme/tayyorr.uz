@@ -27,6 +27,7 @@ import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/
 import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
+import { ConfirmDeleteDialog, SelectCheck, SelectTrashButton, useMsgSelection } from "@/components/msg-select";
 
 interface ReplyPreview {
   id: string;
@@ -285,10 +286,15 @@ export function ChatRoom({
   );
   const [otherSeen, setOtherSeen] = useState<string | null>(other.lastSeenAt);
 
+  // xabarlarni tanlaş (bir nechtasini birdan öçiriş) — faqat öz xabarlari
+  const sel = useMsgSelection();
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const canSelect = (m: Msg) => m.mine && !m.pending && !m.deleted && !m.system;
+
   function openMenu(m: Msg, btn: HTMLElement) {
     const r = btn.getBoundingClientRect();
     const W = 184;
-    const H = (m.mine ? 150 : 96) + 84; // + reaksiya paneli (10 ta emoji, 2 qator)
+    const H = (m.mine ? 194 : 96) + 84; // + reaksiya paneli (10 ta emoji, 2 qator)
     const M = 8;
     let left = r.right - W;
     if (left < M) left = M;
@@ -633,6 +639,49 @@ export function ChatRoom({
     }
   }
 
+  function startSelect(m: Msg) {
+    setMenu(null);
+    if (canSelect(m)) sel.toggle(m.id);
+  }
+
+  function tapSelect(m: Msg) {
+    if (canSelect(m)) sel.toggle(m.id);
+    else setErr("Faqat öz xabaringizni tanlay olasiz");
+  }
+
+  /** Tanlangan xabarlarni bittada öçiriş — optimistik, xato bölsa qaytariladi. */
+  async function delSelected() {
+    setConfirmBulk(false);
+    const idSet = new Set(sel.ids);
+    const ids = [...idSet];
+    if (!ids.length) return;
+    const removed = messages.filter((m) => idSet.has(m.id));
+    sel.clear();
+    setMessages((prev) => prev.filter((m) => !idSet.has(m.id)));
+    try {
+      const res = await fetch(apiUrl(`/api/chat/${conversationId}/messages/bulk-delete`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setMessages((prev) => {
+        const have = new Set(prev.map((m) => m.id));
+        return [...prev, ...removed.filter((m) => !have.has(m.id))].sort((a, b) => a.createdAt - b.createdAt);
+      });
+      setErr("Öçirib bölmadi");
+    }
+  }
+
+  // yöqolgan (boşqa joyda öçirilgan) xabarlar tanlovdan ham çiqadi
+  const { active: selActive, prune: selPrune } = sel;
+  useEffect(() => {
+    if (!selActive) return;
+    const alive = new Set(messages.map((m) => m.id));
+    selPrune((id) => alive.has(id));
+  }, [messages, selActive, selPrune]);
+
   async function del(m: Msg) {
     setMenu(null);
     if (!window.confirm("Xabar ikkala tomondan ham öçirilsinmi?")) return;
@@ -796,7 +845,24 @@ export function ChatRoom({
     >
       {/* ---- birlashgan header (sayt + suhbat) ---- */}
       <header className="shrink-0 border-b border-white/10 bg-[#0b0b12]/80 backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
+        {sel.active ? (
+          <div key="sel" className="sel-fade mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
+            <button
+              type="button"
+              onClick={sel.clear}
+              className="backdrop-blur-sm -ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-zinc-300 transition hover:bg-white/5 hover:text-white"
+              aria-label="Tanlaşdan çiqiş"
+            >
+              <Icon name="close" className="h-[18px] w-[18px]" />
+            </button>
+            <div className="min-w-0 flex-1 truncate font-medium text-white">{sel.count} ta tanlandi</div>
+            <SelectTrashButton
+              onClick={() => setConfirmBulk(true)}
+              className="!h-9 !w-9 !rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20"
+            />
+          </div>
+        ) : (
+        <div key="norm" className="sel-fade mx-auto flex max-w-3xl items-center gap-2.5 px-3 py-2.5 sm:px-4">
           <button
             type="button"
             onClick={() => router.push(listHref)}
@@ -867,6 +933,7 @@ export function ChatRoom({
             </div>
           )}
         </div>
+        )}
       </header>
 
       {/* ---- qadalgan loyiha(lar) — Telegramdagi "pinned message"ga o'xshab.
@@ -1022,6 +1089,8 @@ export function ChatRoom({
               }
               const showMenu = !m.pending && !m.deleted;
               const hasReactions = !!m.reactions?.length;
+              const picked = sel.ids.has(m.id);
+              const selectable = canSelect(m);
               const MenuBtn = showMenu ? (
                 <button
                   type="button"
@@ -1037,12 +1106,13 @@ export function ChatRoom({
                 <div
                   key={m.key ?? m.id}
                   id={`msg-${m.id}`}
+                  onClick={sel.active ? () => tapSelect(m) : undefined}
                   className={`${enterCls(m.key ?? m.id, m.createdAt, (m.key ?? m.id).startsWith("tmp-") ? "send" : "pop")} group flex rounded-2xl transition ${
                     m.mine ? "justify-end" : "justify-start"
-                  }`}
+                  } ${sel.active ? `-mx-2 cursor-pointer select-none px-2 py-0.5 ${picked ? "bg-indigo-500/15" : ""}` : ""}`}
                 >
-                  <div className="flex max-w-[86%] items-end gap-1.5">
-                    {m.mine && MenuBtn}
+                  <div className={`flex max-w-[86%] items-end gap-1.5 ${sel.active ? "[&>div_*]:pointer-events-none" : ""}`}>
+                    {m.mine && (sel.active ? selectable && <SelectCheck on={picked} /> : MenuBtn)}
 
                     <div
                       className={`min-w-0 space-y-1 rounded-2xl px-3.5 py-2 text-sm [overflow-wrap:anywhere] ${
@@ -1134,7 +1204,7 @@ export function ChatRoom({
                       </div>
                     </div>
 
-                    {!m.mine && MenuBtn}
+                    {!m.mine && !sel.active && MenuBtn}
                   </div>
                 </div>
               );
@@ -1373,6 +1443,16 @@ export function ChatRoom({
                 <Icon name="reply" className="h-4 w-4 shrink-0" />
                 Javob beriş
               </button>
+              {canSelect(menu.msg) && (
+                <button
+                  type="button"
+                  onClick={() => startSelect(menu.msg)}
+                  className="backdrop-blur-sm flex w-full items-center gap-2 px-3 py-2.5 text-left text-zinc-200 hover:bg-white/5"
+                >
+                  <Icon name="check" className="h-4 w-4 shrink-0" />
+                  Tanlaş
+                </button>
+              )}
               {menu.msg.mine ? (
                 <>
                   <button
@@ -1408,6 +1488,10 @@ export function ChatRoom({
           </>,
           document.body,
         )}
+
+      {confirmBulk && sel.active && (
+        <ConfirmDeleteDialog count={sel.count} onConfirm={delSelected} onCancel={() => setConfirmBulk(false)} />
+      )}
 
       {report && (
         <ReportDialog

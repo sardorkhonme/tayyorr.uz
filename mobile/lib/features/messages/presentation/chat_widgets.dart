@@ -7,6 +7,7 @@ import 'package:tayyorr_app/core/ui/ticons.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/ui/liquid_glass.dart';
+import '../../../widgets/app_header_sliver.dart' show kHeaderGap;
 import '../../../widgets/web_ui.dart';
 
 /// Telegramdagidek: o'tilgan xabar orqasida yumshoq indigo nur ikki marta
@@ -633,5 +634,157 @@ mixin RouteSettleMixin<T extends StatefulWidget> on State<T> {
     _routeAnim?.removeStatusListener(_onRouteStatus);
     _routeAnim = null;
     super.dispose();
+  }
+}
+
+/// Tanlaş rejimida pufakça yonidagi doiraça — kirganda kiçkinadan kattalaşadi.
+class SelectCheck extends StatelessWidget {
+  const SelectCheck({super.key, required this.on});
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.4, end: 1),
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutBack,
+      builder: (context, t, child) => Opacity(
+        opacity: ((t - 0.4) / 0.6).clamp(0.0, 1.0),
+        child: Transform.scale(scale: t, child: child),
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: on ? AppColors.indigo : Colors.black.withValues(alpha: 0.15),
+          border: Border.all(
+            color: on ? AppColors.indigo : AppColors.textMuted,
+            width: 2,
+          ),
+        ),
+        child: on
+            ? const Center(
+                child: TIcon(TI.check_rounded, size: 14, color: Colors.white),
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+/// Xabar qatori tanlaş rejimida: bosilsa — tanlanadi / olib taşlanadi, içidagi
+/// tugmalar (havola, javob, reaksiya) öçiq, tanlanganda qator yengil böyaladi.
+class SelectableMessageRow extends StatelessWidget {
+  const SelectableMessageRow({
+    super.key,
+    required this.active,
+    required this.selected,
+    required this.selectable,
+    required this.onTap,
+    required this.child,
+  });
+  final bool active;
+  final bool selected;
+
+  /// Öçiriş mumkin bölmagan xabarda doiraça körinmaydi.
+  final bool selectable;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!active) return child;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      onLongPress: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.indigo.withValues(alpha: 0.14)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            if (selectable)
+              Padding(
+                padding: const EdgeInsets.only(left: 2, right: 8),
+                child: SelectCheck(on: selected),
+              )
+            else
+              const SizedBox(width: 32),
+            Expanded(child: AbsorbPointer(child: child)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tanlaş rejimidagi header: ✕ — çiqiş, «N ta tanlandi», qizil çelak — öçiriş.
+class ChatSelectionBar extends StatelessWidget {
+  const ChatSelectionBar({
+    super.key,
+    required this.count,
+    required this.onClose,
+    required this.onDelete,
+  });
+  final int count;
+  final VoidCallback onClose;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        GlassTap(
+          width: 48,
+          height: 48,
+          strong: true,
+          onTap: onClose,
+          semanticLabel: 'Tanlaşdan çiqiş',
+          child: TIcon(
+            TI.close_rounded,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(width: kHeaderGap),
+        Expanded(
+          child: LiquidGlass(
+            height: 48,
+            borderRadius: BorderRadius.circular(24),
+            strong: true,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '$count ta tanlandi',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: WebC.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: kHeaderGap),
+        GlassTap(
+          width: 48,
+          height: 48,
+          strong: true,
+          onTap: onDelete,
+          semanticLabel: 'Tanlanganlarni öçiriş',
+          child: TIcon(TI.delete_outline_rounded, size: 21, color: WebC.red),
+        ),
+      ],
+    );
   }
 }

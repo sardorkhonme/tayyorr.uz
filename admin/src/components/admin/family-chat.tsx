@@ -15,6 +15,7 @@ import { prepareFamilyFile, type PreparedChatFile } from "@/lib/upload-client";
 import { useFlashState } from "@/components/flash-status";
 import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 import { useChatMemory, useEnterAnim } from "@/components/chat-memory";
+import { ConfirmDeleteDialog, SelectCheck, SelectTrashButton, useMsgSelection } from "@/components/msg-select";
 
 /** Ilova bilan bir xil reaksiyalar (lib/family.ts → FAMILY_EMOJIS). */
 const EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
@@ -118,6 +119,9 @@ export function FamilyChat() {
   const [jumpMiss, setJumpMiss] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   useDismiss(!!menu, () => setMenu(null), [menuRef]);
+  // xabarlarni tanlaş — admin istalgan (öçirilmagan) xabarni öçira oladi
+  const sel = useMsgSelection();
+  const [confirmBulk, setConfirmBulk] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -335,6 +339,44 @@ export function FamilyChat() {
     return act(`/api/admin/family/messages/${m.id}`, { method: "DELETE" });
   };
 
+  function startSelect(m: Msg) {
+    setMenu(null);
+    if (!m.deleted) sel.toggle(m.id);
+  }
+
+  /** Tanlanganlarni bittada öçiriş — optimistik («öçirilgan» bölib qoladi), xato bölsa qaytariladi. */
+  async function delSelected() {
+    setConfirmBulk(false);
+    const idSet = new Set(sel.ids);
+    const ids = [...idSet];
+    if (!ids.length) return;
+    const before = msgs.filter((m) => idSet.has(m.id));
+    sel.clear();
+    setMsgs((prev) => prev.map((m) => (idSet.has(m.id) ? { ...m, deleted: true, pinned: false } : m)));
+    try {
+      const res = await fetch("/api/admin/family/messages/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || "Öçirib bölmadi");
+      if (Array.isArray(d.messages)) absorb(d.messages);
+    } catch (e) {
+      const back = new Map(before.map((m) => [m.id, m]));
+      setMsgs((prev) => prev.map((m) => back.get(m.id) ?? m));
+      setErr(e instanceof Error ? e.message : "Öçirib bölmadi");
+    }
+  }
+
+  // öçirilgan / yöqolgan xabarlar tanlovdan çiqadi
+  const { active: selActive, prune: selPrune } = sel;
+  useEffect(() => {
+    if (!selActive) return;
+    const alive = new Set(msgs.filter((m) => !m.deleted).map((m) => m.id));
+    selPrune((id) => alive.has(id));
+  }, [msgs, selActive, selPrune]);
+
   function openMenu(m: Msg, el: HTMLElement, emojis = false) {
     const r = el.getBoundingClientRect();
     const w = emojis ? 300 : 210;
@@ -354,7 +396,21 @@ export function FamilyChat() {
       style={{ height: "calc(100dvh - 11rem)", minHeight: 420 }}
     >
       {/* ---- sarlavha ---- */}
-      <div className="flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
+      {sel.active ? (
+        <div key="sel" className="sel-fade flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
+          <button
+            type="button"
+            onClick={sel.clear}
+            aria-label="Tanlaşdan çiqiş"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/5 text-zinc-300 transition hover:bg-white/10 hover:text-white"
+          >
+            <Icon name="close" className="h-[18px] w-[18px]" />
+          </button>
+          <div className="min-w-0 flex-1 truncate font-semibold text-white">{sel.count} ta tanlandi</div>
+          <SelectTrashButton onClick={() => setConfirmBulk(true)} className="!h-10 !w-10 bg-red-500/10 hover:bg-red-500/20" />
+        </div>
+      ) : (
+      <div key="norm" className="sel-fade flex items-center gap-3 border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
           <Icon name="users" className="h-5 w-5" />
         </span>
@@ -368,6 +424,7 @@ export function FamilyChat() {
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> jonli
         </span>
       </div>
+      )}
 
       {/* ---- qadalgan ---- */}
       {pinned && (
@@ -405,6 +462,7 @@ export function FamilyChat() {
           // ketma-ket bir muallif — avatar va ism faqat birinchisida
           const grouped = !newDay && prev && prev.author.id === m.author.id && m.sendAt - prev.sendAt < 5 * 60_000;
           const realWriter = m.admin && m.author.kind !== "user" && m.admin.senderId !== me ? m.admin.senderName : null;
+          const picked = sel.ids.has(m.id);
           return (
             <div key={m.id}>
               {newDay && (
@@ -412,9 +470,16 @@ export function FamilyChat() {
                   <span className="rounded-full bg-white/[0.06] px-3 py-1 text-[11px] font-medium text-zinc-400">{dayLabel(m.sendAt)}</span>
                 </div>
               )}
-              <div id={`fm-${m.id}`} className={`${enterCls(m.id, m.sendAt, mine && (sentIds.current.has(m.id) || sendingRef.current) ? "send" : "pop")} group flex items-end gap-2 rounded-xl px-1 ${grouped ? "mt-0.5" : "mt-2.5"} ${mine ? "flex-row-reverse" : ""}`}>
+              <div
+                id={`fm-${m.id}`}
+                onClick={sel.active ? () => (m.deleted ? setErr("Bu xabar allaqaçon öçirilgan") : sel.toggle(m.id)) : undefined}
+                className={`${enterCls(m.id, m.sendAt, mine && (sentIds.current.has(m.id) || sendingRef.current) ? "send" : "pop")} group flex items-end gap-2 rounded-xl px-1 transition-colors ${grouped ? "mt-0.5" : "mt-2.5"} ${mine ? "flex-row-reverse" : ""} ${
+                  sel.active ? `cursor-pointer select-none py-0.5 ${picked ? "bg-indigo-500/15" : ""}` : ""
+                }`}
+              >
+                {sel.active && !m.deleted && <SelectCheck on={picked} />}
                 {!mine && (grouped ? <span className="w-8 shrink-0" /> : <Avatar a={m.author} />)}
-                <div className={`flex max-w-[min(78%,560px)] flex-col ${mine ? "items-end" : "items-start"}`}>
+                <div className={`flex max-w-[min(78%,560px)] flex-col ${mine ? "items-end" : "items-start"} ${sel.active ? "[&_*]:pointer-events-none" : ""}`}>
                   <div
                     className={`relative space-y-1.5 rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                       m.deleted
@@ -516,7 +581,7 @@ export function FamilyChat() {
                 </div>
 
                 {/* amallar — sichqoncha ustiga kelganda */}
-                {!m.deleted && (
+                {!m.deleted && !sel.active && (
                   <div className="mb-1 flex shrink-0 gap-0.5 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
                     <button type="button" title="Javob beriş" onClick={() => { setReplyTo(m); inputRef.current?.querySelector("textarea")?.focus(); }} className="rounded-full p-1.5 text-zinc-500 hover:bg-white/10 hover:text-white">
                       <Icon name="reply" className="h-4 w-4" />
@@ -683,6 +748,7 @@ export function FamilyChat() {
                   {menu.m.author.kind === "user" && (
                     <MenuItem icon="user" label="Profilini oçiş" onClick={() => { window.open(`/users/${menu.m.author.id}`, "_blank"); setMenu(null); }} />
                   )}
+                  <MenuItem icon="check" label="Tanlaş" onClick={() => startSelect(menu.m)} />
                   <MenuItem icon="trash" label="Öçiriş" danger onClick={() => del(menu.m)} />
                 </div>
               )}
@@ -690,6 +756,10 @@ export function FamilyChat() {
           </div>,
           document.body,
         )}
+
+      {confirmBulk && sel.active && (
+        <ConfirmDeleteDialog count={sel.count} onConfirm={delSelected} onCancel={() => setConfirmBulk(false)} />
+      )}
     </div>
   );
 }
@@ -700,7 +770,7 @@ function MenuItem({
   onClick,
   danger,
 }: {
-  icon: "reply" | "pin" | "file" | "user" | "trash";
+  icon: "reply" | "pin" | "file" | "user" | "trash" | "check";
   label: string;
   onClick: () => void;
   danger?: boolean;
