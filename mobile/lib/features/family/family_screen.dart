@@ -335,6 +335,7 @@ class _FamilyScreenState extends State<FamilyScreen>
           final local = _messages.where((m) => m.isLocal).toList();
           _messages = [for (final m in page) _resolve(m, null), ...local];
           _hasMore = r['hasMore'] as bool? ?? false;
+          _olderCursor = null;
         } else {
           for (final m in msgs) {
             _upsert(m);
@@ -588,6 +589,7 @@ class _FamilyScreenState extends State<FamilyScreen>
     final p = _scroll.position;
     // ro'yxat teskari: yuqori (eski) — maxScrollExtent
     if (p.hasContentDimensions && p.pixels > p.maxScrollExtent - 400) {
+      _olderFailed = false;
       _loadOlder();
     }
     if (_nearBottom) _scheduleRead();
@@ -658,11 +660,18 @@ class _FamilyScreenState extends State<FamilyScreen>
     );
   }
 
+  /// Eskilarini yuklaş kursori — oxirgi olingan sahifaning eng eski vaqti (öçirilganlari ham hisobga
+  /// olinadi, aks holda hammasi öçirilgan sahifa qayta-qayta söralib, yuklaş belgisi qotib qolardi).
+  int? _olderCursor;
+
+  /// Avtomatik yuklaş xato bersa — keyingi qölda aylantiriş-gaça qayta urinmaydi (çeksiz sikl bölmasin).
+  bool _olderFailed = false;
+
   Future<void> _loadOlder() async {
     if (_loadingOlder || !_hasMore || _messages.isEmpty) return;
     setState(() => _loadingOlder = true);
     try {
-      final r = await _repo.older(_messages.first.sendAtMs);
+      final r = await _repo.older(_olderCursor ?? _messages.first.sendAtMs);
       if (!mounted) return;
       setState(() {
         final have = _messages.map((m) => m.id).toSet();
@@ -670,9 +679,18 @@ class _FamilyScreenState extends State<FamilyScreen>
           0,
           r.messages.where((m) => !m.deleted && !have.contains(m.id)),
         );
-        _hasMore = r.hasMore;
+        if (r.messages.isEmpty) {
+          _hasMore = false;
+        } else {
+          _olderCursor = r.messages
+              .map((m) => m.sendAtMs)
+              .reduce((a, b) => a < b ? a : b);
+          _hasMore = r.hasMore;
+        }
+        _olderFailed = false;
       });
     } catch (_) {
+      _olderFailed = true;
     } finally {
       if (mounted) setState(() => _loadingOlder = false);
     }
@@ -2027,7 +2045,14 @@ class _FamilyScreenState extends State<FamilyScreen>
               itemCount: count,
               itemBuilder: (context, i) {
                 if (i >= _messages.length) {
-                  // eskilari yuklanmoqda
+                  // eskilari yuklanmoqda — belgi ekranda körinişi bilan yuklaş boşlanadi (xabar kam bölib,
+                  // röyxat aylanmasa ham)
+                  if (!_loadingOlder && !_olderFailed) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _loadOlder();
+                    });
+                  }
+                  if (_olderFailed) return const SizedBox.shrink();
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
                     child: _SkelRow(widthFraction: 0.5),
