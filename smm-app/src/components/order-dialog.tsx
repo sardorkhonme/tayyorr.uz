@@ -11,6 +11,7 @@ import { GuaranteeBadge, VerdictBadge } from "@/components/service-card";
 import { guaranteeOf, isGuaranteeTag, verdictOf } from "@/lib/guarantee";
 import { normalizeLink } from "@/lib/links";
 import { kindOf, LINK_HINTS, splitServiceName } from "@/lib/kinds";
+import { useFlashState } from "@/components/flash-status";
 
 export function OrderDialog({
   service,
@@ -28,7 +29,7 @@ export function OrderDialog({
   const [link, setLink] = useState("");
   const [quantity, setQuantity] = useState(String(service.min));
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useFlashState("");
   const [done, setDone] = useState(false);
 
   useEffect(() => {
@@ -240,7 +241,7 @@ export function OrderDialog({
                 <TopupButton className="font-semibold underline">Hamyonni töldiriş</TopupButton>
               </p>
             )}
-            {error && <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-600">{error}</p>}
+            {error && <p className="flash-status rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-600">{error}</p>}
 
             <button className="btn-primary w-full !py-4 !text-base" disabled={busy || !qtyOk || !enough || !linkRes?.ok}>
               {busy ? "Yuborilmoqda…" : "Buyurtma beriş"}

@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { StarInput } from "@/components/stars";
+import { useFlashState } from "@/components/flash-status";
 
 export function ReviewForm({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +51,7 @@ export function ReviewForm({ orderId }: { orderId: string }) {
         value={comment}
         onChange={(e) => setComment(e.target.value)}
       />
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
       <button className="btn-primary w-fit" disabled={busy}>
         {busy ? "..." : "Bahoni yuboriş"}
       </button>

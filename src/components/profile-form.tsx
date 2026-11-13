@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 
 import { AvatarUpload } from "@/components/avatar-upload";
 import { BirthDateSelect, birthPartsFrom, birthPartsToIso } from "@/components/birth-date-select";
+import { useFlashState } from "@/components/flash-status";
 
 export function ProfileForm({
   initial,
@@ -17,7 +18,7 @@ export function ProfileForm({
   const { update } = useSession();
   const [form, setForm] = useState(initial);
   const [birth, setBirth] = useState(() => birthPartsFrom(initial.birthDate));
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   function set(k: keyof typeof form, v: string) {
@@ -91,7 +92,7 @@ export function ProfileForm({
           onChange={(e) => set("about", e.target.value)}
         />
       </div>
-      {msg && <p className="text-sm text-zinc-400">{msg}</p>}
+      {msg && <p className="flash-status text-sm text-zinc-400">{msg}</p>}
       <button className="btn-primary" disabled={busy}>
         {busy ? "..." : "Saqlaş"}
       </button>

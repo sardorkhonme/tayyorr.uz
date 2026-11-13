@@ -18,6 +18,7 @@ import '../../../widgets/mascot.dart';
 import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
 import '../data/auth_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Google bilan birinchi marta kirgan (lekin hali rol/login tanlamagan)
 /// foydalanuvchi uchun profilni to'ldirish — saytdagi /onboarding kabi 2 bosqichli:
@@ -45,7 +46,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   bool _showPw = false;
   bool _uploading = false;
   Uint8List? _preview;
-  String? _err;
+  final _errF = FlashValue<String>();
+  String? get _err => _errF.value;
+  set _err(String? v) => _errF.value = v;
 
   @override
   void initState() {
@@ -321,13 +324,17 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           selected: _role == 'PREPARER',
           onTap: () => setState(() => _role = 'PREPARER'),
         ),
-        if (error != null) ...[
-          const SizedBox(height: 14),
-          Text(
-            error,
-            style: const TextStyle(color: Color(0xFFF87171), fontSize: 13),
+        FlashStatus(
+          message: error,
+          trigger: _errF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: Text(
+              m,
+              style: const TextStyle(color: Color(0xFFF87171), fontSize: 13),
+            ),
           ),
-        ],
+        ),
         const SizedBox(height: 20),
         WebButton(
           label: 'Davom etiş →',
@@ -448,16 +455,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                           "Qayerdan eşitganingizni yozing (YouTube, TikTok...)",
                                     ),
                                   ],
-                                  if (error != null) ...[
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      error,
-                                      style: TextStyle(
-                                        color: WebC.red,
-                                        fontSize: 13.5,
+                                  FlashStatus(
+                                    message: error,
+                                    trigger: _errF.seq,
+                                    builder: (_, m) => Padding(
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: Text(
+                                        m,
+                                        style: TextStyle(
+                                          color: WebC.red,
+                                          fontSize: 13.5,
+                                        ),
                                       ),
                                     ),
-                                  ],
+                                  ),
                                   const SizedBox(height: 22),
                                   WebButton(
                                     label: 'Davom etiş →',
@@ -695,16 +706,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                       ],
                                     ),
                                   ),
-                                  if (error != null) ...[
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      error,
-                                      style: TextStyle(
-                                        color: WebC.red,
-                                        fontSize: 13.5,
+                                  FlashStatus(
+                                    message: error,
+                                    trigger: _errF.seq,
+                                    builder: (_, m) => Padding(
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: Text(
+                                        m,
+                                        style: TextStyle(
+                                          color: WebC.red,
+                                          fontSize: 13.5,
+                                        ),
                                       ),
                                     ),
-                                  ],
+                                  ),
                                   const SizedBox(height: 20),
                                   Row(
                                     children: [

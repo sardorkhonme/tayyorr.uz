@@ -20,6 +20,7 @@ import '../../auth/bloc/auth_bloc.dart';
 import '../cubit/wallet_cubit.dart';
 import '../data/wallet_model.dart';
 import '../data/wallet_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// 1 star narxi — admin belgilaydi (server /mobile/config).
 int get _starPrice => AppConfig.instance.starPrice;
@@ -616,7 +617,9 @@ class _BuyStarsForm extends StatefulWidget {
 class _BuyStarsFormState extends State<_BuyStarsForm> {
   final _stars = TextEditingController();
   bool _busy = false;
-  (bool, String)? _msg;
+  final _msgF = FlashValue<(bool, String)>();
+  (bool, String)? get _msg => _msgF.value;
+  set _msg((bool, String)? v) => _msgF.value = v;
 
   @override
   void dispose() {
@@ -705,10 +708,14 @@ class _BuyStarsFormState extends State<_BuyStarsForm> {
                 ),
             ],
           ),
-          if (_msg != null) ...[
-            const SizedBox(height: 16),
-            _Msg(ok: _msg!.$1, text: _msg!.$2),
-          ],
+          FlashStatus(
+            message: _msg?.$2,
+            trigger: _msgF.seq,
+            builder: (_, m) => Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: _Msg(ok: _msg!.$1, text: m),
+            ),
+          ),
           const SizedBox(height: 16),
           WebButton(
             label: 'Star sotib oliş',
@@ -815,7 +822,9 @@ class _PayoutFormState extends State<_PayoutForm> {
   final _cardName = TextEditingController();
   final _amount = TextEditingController();
   bool _busy = false;
-  (bool, String)? _msg;
+  final _msgF = FlashValue<(bool, String)>();
+  (bool, String)? get _msg => _msgF.value;
+  set _msg((bool, String)? v) => _msgF.value = v;
 
   @override
   void initState() {
@@ -981,10 +990,14 @@ class _PayoutFormState extends State<_PayoutForm> {
             const SizedBox(height: 12),
             _CommissionBreakdown(amount: int.parse(_amount.text.trim())),
           ],
-          if (_msg != null) ...[
-            const SizedBox(height: 12),
-            _Msg(ok: _msg!.$1, text: _msg!.$2),
-          ],
+          FlashStatus(
+            message: _msg?.$2,
+            trigger: _msgF.seq,
+            builder: (_, m) => Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: _Msg(ok: _msg!.$1, text: m),
+            ),
+          ),
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerLeft,

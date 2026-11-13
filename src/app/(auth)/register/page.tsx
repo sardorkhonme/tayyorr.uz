@@ -87,7 +87,7 @@ export default function RegisterPage() {
                 : "Google bilan davom etiş"}
         </button>
         {google.error && (
-          <p role="alert" className="mt-3 text-center text-sm text-red-400">
+          <p role="alert" className="flash-status mt-3 text-center text-sm text-red-400">
             {google.error}
           </p>
         )}

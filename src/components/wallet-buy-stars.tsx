@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { StarIcon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 const QUICK = [5, 10, 25, 50];
 
@@ -17,7 +18,7 @@ export function WalletBuyStars({
   const router = useRouter();
   const [stars, setStars] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: React.ReactNode } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: React.ReactNode } | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -104,7 +105,7 @@ export function WalletBuyStars({
       </div>
 
       {msg && (
-        <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
+        <p className={`flash-status text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
           {msg.text}
         </p>
       )}

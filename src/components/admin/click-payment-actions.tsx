@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 export function ClickPaymentActions({
   txnId,
@@ -13,7 +14,7 @@ export function ClickPaymentActions({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function checkStatus() {
     setBusy(true);
@@ -84,7 +85,7 @@ export function ClickPaymentActions({
           {status}
         </pre>
       )}
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
     </div>
   );
 }

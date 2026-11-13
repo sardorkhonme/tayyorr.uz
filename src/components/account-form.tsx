@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { PasswordInput } from "@/components/password-input";
+import { useFlashState } from "@/components/flash-status";
 
 export function AccountForm({ initial }: { initial: { login: string } }) {
   const router = useRouter();
@@ -13,7 +14,7 @@ export function AccountForm({ initial }: { initial: { login: string } }) {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -89,7 +90,7 @@ export function AccountForm({ initial }: { initial: { login: string } }) {
       </div>
 
       {msg && (
-        <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
+        <p className={`flash-status text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
           {msg.text}
         </p>
       )}

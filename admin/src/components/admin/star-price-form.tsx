@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 /** 1 star narxi (so'm) — admin belgilaydi. */
 export function StarPriceForm({ value }: { value: number }) {
   const router = useRouter();
   const [v, setV] = useState(String(value));
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const n = Number(v);
   const valid = Number.isInteger(n) && n >= 100 && n <= 1_000_000;
 
@@ -58,7 +59,7 @@ export function StarPriceForm({ value }: { value: number }) {
       >
         {busy ? "Saqlanmoqda…" : "Saqlaş"}
       </button>
-      {msg && <span className={`w-full text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
+      {msg && <span className={`flash-status w-full text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
     </section>
   );
 }

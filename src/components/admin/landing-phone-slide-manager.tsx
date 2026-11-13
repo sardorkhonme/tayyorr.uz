@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 export interface PhoneSlide {
   id: string;
@@ -42,7 +43,7 @@ function Row({ s }: { s: PhoneSlide }) {
   const [active, setActive] = useState(s.active);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const dirty =
@@ -172,7 +173,7 @@ function Row({ s }: { s: PhoneSlide }) {
               {uploading ? "Yuklanmoqda..." : "Rasmni almaştiriş"}
             </button>
           </div>
-          {msg && <p className="text-sm text-red-400">{msg}</p>}
+          {msg && <p className="flash-status text-sm text-red-400">{msg}</p>}
           {dirty && (
             <button
               type="button"
@@ -195,7 +196,7 @@ export function LandingPhoneSlideManager({ initial }: { initial: PhoneSlide[] })
   const [subtitle, setSubtitle] = useState("");
   const [order, setOrder] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function addWithFile(file: File) {
@@ -271,7 +272,7 @@ export function LandingPhoneSlideManager({ initial }: { initial: PhoneSlide[] })
         >
           {uploading ? "Yuklanmoqda..." : "Rasm tanlaş va qöşiş"}
         </button>
-        {msg && <p className="mt-2 text-sm text-red-400">{msg}</p>}
+        {msg && <p className="flash-status mt-2 text-sm text-red-400">{msg}</p>}
       </div>
 
       <div className="text-xs text-zinc-600">

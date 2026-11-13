@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 export function BalanceAdjustForm({ userId }: { userId: string }) {
   const router = useRouter();
@@ -12,8 +13,8 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
   const [reason, setReason] = useState("");
   const [notify, setNotify] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [ok, setOk] = useState(false);
+  const [err, setErr] = useFlashState<string | null>(null);
+  const [ok, setOk] = useFlashState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -129,8 +130,8 @@ export function BalanceAdjustForm({ userId }: { userId: string }) {
         />
         «tayyorr.uz support» orqali xabar yuborilsin
       </label>
-      {err && <p className="text-sm text-red-400">{err}</p>}
-      {ok && <p className="text-sm text-emerald-400">Balans yangilandi.</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
+      {ok && <p className="flash-status text-sm text-emerald-400">Balans yangilandi.</p>}
       <button
         className={direction === "ADD" ? "btn-primary w-fit" : "w-fit rounded-xl bg-red-500/80 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"}
         disabled={busy || !amount || !reason.trim()}

@@ -6,6 +6,7 @@ import { Icon, type IconName } from "@/components/icons";
 import { CLICK_MAX, CLICK_MIN } from "@/lib/click";
 import { num } from "@/lib/format";
 import { PAY_METHODS, type PayMethod } from "@/lib/pay";
+import { useFlashState } from "@/components/flash-status";
 
 const QUICK = [10_000, 25_000, 50_000, 100_000, 200_000, 500_000];
 const MAIN_URL = process.env.NEXT_PUBLIC_MAIN_URL || "https://tayyorr.uz";
@@ -24,7 +25,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<PayMethod>("click");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useFlashState<string | null>(null);
   const value = Number(amount.replace(/\D/g, "")) || 0;
   const valid = value >= CLICK_MIN && value <= CLICK_MAX;
   const chosen = PAY_METHODS.find((m) => m.key === method)!;
@@ -172,7 +173,7 @@ export function PayForm({ returnTo, platform }: { returnTo: string; platform: st
             })}
           </div>
 
-          {error && <p className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+          {error && <p className="flash-status mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
 
           <button type="button" onClick={pay} disabled={!valid || busy} className="btn-primary mt-10 w-full !rounded-2xl !py-4 !text-base">
             {busy ? (

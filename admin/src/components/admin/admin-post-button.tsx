@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 export function AdminPostButton({
   url,
@@ -24,7 +25,7 @@ export function AdminPostButton({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function run() {
     if (confirmText && !window.confirm(confirmText)) return;
@@ -58,7 +59,7 @@ export function AdminPostButton({
       <button type="button" className={className} disabled={busy} onClick={run}>
         {busy ? "..." : label}
       </button>
-      {err && <span className="text-xs text-red-400">{err}</span>}
+      {err && <span className="flash-status text-xs text-red-400">{err}</span>}
     </span>
   );
 }

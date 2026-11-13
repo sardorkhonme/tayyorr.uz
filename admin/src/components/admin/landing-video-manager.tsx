@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 export interface Video {
   id: string;
@@ -40,7 +41,7 @@ function Row({ v }: { v: Video }) {
   const [active, setActive] = useState(v.active);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const dirty = title !== v.title || order !== v.order || active !== v.active;
@@ -162,7 +163,7 @@ function Row({ v }: { v: Video }) {
               {uploading ? "Yuklanmoqda..." : "Videoni almaştiriş"}
             </button>
           </div>
-          {msg && <p className="text-sm text-red-400">{msg}</p>}
+          {msg && <p className="flash-status text-sm text-red-400">{msg}</p>}
           {dirty && (
             <button
               type="button"
@@ -184,7 +185,7 @@ export function LandingVideoManager({ initial }: { initial: Video[] }) {
   const [title, setTitle] = useState("");
   const [order, setOrder] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function addWithFile(file: File) {
@@ -253,7 +254,7 @@ export function LandingVideoManager({ initial }: { initial: Video[] }) {
         >
           {uploading ? "Yuklanmoqda..." : "Video tanlaş va qöşiş"}
         </button>
-        {msg && <p className="mt-2 text-sm text-red-400">{msg}</p>}
+        {msg && <p className="flash-status mt-2 text-sm text-red-400">{msg}</p>}
       </div>
 
       <div className="text-xs text-zinc-600">

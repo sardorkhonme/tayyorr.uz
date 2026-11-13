@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 /** Dollar kursini Markaziy bankdan hozir qayta olish. */
 export function SmmRateRefresh() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   async function refresh() {
     setBusy(true);
@@ -30,7 +31,7 @@ export function SmmRateRefresh() {
       <button type="button" className="btn-ghost !px-3 !py-1.5 text-sm" disabled={busy} onClick={refresh}>
         {busy ? "..." : "Kursni hozir yangilaş"}
       </button>
-      {msg && <span className={`text-xs ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</span>}
+      {msg && <span className={`flash-status text-xs ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</span>}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import '../../wallet/presentation/wallet_screen.dart';
 import '../data/smm_api.dart';
 import '../data/smm_models.dart';
 import 'smm_widgets.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Xizmatni tanlaganda — buyurtma oynasi (saytdagi OrderDialog).
 Future<void> showSmmOrderSheet(
@@ -53,7 +54,9 @@ class _OrderFormState extends State<_OrderForm> {
   Timer? _debounce;
   ({bool ok, String text})? _linkCheck;
   bool _busy = false;
-  String? _error;
+  final _errorF = FlashValue<String>();
+  String? get _error => _errorF.value;
+  set _error(String? v) => _errorF.value = v;
   bool _done = false;
 
   @override
@@ -295,13 +298,17 @@ class _OrderFormState extends State<_OrderForm> {
             ).push(MaterialPageRoute(builder: (_) => const StandaloneWallet())),
           ),
         ],
-        if (_error != null) ...[
-          const SizedBox(height: 10),
-          Text(
-            _error!,
-            style: TextStyle(color: WebC.red, fontSize: 13.5, height: 1.4),
+        FlashStatus(
+          message: _error,
+          trigger: _errorF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              m,
+              style: TextStyle(color: WebC.red, fontSize: 13.5, height: 1.4),
+            ),
           ),
-        ],
+        ),
         const SizedBox(height: 14),
         AppDialogButton(
           label: 'Buyurtma beriş',

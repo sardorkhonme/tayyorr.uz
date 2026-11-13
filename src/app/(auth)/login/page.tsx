@@ -10,11 +10,12 @@ import { AuthShell } from "@/components/auth-shell";
 import { BrandLoaderOverlay } from "@/components/brand-loader";
 import { useGoogleSignIn } from "@/components/use-google-sign-in";
 import { PasswordInput } from "@/components/password-input";
+import { useFlashState } from "@/components/flash-status";
 
 export default function LoginPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [welcome, setWelcome] = useState<string | null>(null);
   const google = useGoogleSignIn();
@@ -71,7 +72,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          {err && <p className="text-sm text-red-400">{err}</p>}
+          {err && <p className="flash-status text-sm text-red-400">{err}</p>}
           <button className="btn-primary mt-1" disabled={busy}>
             {busy ? (
               <span className="inline-flex items-center gap-2">
@@ -101,7 +102,7 @@ export default function LoginPage() {
           {google.busy ? "Yönaltirilmoqda…" : "Google orqali kiriş"}
         </button>
         {google.error && (
-          <p role="alert" className="mt-3 text-center text-sm text-red-400">
+          <p role="alert" className="flash-status mt-3 text-center text-sm text-red-400">
             {google.error}
           </p>
         )}

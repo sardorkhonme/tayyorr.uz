@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 /** Akkaunt bo'limi ostidagi versiya yorlig'ini o'zgartirish (bo'sh — avtomatik). */
 export function VersionLabelForm({ initial, fallback }: { initial: string; fallback: string }) {
   const router = useRouter();
   const [value, setValue] = useState(initial);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +54,7 @@ export function VersionLabelForm({ initial, fallback }: { initial: string; fallb
           {busy ? "..." : "Saqlaş"}
         </button>
       </div>
-      {msg && <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}
+      {msg && <p className={`flash-status text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}
     </form>
   );
 }

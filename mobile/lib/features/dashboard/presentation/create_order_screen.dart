@@ -11,6 +11,7 @@ import '../../../widgets/web_ui.dart';
 import '../../order_detail/presentation/order_detail_screen.dart';
 import '../data/order_model.dart';
 import '../data/orders_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Saytdagi /orders/new bilan bir xil forma.
 class CreateOrderScreen extends StatefulWidget {
@@ -28,7 +29,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   String _type = 'PRESENTATION';
   DateTime? _deadline;
   bool _busy = false;
-  String? _error;
+  final _errorF = FlashValue<String>();
+  String? get _error => _errorF.value;
+  set _error(String? v) => _errorF.value = v;
 
   @override
   void dispose() {
@@ -171,10 +174,17 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
                 ],
               ),
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
-              ],
+              FlashStatus(
+                message: _error,
+                trigger: _errorF.seq,
+                builder: (_, m) => Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    m,
+                    style: TextStyle(color: WebC.red, fontSize: 14),
+                  ),
+                ),
+              ),
               const SizedBox(height: 12),
               const SizedBox(height: 4),
               WebButton(

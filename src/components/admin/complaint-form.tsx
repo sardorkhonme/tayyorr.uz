@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 const STATUSES = [
   ["OPEN", "Yangi"],
@@ -23,7 +24,7 @@ export function ComplaintForm({
   const [st, setSt] = useState(status);
   const [adminNote, setAdminNote] = useState(note ?? "");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,7 +72,7 @@ export function ComplaintForm({
           onChange={(e) => setAdminNote(e.target.value)}
         />
       </div>
-      {msg && <p className="text-xs text-zinc-400">{msg}</p>}
+      {msg && <p className="flash-status text-xs text-zinc-400">{msg}</p>}
       <button className="btn-primary w-fit" disabled={busy}>
         {busy ? "..." : "Saqlaş"}
       </button>

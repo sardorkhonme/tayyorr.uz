@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/icons";
 import type { AccountData, AccountInput } from "@/lib/account";
+import { useFlashState } from "@/components/flash-status";
 
 /** Rasmni brauzerda kichraytiradi (512px, JPEG) — serverga yengil data URL yuboriladi. */
 async function resizeImage(file: File, max = 512): Promise<string> {
@@ -42,16 +43,9 @@ export function AccountEditor({
   const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ ...initial, newPassword: "" });
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  // «Saqlandi» — 4 soniya turib yöqoladi (xato xabari tuzatilguncha qoladi)
-  useEffect(() => {
-    if (!msg?.ok) return;
-    const t = setTimeout(() => setMsg(null), 4000);
-    return () => clearTimeout(t);
-  }, [msg]);
 
   async function pickImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -162,7 +156,7 @@ export function AccountEditor({
       {msg && (
         <p
           role="status"
-          className={`animate-pop flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
+          className={`flash-status flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
             msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
           }`}
         >

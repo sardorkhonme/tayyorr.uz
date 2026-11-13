@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { KIND_RULES, PLATFORM_NAME } from "@/lib/smm-adjust";
+import { useFlashState } from "@/components/flash-status";
 
 type Service = { id: string; name: string; platform: string; kind: string };
 type Active = { id: string; label: string; until: string; reason: string | null; permanent: boolean };
@@ -47,7 +48,7 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
   const [reason, setReason] = useState("");
   const [notify, setNotify] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -273,7 +274,7 @@ export function PartialRestrictionForm({ userId, services, active }: { userId: s
           <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
           Foydalanuvçiga xabar yuboriş (har tizim uçun alohida: qaysi tizimda, nima çeklangani, muddat va sabab)
         </label>
-        {err && <p className="text-sm text-red-400">{err}</p>}
+        {err && <p className="flash-status text-sm text-red-400">{err}</p>}
         <button className="btn-primary w-fit" disabled={busy !== null || (scopes.size === 0 && picked.size === 0)}>
           {busy === "add" ? "..." : "Tanlanganlarni çeklaş"}
         </button>

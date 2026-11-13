@@ -26,6 +26,7 @@ import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/presentation/complete_profile_screen.dart'
     show BirthDateField;
 import '../../auth/data/auth_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// tayyorr+ bosh sahifasi va SMM dan ochiladigan profil (alohida sahifa).
 class StandaloneProfile extends StatelessWidget {
@@ -277,8 +278,12 @@ class _ProfileFormState extends State<_ProfileForm> {
   bool _busy = false;
   bool _uploading = false;
   Uint8List? _preview;
-  String? _msg;
-  String? _avatarErr;
+  final _msgF = FlashValue<String>();
+  String? get _msg => _msgF.value;
+  set _msg(String? v) => _msgF.value = v;
+  final _avatarErrF = FlashValue<String>();
+  String? get _avatarErr => _avatarErrF.value;
+  set _avatarErr(String? v) => _avatarErrF.value = v;
 
   @override
   void initState() {
@@ -415,13 +420,17 @@ class _ProfileFormState extends State<_ProfileForm> {
                       variant: WebBtn.ghost,
                       onPressed: _uploading ? null : _pickAvatar,
                     ),
-                    if (_avatarErr != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        _avatarErr!,
-                        style: TextStyle(color: WebC.red, fontSize: 12),
+                    FlashStatus(
+                      message: _avatarErr,
+                      trigger: _avatarErrF.seq,
+                      builder: (_, m) => Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          m,
+                          style: TextStyle(color: WebC.red, fontSize: 12),
+                        ),
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -461,10 +470,17 @@ class _ProfileFormState extends State<_ProfileForm> {
           const SizedBox(height: 12),
           const WebLabel("Qöşimça maʼlumot"),
           WebInput(controller: _about, maxLines: 4, minLines: 4),
-          if (_msg != null) ...[
-            const SizedBox(height: 12),
-            Text(_msg!, style: TextStyle(color: WebC.zinc400, fontSize: 14)),
-          ],
+          FlashStatus(
+            message: _msg,
+            trigger: _msgF.seq,
+            builder: (_, m) => Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                m,
+                style: TextStyle(color: WebC.zinc400, fontSize: 14),
+              ),
+            ),
+          ),
           const SizedBox(height: 12),
           WebButton(
             label: 'Saqlaş',
@@ -493,7 +509,9 @@ class _AccountFormState extends State<_AccountForm> {
   bool _show1 = false;
   bool _show2 = false;
   bool _busy = false;
-  (bool, String)? _msg;
+  final _msgF = FlashValue<(bool, String)>();
+  (bool, String)? get _msg => _msgF.value;
+  set _msg((bool, String)? v) => _msgF.value = v;
 
   @override
   void dispose() {
@@ -581,16 +599,20 @@ class _AccountFormState extends State<_AccountForm> {
             obscure: !_show2,
             suffix: _eye(_show2, () => setState(() => _show2 = !_show2)),
           ),
-          if (_msg != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _msg!.$2,
-              style: TextStyle(
-                color: _msg!.$1 ? WebC.emerald : WebC.red,
-                fontSize: 14,
+          FlashStatus(
+            message: _msg?.$2,
+            trigger: _msgF.seq,
+            builder: (_, m) => Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                m,
+                style: TextStyle(
+                  color: _msg!.$1 ? WebC.emerald : WebC.red,
+                  fontSize: 14,
+                ),
               ),
             ),
-          ],
+          ),
           const SizedBox(height: 12),
           WebButton(
             label: 'Saqlaş',

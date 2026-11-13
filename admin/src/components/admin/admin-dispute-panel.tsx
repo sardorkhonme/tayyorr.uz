@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { localInputToIso, toLocalInput } from "@/components/contract-panel";
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /** Nizo bo'yicha admin qarori: bekor qilish / davom ettirish / yakunlash. */
 export function AdminDisputePanel({
@@ -24,7 +25,7 @@ export function AdminDisputePanel({
     if (deadline && new Date(deadline).getTime() > Date.now()) setNewDeadline(toLocalInput(deadline));
   }, [deadline]);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function decide(decision: "CANCEL" | "CONTINUE" | "COMPLETE") {
     if (note.trim().length < 3) {
@@ -78,7 +79,7 @@ export function AdminDisputePanel({
           onChange={(e) => setNewDeadline(e.target.value)}
         />
       </div>
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
       <div className="flex flex-wrap gap-2">
         <button className="btn-ghost text-red-300" disabled={busy} onClick={() => decide("CANCEL")}>
           <Icon name="x-circle" className="h-4 w-4" />

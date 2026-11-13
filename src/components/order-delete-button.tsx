@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 export function OrderDeleteButton({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function del() {
     if (
@@ -47,7 +48,7 @@ export function OrderDeleteButton({ orderId }: { orderId: string }) {
           </span>
         )}
       </button>
-      {err && <p className="mt-1 text-xs text-red-400">{err}</p>}
+      {err && <p className="flash-status mt-1 text-xs text-red-400">{err}</p>}
     </div>
   );
 }

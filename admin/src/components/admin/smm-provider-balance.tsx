@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /** Provayder (smmcloud) hisobidagi pul — "Yangilash" bosilganda tekshiriladi. */
 export function SmmProviderBalance({
@@ -21,7 +22,7 @@ export function SmmProviderBalance({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useFlashState<string | null>(null);
 
   async function refresh() {
     setBusy(true);
@@ -65,7 +66,7 @@ export function SmmProviderBalance({
           ? `tekşirildi: ${new Date(checkedAt).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`
           : "hali tekşirilmagan"}
       </span>
-      {error && <span className="mt-1 text-xs text-red-300">{error}</span>}
+      {error && <span className="flash-status mt-1 text-xs text-red-300">{error}</span>}
       {addFundsUrl && (
         <a href={addFundsUrl} target="_blank" rel="noreferrer" className="mt-2 text-xs text-indigo-400 hover:underline">
           Hisobni töldiriş →

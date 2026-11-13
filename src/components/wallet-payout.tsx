@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { PAYOUT_COMMISSION_PERCENT, payoutNet } from "@/lib/payout-commission";
+import { useFlashState } from "@/components/flash-status";
 
 function formatCard(v: string) {
   return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
@@ -15,7 +16,7 @@ export function WalletPayout({ balance }: { balance: number }) {
   const [cardName, setCardName] = useState("");
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const value = Number(amount) || 0;
   const { commission, net } = payoutNet(value);
 
@@ -115,7 +116,7 @@ export function WalletPayout({ balance }: { balance: number }) {
         </div>
       )}
       {msg && (
-        <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
+        <p className={`flash-status text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>
           {msg.text}
         </p>
       )}

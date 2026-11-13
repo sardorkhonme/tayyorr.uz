@@ -10,6 +10,7 @@ import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
+import '../../../widgets/flash_status.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -149,16 +150,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ),
                                 ),
-                                if (state.error != null) ...[
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    state.error!,
-                                    style: TextStyle(
-                                      color: WebC.red,
-                                      fontSize: 14,
+                                FlashStatus(
+                                  message: state.error,
+                                  builder: (_, m) => Padding(
+                                    padding: const EdgeInsets.only(top: 16),
+                                    child: Text(
+                                      m,
+                                      style: TextStyle(
+                                        color: WebC.red,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ),
-                                ],
+                                ),
                                 const SizedBox(height: 16),
                                 WebButton(
                                   label: 'Kiriş',

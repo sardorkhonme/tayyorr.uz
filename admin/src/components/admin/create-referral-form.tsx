@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 export function CreateReferralForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,7 +48,7 @@ export function CreateReferralForm() {
       <button className="btn-primary" disabled={busy || !name.trim()}>
         {busy ? "..." : "Havola yaratiş"}
       </button>
-      {err && <p className="w-full text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status w-full text-sm text-red-400">{err}</p>}
     </form>
   );
 }

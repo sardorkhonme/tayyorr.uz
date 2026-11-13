@@ -24,6 +24,7 @@ import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { flashMessage } from "@/lib/flash-message";
 import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
 import { BackChevron, HEADER_CAPSULE } from "@/components/page-header";
+import { useFlashState } from "@/components/flash-status";
 
 interface ReplyPreview {
   id: string;
@@ -239,7 +240,7 @@ export function ChatRoom({
     }
   }
   const [peerRead, setPeerRead] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   // javob (reply) bosilganda asl xabar sahifada bo'lmasa — mobil ilovadagidek xabar
   const [jumpMiss, setJumpMiss] = useState(false);
 
@@ -1095,7 +1096,7 @@ export function ChatRoom({
         >
           <div className="pointer-events-auto mx-auto max-w-3xl">
             {err && (
-              <p className={`mb-2 rounded-2xl px-3.5 py-2 text-xs text-red-400 ${HEADER_CAPSULE}`}>{err}</p>
+              <p className={`flash-status mb-2 rounded-2xl px-3.5 py-2 text-xs text-red-400 ${HEADER_CAPSULE}`}>{err}</p>
             )}
 
             {blocked ? (

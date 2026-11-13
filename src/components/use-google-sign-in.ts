@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
+import { useFlashState } from "@/components/flash-status";
 
 /** NextAuth `?error=` kodlari → tushunarli matn. */
 const AUTH_ERRORS: Record<string, string> = {
@@ -24,7 +25,7 @@ const AUTH_ERRORS: Record<string, string> = {
  */
 export function useGoogleSignIn() {
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useFlashState<string | null>(null);
 
   // NextAuth xatosi bilan qaytgan bölsa (?error=...)
   useEffect(() => {

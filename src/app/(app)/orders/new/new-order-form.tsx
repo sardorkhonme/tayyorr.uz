@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { BrandLoaderOverlay } from "@/components/brand-loader";
 import { errorText, fetchJson } from "@/components/fetch-json";
 import { ORDER_CREATED_KEY } from "@/components/order-created-banner";
+import { useFlashState } from "@/components/flash-status";
 
 const TYPES = [
   ["PRESENTATION", "Prezentatsiya"],
@@ -32,7 +33,7 @@ export function NewOrderForm() {
     deadline: "",
     budget: "",
   });
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   // server va brauzer vaqt zonasi farq qiladi — min faqat brauzerda hisoblanadi
   const [minDeadline, setMinDeadline] = useState<string | undefined>();
   useEffect(() => setMinDeadline(nowLocal()), []);
@@ -145,7 +146,7 @@ export function NewOrderForm() {
         </div>
 
         {err && (
-          <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          <p role="alert" className="flash-status rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
             {err}
           </p>
         )}

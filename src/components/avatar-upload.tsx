@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { uploadFile } from "@/lib/upload-client";
+import { useFlashState } from "@/components/flash-status";
 
 export function AvatarUpload({
   value,
@@ -12,7 +13,7 @@ export function AvatarUpload({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function handle(file: File) {
     setErr(null);
@@ -52,7 +53,7 @@ export function AvatarUpload({
         >
           {busy ? "Yuklanmoqda..." : "Rasm tanlaş"}
         </button>
-        {err && <p className="mt-1 text-xs text-red-400">{err}</p>}
+        {err && <p className="flash-status mt-1 text-xs text-red-400">{err}</p>}
         <input
           ref={inputRef}
           type="file"

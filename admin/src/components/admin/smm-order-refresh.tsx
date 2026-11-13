@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /** SMM buyurtma statistikasini provayderdan hozir yangilaydi (orderId bo'lmasa — barcha faol buyurtmalar). */
 export function SmmOrderRefresh({ orderId, label = "Yangilaş" }: { orderId?: string; label?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const loading = busy || pending;
 
   async function refresh() {
@@ -37,7 +38,7 @@ export function SmmOrderRefresh({ orderId, label = "Yangilaş" }: { orderId?: st
 
   return (
     <span className="inline-flex items-center gap-2">
-      {msg && <span className={`text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
+      {msg && <span className={`flash-status text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
       <button
         type="button"
         onClick={refresh}

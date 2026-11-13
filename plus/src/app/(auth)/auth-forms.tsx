@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 
+import { useFlash, useFlashState } from "@/components/flash-status";
+
 import {
   forgotAction,
   googleAction,
@@ -62,19 +64,22 @@ function PasswordInput({ autoComplete, id = "password", name = "password" }: { a
   );
 }
 
-function ErrorBox({ text }: { text?: string }) {
-  if (!text) return null;
-  return <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{text}</p>;
+/** Server action xatosi — har yangi holat kelganda 5 s körinadi, keyin sekin yöqoladi. */
+function ErrorBox({ state }: { state: AuthState }) {
+  const shown = useFlash(state);
+  if (!shown?.error) return null;
+  return <p className="flash-status rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{shown.error}</p>;
 }
 
 export function LoginForm({ initialError, notice }: { initialError?: string; notice?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(loginAction, { error: initialError });
+  const shownNotice = useFlash(notice);
   return (
     <>
       <h1 className="font-display text-2xl font-bold text-zinc-900">Xuş kelibsiz!</h1>
       <p className="mb-6 mt-1.5 text-zinc-500">Bitta hisob — barça tayyorr xizmatlarida.</p>
 
-      {notice && <p className="mb-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</p>}
+      {shownNotice && <p className="flash-status mb-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{shownNotice}</p>}
       <form action={action} className="space-y-5">
         <div>
           <label className="label" htmlFor="identifier">Login yoki email</label>
@@ -96,7 +101,7 @@ export function LoginForm({ initialError, notice }: { initialError?: string; not
             </Link>
           </div>
         </div>
-        <ErrorBox text={state.error} />
+        <ErrorBox state={state} />
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
           {pending ? "Kirilmoqda…" : "Kiriş"}
         </button>
@@ -138,7 +143,7 @@ export function RegisterForm() {
             required
           />
         </div>
-        <ErrorBox text={state.error} />
+        <ErrorBox state={state} />
         {state.values?.exists && (
           <p className="-mt-2 text-sm text-zinc-500">
             <Link href="/login" className="font-semibold text-indigo-600 hover:underline">Kiriş</Link>
@@ -172,7 +177,7 @@ export function OtpForm({ email, prefill = "" }: { email: string; prefill?: stri
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const [wait, setWait] = useState(60);
-  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [note, setNote] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const [resending, setResending] = useState(false);
   const code = digits.join("");
 
@@ -254,7 +259,7 @@ export function OtpForm({ email, prefill = "" }: { email: string; prefill?: stri
             />
           ))}
         </div>
-        <ErrorBox text={state.error} />
+        <ErrorBox state={state} />
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending || code.length !== 4}>
           {pending ? "Tekşirilmoqda…" : "Tasdiqlaş"}
         </button>
@@ -270,7 +275,7 @@ export function OtpForm({ email, prefill = "" }: { email: string; prefill?: stri
             {resending ? "Yuborilmoqda…" : "Kodni qayta yuboriş"}
           </button>
         )}
-        {note && <span className={`text-sm ${note.ok ? "text-emerald-600" : "text-red-600"}`}>{note.text}</span>}
+        {note && <span className={`flash-status text-sm ${note.ok ? "text-emerald-600" : "text-red-600"}`}>{note.text}</span>}
         <span className="text-sm text-zinc-400">Xat kelmadimi? «Spam» papkasini ham tekşiring.</span>
         <Link href="/register" className="text-sm font-medium text-zinc-500 hover:text-zinc-800">
           ← Emailni özgartiriş
@@ -317,7 +322,7 @@ export function ForgotForm() {
             required
           />
         </div>
-        <ErrorBox text={state.error} />
+        <ErrorBox state={state} />
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
           {pending ? "Yuborilmoqda…" : "Havola yuboriş"}
         </button>
@@ -349,7 +354,7 @@ export function ResetForm({ token }: { token: string }) {
           <label className="label" htmlFor="confirm">Yangi parolni takrorlang</label>
           <PasswordInput autoComplete="new-password" id="confirm" name="confirm" />
         </div>
-        <ErrorBox text={state.error} />
+        <ErrorBox state={state} />
         <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
           {pending ? "Saqlanmoqda…" : "Saqlaş"}
         </button>

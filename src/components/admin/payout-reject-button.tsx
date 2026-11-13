@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 const QUICK = [
   "Karta raqami notöğri",
@@ -20,7 +21,7 @@ export function PayoutRejectButton({ id, amountText }: { id: string; amountText:
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,7 +91,7 @@ export function PayoutRejectButton({ id, amountText }: { id: string; amountText:
                 maxLength={1000}
                 autoFocus
               />
-              {err && <p className="text-sm text-red-400">{err}</p>}
+              {err && <p className="flash-status text-sm text-red-400">{err}</p>}
               <div className="flex justify-end gap-2">
                 <button type="button" className="btn-ghost" onClick={() => setOpen(false)} disabled={busy}>
                   Bekor

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 type Role = "ORDERER" | "PREPARER";
 export type AdminGuideVideo = { id: string; title: string; url: string };
@@ -43,7 +44,7 @@ function Row({ role, v, index, total }: { role: Role; v: AdminGuideVideo; index:
   const [title, setTitle] = useState(v.title);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
 
   async function run(fn: () => Promise<void>) {
     setBusy(true);
@@ -103,7 +104,7 @@ function Row({ role, v, index, total }: { role: Role; v: AdminGuideVideo; index:
             Öçiriş
           </button>
         </div>
-        {msg && <span className="text-xs text-red-300">{msg}</span>}
+        {msg && <span className="flash-status text-xs text-red-300">{msg}</span>}
       </div>
     </div>
   );
@@ -117,7 +118,7 @@ export function GuideVideoList({ role, title, videos }: { role: Role; title: str
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
 
   async function add() {
     if (!file || !newTitle.trim()) return;
@@ -171,7 +172,7 @@ export function GuideVideoList({ role, title, videos }: { role: Role; title: str
           >
             {progress != null ? `Yuklanmoqda… ${progress}%` : "Qöşiş"}
           </button>
-          {msg && <span className="text-xs text-red-300">{msg}</span>}
+          {msg && <span className="flash-status text-xs text-red-300">{msg}</span>}
         </div>
       </div>
     </section>

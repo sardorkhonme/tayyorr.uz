@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { HEAR_ABOUT_US } from "@/lib/hear-about-us";
 
 import { completeProfileAction } from "./actions";
+import { useFlashState } from "@/components/flash-status";
 
 const MONTHS = [
   "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
@@ -73,7 +74,7 @@ export function ProfileWizard({
   const [birth, setBirth] = useState({ d: "", m: "", y: "" });
   const [avatar, setAvatar] = useState(initial?.avatar ?? "");
   const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useFlashState("");
   const [pending, start] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
@@ -171,7 +172,7 @@ export function ProfileWizard({
               autoFocus
             />
           )}
-          {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="flash-status rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           <button type="button" onClick={next} className="btn-primary w-full !py-4 !text-base">
             Davom etiş <Icon name="arrow-right" className="h-5 w-5" strokeWidth={2.2} />
           </button>
@@ -296,7 +297,7 @@ export function ProfileWizard({
             />
           </Field>
 
-          {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="flash-status rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
           <button className="btn-primary w-full !py-4 !text-base" disabled={pending}>
             {pending ? "Saqlanmoqda…" : "Röyxatdan ötişni yakunlaş"}

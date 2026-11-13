@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons";
 import { Linkify } from "@/components/linkify";
 import { REACTION_EMOJIS, toggleReaction, type ReactionChip } from "@/lib/reaction-emojis";
 import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
+import { useFlashState } from "@/components/flash-status";
 
 type Msg = {
   id: string;
@@ -185,7 +186,7 @@ export function SupportChat({
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useFlashState("");
   const listRef = useRef<HTMLDivElement>(null);
   // ⋮ menyusi ochiq xabar (reaksiyalar + javob)
   const [menu, setMenu] = useState<{ id: string; rect: DOMRect } | null>(null);
@@ -446,7 +447,7 @@ export function SupportChat({
             })()}
 
           <form onSubmit={send} className="border-t border-zinc-100 bg-white p-3">
-            {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+            {error && <p className="flash-status mb-2 text-xs text-red-600">{error}</p>}
             {replyTo && (
               <div className="mb-2 flex items-center gap-2 rounded-xl border-l-[3px] border-indigo-400 bg-indigo-50 py-1.5 pl-2.5 pr-1.5">
                 <span className="min-w-0 flex-1 text-xs">

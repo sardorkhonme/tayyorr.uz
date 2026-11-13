@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 type Mode = "on" | "off" | "days";
 
@@ -9,7 +10,7 @@ export function FamilyHubForm() {
   const [mode, setMode] = useState<Mode>("on");
   const [days, setDays] = useState(7);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/family/hub")
@@ -76,7 +77,7 @@ export function FamilyHubForm() {
         <button type="button" className="btn-primary" disabled={busy} onClick={save}>
           {busy ? "..." : "Saqlaş"}
         </button>
-        {msg && <span className="text-xs text-zinc-400">{msg}</span>}
+        {msg && <span className="flash-status text-xs text-zinc-400">{msg}</span>}
       </div>
     </section>
   );

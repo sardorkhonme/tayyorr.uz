@@ -14,6 +14,7 @@ import {
   HearAboutUsSelect,
   type HearAboutUsValue,
 } from "@/components/hear-about-us-select";
+import { useFlashState } from "@/components/flash-status";
 
 type Role = "ORDERER" | "PREPARER";
 
@@ -38,7 +39,7 @@ function OnboardingInner() {
   const [hearAboutUs, setHearAboutUs] = useState<HearAboutUsValue>("");
   const [hearAboutUsDetail, setHearAboutUsDetail] = useState("");
   const [agree, setAgree] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Google'dan kelgan ism-familiyani oldindan to'ldiramiz
@@ -177,7 +178,7 @@ function OnboardingInner() {
               </button>
             ))}
           </div>
-          {err && <p className="mt-4 text-sm text-red-400">{err}</p>}
+          {err && <p className="flash-status mt-4 text-sm text-red-400">{err}</p>}
           <button type="button" onClick={submitRole} disabled={busy} className="btn-primary mt-6 w-full py-3 text-sm font-semibold">
             {busy ? "..." : "Davom etiş →"}
           </button>
@@ -236,7 +237,7 @@ function OnboardingInner() {
               onDetailChange={setHearAboutUsDetail}
             />
 
-            {err && <p className="text-sm text-red-400">{err}</p>}
+            {err && <p className="flash-status text-sm text-red-400">{err}</p>}
 
             <button
               type="button"
@@ -355,7 +356,7 @@ function OnboardingInner() {
                 <TermsGate checked={agree} onChange={setAgree} />
               </div>
 
-              {err && <p className="text-sm text-red-400">{err}</p>}
+              {err && <p className="flash-status text-sm text-red-400">{err}</p>}
 
               <div className="flex gap-2.5">
                 <button

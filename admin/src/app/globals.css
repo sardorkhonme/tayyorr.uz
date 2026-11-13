@@ -841,3 +841,14 @@ html.light .viz {
 ::view-transition-new(root) {
   z-index: 2;
 }
+
+/* Vaqtinçalik holat xabarlari (useFlashState / useFlash) — 5 s, keyin sekin söniş */
+.flash-status {
+  animation: flash-status 5s ease-in-out forwards;
+}
+@keyframes flash-status {
+  0% { opacity: 0; }
+  4% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { opacity: 0; }
+}

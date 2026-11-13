@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 /** Tayyorr SMM: ustama (%). Dollar kursi — «Tayyorr SMM» bo'limida. */
 export function SmmSettingsForm({
@@ -16,7 +17,7 @@ export function SmmSettingsForm({
   const router = useRouter();
   const [value, setValue] = useState(String(markupPercent));
   const [busy, setBusy] = useState<"save" | null>(null);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   const pct = Number(value);
   const example = fx && Number.isFinite(pct) ? Math.ceil((1 * fx * (1 + pct / 100)) / 100) * 100 : null;
@@ -76,7 +77,7 @@ export function SmmSettingsForm({
           <span className="font-semibold text-white">{example.toLocaleString("ru-RU")} söm</span>
         </p>
       )}
-      {msg && <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}
+      {msg && <p className={`flash-status text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}
     </form>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 type Admin = { id: string; name: string; login: string | null; image: string | null };
 
@@ -10,7 +11,7 @@ export function FamilyAdmins({ admins }: { admins: Admin[] }) {
   const router = useRouter();
   const [login, setLogin] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function call(body: Record<string, unknown>, key: string) {
     setBusy(key);
@@ -80,7 +81,7 @@ export function FamilyAdmins({ admins }: { admins: Admin[] }) {
           {busy === "add" ? "..." : "Admin qiliş"}
         </button>
       </form>
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
     </div>
   );
 }

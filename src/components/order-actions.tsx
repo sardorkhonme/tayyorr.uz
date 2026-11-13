@@ -18,6 +18,7 @@ import type { ContractView } from "@/lib/contract-view";
 import { Icon, StarIcon } from "@/components/icons";
 import { MascotState } from "@/components/mascot";
 import { errorText, fetchJson } from "@/components/fetch-json";
+import { useFlashState } from "@/components/flash-status";
 
 export const OFFER_STATUS: Record<string, { label: string; cls: string }> = {
   PENDING: { label: "Körib çiqilmoqda", cls: "bg-amber-500/15 text-amber-300" },
@@ -125,7 +126,7 @@ export function OrderActions(props: Props) {
   const [boostStars, setBoostStars] = useState("");
   const [offerStars, setOfferStars] = useState(String(MIN_OFFER_STARS));
   const [busy, setBusy] = useState(false);
-  const [err, setErrState] = useState<string | null>(null);
+  const [err, setErrState] = useFlashState<string | null>(null);
   // xato qaysi bölim yonida körinsin (taklif formasi, navbat/boost yoki umumiy)
   const [errAt, setErrAt] = useState<"offer" | "boost" | "contract" | "general">("general");
   const setErr = (m: string | null, at: "offer" | "boost" | "contract" | "general" = "general") => {
@@ -134,7 +135,7 @@ export function OrderActions(props: Props) {
   };
   const errFor = (at: "offer" | "boost" | "contract" | "general") =>
     err && errAt === at ? (
-      <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+      <p role="alert" className="flash-status rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
         {err}
       </p>
     ) : null;

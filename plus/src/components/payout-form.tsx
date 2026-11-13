@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/icons";
 import { num, som } from "@/lib/format";
+import { useFlashState } from "@/components/flash-status";
 
 const COMMISSION = 5; // src/lib/payout.ts bilan bir xil
 const MIN = 1_000;
@@ -16,7 +17,7 @@ export function PayoutForm({ balance }: { balance: number }) {
   const [cardName, setCardName] = useState("");
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   const digits = card.replace(/\D/g, "").slice(0, 16);
   const value = Number(amount) || 0;
@@ -120,7 +121,7 @@ export function PayoutForm({ balance }: { balance: number }) {
       )}
 
       {msg && (
-        <p className={`rounded-xl px-4 py-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+        <p className={`flash-status rounded-xl px-4 py-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
           {msg.text}
         </p>
       )}

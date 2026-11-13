@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 /** «Tayyorr.uz» profili (guruhda admin shu nomdan yozganda) — nom va rasm. */
 export function BrandProfileForm() {
@@ -8,7 +9,7 @@ export function BrandProfileForm() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useFlashState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export function BrandProfileForm() {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        {msg && <p className="text-sm text-zinc-400">{msg}</p>}
+        {msg && <p className="flash-status text-sm text-zinc-400">{msg}</p>}
         <button className="btn-primary w-fit" disabled={busy}>
           {busy ? "..." : "Saqlaş"}
         </button>

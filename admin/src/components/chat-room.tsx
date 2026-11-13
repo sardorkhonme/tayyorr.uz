@@ -23,6 +23,7 @@ import { isForeignSource, type MessageSource } from "@/lib/message-source";
 import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { flashMessage } from "@/lib/flash-message";
 import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
+import { useFlashState } from "@/components/flash-status";
 
 interface ReplyPreview {
   id: string;
@@ -238,7 +239,7 @@ export function ChatRoom({
     }
   }
   const [peerRead, setPeerRead] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   // javob (reply) bosilganda asl xabar sahifada bo'lmasa — mobil ilovadagidek xabar
   const [jumpMiss, setJumpMiss] = useState(false);
 
@@ -1069,7 +1070,7 @@ export function ChatRoom({
           style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
         >
           <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#0b0b12]/80 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
-            {err && <p className="mb-2 px-1 text-xs text-red-400">{err}</p>}
+            {err && <p className="flash-status mb-2 px-1 text-xs text-red-400">{err}</p>}
 
             {blocked ? (
               <div className="flex items-center justify-between gap-3 px-1 py-1.5 text-sm text-zinc-400">

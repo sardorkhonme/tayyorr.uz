@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 type Props = {
   latest: string;
@@ -40,7 +41,7 @@ export function MobileUpdateForm({ latest, min, notes, apkUrl }: Props) {
   const [text, setText] = useState(notes);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -140,7 +141,7 @@ export function MobileUpdateForm({ latest, min, notes, apkUrl }: Props) {
         <button className="btn-primary" disabled={busy}>
           {busy ? (progress !== null ? `Yuklanmoqda… ${progress}%` : "...") : "Saqlaş"}
         </button>
-        {msg && <span className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</span>}
+        {msg && <span className={`flash-status text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</span>}
       </div>
     </form>
   );

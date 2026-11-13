@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 /**
  * Click'ning rasmiy fiskal chekini (OFD QR havolasi) so'rab, topilsa
@@ -10,7 +11,7 @@ import { useState } from "react";
 export function ClickReceiptButton({ apiBase }: { apiBase: string }) {
   const [busy, setBusy] = useState(false);
   const [qr, setQr] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function fetchReceipt() {
     setBusy(true);
@@ -49,7 +50,7 @@ export function ClickReceiptButton({ apiBase }: { apiBase: string }) {
           Rasmiy çekni oçiş ↗
         </a>
       )}
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
     </div>
   );
 }

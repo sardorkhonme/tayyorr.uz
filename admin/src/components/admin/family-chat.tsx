@@ -11,6 +11,7 @@ import { useDismiss } from "@/components/use-dismiss";
 import { flashMessage } from "@/lib/flash-message";
 import { shortDate } from "@/lib/date";
 import { prepareFamilyFile, type PreparedChatFile } from "@/lib/upload-client";
+import { useFlashState } from "@/components/flash-status";
 
 /** Ilova bilan bir xil reaksiyalar (lib/family.ts → FAMILY_EMOJIS). */
 const EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
@@ -101,7 +102,7 @@ export function FamilyChat() {
   const [me, setMe] = useState<string>("");
   const [support, setSupport] = useState<Author | null>(null);
   const [presence, setPresence] = useState<{ members: number; online: number } | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<Msg | null>(null);
@@ -507,7 +508,7 @@ export function FamilyChat() {
       {/* ---- yozish maydoni ---- */}
       <div ref={inputRef} className="border-t border-white/10 bg-white/[0.03] p-2.5 sm:p-3">
         {err && (
-          <div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs text-red-300">
+          <div className="flash-status mb-2 flex items-center justify-between gap-2 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs text-red-300">
             {err}
             <button type="button" onClick={() => setErr(null)}>
               <Icon name="close" className="h-3.5 w-3.5" />

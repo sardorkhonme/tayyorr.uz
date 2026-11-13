@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /** "AI tushuntirsin" tugmasi va natija — faqat bosilganda so'raladi (bepul limit tejaladi). */
 export function FinanceAiPanel({
@@ -21,7 +22,7 @@ export function FinanceAiPanel({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useFlashState<string | null>(null);
 
   async function run() {
     setBusy(true);
@@ -93,7 +94,7 @@ export function FinanceAiPanel({
             {when} · {model}
           </span>
         )}
-        {error && <span className="text-xs text-red-300">{error}</span>}
+        {error && <span className="flash-status text-xs text-red-300">{error}</span>}
       </div>
       <p className="text-[11px]" style={{ color: "var(--viz-muted)" }}>
         AI ga faqat umumiy raqamlar yuboriladi (ism, telefon, karta yöq). AI xato qiliși mumkin — muhim qarorlardan oldin raqamlarni tekşiring.

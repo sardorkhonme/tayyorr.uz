@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /**
  * "Akkauntiga kirish" — yangi oynada shu foydalanuvchi sifatida tayyorr+ ochiladi (tekshirish uchun).
@@ -10,7 +11,7 @@ import { Icon } from "@/components/icons";
  */
 export function ImpersonateButton({ userId, name, compact = false }: { userId: string; name: string; compact?: boolean }) {
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function open() {
     if (
@@ -50,7 +51,7 @@ export function ImpersonateButton({ userId, name, compact = false }: { userId: s
         <Icon name="link" className="h-3.5 w-3.5" />
         {busy ? "Oçilmoqda…" : "Akkauntiga kiriş"}
       </button>
-      {err && <span className="text-xs text-red-300">{err}</span>}
+      {err && <span className="flash-status text-xs text-red-300">{err}</span>}
     </span>
   );
 }

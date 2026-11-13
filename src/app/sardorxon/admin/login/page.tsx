@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 export default function AdminLoginPage() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -56,7 +57,7 @@ export default function AdminLoginPage() {
               required
             />
           </div>
-          {err && <p className="text-sm text-red-400">{err}</p>}
+          {err && <p className="flash-status text-sm text-red-400">{err}</p>}
           <button className="btn-primary" disabled={busy}>
             {busy ? "..." : "Kiriş"}
           </button>

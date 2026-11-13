@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 /** Buyurtmaga ariza ("men qilaman") uchun minimal star — admin belgilaydi. */
 export function OfferStarsForm({ value }: { value: number }) {
   const router = useRouter();
   const [v, setV] = useState(String(value));
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const n = Number(v);
 
   async function save() {
@@ -57,7 +58,7 @@ export function OfferStarsForm({ value }: { value: number }) {
       >
         {busy ? "Saqlanmoqda…" : "Saqlaş"}
       </button>
-      {msg && <span className={`w-full text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
+      {msg && <span className={`flash-status w-full text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
     </section>
   );
 }

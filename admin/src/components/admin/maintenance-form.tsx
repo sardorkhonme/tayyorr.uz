@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 type U = { id: string; name: string | null; firstName: string | null; lastName: string | null; login: string | null; avatarUrl: string | null; image: string | null };
 
@@ -28,7 +29,7 @@ export function MaintenanceForm({ initial, initialUsers }: { initial: { on: bool
   const [message, setMessage] = useState(initial.message);
   const [users, setUsers] = useState<U[]>(initialUsers);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [note, setNote] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const [q, setQ] = useState("");
   const [found, setFound] = useState<U[]>([]);
 
@@ -105,7 +106,7 @@ export function MaintenanceForm({ initial, initialUsers }: { initial: { on: bool
             {busy ? "Saqlanmoqda…" : on ? "Saytni oçiş" : "Texnik işlarni boşlaş"}
           </button>
         </div>
-        {note && <p className={`mt-3 text-sm ${note.ok ? "text-emerald-300" : "text-red-300"}`}>{note.text}</p>}
+        {note && <p className={`flash-status mt-3 text-sm ${note.ok ? "text-emerald-300" : "text-red-300"}`}>{note.text}</p>}
       </section>
 
       {/* ruxsat ro'yxati */}

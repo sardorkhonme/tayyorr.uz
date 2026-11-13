@@ -4,6 +4,7 @@ import { fetchJson } from "@/components/fetch-json";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 export function ReportDialog({
   suspectId,
@@ -19,7 +20,7 @@ export function ReportDialog({
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
@@ -82,7 +83,7 @@ export function ReportDialog({
               onChange={(e) => setBody(e.target.value)}
               placeholder="Nima böldi?"
             />
-            {err && <p className="text-sm text-red-400">{err}</p>}
+            {err && <p className="flash-status text-sm text-red-400">{err}</p>}
             <div className="flex justify-end gap-2">
               <button
                 type="button"

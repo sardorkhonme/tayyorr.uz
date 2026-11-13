@@ -14,6 +14,7 @@ import {
   parseAdjust,
   type Adjust,
 } from "@/lib/smm-adjust";
+import { useFlashState } from "@/components/flash-status";
 
 type Service = {
   providerId: number;
@@ -108,7 +109,7 @@ export function SmmServicesEditor({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   // guruh inputlarini tashqaridan (tez tugmalar) yangilash uchun
   const [inputKey, setInputKey] = useState(0);
 
@@ -365,7 +366,7 @@ export function SmmServicesEditor({
 
       {/* saqlash paneli */}
       {(dirty || msg) && (
-        <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
+        <div className={`${msg && !dirty ? "flash-status " : ""}fixed inset-x-0 bottom-4 z-40 flex justify-center px-4`}>
           <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-900/95 px-4 py-3 shadow-2xl backdrop-blur">
             {msg && !dirty ? (
               <span className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</span>
@@ -389,7 +390,7 @@ export function SmmServicesEditor({
                 </button>
               </>
             )}
-            {msg && !msg.ok && dirty && <span className="text-sm text-red-400">{msg.text}</span>}
+            {msg && !msg.ok && dirty && <span className="flash-status text-sm text-red-400">{msg.text}</span>}
           </div>
         </div>
       )}

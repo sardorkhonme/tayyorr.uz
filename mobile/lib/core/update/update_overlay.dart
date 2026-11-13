@@ -10,6 +10,7 @@ import '../app_config.dart';
 import '../app_info.dart';
 import '../constants.dart';
 import '../../widgets/mascot.dart';
+import '../../widgets/flash_status.dart';
 
 /// Butun ilova ustidagi qatlam:
 ///  · majburiy yangilanish — ilova ishlamaydi, faqat "Yangilash" oynasi (yopib bo'lmaydi);
@@ -97,7 +98,9 @@ class _UpdateCard extends StatefulWidget {
 class _UpdateCardState extends State<_UpdateCard> {
   double? _progress;
   String? _apkPath;
-  String? _error;
+  final _errorF = FlashValue<String>();
+  String? get _error => _errorF.value;
+  set _error(String? v) => _errorF.value = v;
   CancelToken? _cancel;
 
   @override
@@ -288,18 +291,22 @@ class _UpdateCardState extends State<_UpdateCard> {
               ),
             ),
           ],
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFFCA5A5),
-                fontSize: 13,
-                height: 1.4,
+          FlashStatus(
+            message: _error,
+            trigger: _errorF.seq,
+            builder: (_, m) => Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                m,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFFFCA5A5),
+                  fontSize: 13,
+                  height: 1.4,
+                ),
               ),
             ),
-          ],
+          ),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,

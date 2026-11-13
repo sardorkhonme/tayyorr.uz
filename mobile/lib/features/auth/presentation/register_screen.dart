@@ -13,6 +13,7 @@ import '../../../widgets/google_logo.dart';
 import '../../../widgets/web_ui.dart';
 import '../bloc/auth_bloc.dart';
 import '../data/auth_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Ro'yxatdan o'tish — saytdagidek: 1) email → "Kod yuborish" (pastida Google), 2) 4 xonali kod.
 /// Keyin avvalgidek profil to'ldiriladi (CompleteProfileScreen).
@@ -31,7 +32,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _codeStep = false;
   bool _busy = false;
   bool _exists = false;
-  String? _error;
+  final _errorF = FlashValue<String>();
+  String? get _error => _errorF.value;
+  set _error(String? v) => _errorF.value = v;
   int _wait = 0;
   Timer? _timer;
 
@@ -223,19 +226,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
           keyboardType: TextInputType.emailAddress,
           onSubmitted: (_) => _send(),
         ),
-        if (_error != null) ...[
-          const SizedBox(height: 12),
-          Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
-          if (_exists) ...[
-            const SizedBox(height: 6),
-            GestureDetector(
-              onTap: () => Navigator.of(context).maybePop(),
-              child: Text(
-                'Kiriş sahifasiga ötiş ›',
-                style: TextStyle(color: WebC.indigo, fontSize: 14),
-              ),
+        FlashStatus(
+          message: _error,
+          trigger: _errorF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(m, style: TextStyle(color: WebC.red, fontSize: 14)),
+          ),
+        ),
+        if (_error != null && _exists) ...[
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: Text(
+              'Kiriş sahifasiga ötiş ›',
+              style: TextStyle(color: WebC.indigo, fontSize: 14),
             ),
-          ],
+          ),
         ],
         const SizedBox(height: 16),
         WebButton(
@@ -372,14 +379,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        if (_error != null) ...[
-          const SizedBox(height: 14),
-          Text(
-            _error!,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: WebC.red, fontSize: 14),
+        FlashStatus(
+          message: _error,
+          trigger: _errorF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(top: 14),
+            child: Text(
+              m,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: WebC.red, fontSize: 14),
+            ),
           ),
-        ],
+        ),
         const SizedBox(height: 20),
         WebButton(
           label: 'Tasdiqlaş',

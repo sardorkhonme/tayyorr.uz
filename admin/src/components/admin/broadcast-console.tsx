@@ -15,6 +15,7 @@ import { smartTime } from "@/lib/date";
 import { type MessageSource } from "@/lib/message-source";
 import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { MessageSourceBadge } from "@/components/message-source-badge";
+import { useFlashState } from "@/components/flash-status";
 
 interface Item {
   id: string;
@@ -53,7 +54,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
   const [counting, setCounting] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
   const [attachment, setAttachment] = useState<PreparedChatFile | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
@@ -401,7 +402,7 @@ export function BroadcastConsole({ initial }: { initial: Item[] }) {
 
       {/* ---- xabar kiritish (pastda) ---- */}
       <div className="shrink-0 border-t border-white/10 p-3">
-        {err && <p className="mb-1 text-xs text-red-400">{err}</p>}
+        {err && <p className="flash-status mb-1 text-xs text-red-400">{err}</p>}
 
         {(uploading || attachment) && (
           <div className="mb-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-zinc-300">

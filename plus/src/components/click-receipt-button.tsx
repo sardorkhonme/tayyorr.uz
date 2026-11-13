@@ -3,12 +3,13 @@
 import { useState } from "react";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /** Click'ning rasmiy fiskal chekini (OFD QR havolasi) so'raydi va ochadi. */
 export function ClickReceiptButton({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [qr, setQr] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function load() {
     setBusy(true);
@@ -43,7 +44,7 @@ export function ClickReceiptButton({ id }: { id: string }) {
           </button>
         )}
       </div>
-      {err && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{err}</p>}
+      {err && <p className="flash-status mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{err}</p>}
     </div>
   );
 }

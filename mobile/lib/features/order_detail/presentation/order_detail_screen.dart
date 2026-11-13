@@ -32,6 +32,7 @@ import '../data/order_detail_model.dart';
 import '../data/order_detail_repository.dart';
 import 'contract_panel.dart';
 import 'detail_ui.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Ariza uchun minimal star — admin belgilaydi (server /mobile/config).
 int get _minOfferStars => AppConfig.instance.minOfferStars;
@@ -598,7 +599,9 @@ class _OrderActionsState extends State<_OrderActions> {
   final _reviewComment = TextEditingController();
   int _reviewStars = 0;
   String? _contractFor;
-  String? _localErr;
+  final _localErrF = FlashValue<String>();
+  String? get _localErr => _localErrF.value;
+  set _localErr(String? v) => _localErrF.value = v;
 
   OrderDetailModel get o => widget.order;
   OrderOfferModel? get _myOffer {
@@ -682,9 +685,6 @@ class _OrderActionsState extends State<_OrderActions> {
     final myOffer = _myOffer;
 
     final children = <Widget>[
-      if (err != null)
-        InfoNote(icon: TI.error_outline_rounded, color: WebC.red, text: err),
-
       // Imzolangan shartnoma: topshirish / yakunlash / qayta ishlash / bekor qilish so'rovi
       if (accepted != null &&
           (widget.isOrderer || widget.isAssigned) &&
@@ -836,6 +836,18 @@ class _OrderActionsState extends State<_OrderActions> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        FlashStatus(
+          message: err,
+          trigger: _localErrF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: InfoNote(
+              icon: TI.error_outline_rounded,
+              color: WebC.red,
+              text: m,
+            ),
+          ),
+        ),
         for (var i = 0; i < children.length; i++) ...[
           if (i > 0) const SizedBox(height: 16),
           children[i],
@@ -1678,7 +1690,9 @@ class _ReportFormState extends State<_ReportForm> {
   final _body = TextEditingController();
   bool _busy = false;
   bool _done = false;
-  String? _err;
+  final _errF = FlashValue<String>();
+  String? get _err => _errF.value;
+  set _err(String? v) => _errF.value = v;
 
   @override
   void dispose() {
@@ -1741,10 +1755,14 @@ class _ReportFormState extends State<_ReportForm> {
           maxLines: 5,
           minLines: 5,
         ),
-        if (_err != null) ...[
-          const SizedBox(height: 12),
-          Text(_err!, style: TextStyle(color: WebC.red, fontSize: 14)),
-        ],
+        FlashStatus(
+          message: _err,
+          trigger: _errF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(m, style: TextStyle(color: WebC.red, fontSize: 14)),
+          ),
+        ),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,

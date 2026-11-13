@@ -5,6 +5,7 @@ import { useState } from "react";
 import { shortDateTime } from "@/lib/date";
 import type { ContractView } from "@/lib/contract-view";
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 /** ISO -> <input type="datetime-local"> qiymati (brauzer vaqti bilan). */
 export function toLocalInput(iso: string | null | undefined): string {
@@ -46,7 +47,7 @@ export function ContractPanel({
   const [form, setForm] = useState<Form>(null);
   const [reason, setReason] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [localErr, setLocalErr] = useState<string | null>(null);
+  const [localErr, setLocalErr] = useFlashState<string | null>(null);
 
   const delivered = status === "DELIVERED";
   // PENDING: ikkinchi tomon javob kutilmoqda; PENDING + cancelRejectReason: rozi bo'lmadi — so'ragan tomon qaror qiladi
@@ -322,7 +323,7 @@ export function ContractPanel({
               />
             </div>
           )}
-          {localErr && <p className="text-sm text-red-400">{localErr}</p>}
+          {localErr && <p className="flash-status text-sm text-red-400">{localErr}</p>}
           <div className="flex gap-2">
             <button className="btn-primary" disabled={busy} onClick={submit}>
               Yuboriş

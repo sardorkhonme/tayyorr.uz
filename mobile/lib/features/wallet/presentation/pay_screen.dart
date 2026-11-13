@@ -14,6 +14,7 @@ import '../../../widgets/aurora_background.dart';
 import '../../../widgets/web_ui.dart';
 import '../../legal/legal_screen.dart';
 import '../data/wallet_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Hamyonni to'ldirish — barcha xizmatlar uchun yagona to'lov sahifasi (saytdagi plus.tayyorr.uz/pay kabi):
 /// summa, tez tanlov, to'lov usuli (Click; Payme va Uzum — tez orada). To'lov Click sahifasida
@@ -37,7 +38,9 @@ class _PayScreenState extends State<PayScreen> {
   final _amount = TextEditingController();
   String _method = 'click';
   bool _busy = false;
-  String? _error;
+  final _errorF = FlashValue<String>();
+  String? get _error => _errorF.value;
+  set _error(String? v) => _errorF.value = v;
 
   @override
   void dispose() {
@@ -246,10 +249,14 @@ class _PayScreenState extends State<PayScreen> {
                 ),
               ],
             ),
-            if (_error != null) ...[
-              const SizedBox(height: 14),
-              Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
-            ],
+            FlashStatus(
+              message: _error,
+              trigger: _errorF.seq,
+              builder: (_, m) => Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: Text(m, style: TextStyle(color: WebC.red, fontSize: 14)),
+              ),
+            ),
             const SizedBox(height: 20),
             AppDialogButton(
               label: n > 0 ? '${groupDigits(n)} söm tölaş' : 'Tölaş',

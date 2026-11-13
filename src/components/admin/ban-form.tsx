@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFlashState } from "@/components/flash-status";
 
 /** datetime-local input uchun standart qiymat — bugundan 7 kun keyin, shu soat. */
 function defaultUntil(): string {
@@ -18,7 +19,7 @@ export function BanForm({ userId }: { userId: string }) {
   const [reason, setReason] = useState("");
   const [notify, setNotify] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,7 +85,7 @@ export function BanForm({ userId }: { userId: string }) {
         />
         «tayyorr.uz support» orqali xabar yuborilsin
       </label>
-      {err && <p className="text-sm text-red-400">{err}</p>}
+      {err && <p className="flash-status text-sm text-red-400">{err}</p>}
       <button className="btn-primary w-fit" disabled={busy}>
         {busy ? "..." : "Çeklaş / ban"}
       </button>

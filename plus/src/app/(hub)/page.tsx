@@ -83,8 +83,64 @@ export default async function DashboardPage({
         </p>
       </header>
 
-      {/* xizmatlar */}
-      <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {/* xizmatlar — telefon/planşetda ixçam qatorlar (ilovadagidek: belgi, nom, 2 qatorli izoh, strelka) */}
+      <section className="flex flex-col gap-3 lg:hidden">
+        {[
+          {
+            href: MAIN_SITE_URL,
+            mark: "/logo-mark.png",
+            title: (
+              <>
+                Tayyorr<span className="text-indigo-400">.uz</span>
+              </>
+            ),
+            desc: "Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.",
+            badge: null as string | null,
+            from: "#6366f1",
+            to: "#4f46e5",
+          },
+          {
+            href: SMM_URL,
+            mark: "/smm-mark.png",
+            title: (
+              <>
+                Tayyorr <span className="text-fuchsia-500">SMM</span>
+              </>
+            ),
+            desc: "Obunaçilar, layklar va körişlar — bir neça daqiqada, avtomatik. Bajarilmasa pul qaytadi.",
+            badge: smmCount > 0 ? `${num(smmCount)} ta xizmat` : null,
+            from: "#d946ef",
+            to: "#8b5cf6",
+          },
+        ].map((c) => (
+          <a key={c.href} href={c.href} className="card flex items-center gap-3 !rounded-[20px] !p-3.5 transition active:scale-[0.99]">
+            <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[15px] border border-black/5 bg-[#ffffff]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={c.mark} alt="" className="h-9 w-9 object-contain" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <span className="truncate font-display text-lg font-bold text-zinc-900">{c.title}</span>
+                {c.badge && (
+                  <span className="shrink-0 whitespace-nowrap rounded-full bg-fuchsia-50 px-2 py-0.5 text-[11px] font-bold text-fuchsia-600">
+                    {c.badge}
+                  </span>
+                )}
+              </span>
+              <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-zinc-500">{c.desc}</span>
+            </span>
+            <span
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white"
+              style={{ background: `linear-gradient(135deg, ${c.from}, ${c.to})` }}
+            >
+              <Icon name="arrow-right" className="h-4 w-4" />
+            </span>
+          </a>
+        ))}
+      </section>
+
+      {/* xizmatlar — kompyuterda (avvalgidek katta kartalar) */}
+      <section className="hidden gap-5 lg:grid lg:grid-cols-3">
         {/* Ilmiy ishlar (app.tayyorr.uz) — tayyorr+ xizmatlaridan biri */}
         <a
           href={MAIN_SITE_URL}
@@ -155,7 +211,7 @@ export default async function DashboardPage({
           </span>
         </a>
 
-        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 p-8 text-center md:col-span-2 lg:col-span-1">
+        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-zinc-200 p-8 text-center">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-amber-100 to-fuchsia-100 text-fuchsia-600">
             <Icon name="sparkles" className="h-6 w-6" />
           </span>

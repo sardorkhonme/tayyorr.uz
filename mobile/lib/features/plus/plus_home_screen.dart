@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/navigation/services.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/ui/platform_icon.dart';
 import '../../widgets/app_header_sliver.dart';
 import '../../widgets/web_ui.dart';
 import '../auth/bloc/auth_bloc.dart';
@@ -156,7 +155,6 @@ class _ServiceCard extends StatelessWidget {
     required this.glow,
     required this.onTap,
     this.badge,
-    this.bottom,
   });
   final String mark;
   final Widget title;
@@ -164,114 +162,114 @@ class _ServiceCard extends StatelessWidget {
   final Color glow;
   final VoidCallback onTap;
   final String? badge;
-  final Widget? bottom;
 
   @override
   Widget build(BuildContext context) {
+    // ixçam: belgi | nom (+ belgi-yorliq) va 2 qatorli izoh | strelka — teglar va logolar yöq
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: WebC.cardBg,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: WebC.cardBorder),
           boxShadow: [
             BoxShadow(
-              color: glow.withValues(alpha: AppColors.isLight ? 0.12 : 0.18),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
+              color: glow.withValues(alpha: AppColors.isLight ? 0.10 : 0.16),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
               spreadRadius: -12,
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.05),
-                    ),
-                  ),
-                  child: Image.asset(mark, filterQuality: FilterQuality.high),
-                ),
-                const Spacer(),
-                if (badge != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: glow.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                    child: Text(
-                      badge!,
-                      style: TextStyle(
-                        color: glow,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-              ],
+            Container(
+              width: 52,
+              height: 52,
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+              ),
+              child: Image.asset(mark, filterQuality: FilterQuality.high),
             ),
-            const SizedBox(height: 14),
-            title,
-            const SizedBox(height: 6),
-            Text(
-              desc,
-              style: TextStyle(color: WebC.zinc400, fontSize: 14, height: 1.45),
-            ),
-            if (bottom != null) ...[const SizedBox(height: 14), bottom!],
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        glow,
-                        Color.lerp(glow, const Color(0xFF3B82F6), 0.5)!,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        'Oçiş',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: title,
                         ),
                       ),
-                      SizedBox(width: 4),
-                      TIcon(
-                        TI.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      if (badge != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: glow.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            badge!,
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: glow,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
+                  const SizedBox(height: 3),
+                  Text(
+                    desc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: WebC.zinc400,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    glow,
+                    Color.lerp(glow, const Color(0xFF3B82F6), 0.5)!,
+                  ],
                 ),
-              ],
+              ),
+              child: const Center(
+                child: TIcon(
+                  TI.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
             ),
           ],
         ),
@@ -282,9 +280,9 @@ class _ServiceCard extends StatelessWidget {
 
 TextStyle _titleStyle() => GoogleFonts.spaceGrotesk(
   color: WebC.white,
-  fontSize: 21,
+  fontSize: 18,
   fontWeight: FontWeight.w700,
-  letterSpacing: -0.4,
+  letterSpacing: -0.3,
 );
 
 class _UzCard extends StatelessWidget {
@@ -312,30 +310,6 @@ class _UzCard extends StatelessWidget {
       glow: const Color(0xFF6366F1),
       badge: roleLabel,
       onTap: () => openUzSection(AppSection.dashboard),
-      bottom: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: [
-          for (final c in const [
-            'Prezentatsiya',
-            'Kurs işi',
-            'Referat',
-            'Diplom işi',
-          ])
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: WebC.fill5,
-                borderRadius: BorderRadius.circular(99),
-                border: Border.all(color: WebC.border),
-              ),
-              child: Text(
-                c,
-                style: TextStyle(color: WebC.zinc300, fontSize: 12.5),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
@@ -344,15 +318,6 @@ class _SmmCard extends StatelessWidget {
   const _SmmCard({this.services, this.orders = 0});
   final int? services;
   final int orders;
-
-  static const _platforms = [
-    ('instagram', Color(0xFFF58529), Color(0xFFDD2A7B)),
-    ('telegram', Color(0xFF2AABEE), Color(0xFF229ED9)),
-    ('tiktok', Color(0xFF25F4EE), Color(0xFFFE2C55)),
-    ('youtube', Color(0xFFFF0000), Color(0xFFB31217)),
-    ('facebook', Color(0xFF1877F2), Color(0xFF0C56C4)),
-    ('twitter', Color(0xFF52525B), Color(0xFF18181B)),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -375,26 +340,6 @@ class _SmmCard extends StatelessWidget {
       glow: const Color(0xFFD946EF),
       badge: services == null ? null : '$services ta xizmat',
       onTap: () => openSmm(orders > 0 ? null : 0),
-      bottom: Row(
-        children: [
-          for (final p in _platforms) ...[
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(11),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [p.$2, p.$3],
-                ),
-              ),
-              child: Center(child: PlatformIcon(p.$1, size: 18)),
-            ),
-            const SizedBox(width: 6),
-          ],
-        ],
-      ),
     );
   }
 }

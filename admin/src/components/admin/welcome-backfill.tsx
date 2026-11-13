@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFlashState } from "@/components/flash-status";
 
 /** Xush kelibsiz xabarini olmay qolganlarga (rolga qarab) yuborish. */
 export function WelcomeBackfill() {
   const [count, setCount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<number | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useFlashState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/welcome-backfill")
@@ -56,7 +57,7 @@ export function WelcomeBackfill() {
           {busy ? "Yuborilmoqda..." : "Ularga yuboriş"}
         </button>
       )}
-      {err && <span className="text-red-400">{err}</span>}
+      {err && <span className="flash-status text-red-400">{err}</span>}
     </div>
   );
 }

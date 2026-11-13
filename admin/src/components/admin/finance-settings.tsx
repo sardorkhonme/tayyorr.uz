@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Icon } from "@/components/icons";
+import { useFlashState } from "@/components/flash-status";
 
 type Method = "crypto" | "card" | "other";
 const METHODS: Record<Method, string> = { crypto: "Kripto (USDT)", card: "Karta", other: "Boşqa" };
@@ -38,7 +39,7 @@ export function FinanceSettingsForm({ clickPct, paymePct, deposit }: { clickPct:
     other: String(deposit.other),
   });
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const changed =
     num(v.click) !== clickPct || num(v.payme) !== paymePct || num(v.crypto) !== deposit.crypto || num(v.card) !== deposit.card || num(v.other) !== deposit.other;
   const set = (k: keyof typeof v) => (s: string) => setV((x) => ({ ...x, [k]: s }));
@@ -97,7 +98,7 @@ export function FinanceSettingsForm({ clickPct, paymePct, deposit }: { clickPct:
         >
           {busy ? "Saqlanmoqda…" : "Saqlaş"}
         </button>
-        {msg && <span className={`text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
+        {msg && <span className={`flash-status text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
       </div>
     </div>
   );
@@ -114,7 +115,7 @@ export function ProviderDeposits({ deposits, defaults, today }: { deposits: Depo
   const [fee, setFee] = useState(String(defaults.crypto));
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
 
   const paidN = Number(paid.replace(/\s/g, ""));
   const feeN = num(fee);
@@ -204,7 +205,7 @@ export function ProviderDeposits({ deposits, defaults, today }: { deposits: Depo
           <b style={{ color: "var(--viz-text)" }}>{nf.format(paidN - feeSom)} söm</b>
         </p>
       )}
-      {msg && <p className={`text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</p>}
+      {msg && <p className={`flash-status text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</p>}
 
       {deposits.length === 0 ? (
         <p className="rounded-lg px-3 py-3 text-sm" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
@@ -259,7 +260,7 @@ export function OwnerWithdrawals({ items, today, available }: { items: Withdrawa
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useFlashState<{ ok: boolean; text: string } | null>(null);
   const n = Number(amount.replace(/\s/g, ""));
 
   async function call(init: RequestInit, url = "/api/admin/finance/withdrawals") {
@@ -315,7 +316,7 @@ export function OwnerWithdrawals({ items, today, available }: { items: Withdrawa
           Yozib qöyiş
         </button>
       </form>
-      {msg && <p className={`text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</p>}
+      {msg && <p className={`flash-status text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</p>}
       {items.length === 0 ? (
         <p className="rounded-lg px-3 py-3 text-sm" style={{ background: "var(--viz-grid)", color: "var(--viz-muted)" }}>
           Hali pul yeçilmagan.

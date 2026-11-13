@@ -10,6 +10,7 @@ import '../../../widgets/app_logo.dart';
 import '../../../widgets/aurora_background.dart';
 import '../../../widgets/web_ui.dart';
 import '../data/auth_repository.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Parolni tiklash — ilova ichida: 1) email, 2) 4 xonali kod + yangi parol (2 marta) → kirish sahifasi.
 class ForgotPasswordScreen extends StatefulWidget {
@@ -31,7 +32,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _step2 = false;
   bool _busy = false;
   bool _show = false;
-  String? _error;
+  final _errorF = FlashValue<String>();
+  String? get _error => _errorF.value;
+  set _error(String? v) => _errorF.value = v;
   int _wait = 0;
   Timer? _timer;
 
@@ -190,10 +193,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         keyboardType: TextInputType.emailAddress,
         onSubmitted: (_) => _send(),
       ),
-      if (_error != null) ...[
-        const SizedBox(height: 12),
-        Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
-      ],
+      FlashStatus(
+        message: _error,
+        trigger: _errorF.seq,
+        builder: (_, m) => Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Text(m, style: TextStyle(color: WebC.red, fontSize: 14)),
+        ),
+      ),
       const SizedBox(height: 16),
       WebButton(
         label: 'Kod yuboriş',
@@ -284,10 +291,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       const SizedBox(height: 12),
       const WebLabel('Yangi parolni takrorlang'),
       WebInput(controller: _pw2, obscure: !_show),
-      if (_error != null) ...[
-        const SizedBox(height: 12),
-        Text(_error!, style: TextStyle(color: WebC.red, fontSize: 14)),
-      ],
+      FlashStatus(
+        message: _error,
+        trigger: _errorF.seq,
+        builder: (_, m) => Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Text(m, style: TextStyle(color: WebC.red, fontSize: 14)),
+        ),
+      ),
       const SizedBox(height: 16),
       WebButton(
         label: 'Saqlaş',

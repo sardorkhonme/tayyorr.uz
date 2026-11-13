@@ -9,6 +9,7 @@ import '../../../widgets/web_ui.dart';
 import '../cubit/order_detail_cubit.dart';
 import '../data/order_detail_model.dart';
 import 'detail_ui.dart';
+import '../../../widgets/flash_status.dart';
 
 /// Saytdagi ContractPanel: imzolangan shartnoma — muddat, topshirish,
 /// yakunlash / qayta ishlash va ikki tomonlama bekor qilish so'rovi.
@@ -337,7 +338,9 @@ class _ReasonDialog extends StatefulWidget {
 class _ReasonDialogState extends State<_ReasonDialog> {
   final _reason = TextEditingController();
   DateTime? _deadline;
-  String? _err;
+  final _errF = FlashValue<String>();
+  String? get _err => _errF.value;
+  set _err(String? v) => _errF.value = v;
 
   @override
   void initState() {
@@ -421,10 +424,14 @@ class _ReasonDialogState extends State<_ReasonDialog> {
             suffix: TIcon(TI.event_rounded, size: 16, color: WebC.zinc300),
           ),
         ],
-        if (_err != null) ...[
-          const SizedBox(height: 10),
-          Text(_err!, style: TextStyle(color: WebC.red, fontSize: 13)),
-        ],
+        FlashStatus(
+          message: _err,
+          trigger: _errF.seq,
+          builder: (_, m) => Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(m, style: TextStyle(color: WebC.red, fontSize: 13)),
+          ),
+        ),
         const SizedBox(height: 14),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
