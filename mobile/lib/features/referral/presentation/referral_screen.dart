@@ -1,5 +1,7 @@
 import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
@@ -74,6 +76,66 @@ class _ReferralViewState extends State<_ReferralView> {
                   "Döstlaringizni taklif qiling — har bir röyxatdan ötgan uçun 1 star olasiz.",
             ),
             if (user != null) _linkCard(_link(user.id)),
+            // ogohlantiriş: ilovada röyxatdan ötilsa referal yozilmaydi
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.amber.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.amber.withValues(alpha: 0.30),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: AppColors.amber,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Text(
+                      '!',
+                      style: TextStyle(
+                        color: Color(0xFF18181B),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Referal faqat saytda röyxatdan ötilganda işlaydi',
+                          style: TextStyle(
+                            color: AppColors.isLight
+                                ? const Color(0xFFB45309)
+                                : AppColors.amber,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Döstingiz havolani oçib, öşa brauzerning özida röyxatdan ötişi kerak. Agar u havoladan kirib mobil ilovani yuklab olsa va ilovada röyxatdan ötsa — referal hisoblanmaydi.',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

@@ -42,6 +42,15 @@ export default async function ReferralPage() {
 
       <ReferralLinkCard userId={me.id} />
 
+      {/* ogohlantiriş: ilovada röyxatdan ötilsa referal yozilmaydi (ilova brauzer cookie sini körmaydi) */}
+      <div role="note" className="flex gap-3 rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-amber-400 text-sm font-extrabold text-zinc-900">!</span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-amber-300">Referal faqat saytda röyxatdan ötilganda işlaydi</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-zinc-400">Döstingiz havolani oçib, öşa brauzerning özida röyxatdan ötişi kerak. Agar u havoladan kirib mobil ilovani yuklab olsa va ilovada röyxatdan ötsa — referal hisoblanmaydi.</p>
+        </div>
+      </div>
+
       <div>
         <h2 className="mb-3 px-1 text-base font-semibold text-white">
           Siz taklif qilganlar ({user.referredUsers.length})
