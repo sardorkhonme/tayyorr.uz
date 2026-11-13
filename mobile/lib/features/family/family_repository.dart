@@ -130,11 +130,39 @@ class FamilyRepository {
       _api.post('/mobile/family/read', data: {'at': atMs});
 
   Future<List<FamilyAuthor>> mention(String q) async {
-    final r = await _api.get('/mobile/family/mention', query: {'q': q});
-    return (r['users'] as List? ?? const [])
+    final key = q.trim().toLowerCase();
+    final r = await _api.get('/mobile/family/mention', query: {'q': key});
+    final list = (r['users'] as List? ?? const [])
         .whereType<Map>()
         .map((m) => FamilyAuthor.fromJson(Map<String, dynamic>.from(m)))
         .toList();
+    _mentionCache[key] = (at: DateTime.now(), users: list);
+    remember(list);
+    return list;
+  }
+
+  /// @ taklifi uçun keş: so'rov → server javobi (ilova yopilguncha xotirada).
+  final _mentionCache = <String, ({DateTime at, List<FamilyAuthor> users})>{};
+
+  /// Ilgari körilgan (serverdan kelgan yoki guruhda yozgan) loginli akkauntlar — @ yozilganda
+  /// tarmoqni kutmasdan şu yerdan süzib körsatiladi.
+  final mentionPool = <String, FamilyAuthor>{};
+
+  void remember(Iterable<FamilyAuthor> list) {
+    for (final a in list) {
+      if ((a.login ?? '').isEmpty) continue;
+      mentionPool['${a.kind}:${a.id}'] = a;
+    }
+  }
+
+  /// Keşdagi javob; [maxAge] dan eski bölsa ham qaytadi, [fresh] — yangilaş kerakmi.
+  ({List<FamilyAuthor> users, bool fresh})? cachedMention(
+    String q, {
+    Duration maxAge = const Duration(minutes: 5),
+  }) {
+    final c = _mentionCache[q.trim().toLowerCase()];
+    if (c == null) return null;
+    return (users: c.users, fresh: DateTime.now().difference(c.at) < maxAge);
   }
 
   Future<void> report({

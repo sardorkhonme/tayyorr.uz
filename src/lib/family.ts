@@ -301,6 +301,23 @@ export async function parseMentions(body: string): Promise<string[]> {
   return out;
 }
 
+/**
+ * Javob — belgilash hisoblanadi: asl xabar egasining identifikatori ("brand"/"support" nomidan yozilgan bo'lsa —
+ * shu token, aks holda foydalanuvchi id). O'ziga javob, o'chirilgan xabar — hisoblanmaydi.
+ */
+export function replyMentionId(
+  r: { senderId: string; as: string; deletedAt?: Date | null } | null | undefined,
+  senderId: string,
+): string | null {
+  if (!r || r.deletedAt || r.senderId === senderId) return null;
+  return r.as === "brand" || r.as === "support" ? r.as : r.senderId;
+}
+
+/** Matndagi belgilashlar + javob egasi (takrorsiz). */
+export function withReplyMention(mentions: string[], replyId: string | null): string[] {
+  return replyId ? [...new Set([...mentions, replyId])] : [...new Set(mentions)];
+}
+
 /** Realtime (faqat guruh oynasi ochiqlar) — xabar mazmuni bilan, qayta so'rov kerak emas. */
 export function familySignal(e: "new" | "upd" | "del", data: { id: string; m?: FamilyClientMessage }) {
   signal([FAMILY_CHANNEL], { name: "family", data: { e, id: data.id, ...(data.m ? { m: JSON.stringify(data.m) } : {}) } });
@@ -316,19 +333,23 @@ export async function dispatchFamily(row: FamilyRow, clientId?: string) {
   const senderId = row.senderId;
   const job = async () => {
     const notified = new Set<string>([senderId]);
-    // @belgilanganlar (brand/support — adminlarga)
+    // javob — belgilash kabi: asl xabar egasiga «javob yozdi» («Tayyorr.uz» / «Support» nomidan yozilgan bo'lsa —
+    // barcha guruh adminlariga, ular uchun belgilashlar ham shunday sanaladi)
+    const replyId = replyMentionId(row.replyTo, senderId);
+    if (replyId) {
+      const owners = (replyId === "brand" || replyId === "support" ? await familyAdminIds() : [replyId]).filter((id) => !notified.has(id));
+      if (owners.length) {
+        owners.forEach((id) => notified.add(id));
+        await sendFamilyPush(owners, { title: `${author.name} sizga javob yozdi`, body: text, messageId: row.id, kind: "reply" }).catch(() => {});
+      }
+    }
+    // @belgilanganlar (brand/support — adminlarga); javob egasi yuqorida xabardor qilingan
     const direct = row.mentions.filter((x) => x !== "brand" && x !== "support");
-    const toAdmins = row.mentions.some((x) => x === "brand" || x === "support") ? await familyAdminIds() : [];
+    const toAdmins = row.mentions.some((x) => (x === "brand" || x === "support") && x !== replyId) ? await familyAdminIds() : [];
     const mentioned = [...new Set([...direct, ...toAdmins])].filter((id) => !notified.has(id));
     if (mentioned.length) {
       mentioned.forEach((id) => notified.add(id));
       await sendFamilyPush(mentioned, { title: `${author.name} sizni belgiladi`, body: text, messageId: row.id, kind: "mention" }).catch(() => {});
-    }
-    // javob — asl xabar egasiga
-    const replyOwner = row.replyTo && !row.replyTo.deletedAt ? row.replyTo.senderId : null;
-    if (replyOwner && !notified.has(replyOwner)) {
-      notified.add(replyOwner);
-      await sendFamilyPush([replyOwner], { title: `${author.name} javob yozdi`, body: text, messageId: row.id, kind: "reply" }).catch(() => {});
     }
     // admin «hammaga bildirish»
     if (row.notifyAll) {

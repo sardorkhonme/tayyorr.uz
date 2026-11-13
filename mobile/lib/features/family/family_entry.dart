@@ -17,13 +17,16 @@ const double kConvAvatar = 48;
 const double kConvGap = 12;
 
 /// Guruhni ochish (istalgan joydan, bildirishnomadan ham). Ochiq bo'lsa — qayta ochilmaydi.
-Future<void> openFamily([BuildContext? context]) async {
+/// [toMention] — oçilişi bilan birinçi öqilmagan belgilaşga sakraydi.
+Future<void> openFamily([BuildContext? context, bool toMention = false]) async {
   if (FamilyScreen.isOpen) return;
   final nav = context != null
       ? Navigator.of(context)
       : navigatorKey.currentState;
   if (nav == null) return;
-  await nav.push(MaterialPageRoute(builder: (_) => const FamilyScreen()));
+  await nav.push(
+    MaterialPageRoute(builder: (_) => FamilyScreen(openMention: toMention)),
+  );
   FamilySummary.instance.refresh(force: true);
 }
 
@@ -241,14 +244,22 @@ class FamilyHubCard extends StatelessWidget {
   }
 }
 
-/// Xabarlar ro'yxatining tepasida qadalgan qator.
+/// Xabarlar ro'yxatining tepasida qadalgan qator. Öqilmagan belgilaş (@nik yoki mening
+/// xabarimga javob) bölsa — «Sizni belgilaşdi» va bosilganda töppa-töğri birinçisiga.
 class FamilyListRow extends StatelessWidget {
   const FamilyListRow({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: FamilySummary.instance.value,
+      builder: (context, v, _) => _row(context, v.mentions),
+    );
+  }
+
+  Widget _row(BuildContext context, int mentions) {
     return GestureDetector(
-      onTap: () => openFamily(context),
+      onTap: () => openFamily(context, mentions > 0),
       child: Container(
         padding: kConvRowPadding,
         decoration: BoxDecoration(
@@ -289,10 +300,26 @@ class FamilyListRow extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    'Umumiy guruh — barça aʼzolar',
-                    style: TextStyle(color: WebC.zinc400, fontSize: 13.5),
-                  ),
+                  if (mentions > 0)
+                    Text(
+                      mentions == 1
+                          ? 'Sizni belgilaşdi'
+                          : 'Sizni belgilaşdi · $mentions ta',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: WebC.indigoSoft,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  else
+                    Text(
+                      'Umumiy guruh — barça aʼzolar',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: WebC.zinc400, fontSize: 13.5),
+                    ),
                 ],
               ),
             ),

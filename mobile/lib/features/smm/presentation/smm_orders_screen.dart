@@ -1,4 +1,3 @@
-import 'package:tayyorr_app/core/ui/ticons.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -17,7 +16,7 @@ import 'smm_widgets.dart';
 
 final _date = DateFormat('dd.MM HH:mm');
 
-/// Buyurtmalarim — statistika va ro'yxat (holat, bajarilish). Real-time "order" signalida yangilanadi.
+/// Buyurtmalarim — faqat ro'yxat (holat, bajarilish). Real-time "order" signalida yangilanadi.
 class SmmOrdersScreen extends StatefulWidget {
   const SmmOrdersScreen({super.key, this.onCatalogTap});
   final VoidCallback? onCatalogTap;
@@ -91,58 +90,12 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
         if (_error != null && d == null)
           ErrorState.from(_error, load)
         else if (d == null) ...[
-          // haqiqiy ko'rinish: 2×2 statistika + buyurtma qatorlari
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.75,
-            children: [for (var i = 0; i < 4; i++) _statSkeleton()],
-          ),
-          const SizedBox(height: 16),
+          // haqiqiy ko'rinish: buyurtma qatorlari
           for (var i = 0; i < 4; i++) ...[
             _orderSkeleton(),
             const SizedBox(height: 10),
           ],
         ] else ...[
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.75,
-            children: [
-              _stat(
-                TI.inventory_2_rounded,
-                const Color(0xFF6366F1),
-                'Jami buyurtma',
-                '${d.total}',
-              ),
-              _stat(
-                TI.autorenew_rounded,
-                const Color(0xFF0EA5E9),
-                'Bajarilmoqda',
-                '${d.active}',
-              ),
-              _stat(
-                TI.check_circle_rounded,
-                const Color(0xFF10B981),
-                'Yetkazildi',
-                groupDigitsSafe(d.delivered),
-                sub: '${d.deliveredIn} ta buyurtmada',
-              ),
-              _stat(
-                TI.payments_rounded,
-                const Color(0xFFD946EF),
-                'Sarflandi',
-                som(d.spent),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           if (d.orders.isEmpty)
             SmmEmpty(
               pose: MascotPose.emptyOrders,
@@ -162,74 +115,7 @@ class SmmOrdersScreenState extends State<SmmOrdersScreen> {
       ],
     );
   }
-
-  Widget _stat(
-    TIData icon,
-    Color c,
-    String label,
-    String value, {
-    String? sub,
-  }) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: WebC.cardBg,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: WebC.cardBorder),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            TIcon(icon, color: c, size: 16),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: WebC.zinc500, fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-        const Spacer(),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            value,
-            style: TextStyle(
-              color: WebC.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
-          ),
-        ),
-        if (sub != null)
-          Text(sub, style: TextStyle(color: WebC.zinc500, fontSize: 11)),
-      ],
-    ),
-  );
 }
-
-Widget _statSkeleton() => Container(
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    color: WebC.cardBg,
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(color: WebC.cardBorder),
-  ),
-  child: const Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      SBar(width: 90, height: 12),
-      Spacer(),
-      SBar(width: 70, height: 20),
-    ],
-  ),
-);
 
 /// [_OrderRow] skeleti.
 Widget _orderSkeleton() => Container(

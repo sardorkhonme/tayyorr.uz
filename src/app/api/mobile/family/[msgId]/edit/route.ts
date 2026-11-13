@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { familyInclude, familyRole, familySignal, parseMentions, toFamilyClients } from "@/lib/family";
+import {
+  familyInclude,
+  familyRole,
+  familySignal,
+  parseMentions,
+  replyMentionId,
+  toFamilyClients,
+  withReplyMention,
+} from "@/lib/family";
 import { requireMobileAuth } from "@/lib/mobile-auth";
 import { mobileJson } from "@/lib/mobile-cors";
 import { scopedApiError } from "@/lib/restriction-scope";
@@ -25,7 +33,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ msgId: 
   const scoped = await scopedApiError(me, "family", null, true);
   if (scoped) return scoped;
 
-  const m = await db.familyMessage.findUnique({ where: { id: msgId }, select: { senderId: true, body: true, deletedAt: true } });
+  const m = await db.familyMessage.findUnique({
+    where: { id: msgId },
+    select: {
+      senderId: true,
+      body: true,
+      deletedAt: true,
+      replyTo: { select: { senderId: true, as: true, deletedAt: true } },
+    },
+  });
   if (!m || m.deletedAt) return mobileJson({ error: "Xabar topilmadi" }, { status: 404 });
   if (m.senderId !== me) return mobileJson({ error: "Faqat öz xabaringizni tahrirlay olasiz" }, { status: 403 });
   if (m.body === parsed.data.body) return mobileJson({ error: "Özgariş yöq" }, { status: 400 });
@@ -36,7 +52,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ msgId: 
       body: parsed.data.body,
       editedAt: new Date(),
       editHistory: { push: m.body },
-      mentions: await parseMentions(parsed.data.body),
+      // javob egasi belgilangan bo'lib qoladi
+      mentions: withReplyMention(await parseMentions(parsed.data.body), replyMentionId(m.replyTo, me)),
     },
     include: familyInclude,
   });

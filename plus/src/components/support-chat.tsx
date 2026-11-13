@@ -11,6 +11,7 @@ import { Linkify } from "@/components/linkify";
 import { REACTION_EMOJIS, toggleReaction, type ReactionChip } from "@/lib/reaction-emojis";
 import { SAFETY_POLL_MS, useRealtime } from "@/lib/use-realtime";
 import { useFlashState } from "@/components/flash-status";
+import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 
 type Msg = {
   id: string;
@@ -248,8 +249,21 @@ export function SupportChat({
     };
   }, [load, live]);
 
+  // «↓» tugmasi: yuqoriga aylantirilganda çiqadi, kelgan javoblar sonini körsatadi
+  const down = useScrollDown(listRef, msgs, { keyOf: (m) => m.id, isMine: (m) => !!m.mine });
+  const firstScroll = useRef(true);
+  // yangi xabar: birinçi yuklanişda — darhol pastga; keyin — pastda turgan bölsa yoki özi yozgan bölsa silliq,
+  // yuqorida öqiyotgan bölsa — joyida qoladi (tugmada yangilar soni)
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+    const el = listRef.current;
+    if (!el || !msgs.length) return;
+    if (firstScroll.current) {
+      firstScroll.current = false;
+      el.scrollTop = el.scrollHeight;
+      return;
+    }
+    if (!down.isAway() || msgs[msgs.length - 1]?.mine) down.scrollDown();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msgs.length]);
 
   /** Reaksiya: o'sha emoji qayta bosilsa — olib tashlanadi, boshqasi — almashadi. */
@@ -342,7 +356,15 @@ export function SupportChat({
 
       {loggedIn ? (
         <>
-          <div ref={listRef} onScroll={closeMenu} className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
+          <div className="relative flex min-h-0 flex-1 flex-col">
+          <div
+            ref={listRef}
+            onScroll={() => {
+              closeMenu();
+              down.onScroll();
+            }}
+            className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4"
+          >
             {msgs.length === 0 && (
               <div className="mx-auto mt-6 max-w-[260px] text-center">
                 <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-500">
@@ -439,6 +461,11 @@ export function SupportChat({
                 </button>
               </div>
             ))}
+          </div>
+            {/* suzuvçi tugmalar — yoziş maydoni ustida, öngda (8px oraliq bilan ustma-ust) */}
+            <FloatingStack className="absolute bottom-3 right-4 z-[3]">
+              {down.away && <ScrollDownButton tone="light" unread={down.unread} onClick={down.scrollDown} />}
+            </FloatingStack>
           </div>
 
           {menu &&

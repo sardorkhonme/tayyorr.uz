@@ -46,7 +46,10 @@ import '../../widgets/app_header_sliver.dart' show kHeaderGap, kHeaderSide;
 ///  · yuborish tugmasini bosib turish: «Rejalashtirish» (hamma), «Hammaga bildirib yuborish» (admin);
 ///  · admin — 📎 chapidagi dumaloq tugmadan qaysi nomdan yozishni tanlaydi (o'zi / Tayyorr.uz / Support).
 class FamilyScreen extends StatefulWidget {
-  const FamilyScreen({super.key});
+  const FamilyScreen({super.key, this.openMention = false});
+
+  /// Röyxatdagi «Sizni belgilaşdi» qatoridan oçilganda — darhol birinçi öqilmagan belgilaşga.
+  final bool openMention;
 
   /// Ochiq bo'lsa — guruh bildirishnomalari ko'rsatilmaydi.
   static bool isOpen = false;
@@ -81,6 +84,12 @@ class _FamilyScreenState extends State<FamilyScreen>
   /// O'qilmagan belgilashlar (eskisidan yangisiga).
   final List<String> _mentionQueue = [];
   final Set<String> _mentionSeen = {};
+
+  /// Oçilişda birinçi belgilaşga sakraş kerakmi (yuklanib bölguncha kutadi).
+  late bool _pendingMentionJump = widget.openMention;
+
+  /// Yuqorida turganda kelgan yangi xabarlar — «↓» tugmasidagi son.
+  int _unseen = 0;
 
   /// Shu qurilmadan yuborilganlar (Tayyorr.uz nomidan yozilgani ham «meniki»).
   final Set<String> _sentIds = {};
@@ -141,6 +150,10 @@ class _FamilyScreenState extends State<FamilyScreen>
     _uid = context.read<AuthBloc>().state.user?.id;
     _enter();
     _startOnline();
+    // @ taklifi darhol çiqsin: boşlang'iç röyxat oldindan (keşda bölsa — fonda yangilanadi)
+    if (_repo.cachedMention('')?.fresh != true) {
+      _repo.mention('').catchError((_) => const <FamilyAuthor>[]);
+    }
   }
 
   /// Kirish: keshdagi xabarlar darhol (shimmersiz), keyin faqat yangilari / o'zgarganlari.
@@ -318,10 +331,28 @@ class _FamilyScreenState extends State<FamilyScreen>
         )) {
           if (_mentionSeen.add(id)) _mentionQueue.add(id);
         }
+        // ehtiyot: mening xabarimga javob ham belgilaş (server ham uni `mentions` ga qöşadi)
+        final lastRead = (r['lastReadAt'] as num?)?.toInt();
+        if (lastRead != null) {
+          for (final m in _messages) {
+            if (m.sendAtMs > lastRead &&
+                !m.isLocal &&
+                !_isMine(m) &&
+                _mentionsMe(m) &&
+                _mentionSeen.add(m.id)) {
+              _mentionQueue.add(m.id);
+            }
+          }
+        }
+        _sortMentions();
       });
       _armNext((r['nextAt'] as num?)?.toInt());
       if (initial) _scheduleRead();
       _saveCache();
+      if (_pendingMentionJump) {
+        _pendingMentionJump = false;
+        if (_mentionQueue.isNotEmpty) unawaited(_jumpToFirstMention());
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -442,10 +473,11 @@ class _FamilyScreenState extends State<FamilyScreen>
           isNew &&
           !mine &&
           _me != null &&
-          m.mentionsMe(_me!.id, _isAdmin) &&
+          _mentionsMe(m) &&
           !nearBottom) {
         if (_mentionSeen.add(m.id)) _mentionQueue.add(m.id);
       }
+      if (e == 'new' && isNew && !mine && !nearBottom) _unseen++;
     });
     if (e == 'new' && isNew) {
       if (nearBottom || mine) {
@@ -472,6 +504,7 @@ class _FamilyScreenState extends State<FamilyScreen>
       _loadOlder();
     }
     if (_nearBottom) _scheduleRead();
+    if (_unseen > 0 && _scroll.offset < 80) setState(() => _unseen = 0);
     if (_mentionQueue.isNotEmpty) {
       _visTimer ??= Timer(const Duration(milliseconds: 250), () {
         _visTimer = null;
@@ -527,6 +560,7 @@ class _FamilyScreenState extends State<FamilyScreen>
   }
 
   void _scrollToBottom() {
+    if (_unseen > 0) setState(() => _unseen = 0);
     if (!_scroll.hasClients) return;
     final pos = _scroll.position;
     if (!pos.hasContentDimensions || pos.pixels <= 0) return;
@@ -600,11 +634,49 @@ class _FamilyScreenState extends State<FamilyScreen>
     });
   }
 
+  /// Keyingi (eng eski öqilmagan) belgilaşga: sakraydi, yondiradi, hisoblagiç kamayadi.
   void _nextMention() {
     if (_mentionQueue.isEmpty) return;
     final id = _mentionQueue.removeAt(0);
     setState(() {});
     _jumpTo(id);
+  }
+
+  /// Röyxat quriliši (sahifa animatsiyasi tugaşi) ni kutib — birinçi belgilaşga.
+  Future<void> _jumpToFirstMention() async {
+    for (
+      var i = 0;
+      i < 40 && mounted && (!routeSettled || !_scroll.hasClients);
+      i++
+    ) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    if (!mounted || !_scroll.hasClients) return;
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) _nextMention();
+  }
+
+  /// Meni belgilaganmi: @loginim yoki mening xabarimga javob.
+  bool _mentionsMe(FamilyMessage m) {
+    final me = _me;
+    if (me == null) return false;
+    if (m.mentionsMe(me.id, me.isAdmin)) return true;
+    final r = m.replyTo;
+    if (r == null || r.deleted) return false;
+    final i = _messages.indexWhere((x) => x.id == r.id);
+    return i >= 0 && _isMine(_messages[i]);
+  }
+
+  /// Navbat — eskisidan yangisiga (yuklanmagan, juda eskilari — boşida, server tartibida).
+  void _sortMentions() {
+    final at = {for (final m in _messages) m.id: m.sendAtMs};
+    final order = {
+      for (var i = 0; i < _mentionQueue.length; i++) _mentionQueue[i]: i,
+    };
+    _mentionQueue.sort((a, b) {
+      final c = (at[a] ?? 0).compareTo(at[b] ?? 0);
+      return c != 0 ? c : order[a]!.compareTo(order[b]!);
+    });
   }
 
   // ───────────────────────── yuborish ─────────────────────────
@@ -1039,14 +1111,64 @@ class _FamilyScreenState extends State<FamilyScreen>
     _mentionStart = i - 1;
     if (q == _mentionQuery) return;
     _mentionQuery = q;
+    // darhol — mahalliy röyxatdan süzib (tarmoqni kutmasdan, «@» yozilgan kadrning özida)
+    setState(() => _suggest = _localSuggest(q));
     _suggestTimer?.cancel();
-    _suggestTimer = Timer(const Duration(milliseconds: 250), () async {
-      try {
-        final list = await _repo.mention(q);
-        if (!mounted || _mentionQuery != q || _mentionStart == null) return;
-        setState(() => _suggest = list.take(3).toList());
-      } catch (_) {}
-    });
+    final cached = _repo.cachedMention(q);
+    if (cached != null && cached.fresh) return;
+    // fonda — server javobi (keşlanadi), kelganda röyxat jim yangilanadi
+    _suggestTimer = Timer(
+      Duration(milliseconds: cached == null ? 120 : 400),
+      () async {
+        try {
+          await _repo.mention(q);
+          if (!mounted || _mentionQuery != q || _mentionStart == null) return;
+          setState(() => _suggest = _localSuggest(q));
+        } catch (_) {}
+      },
+    );
+  }
+
+  /// @ taklifi: server javobi (shu yoki eng yaqin qisqa so'rov keşi), keyin guruhda
+  /// yaqinda yozganlar va ilgari körilgan akkauntlar — barçasi mahalliy süzgiç bilan.
+  List<FamilyAuthor> _localSuggest(String q) {
+    const limit = 4;
+    final ql = q.toLowerCase();
+    final meId = _me?.id ?? _uid;
+    final out = <FamilyAuthor>[];
+    final seen = <String>{};
+    bool match(FamilyAuthor a) {
+      final login = a.login;
+      if (login == null || login.isEmpty) return false;
+      if (a.isUser && a.id == meId) return false;
+      if (ql.isEmpty) return true;
+      if (login.toLowerCase().startsWith(ql)) return true;
+      return a.name
+          .toLowerCase()
+          .split(RegExp(r'\s+'))
+          .any((w) => w.startsWith(ql));
+    }
+
+    void add(FamilyAuthor a) {
+      if (out.length < limit && match(a) && seen.add('${a.kind}:${a.id}')) {
+        out.add(a);
+      }
+    }
+
+    for (var n = q.length; n >= 0 && out.length < limit; n--) {
+      final c = _repo.cachedMention(q.substring(0, n));
+      if (c == null) continue;
+      c.users.forEach(add);
+      break;
+    }
+    for (var i = _messages.length - 1; i >= 0 && out.length < limit; i--) {
+      add(_messages[i].author);
+    }
+    for (final a in _repo.mentionPool.values) {
+      if (out.length >= limit) break;
+      add(a);
+    }
+    return out;
   }
 
   void _closeSuggest() {
@@ -1759,6 +1881,7 @@ class _FamilyScreenState extends State<FamilyScreen>
             controller: _scroll,
             mentionCount: _mentionQueue.length,
             onMention: _nextMention,
+            unread: _unseen,
           ),
         ),
       ],
@@ -1799,7 +1922,7 @@ class _FamilyScreenState extends State<FamilyScreen>
       showName: f.showName,
       showAvatar: f.showAvatar,
       tight: f.tight,
-      mentioned: !mine && me != null && m.mentionsMe(me.id, me.isAdmin),
+      mentioned: !mine && _mentionsMe(m),
       meId: me?.id,
       bubbleKey: bubbleKey,
       previewOnly: previewOnly,

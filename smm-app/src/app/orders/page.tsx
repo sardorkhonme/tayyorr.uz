@@ -7,7 +7,7 @@ import { PlatformIcon } from "@/components/platform-icon";
 import { splitServiceName } from "@/lib/kinds";
 import { db } from "@/lib/db";
 import { num, som } from "@/lib/format";
-import { ACTIVE, progressOf, statusOf } from "@/lib/order-view";
+import { progressOf, statusOf } from "@/lib/order-view";
 import { syncOrders } from "@/lib/orders";
 import { platformOf } from "@/lib/platforms";
 import { MascotState } from "@/components/mascot";
@@ -35,10 +35,6 @@ export default async function OrdersPage() {
     include: { service: { select: { name: true, platform: true } } },
   });
 
-  const active = orders.filter((o) => ACTIVE.includes(o.status)).length;
-  const done = orders.filter((o) => o.status === "COMPLETED" || o.status === "PARTIAL").length;
-  const spent = orders.reduce((s, o) => s + o.charge - (o.refundAmount ?? 0), 0);
-  const delivered = orders.reduce((s, o) => s + progressOf(o).delivered, 0);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -59,24 +55,6 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { label: "Jami buyurtma", value: num(orders.length), icon: "package" as const },
-              { label: "Bajarilmoqda", value: num(active), icon: "clock" as const },
-              { label: "Yetkazildi", value: num(delivered), sub: `${num(done)} ta buyurtmada`, icon: "check" as const },
-              { label: "Sarflandi", value: som(spent), icon: "wallet" as const },
-            ].map((s) => (
-              <div key={s.label} className="card p-4">
-                <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-zinc-500">
-                  <Icon name={s.icon} className="h-3.5 w-3.5" />
-                  {s.label}
-                </span>
-                <p className="mt-1.5 truncate font-display text-xl font-bold tabular-nums text-zinc-900">{s.value}</p>
-                {s.sub && <p className="text-xs text-zinc-400">{s.sub}</p>}
-              </div>
-            ))}
-          </div>
-
           <ul className="mt-6 space-y-3">
             {orders.map((o) => {
               const p = platformOf(o.service.platform);

@@ -25,6 +25,7 @@ import { flashMessage } from "@/lib/flash-message";
 import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
 import { BackChevron, HEADER_CAPSULE } from "@/components/page-header";
 import { useFlashState } from "@/components/flash-status";
+import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 
 interface ReplyPreview {
   id: string;
@@ -283,6 +284,8 @@ export function ChatRoom({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nearBottomRef = useRef(true);
+  // «↓» tugmasi: yuqoriga aylantirilganda çiqadi, kelgan xabarlar sonini körsatadi
+  const scrollDown = useScrollDown(scrollRef, messages, { keyOf: (m) => m.key ?? m.id, isMine: (m) => m.mine });
   const prevLenRef = useRef(initialMessages.filter((m) => !m.deleted).length);
   const sinceRef = useRef<number>(
     initialMessages.reduce((m, x) => Math.max(m, x.updatedAt || x.createdAt), 0),
@@ -917,6 +920,7 @@ export function ChatRoom({
             const el = e.currentTarget;
             nearBottomRef.current =
               el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+            scrollDown.onScroll();
           }}
           className="h-full overflow-y-auto"
         >
@@ -1094,7 +1098,11 @@ export function ChatRoom({
           className="pointer-events-none absolute inset-x-0 bottom-0 px-3 sm:px-4"
           style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
         >
-          <div className="pointer-events-auto mx-auto max-w-3xl">
+          <div className="pointer-events-auto relative mx-auto max-w-3xl">
+            {/* suzuvçi tugmalar — composer ustida, öng tomonda (bir-birining ustiga 8px oraliq bilan) */}
+            <FloatingStack className="absolute bottom-full right-0 mb-2">
+              {scrollDown.away && <ScrollDownButton unread={scrollDown.unread} onClick={scrollDown.scrollDown} />}
+            </FloatingStack>
             {err && (
               <p className={`flash-status mb-2 rounded-2xl px-3.5 py-2 text-xs text-red-400 ${HEADER_CAPSULE}`}>{err}</p>
             )}

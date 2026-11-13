@@ -12,6 +12,7 @@ import { flashMessage } from "@/lib/flash-message";
 import { shortDate } from "@/lib/date";
 import { prepareFamilyFile, type PreparedChatFile } from "@/lib/upload-client";
 import { useFlashState } from "@/components/flash-status";
+import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 
 /** Ilova bilan bir xil reaksiyalar (lib/family.ts → FAMILY_EMOJIS). */
 const EMOJIS = ["👍", "👎", "❤️", "😂", "😮", "😢", "😡", "🔥", "🙏", "👏"];
@@ -122,6 +123,8 @@ export function FamilyChat() {
   const sinceRef = useRef(0);
   const stickRef = useRef(true);
   const keepOffset = useRef<number | null>(null);
+  // «↓» tugmasi: yuqoriga aylantirilganda çiqadi, kelgan xabarlar sonini körsatadi
+  const down = useScrollDown(scrollRef, msgs, { keyOf: (m) => m.id, isMine: (m) => m.author.kind === "support" });
 
   const absorb = useCallback((list: Msg[]) => {
     for (const m of list) if (m.updatedAt > sinceRef.current) sinceRef.current = m.updatedAt;
@@ -198,6 +201,7 @@ export function FamilyChat() {
     const el = scrollRef.current;
     if (!el) return;
     stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    down.onScroll();
     if (el.scrollTop < 60 && hasMore && !loadingOld) void loadOlder();
   }
 
@@ -352,6 +356,7 @@ export function FamilyChat() {
       )}
 
       {/* ---- xabarlar ---- */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
       <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto bg-[#0b0b12]/40 px-2 py-3 sm:px-4">
         {loading && <p className="mt-10 text-center text-sm text-zinc-500">Yuklanmoqda…</p>}
         {!loading && msgs.length === 0 && <p className="mt-10 text-center text-sm text-zinc-500">Hali xabar yöq.</p>}
@@ -497,6 +502,11 @@ export function FamilyChat() {
             </div>
           );
         })}
+      </div>
+        {/* suzuvçi tugmalar — yoziş maydoni ustida, öngda (8px oraliq bilan ustma-ust) */}
+        <FloatingStack className="absolute bottom-3 right-3 z-10">
+          {down.away && <ScrollDownButton unread={down.unread} onClick={down.scrollDown} />}
+        </FloatingStack>
       </div>
 
       {jumpMiss && (

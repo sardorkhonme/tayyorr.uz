@@ -11,6 +11,8 @@ import {
   familyPresence,
   parseMentions,
   toFamilyClients,
+  replyMentionId,
+  withReplyMention,
 } from "@/lib/family";
 import { getSupportUserId } from "@/lib/support";
 
@@ -88,9 +90,15 @@ export async function POST(req: Request) {
   }
 
   let replyToId: string | null = null;
+  // javob — asl xabar egasini belgilash hisoblanadi (mentions'ga qo'shiladi)
+  let replyMention: string | null = null;
   if (d.replyToId) {
-    const r = await db.familyMessage.findUnique({ where: { id: d.replyToId }, select: { id: true } });
+    const r = await db.familyMessage.findUnique({
+      where: { id: d.replyToId },
+      select: { id: true, senderId: true, as: true, deletedAt: true },
+    });
     replyToId = r?.id ?? null;
+    replyMention = replyMentionId(r, me);
   }
 
   const row = await db.familyMessage.create({
@@ -103,7 +111,7 @@ export async function POST(req: Request) {
       fileType: d.file?.type ?? null,
       fileSize: d.file?.size ?? null,
       replyToId,
-      mentions: await parseMentions(d.body ?? ""),
+      mentions: withReplyMention(await parseMentions(d.body ?? ""), replyMention),
       notifyAll: !!d.notifyAll,
       sendAt: new Date(),
       scheduled: false,

@@ -84,10 +84,11 @@ class _FlashHighlightState extends State<FlashHighlight>
   }
 }
 
-/// Çat ro'yxati (teskari — 0 eng past) ustida o'ng pastdagi suzuvchi tugmalar:
-///  · «pastga tushish» — foydalanuvchi bir ekrandan ko'proq yuqoriga chiqsa paydo bo'ladi;
-///  · «@» — o'qilmagan belgilashlar bo'lsa, hisoblagich bilan: pastga tugmasi ko'rinsa — uning ustida,
-///    ko'rinmasa — uning o'rnida.
+/// Çat ro'yxati (teskari — 0 eng past) ustida o'ng pastdagi suzuvchi tugmalar (barça çatlarda):
+///  · «↓ pastga» — foydalanuvçi eng yangi xabarlardan yuqoriga çiqsa paydo böladi, bosilganda
+///    eng yangi xabarga silliq tuşadi; yuqorida turganda kelgan yangi xabarlar soni — [unread];
+///  · «@» — öqilmagan belgilaşlar bölsa, hisoblagiç bilan. Ikkalasi ham körinsa — ustma-ust
+///    (@ tepada, ↓ pastda, 8px oraliq), hech qaçon bir-birini yopmaydi.
 class ChatScrollButtons extends StatefulWidget {
   const ChatScrollButtons({
     super.key,
@@ -95,13 +96,24 @@ class ChatScrollButtons extends StatefulWidget {
     this.mentionCount = 0,
     this.onMention,
     this.onDown,
+    this.unread = 0,
   });
   final ScrollController controller;
   final int mentionCount;
   final VoidCallback? onMention;
 
+  /// Yuqorida turganda kelgan (körilmagan) yangi xabarlar.
+  final int unread;
+
   /// Bo'lmasa — ro'yxat boshiga (eng pastga) silliq aylanadi.
   final VoidCallback? onDown;
+
+  /// Şundan uzoqroq yuqoriga çiqilsa — «pastga» tugmasi körinadi.
+  static const double showAfter = 200;
+
+  /// Tugmalar ölçami va oraliq.
+  static const double size = 46;
+  static const double gap = 8;
 
   @override
   State<ChatScrollButtons> createState() => _ChatScrollButtonsState();
@@ -114,6 +126,9 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
   void initState() {
     super.initState();
     widget.controller.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onScroll();
+    });
   }
 
   @override
@@ -136,7 +151,7 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
     if (!c.hasClients) return;
     final p = c.position;
     if (!p.hasContentDimensions) return;
-    final show = p.pixels > p.viewportDimension * 0.9;
+    final show = p.pixels > ChatScrollButtons.showAfter;
     if (show != _showDown) setState(() => _showDown = show);
   }
 
@@ -157,25 +172,28 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
 
   @override
   Widget build(BuildContext context) {
+    final mention = widget.mentionCount > 0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         _Pop(
-          visible: widget.mentionCount > 0,
+          visible: mention,
           child: Padding(
-            padding: EdgeInsets.only(bottom: _showDown ? 10 : 0),
+            padding: EdgeInsets.only(
+              bottom: _showDown ? ChatScrollButtons.gap : 0,
+            ),
             child: _RoundFab(
+              semanticLabel: 'Keyingi belgilaş',
               onTap: () {
                 HapticFeedback.selectionClick();
                 widget.onMention?.call();
               },
               count: widget.mentionCount,
-              accent: true,
-              child: const TIcon(
+              child: TIcon(
                 TI.alternate_email_rounded,
                 size: 20,
-                color: Colors.white,
+                color: WebC.indigoSoft,
               ),
             ),
           ),
@@ -183,10 +201,12 @@ class _ChatScrollButtonsState extends State<ChatScrollButtons> {
         _Pop(
           visible: _showDown,
           child: _RoundFab(
+            semanticLabel: 'Eng yangi xabarga',
             onTap: _down,
+            count: widget.unread,
             child: TIcon(
               TI.keyboard_arrow_down_rounded,
-              size: 22,
+              size: 24,
               color: WebC.zinc300,
             ),
           ),
@@ -217,7 +237,7 @@ class _Pop extends StatelessWidget {
         ),
         child: visible
             ? KeyedSubtree(key: const ValueKey(1), child: child)
-            : const SizedBox(key: ValueKey(0), width: 46),
+            : const SizedBox(key: ValueKey(0), width: ChatScrollButtons.size),
       ),
     );
   }
@@ -228,51 +248,54 @@ class _RoundFab extends StatelessWidget {
     required this.onTap,
     required this.child,
     this.count = 0,
-    this.accent = false,
+    this.semanticLabel,
   });
   final VoidCallback onTap;
   final Widget child;
   final int count;
-  final bool accent;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    // iOS 26 suzuvchi shisha tugma: bosilganda yorishib kattalashadi, rezinadek cho'ziladi
+    // iOS 26 suzuvchi shisha tugma (ikkalasi bir xil uslubda): bosilganda yorishib kattalashadi
     return Stack(
       clipBehavior: Clip.none,
       children: [
         GlassTap(
-          width: 46,
-          height: 46,
+          width: ChatScrollButtons.size,
+          height: ChatScrollButtons.size,
+          strong: true,
           haptic: false,
           onTap: onTap,
-          tint: accent ? const Color(0xFF6D5CF6) : null,
+          semanticLabel: semanticLabel,
           child: child,
         ),
         if (count > 0)
           Positioned(
             top: -4,
             right: -4,
-            child: Container(
-              constraints: const BoxConstraints(minWidth: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF43F5E),
-                borderRadius: BorderRadius.circular(99),
-                border: Border.all(
-                  color: AppColors.isLight
-                      ? Colors.white
-                      : const Color(0xFF0B0B12),
-                  width: 2,
+            child: IgnorePointer(
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF43F5E),
+                  borderRadius: BorderRadius.circular(99),
+                  border: Border.all(
+                    color: AppColors.isLight
+                        ? Colors.white
+                        : const Color(0xFF0B0B12),
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: Text(
-                count > 99 ? '99+' : '$count',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
+                child: Text(
+                  count > 99 ? '99+' : '$count',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ),

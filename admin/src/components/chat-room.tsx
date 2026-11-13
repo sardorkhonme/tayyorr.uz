@@ -24,6 +24,7 @@ import { PlatformCheckboxes } from "@/components/platform-checkboxes";
 import { flashMessage } from "@/lib/flash-message";
 import { REACTION_EMOJIS, toggleReaction, withMine, type ReactionChip } from "@/lib/reaction-emojis";
 import { useFlashState } from "@/components/flash-status";
+import { FloatingStack, ScrollDownButton, useScrollDown } from "@/components/scroll-down";
 
 interface ReplyPreview {
   id: string;
@@ -282,6 +283,8 @@ export function ChatRoom({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nearBottomRef = useRef(true);
+  // «↓» tugmasi: yuqoriga aylantirilganda çiqadi, kelgan xabarlar sonini körsatadi
+  const scrollDown = useScrollDown(scrollRef, messages, { keyOf: (m) => m.key ?? m.id, isMine: (m) => m.mine });
   const prevLenRef = useRef(initialMessages.filter((m) => !m.deleted).length);
   const sinceRef = useRef<number>(
     initialMessages.reduce((m, x) => Math.max(m, x.updatedAt || x.createdAt), 0),
@@ -893,6 +896,7 @@ export function ChatRoom({
             const el = e.currentTarget;
             nearBottomRef.current =
               el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+            scrollDown.onScroll();
           }}
           className="h-full overflow-y-auto"
         >
@@ -1069,7 +1073,11 @@ export function ChatRoom({
           className="pointer-events-none absolute inset-x-0 bottom-0 px-3 sm:px-4"
           style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
         >
-          <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#0b0b12]/80 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
+          <div className="pointer-events-auto relative mx-auto max-w-3xl rounded-2xl border border-white/15 bg-[#0b0b12]/80 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
+            {/* suzuvçi tugmalar — composer ustida, öng tomonda (bir-birining ustiga 8px oraliq bilan) */}
+            <FloatingStack className="absolute bottom-full right-0 mb-2">
+              {scrollDown.away && <ScrollDownButton unread={scrollDown.unread} onClick={scrollDown.scrollDown} />}
+            </FloatingStack>
             {err && <p className="flash-status mb-2 px-1 text-xs text-red-400">{err}</p>}
 
             {blocked ? (

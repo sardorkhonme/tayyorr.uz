@@ -306,6 +306,17 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
   /// Birinçi (keşdagi yoki serverdan kelgan) röyxat körilgan — undan keyingi har yangi xabar animatsiyali.
   bool _seeded = false;
 
+  /// Yuqorida (eski xabarlarni öqib) turganda kelgan yangi xabarlar — «↓» tugmasida son.
+  int _unseen = 0;
+
+  void _onScroll() {
+    if (_unseen > 0 &&
+        _scrollController.hasClients &&
+        _scrollController.offset < 80) {
+      setState(() => _unseen = 0);
+    }
+  }
+
   void _markFresh(String k) {
     _fresh.add(k);
     Future.delayed(const Duration(milliseconds: 500), () => _fresh.remove(k));
@@ -366,6 +377,7 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
     }
     MessageNotifier.instance.activeConversationId = _conversationId;
     MessageNotifier.instance.clearFor(_conversationId);
+    _scrollController.addListener(_onScroll);
     _contractTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       final n = context.read<ChatCubit>().state.activeContracts.length;
       if (n > 1 && mounted) {
@@ -530,6 +542,7 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
                 for (final m in state.messages)
                   if (_known.add(m.stableKey)) m.stableKey,
               ];
+              final wasSeeded = _seeded;
               if (_seeded && added.length <= 6) added.forEach(_markFresh);
               if (state.status == ChatStatus.success) _seeded = true;
               final nearBottom =
@@ -538,9 +551,16 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
               final mineLast =
                   state.messages.isNotEmpty && state.messages.last.mine;
               if (nearBottom || mineLast) {
+                if (_unseen > 0) setState(() => _unseen = 0);
                 WidgetsBinding.instance.addPostFrameCallback(
                   (_) => _scrollToBottom(),
                 );
+              } else if (wasSeeded && added.isNotEmpty) {
+                final keys = added.toSet();
+                final incoming = state.messages
+                    .where((m) => keys.contains(m.stableKey) && !m.mine)
+                    .length;
+                if (incoming > 0) setState(() => _unseen += incoming);
               }
             },
             builder: (context, state) {
@@ -695,6 +715,7 @@ class _ChatViewState extends State<_ChatView> with RouteSettleMixin {
                                 bottom: 12,
                                 child: ChatScrollButtons(
                                   controller: _scrollController,
+                                  unread: _unseen,
                                 ),
                               ),
                             ],
