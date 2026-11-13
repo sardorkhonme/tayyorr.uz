@@ -85,6 +85,37 @@ export default async function DashboardPage({
 
       {/* xizmatlar */}
       <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {/* Ilmiy ishlar (app.tayyorr.uz) — tayyorr+ xizmatlaridan biri */}
+        <a
+          href={MAIN_SITE_URL}
+          style={{ "--glow": "#4f46e5" } as React.CSSProperties}
+          className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-black/5 bg-[#ffffff] shadow-lg shadow-indigo-500/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-mark.png" alt="Tayyorr.uz" className="h-10 w-10 object-contain" />
+            </span>
+          </div>
+          <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
+            Tayyorr.uz
+          </h2>
+          <p className="mt-2 leading-relaxed text-zinc-500">
+            Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["Prezentatsiya", "Kurs işi", "Referat", "Diplom işi"].map((t) => (
+              <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600">
+                {t}
+              </span>
+            ))}
+          </div>
+          <span className="mt-auto pt-6">
+            <OpenPill />
+          </span>
+        </a>
+
+
         <a
           href={SMM_URL}
           className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
@@ -118,36 +149,6 @@ export default async function DashboardPage({
                 </span>
               );
             })}
-          </div>
-          <span className="mt-auto pt-6">
-            <OpenPill />
-          </span>
-        </a>
-
-        {/* Ilmiy ishlar (app.tayyorr.uz) — tayyorr+ xizmatlaridan biri */}
-        <a
-          href={MAIN_SITE_URL}
-          style={{ "--glow": "#4f46e5" } as React.CSSProperties}
-          className="card glow-card group relative flex flex-col overflow-hidden !rounded-3xl p-6 sm:p-7"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <span className="shine grid h-14 w-14 place-items-center rounded-2xl border border-black/5 bg-[#ffffff] shadow-lg shadow-indigo-500/20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-mark.png" alt="Tayyorr.uz" className="h-10 w-10 object-contain" />
-            </span>
-          </div>
-          <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">
-            Tayyorr.uz
-          </h2>
-          <p className="mt-2 leading-relaxed text-zinc-500">
-            Prezentatsiya, kurs işi, referat va diplom işini işonçli tayyorlovçilarga buyurtma qiling.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["Prezentatsiya", "Kurs işi", "Referat", "Diplom işi"].map((t) => (
-              <span key={t} className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600">
-                {t}
-              </span>
-            ))}
           </div>
           <span className="mt-auto pt-6">
             <OpenPill />

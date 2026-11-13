@@ -11,7 +11,7 @@ import { SUPPORT_UNREAD_EVENT } from "@/components/support-widget";
 
 /**
  * Telefon va planşet (<1024px) — Flutter ilovadagi tayyorr+ qobiği bilan bir xil:
- *  · tepada suzuvçi şişa header — tayyorr+ logosi (ilovadagidek öngda ikonka yöq: qöllanma va yordam pastki panelda);
+ *  · tepada header yöq (faqat ički sahifalarda — «orqaga» va logo);
  *  · pastda suzuvçi panel: Boş sahifa, Hamyon, Xabarlar (Support), Qöllanma, Profil.
  * Kompyuterda — çapdagi panel (hub-nav.tsx → HubSidebar).
  */
@@ -42,6 +42,8 @@ export function MobileHeader() {
   const router = useRouter();
   if (hideShell(pathname)) return null;
   const back = backTarget(pathname);
+  // tayyorr+ da tepada header yöq (faqat ički sahifalarda «orqaga») — soat qatori uçun joy qoladi
+  if (!back) return <div aria-hidden className="h-[max(0.75rem,env(safe-area-inset-top))] lg:hidden" />;
   return (
     <div className="m-header-fade sticky top-0 z-40 px-3 pb-1 pt-[max(0.75rem,env(safe-area-inset-top))] lg:hidden">
       <div className="flex h-14 items-center gap-2">

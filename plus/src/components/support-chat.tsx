@@ -281,7 +281,28 @@ export function SupportChat({
 
   return (
     <div className={`flex flex-col overflow-hidden bg-white ${className}`}>
-      {/* sarlavha */}
+      {/* sarlavha: telefon sahifasida (closable) — ilovadagi headerlar kabi alohida şişa kapsulalar */}
+      {closable ? (
+        <div className="m-header-fade z-[2] flex h-14 shrink-0 items-center gap-2 px-3 pb-1 pt-[max(0.75rem,env(safe-area-inset-top))] box-content">
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            aria-label="Orqaga"
+            className="glass grid h-12 w-12 shrink-0 place-items-center rounded-full text-zinc-900 transition active:scale-95"
+          >
+            <Icon name="arrow-left" className="h-5 w-5" strokeWidth={2.2} />
+          </button>
+          <span className="glass grid h-12 w-12 shrink-0 place-items-center rounded-full text-indigo-600">
+            <Icon name="headset" className="h-5 w-5" />
+          </span>
+          <div className="glass flex h-12 min-w-0 flex-1 flex-col justify-center rounded-full px-4">
+            <p className="truncate font-display text-[15px] font-semibold leading-tight text-zinc-900">tayyorr support</p>
+            <p className="flex items-center gap-1.5 truncate text-[11.5px] leading-tight text-zinc-500">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" /> Odatda bir neça daqiqada javob beramiz
+            </p>
+          </div>
+        </div>
+      ) : (
       <div className="shine flex items-center gap-3 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-4 text-white">
         <span className="grid h-10 w-10 place-items-center rounded-full bg-white/20">
           <Icon name="headset" className="h-5 w-5" />
@@ -303,6 +324,7 @@ export function SupportChat({
           </button>
         )}
       </div>
+      )}
 
       {loggedIn ? (
         <>
