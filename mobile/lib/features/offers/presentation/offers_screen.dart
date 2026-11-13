@@ -90,10 +90,14 @@ class _OffersViewState extends State<_OffersView> {
     });
   }
 
+  /// Filtr menyusi oçiq — headerdagi ikonka ✕ ga aylanadi.
+  bool _filterOpen = false;
+
   void _openFilter() {
     final anchor = _anchor;
     if (anchor == null || !anchor.mounted) return;
     final offers = context.read<OffersCubit>().state.offers;
+    setState(() => _filterOpen = true);
     showHeaderDropdown(
       anchor,
       builder: (menuContext, setMenu) {
@@ -138,7 +142,9 @@ class _OffersViewState extends State<_OffersView> {
           ],
         );
       },
-    );
+    ).whenComplete(() {
+      if (mounted) setState(() => _filterOpen = false);
+    });
   }
 
   @override
@@ -181,7 +187,7 @@ class _OffersViewState extends State<_OffersView> {
                       onTap: () => setState(() => _searching = true),
                     ),
                     HeaderIconItem(
-                      icon: TI.tune_rounded,
+                      icon: _filterOpen ? TI.close_rounded : TI.tune_rounded,
                       label: 'Filtr',
                       onTap: _openFilter,
                       active: _filterActive,

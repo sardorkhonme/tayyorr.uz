@@ -338,7 +338,7 @@ class _SmmCard extends StatelessWidget {
       desc:
           'Obunaçilar, layklar va körişlar — bir neça daqiqada, avtomatik. Bajarilmasa pul qaytadi.',
       glow: const Color(0xFFD946EF),
-      badge: services == null ? null : '$services ta xizmat',
+      
       onTap: () => openSmm(orders > 0 ? null : 0),
     );
   }

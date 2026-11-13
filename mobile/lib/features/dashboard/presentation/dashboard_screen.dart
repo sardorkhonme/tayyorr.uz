@@ -163,12 +163,16 @@ class _DashboardViewState extends State<_DashboardView> {
     });
   }
 
+  /// Filtr menyusi oçiq — headerdagi ikonka ✕ ga aylanadi.
+  bool _filterOpen = false;
+
   void _openFilter() {
     final anchor = _anchor;
     if (anchor == null || !anchor.mounted) return;
     final orders = context.read<DashboardCubit>().state.orders;
     // holat filtri — lentada bir nechta holat bo'lsagina (tayyorlovchida o'zi bajarayotganlari ham bor)
     final statuses = {for (final o in orders) o.status};
+    setState(() => _filterOpen = true);
     showHeaderDropdown(
       anchor,
       builder: (menuContext, setMenu) {
@@ -227,7 +231,9 @@ class _DashboardViewState extends State<_DashboardView> {
           ],
         );
       },
-    );
+    ).whenComplete(() {
+      if (mounted) setState(() => _filterOpen = false);
+    });
   }
 
   @override
@@ -302,7 +308,9 @@ class _DashboardViewState extends State<_DashboardView> {
                               onTap: _openSearch,
                             ),
                             HeaderIconItem(
-                              icon: TI.tune_rounded,
+                              icon: _filterOpen
+                                  ? TI.close_rounded
+                                  : TI.tune_rounded,
                               label: 'Filtr',
                               onTap: _openFilter,
                               active: _filterActive,

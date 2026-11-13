@@ -215,7 +215,7 @@ function FilterButton({
           standalone ? `shrink-0 ${HEADER_CAPSULE}` : ""
         }`}
       >
-        <Icon name="sliders" className="h-[21px] w-[21px]" />
+        <Icon name={open ? "close" : "sliders"} className="h-[21px] w-[21px]" />
         {filter.active && (
           <span className="absolute right-3 top-3 h-[7px] w-[7px] rounded-full bg-indigo-500" />
         )}

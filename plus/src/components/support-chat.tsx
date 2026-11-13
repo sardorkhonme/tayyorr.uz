@@ -24,6 +24,16 @@ type Msg = {
 };
 
 /** Xabar menyusi (⋮): reaksiyalar + amallar. body'ga portal — popup/aylantirish ichida kesilmaydi, ekrandan çiqmaydi. */
+/** Popupni yopgan bosiş ortidagi tugmani bosib yubormasin — keyingi «click» yutiladi. */
+function swallowNextClick() {
+  const swallow = (ev: Event) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+  };
+  document.addEventListener("click", swallow, { capture: true, once: true });
+  window.setTimeout(() => document.removeEventListener("click", swallow, true), 600);
+}
+
 function MessageMenu({
   anchor,
   msg,
@@ -58,7 +68,10 @@ function MessageMenu({
   }, [anchor, msg.mine]);
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node) && !(e.target as Element).closest?.("[data-msg-menu-btn]")) onClose();
+      if (!ref.current?.contains(e.target as Node) && !(e.target as Element).closest?.("[data-msg-menu-btn]")) {
+        onClose();
+        swallowNextClick();
+      }
     };
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     const onScroll = () => onClose();

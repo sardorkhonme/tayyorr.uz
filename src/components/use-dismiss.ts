@@ -4,8 +4,8 @@ import { useEffect, type RefObject } from "react";
 
 /**
  * Popup / menyu / modalni yopadi:
- *  - tashqariga bosilганда (pointerdown, capture)
- *  - Escape bosilганда
+ *  - tashqariga bosilganda (pointerdown, capture) — şu bosiş ortidagi elementga ötmaydi
+ *  - Escape bosilganda
  * `keep` — ichига bosilса yopilmaydigan elementlar (menyu paneli, ochuvchi tugma).
  */
 export function useDismiss(
@@ -19,10 +19,17 @@ export function useDismiss(
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+    // popupni yopgan bosiş ortidagi tugmani bosib yubormasin — keyingi «click» yutiladi
+    const swallow = (ev: Event) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+    };
     const onDown = (e: Event) => {
       const t = e.target as Node | null;
       if (t && keep.some((r) => r.current && r.current.contains(t))) return;
       onClose();
+      document.addEventListener("click", swallow, { capture: true, once: true });
+      window.setTimeout(() => document.removeEventListener("click", swallow, true), 600);
     };
 
     document.addEventListener("keydown", onKey);

@@ -7,9 +7,7 @@ import { PlatformIcon } from "@/components/platform-icon";
 import { TopupButton } from "@/components/topup-button";
 import { WelcomeGate } from "@/components/welcome-gate";
 import { AppDownloadBanner, AppDownloadSection } from "@/components/app-download";
-import { db } from "@/lib/db";
 import { MAIN_SITE_URL, SMM_URL } from "@/lib/hub-nav";
-import { num } from "@/lib/format";
 import { platformOf } from "@/lib/platforms";
 import { FlashNotice } from "@/components/flash-notice";
 
@@ -44,10 +42,7 @@ export default async function DashboardPage({
   // eski havolalar (?p=instagram&k=followers) — Tayyorr SMM endi alohida saytda
   if (p) redirect(`${SMM_URL}/?p=${encodeURIComponent(p)}${k ? `&k=${encodeURIComponent(k)}` : ""}`);
 
-  const [user, smmCount] = await Promise.all([
-    currentUser(),
-    db.smmService.count({ where: { active: true } }),
-  ]);
+  const user = await currentUser();
   const greet = user?.firstName || user?.name || user?.login;
 
   return (
@@ -108,7 +103,7 @@ export default async function DashboardPage({
               </>
             ),
             desc: "Obunaçilar, layklar va körişlar — bir neça daqiqada, avtomatik. Bajarilmasa pul qaytadi.",
-            badge: smmCount > 0 ? `${num(smmCount)} ta xizmat` : null,
+            badge: null as string | null,
             from: "#d946ef",
             to: "#8b5cf6",
           },
@@ -181,11 +176,6 @@ export default async function DashboardPage({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/smm-mark.png" alt="Tayyorr SMM" className="h-10 w-10 object-contain" />
             </span>
-            {smmCount > 0 && (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {num(smmCount)} ta xizmat
-              </span>
-            )}
           </div>
           <h2 className="mt-5 font-display text-2xl font-bold text-zinc-900">Tayyorr SMM</h2>
           <p className="mt-2 leading-relaxed text-zinc-500">

@@ -17,6 +17,16 @@ export const SUPPORT_UNREAD_EVENT = "tayyorr:support-unread";
  * fon xiralashtirilmaydi). Telefon va planşetda tugma yöq (ilovadagidek — pastki panel / header orqali
  * alohida /support sahifasi), yangi javob kelsa — panel ustida qisqa bildirişnoma.
  */
+/** Popupni yopgan bosiş ortidagi tugmani bosib yubormasin — keyingi «click» yutiladi. */
+function swallowNextClick() {
+  const swallow = (ev: Event) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+  };
+  document.addEventListener("click", swallow, { capture: true, once: true });
+  window.setTimeout(() => document.removeEventListener("click", swallow, true), 600);
+}
+
 export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -123,7 +133,10 @@ export function SupportWidget({ loggedIn }: { loggedIn: boolean }) {
       const t = e.target as Node;
       // rasmni to'liq ko'rish oynasi (lightbox) ham chat qismi
       if ((t as Element).closest?.("[data-chat-lightbox]")) return;
-      if (!panelRef.current?.contains(t) && !btnRef.current?.contains(t) && !(t as Element).closest?.("[data-msg-menu]")) setOpen(false);
+      if (!panelRef.current?.contains(t) && !btnRef.current?.contains(t) && !(t as Element).closest?.("[data-msg-menu]")) {
+        setOpen(false);
+        swallowNextClick();
+      }
     };
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onDown);
